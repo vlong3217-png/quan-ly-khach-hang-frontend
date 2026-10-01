@@ -1,11 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext.tsx'
-import type { LoginRequest, LoginResponse } from '../../types/auth.ts'
 import './LoginPage.css'
-
-/* ──────────── API Config ──────────── */
-const API_BASE_URL = 'http://localhost:8000'
 
 /* ──────────── Types ──────────── */
 interface LoginFormData {
@@ -90,23 +84,15 @@ export function validateForm(data: LoginFormData): FormErrors {
 
 /* ──────────── Component ──────────── */
 function LoginPage() {
-  const { login: authLogin, isAuthenticated, isLoading: authLoading } = useAuth()
-  const navigate = useNavigate()
-
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
     rememberMe: false,
   })
   const [errors, setErrors] = useState<FormErrors>({})
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-
-  /* ---- Redirect if already logged in ---- */
-  if (!authLoading && isAuthenticated) {
-    navigate('/dashboard', { replace: true })
-    return null
-  }
 
   /* ---- Handlers ---- */
   const handleChange = (field: keyof LoginFormData, value: string | boolean) => {
@@ -132,26 +118,22 @@ function LoginPage() {
     }
 
     setErrors({})
+    setSuccessMessage(null)
     setIsLoading(true)
-    try {
-      const trimmedAccount = formData.email.trim()
-      const isEmail = trimmedAccount.includes('@')
-      const loginPayload: LoginRequest = {
-        email: isEmail ? trimmedAccount : undefined,
-        username: !isEmail ? trimmedAccount : undefined,
-        account: trimmedAccount,
-        password: formData.password,
-      }
 
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(loginPayload),
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          password: formData.password,
+        }),
       })
 
-      const data = (await response.json()) as LoginResponse & { detail?: string | Array<{ msg: string }> }
+      const data = await response.json()
 
       if (!response.ok) {
         let msg = 'Tài khoản hoặc mật khẩu không chính xác'
@@ -164,11 +146,18 @@ function LoginPage() {
         return
       }
 
-      // Success → save to auth context (never storing password) and navigate
-      authLogin(data.access_token, data.user, formData.rememberMe)
-      navigate('/dashboard', { replace: true })
+      // Success
+      if (formData.rememberMe) {
+        localStorage.setItem('access_token', data.access_token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+      } else {
+        sessionStorage.setItem('access_token', data.access_token)
+        sessionStorage.setItem('user', JSON.stringify(data.user))
+      }
+
+      setSuccessMessage(`Đăng nhập thành công! Chào mừng ${data.user.full_name}`)
     } catch {
-      setErrors({ general: `Không thể kết nối đến máy chủ Backend (${API_BASE_URL})` })
+      setErrors({ general: 'Không thể kết nối đến máy chủ Backend (http://127.0.0.1:8000)' })
     } finally {
       setIsLoading(false)
     }
@@ -195,7 +184,13 @@ function LoginPage() {
           </div>
         )}
 
-
+        {/* General success banner */}
+        {successMessage && (
+          <div className="login-success-banner" role="status" id="login-success-banner">
+            <IconCheck />
+            <span>{successMessage}</span>
+          </div>
+        )}
 
         {/* Form */}
         <form className="login-form" onSubmit={handleSubmit} noValidate>
@@ -280,9 +275,9 @@ function LoginPage() {
               </span>
               <span className="checkbox-label">Ghi nhớ đăng nhập</span>
             </label>
-            <Link to="/forgot-password" className="forgot-password" id="forgot-password-link">
+            <a href="/forgot-password" className="forgot-password">
               Quên mật khẩu?
-            </Link>
+            </a>
           </div>
 
           {/* Submit */}
