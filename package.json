@@ -1,0 +1,30 @@
+{
+  "name": "frontend-dangnhap",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test:frontend": "node test_frontend_validation.mjs",
+    "test:s1-03": "node test_s1_03_forgot_password.mjs",
+    "test:e2e": "node test_e2e_integration.mjs",
+    "test": "node test_frontend_validation.mjs && node test_s1_03_forgot_password.mjs"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "oxlint": "^1.81.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0"
+  }
+}
