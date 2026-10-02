@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import type { LoginRequest, LoginResponse } from '../../types/auth.ts'
 import './LoginPage.css'
@@ -280,9 +280,9 @@ function LoginPage() {
               </span>
               <span className="checkbox-label">Ghi nhớ đăng nhập</span>
             </label>
-            <Link to="/forgot-password" className="forgot-password" id="forgot-password-link">
+            <a href="/forgot-password" className="forgot-password">
               Quên mật khẩu?
-            </Link>
+            </a>
           </div>
 
           {/* Submit */}
