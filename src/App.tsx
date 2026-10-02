@@ -4,9 +4,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage.ts
 import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage.tsx'
 import ChangePasswordPage from './pages/ChangePasswordPage/ChangePasswordPage.tsx'
 import DashboardPage from './pages/DashboardPage/DashboardPage.tsx'
-import UserManagementPage from './pages/UserManagementPage/UserManagementPage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
-import AdminRoute from './components/AdminRoute.tsx'
 
 function App() {
   return (
@@ -28,14 +26,6 @@ function App() {
           <ProtectedRoute>
             <DashboardPage />
           </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/users"
-        element={
-          <AdminRoute>
-            <UserManagementPage />
-          </AdminRoute>
         }
       />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
