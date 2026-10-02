@@ -38,6 +38,14 @@ function App() {
           </AdminRoute>
         }
       />
+      <Route
+        path="/users"
+        element={
+          <AdminRoute>
+            <UserManagementPage />
+          </AdminRoute>
+        }
+      />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       {/* Mọi route khác → redirect về dashboard (ProtectedRoute sẽ kiểm tra auth) */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
