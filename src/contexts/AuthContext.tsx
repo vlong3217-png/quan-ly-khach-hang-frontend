@@ -6,7 +6,16 @@ import {
   useCallback,
   type ReactNode,
 } from 'react'
-import type { User, AuthState } from '../types/auth.ts'
+import type { User, AuthState, Role, Permission, DataScope } from '../types/auth.ts'
+import {
+  getUserPermissions,
+  getUserDataScope,
+  DEFAULT_ROLE_SCOPE,
+} from '../constants/permissions.ts'
+import {
+  checkUserPermission,
+  checkUserRole,
+} from '../utils/permissionUtils.ts'
 
 /* ──────────── Storage keys ──────────── */
 const STORAGE_KEY_TOKEN = 'access_token'
@@ -16,8 +25,18 @@ const FALLBACK_KEY_USER = 'auth_user'
 
 /* ──────────── Context shape ──────────── */
 interface AuthContextValue extends AuthState {
+  /** Danh sách quyền hiện tại của người dùng */
+  permissions: Permission[]
+  /** Phạm vi dữ liệu hiện tại của người dùng (MY, TEAM, ALL) */
+  dataScope: DataScope
+  /** Kiểm tra người dùng có một trong các role chỉ định hay không */
+  hasRole: (targetRoles: Role | Role[]) => boolean
+  /** Kiểm tra người dùng có quyền thực hiện chức năng hay không */
+  hasPermission: (targetPermission: Permission | Permission[], requireAll?: boolean) => boolean
   /** Lưu token + user sau khi đăng nhập thành công */
   login: (token: string, user: User, rememberMe?: boolean) => void
+  /** Cập nhật vai trò/phạm vi tạm thời (hỗ trợ kiểm thử & demo trực quan) */
+  switchRole: (newRole: Role, newScope?: DataScope) => void
   /** Đăng xuất: xóa token, user session, cập nhật state */
   logout: () => void
 }
@@ -138,6 +157,34 @@ function clearAllStorage() {
   }
 }
 
+/* ──────────── Helper to Normalize User ──────────── */
+function normalizeUser(rawUser: User): User {
+  const role = rawUser.role || 'USER'
+  const isAdm = String(role).toUpperCase() === 'ADMIN'
+  const isMgr = String(role).toUpperCase() === 'MANAGER'
+
+  const teamId = rawUser.team_id ?? (isAdm ? 1 : isMgr ? 1 : 1)
+  const teamName =
+    rawUser.team_name ?? (isAdm ? 'Ban Quản Trị' : isMgr ? 'Đội Kinh Doanh 1' : 'Đội Kinh Doanh 1')
+
+  const defaultScope = DEFAULT_ROLE_SCOPE[String(role).toUpperCase()] ?? 'MY'
+  const dataScope = rawUser.data_scope ?? defaultScope
+
+  const perms =
+    rawUser.permissions && rawUser.permissions.length > 0
+      ? rawUser.permissions
+      : getUserPermissions({ ...rawUser, role })
+
+  return {
+    ...rawUser,
+    role,
+    team_id: teamId,
+    team_name: teamName,
+    data_scope: dataScope,
+    permissions: perms,
+  }
+}
+
 /* ──────────── Provider ──────────── */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
@@ -151,9 +198,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const token = loadTokenFromStorage()
-      const user = loadUserFromStorage()
+      const rawUser = loadUserFromStorage()
 
-      if (token && user && isTokenValid(token)) {
+      if (token && rawUser && isTokenValid(token)) {
+        const user = normalizeUser(rawUser)
         setState({
           user,
           token,
@@ -162,7 +210,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
       } else {
         // Token hoặc user không hợp lệ / hết hạn → dọn dẹp storage
-        if (token || user) {
+        if (token || rawUser) {
           clearAllStorage()
         }
         setState({
@@ -185,7 +233,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   /* --- Login handler --- */
-  const login = useCallback((token: string, user: User, rememberMe: boolean = true) => {
+  const login = useCallback((token: string, rawUser: User, rememberMe: boolean = true) => {
+    const user = normalizeUser(rawUser)
     try {
       clearAllStorage()
       const storage = rememberMe ? localStorage : sessionStorage
@@ -209,6 +258,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  /* --- Switch Role handler (phục vụ kiểm thử & demo trực quan) --- */
+  const switchRole = useCallback((newRole: Role, newScope?: DataScope) => {
+    setState((prev) => {
+      if (!prev.user) return prev
+      const updatedUser: User = normalizeUser({
+        ...prev.user,
+        role: newRole,
+        data_scope: newScope,
+        permissions: undefined, // reset để normalize tính lại theo role mới
+      })
+
+      try {
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser))
+        sessionStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser))
+      } catch {
+        // ignore storage errors
+      }
+
+      return {
+        ...prev,
+        user: updatedUser,
+      }
+    })
+  }, [])
+
   /* --- Logout handler --- */
   const logout = useCallback(() => {
     clearAllStorage()
@@ -220,8 +294,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  /* --- Permission & Scope helpers --- */
+  const permissions = getUserPermissions(state.user)
+  const dataScope = getUserDataScope(state.user)
+
+  const hasRole = useCallback(
+    (targetRoles: Role | Role[]): boolean => {
+      if (!state.isAuthenticated || !state.user) return false
+      return checkUserRole(state.user, targetRoles)
+    },
+    [state.isAuthenticated, state.user]
+  )
+
+  const hasPermission = useCallback(
+    (targetPermission: Permission | Permission[], requireAll: boolean = false): boolean => {
+      if (!state.isAuthenticated || !state.user) return false
+      return checkUserPermission(state.user, targetPermission, requireAll)
+    },
+    [state.isAuthenticated, state.user]
+  )
+
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        ...state,
+        permissions,
+        dataScope,
+        hasRole,
+        hasPermission,
+        login,
+        switchRole,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )
