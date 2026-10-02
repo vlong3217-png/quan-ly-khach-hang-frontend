@@ -2,6 +2,8 @@ import assert from 'node:assert';
 
 console.log('--- BẮT ĐẦU KIỂM THỬ TỰ ĐỘNG TÍCH HỢP FRONTEND - BACKEND (E2E) ---');
 
+const BACKEND_URL = process.env.VITE_API_URL || 'https://quan-ly-khach-hang-backend.onrender.com';
+
 async function runTests() {
   // Test 1: Frontend Server Health
   {
@@ -15,8 +17,8 @@ async function runTests() {
 
   // Test 2: Backend Server Health
   {
-    console.log('\n[2] Kiểm tra máy chủ Backend FastAPI (http://127.0.0.1:8000)...');
-    const res = await fetch('http://127.0.0.1:8000/');
+    console.log(`\n[2] Kiểm tra máy chủ Backend FastAPI (${BACKEND_URL})...`);
+    const res = await fetch(`${BACKEND_URL}/`);
     assert.strictEqual(res.status, 200, 'Backend root should return 200');
     const body = await res.json();
     assert.deepStrictEqual(body, { message: 'Customer Management API is running' });
@@ -26,7 +28,7 @@ async function runTests() {
   // Test 3: CORS Header Verification
   {
     console.log('\n[3] Kiểm tra CORS Header giữa Frontend và Backend...');
-    const res = await fetch('http://127.0.0.1:8000/auth/login', {
+    const res = await fetch(`${BACKEND_URL}/auth/login`, {
       method: 'OPTIONS',
       headers: {
         'Origin': 'http://localhost:5173',
@@ -42,7 +44,7 @@ async function runTests() {
   // Test 4: Đăng nhập thành công với Email
   {
     console.log('\n[4] Kiểm thử kịch bản: Đăng nhập THÀNH CÔNG bằng EMAIL (admin@gmail.com / 123456)...');
-    const res = await fetch('http://127.0.0.1:8000/auth/login', {
+    const res = await fetch(`${BACKEND_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'admin@gmail.com', password: '123456' }),
@@ -61,7 +63,7 @@ async function runTests() {
   // Test 5: Đăng nhập thành công với Username
   {
     console.log('\n[5] Kiểm thử kịch bản: Đăng nhập THÀNH CÔNG bằng USERNAME (admin / 123456)...');
-    const res = await fetch('http://127.0.0.1:8000/auth/login', {
+    const res = await fetch(`${BACKEND_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'admin', password: '123456' }),
@@ -76,7 +78,7 @@ async function runTests() {
   // Test 6: Sai mật khẩu -> "Tài khoản hoặc mật khẩu không chính xác"
   {
     console.log('\n[6] Kiểm thử kịch bản: Sai mật khẩu (admin@gmail.com / sai-mat-khau)...');
-    const res = await fetch('http://127.0.0.1:8000/auth/login', {
+    const res = await fetch(`${BACKEND_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'admin@gmail.com', password: 'sai-mat-khau' }),
@@ -90,7 +92,7 @@ async function runTests() {
   // Test 7: Nhập sai tài khoản / username không tồn tại -> "Tài khoản hoặc mật khẩu không chính xác"
   {
     console.log('\n[7] Kiểm thử kịch bản: Tài khoản không tồn tại (notfound / 123456)...');
-    const res = await fetch('http://127.0.0.1:8000/auth/login', {
+    const res = await fetch(`${BACKEND_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'notfound', password: '123456' }),
@@ -104,7 +106,7 @@ async function runTests() {
   // Test 8: Nhập chuỗi email không hợp lệ -> "Tài khoản hoặc mật khẩu không chính xác"
   {
     console.log('\n[8] Kiểm thử kịch bản: Email không hợp lệ (dinh-dang-sai@xyz / 123456)...');
-    const res = await fetch('http://127.0.0.1:8000/auth/login', {
+    const res = await fetch(`${BACKEND_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'dinh-dang-sai@xyz', password: '123456' }),
