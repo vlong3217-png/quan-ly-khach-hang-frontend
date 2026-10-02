@@ -55,3 +55,15 @@ export interface ResetPasswordResponse {
   success: boolean
   message: string
 }
+
+/** Change password request payload (POST /auth/change-password) */
+export interface ChangePasswordRequest {
+  current_password: string
+  new_password: string
+}
+
+/** Change password response from the API */
+export interface ChangePasswordResponse {
+  success: boolean
+  message: string
+}
