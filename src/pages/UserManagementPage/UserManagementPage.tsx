@@ -207,6 +207,10 @@ function UserManagementPage() {
   const [filterTeam, setFilterTeam] = useState('')
   const [teams, setTeams] = useState<string[]>([])
 
+  // Pagination (Mặc định 20 dòng / trang theo tiêu chuẩn S1-08)
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 20
+
   // Modal
   const [modalOpen, setModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<UserAccount | null>(null)
@@ -530,59 +534,91 @@ function UserManagementPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u) => (
-                    <tr key={u.id}>
-                      <td>
-                        <div className="user-mgmt-name-cell">
-                          <div
-                            className={`user-mgmt-avatar avatar-${u.role.toLowerCase()}`}
-                          >
-                            {getInitials(u.full_name)}
+                  {users
+                    .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                    .map((u) => (
+                      <tr key={u.id}>
+                        <td>
+                          <div className="user-mgmt-name-cell">
+                            <div
+                              className={`user-mgmt-avatar avatar-${u.role.toLowerCase()}`}
+                            >
+                              {getInitials(u.full_name)}
+                            </div>
+                            <span className="user-mgmt-name-text">{u.full_name}</span>
                           </div>
-                          <span className="user-mgmt-name-text">{u.full_name}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="user-mgmt-email">{u.email}</span>
-                      </td>
-                      <td>
-                        <span className="user-mgmt-phone">{u.phone || '—'}</span>
-                      </td>
-                      <td>
-                        <span
-                          className={`user-mgmt-role-badge role-${u.role.toLowerCase()}`}
-                        >
-                          {ROLE_LABELS[u.role] || u.role}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="user-mgmt-team">{u.team || '—'}</span>
-                      </td>
-                      <td>
-                        <span
-                          className={`user-mgmt-status-badge status-${u.status}`}
-                        >
-                          <span className="user-mgmt-status-dot" />
-                          {STATUS_LABELS[u.status] || u.status}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="user-mgmt-actions">
-                          <button
-                            type="button"
-                            className="user-mgmt-edit-btn"
-                            onClick={() => openEditModal(u)}
-                            title="Chỉnh sửa"
-                            id={`user-mgmt-edit-${u.id}`}
+                        </td>
+                        <td>
+                          <span className="user-mgmt-email">{u.email}</span>
+                        </td>
+                        <td>
+                          <span className="user-mgmt-phone">{u.phone || '—'}</span>
+                        </td>
+                        <td>
+                          <span
+                            className={`user-mgmt-role-badge role-${u.role.toLowerCase()}`}
                           >
-                            <IconEdit />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {ROLE_LABELS[u.role] || u.role}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="user-mgmt-team">{u.team || '—'}</span>
+                        </td>
+                        <td>
+                          <span
+                            className={`user-mgmt-status-badge status-${u.status}`}
+                          >
+                            <span className="user-mgmt-status-dot" />
+                            {STATUS_LABELS[u.status] || u.status}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="user-mgmt-actions">
+                            <button
+                              type="button"
+                              className="user-mgmt-edit-btn"
+                              onClick={() => openEditModal(u)}
+                              title="Chỉnh sửa"
+                              id={`user-mgmt-edit-${u.id}`}
+                            >
+                              <IconEdit />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
+
+              {/* Thanh phân trang Pagination */}
+              {users.length > 0 && (
+                <div className="user-mgmt-pagination" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderTop: '1px solid #e2e8f0', fontSize: '13px', color: '#64748b' }}>
+                  <span>
+                    Hiển thị {Math.min((currentPage - 1) * pageSize + 1, users.length)} - {Math.min(currentPage * pageSize, users.length)} trên tổng số {users.length} tài khoản (Mặc định {pageSize} dòng/trang)
+                  </span>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                      style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+                    >
+                      Trang trước
+                    </button>
+                    <span style={{ padding: '6px 12px', fontWeight: 600, color: '#1e293b' }}>
+                      Trang {currentPage} / {Math.ceil(users.length / pageSize) || 1}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={currentPage >= Math.ceil(users.length / pageSize)}
+                      onClick={() => setCurrentPage((p) => p + 1)}
+                      style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', cursor: currentPage >= Math.ceil(users.length / pageSize) ? 'not-allowed' : 'pointer', opacity: currentPage >= Math.ceil(users.length / pageSize) ? 0.5 : 1 }}
+                    >
+                      Trang sau
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
