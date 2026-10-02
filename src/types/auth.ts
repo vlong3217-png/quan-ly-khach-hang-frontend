@@ -1,11 +1,27 @@
 /* ──────────── Auth Types ──────────── */
 
-/** User info returned from the API (matches backend UserResponse) */
+export type Role = 'ADMIN' | 'MANAGER' | 'USER' | (string & {})
+export type DataScope = 'MY' | 'TEAM' | 'ALL'
+
+export type Permission =
+  | 'CUSTOMER_VIEW'
+  | 'CUSTOMER_CREATE'
+  | 'CUSTOMER_EDIT'
+  | 'CUSTOMER_DELETE'
+  | 'CUSTOMER_EXPORT'
+  | 'REPORT_VIEW'
+  | 'SYSTEM_SETTINGS'
+
+/** User info returned from the API (matches backend UserResponse, extended with scope/team) */
 export interface User {
   id: number
   email: string
   full_name: string
-  role: string
+  role: Role
+  team_id?: number | string
+  team_name?: string
+  data_scope?: DataScope
+  permissions?: Permission[]
 }
 
 /** Login request payload (matches backend LoginRequest) */
@@ -67,3 +83,4 @@ export interface ChangePasswordResponse {
   success: boolean
   message: string
 }
+
