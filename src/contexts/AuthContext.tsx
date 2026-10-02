@@ -164,6 +164,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Token hoặc user không hợp lệ / hết hạn → dọn dẹp storage
         if (token || user) {
           clearAllStorage()
+          sessionStorage.setItem(
+            'session_expired_notice',
+            'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+          )
         }
         setState({
           user: null,
