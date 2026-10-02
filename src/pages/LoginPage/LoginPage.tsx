@@ -1,11 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
+import { API_BASE_URL } from '../../services/authService.ts'
 import type { LoginRequest, LoginResponse } from '../../types/auth.ts'
 import './LoginPage.css'
-
-/* ──────────── API Config ──────────── */
-const API_BASE_URL = 'http://localhost:8000'
 
 /* ──────────── Types ──────────── */
 interface LoginFormData {
