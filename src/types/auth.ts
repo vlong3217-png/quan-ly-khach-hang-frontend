@@ -31,3 +31,39 @@ export interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
 }
+
+/** Forgot password request payload (POST /auth/forgot-password) */
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+/** Forgot password response from the API */
+export interface ForgotPasswordResponse {
+  success: boolean
+  message: string
+  reset_token?: string
+}
+
+/** Reset password request payload (POST /auth/reset-password) */
+export interface ResetPasswordRequest {
+  token: string
+  new_password: string
+}
+
+/** Reset password response from the API */
+export interface ResetPasswordResponse {
+  success: boolean
+  message: string
+}
+
+/** Change password request payload (POST /auth/change-password) */
+export interface ChangePasswordRequest {
+  current_password: string
+  new_password: string
+}
+
+/** Change password response from the API */
+export interface ChangePasswordResponse {
+  success: boolean
+  message: string
+}
