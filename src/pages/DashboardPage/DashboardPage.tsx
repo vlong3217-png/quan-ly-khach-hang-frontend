@@ -24,23 +24,6 @@ const IconShield = () => (
   </svg>
 )
 
-const IconKey = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="7.5" cy="15.5" r="5.5" />
-    <path d="m21 2-9.6 9.6" />
-    <path d="m15.5 7.5 3 3L22 7l-3-3" />
-  </svg>
-)
-
-const IconUsers = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-)
-
 /* ──────────── Component ──────────── */
 function DashboardPage() {
   const { user, logout } = useAuth()
@@ -75,16 +58,6 @@ function DashboardPage() {
             </div>
             <button
               type="button"
-              className="dashboard-change-pwd-btn"
-              onClick={() => navigate('/change-password')}
-              id="dashboard-change-pwd-btn"
-              title="Đổi mật khẩu"
-            >
-              <IconKey />
-              <span>Đổi mật khẩu</span>
-            </button>
-            <button
-              type="button"
               className="dashboard-logout-btn"
               onClick={handleLogout}
               id="logout-btn"
@@ -111,28 +84,6 @@ function DashboardPage() {
               <span className="dashboard-info-label">Vai trò</span>
               <span className="dashboard-info-value">{user?.role ?? '—'}</span>
             </div>
-          </div>
-          <div className="dashboard-quick-actions">
-            <button
-              type="button"
-              className="dashboard-quick-action-btn"
-              onClick={() => navigate('/change-password')}
-              id="welcome-change-pwd-btn"
-            >
-              <IconKey />
-              <span>Đổi mật khẩu</span>
-            </button>
-            {user?.role?.toUpperCase() === 'ADMIN' && (
-              <button
-                type="button"
-                className="dashboard-quick-action-btn"
-                onClick={() => navigate('/admin/users')}
-                id="welcome-user-mgmt-btn"
-              >
-                <IconUsers />
-                <span>Quản lý tài khoản</span>
-              </button>
-            )}
           </div>
         </div>
       </main>
