@@ -3,6 +3,8 @@ import type {
   ForgotPasswordResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
 } from '../types/auth.ts'
 
 export const API_BASE_URL =
@@ -101,5 +103,69 @@ export async function resetPassword(
   }
 
   const data = (await response.json()) as ResetPasswordResponse
+  return data
+}
+
+/**
+ * Đổi mật khẩu người dùng
+ * POST /auth/change-password
+ * Headers: Authorization: Bearer <token>
+ */
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+  token?: string | null
+): Promise<ChangePasswordResponse> {
+  const authToken =
+    token ||
+    localStorage.getItem('access_token') ||
+    sessionStorage.getItem('access_token') ||
+    localStorage.getItem('auth_token') ||
+    sessionStorage.getItem('auth_token')
+
+  if (!authToken) {
+    const error = new Error('Chưa đăng nhập hoặc thiếu token xác thực. Vui lòng đăng nhập lại.')
+    ;(error as Error & { status?: number }).status = 401
+    throw error
+  }
+
+  const payload: ChangePasswordRequest = {
+    current_password: currentPassword,
+    new_password: newPassword,
+  }
+
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken.trim()}`,
+      },
+      body: JSON.stringify(payload),
+    })
+  } catch {
+    throw new Error(`Không thể kết nối đến máy chủ Backend (${API_BASE_URL})`)
+  }
+
+  if (response.status === 401) {
+    const errorMsg = await parseErrorResponse(
+      response,
+      'Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.'
+    )
+    const error = new Error(errorMsg)
+    ;(error as Error & { status?: number }).status = 401
+    throw error
+  }
+
+  if (!response.ok) {
+    const errorMsg = await parseErrorResponse(
+      response,
+      'Đổi mật khẩu thất bại. Vui lòng kiểm tra lại thông tin.'
+    )
+    throw new Error(errorMsg)
+  }
+
+  const data = (await response.json()) as ChangePasswordResponse
   return data
 }
