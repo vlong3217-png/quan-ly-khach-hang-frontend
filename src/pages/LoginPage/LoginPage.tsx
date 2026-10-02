@@ -98,7 +98,14 @@ function LoginPage() {
     password: '',
     rememberMe: false,
   })
-  const [errors, setErrors] = useState<FormErrors>({})
+  const [errors, setErrors] = useState<FormErrors>(() => {
+    const expiredNotice = sessionStorage.getItem('session_expired_notice')
+    if (expiredNotice) {
+      sessionStorage.removeItem('session_expired_notice')
+      return { general: expiredNotice }
+    }
+    return {}
+  })
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
