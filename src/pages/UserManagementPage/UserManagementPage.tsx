@@ -6,8 +6,6 @@ import {
   createUser,
   updateUser,
   getAvailableTeams,
-  updateUserStatus,
-  getUserAssignedData,
 } from '../../services/userService.ts'
 import type {
   UserAccount,
@@ -15,7 +13,6 @@ import type {
   UserStatus,
   CreateUserRequest,
   UpdateUserRequest,
-  HandoverItem,
 } from '../../types/user.ts'
 import './UserManagementPage.css'
 
@@ -50,20 +47,6 @@ const IconEdit = () => (
   </svg>
 )
 
-const IconLock = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-  </svg>
-)
-
-const IconUnlock = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-    <path d="M7 11V7a5 5 0 0 1 9.9-1" />
-  </svg>
-)
-
 const IconX = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M18 6 6 18" />
@@ -76,14 +59,6 @@ const IconAlertCircle = () => (
     <circle cx="12" cy="12" r="10" />
     <line x1="12" x2="12" y1="8" y2="12" />
     <line x1="12" x2="12.01" y1="16" y2="16" />
-  </svg>
-)
-
-const IconAlertTriangle = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-    <line x1="12" y1="9" x2="12" y2="13" />
-    <line x1="12" y1="17" x2="12.01" y2="17" />
   </svg>
 )
 
@@ -142,13 +117,12 @@ const ROLE_LABELS: Record<UserRole, string> = {
   ADMIN: 'Admin',
   MANAGER: 'Manager',
   STAFF: 'Nhân viên',
-  USER: 'Nhân viên',
 }
 
 const STATUS_LABELS: Record<UserStatus, string> = {
-  active: 'Đang hoạt động',
+  active: 'Hoạt động',
   inactive: 'Không hoạt động',
-  locked: 'Đã khóa',
+  locked: 'Đã khoá',
 }
 
 function getInitials(name: string): string {
@@ -233,23 +207,10 @@ function UserManagementPage() {
   const [filterTeam, setFilterTeam] = useState('')
   const [teams, setTeams] = useState<string[]>([])
 
-  // Modal create/edit
+  // Modal
   const [modalOpen, setModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<UserAccount | null>(null)
   const [submitting, setSubmitting] = useState(false)
-
-  // S1-10: Lock & Unlock Account States
-  const [lockModalOpen, setLockModalOpen] = useState(false)
-  const [unlockModalOpen, setUnlockModalOpen] = useState(false)
-  const [targetUser, setTargetUser] = useState<UserAccount | null>(null)
-  const [actionLoading, setActionLoading] = useState(false)
-  const [actionError, setActionError] = useState<string | null>(null)
-
-  // S1-10: Data Handover States (Bàn giao dữ liệu khi khóa tài khoản)
-  const [handoverEnabled, setHandoverEnabled] = useState(false)
-  const [handoverUserId, setHandoverUserId] = useState<string>('')
-  const [userAssignedItems, setUserAssignedItems] = useState<HandoverItem[]>([])
-  const [loadingAssignedItems, setLoadingAssignedItems] = useState(false)
 
   // Form
   const [formData, setFormData] = useState({
@@ -274,7 +235,7 @@ function UserManagementPage() {
     setTimeout(() => {
       setToastFading(true)
       setTimeout(() => setToast(null), 300)
-    }, 3500)
+    }, 3000)
   }, [])
 
   /* --- Fetch users --- */
@@ -341,125 +302,12 @@ function UserManagementPage() {
     setModalOpen(true)
   }
 
-  /* --- Close create/edit modal --- */
+  /* --- Close modal --- */
   const closeModal = () => {
     if (submitting) return
     setModalOpen(false)
     setEditingUser(null)
     setFormErrors({})
-  }
-
-  /* ──────────── S1-10: Lock & Unlock Action Handlers ──────────── */
-
-  /* Mở modal xác nhận khóa tài khoản */
-  const openLockModal = async (u: UserAccount) => {
-    // Yêu cầu 12: Không cho phép Admin tự khóa tài khoản của chính mình
-    if (user && user.id === u.id) {
-      showToast('Bạn không thể tự khóa tài khoản của chính mình.', 'error')
-      return
-    }
-
-    setTargetUser(u)
-    setLockModalOpen(true)
-    setActionError(null)
-    setHandoverEnabled(false)
-    setHandoverUserId('')
-    setLoadingAssignedItems(true)
-
-    try {
-      const items = await getUserAssignedData(u.id)
-      setUserAssignedItems(items)
-      // Nếu user có dữ liệu phụ trách, tự động kích hoạt gợi ý bàn giao
-      if (items.length > 0) {
-        setHandoverEnabled(true)
-      }
-    } catch {
-      setUserAssignedItems([])
-    } finally {
-      setLoadingAssignedItems(false)
-    }
-  }
-
-  /* Đóng modal khóa tài khoản */
-  const closeLockModal = () => {
-    if (actionLoading) return
-    setLockModalOpen(false)
-    setTargetUser(null)
-    setActionError(null)
-    setHandoverEnabled(false)
-    setHandoverUserId('')
-    setUserAssignedItems([])
-  }
-
-  /* Thực hiện khóa tài khoản */
-  const handleConfirmLock = async () => {
-    if (!targetUser) return
-
-    // Kiểm tra bàn giao dữ liệu nếu bật tùy chọn bàn giao
-    let handoverTargetId: number | null = null
-    if (handoverEnabled && userAssignedItems.length > 0) {
-      if (!handoverUserId) {
-        setActionError('Vui lòng chọn nhân viên tiếp nhận bàn giao dữ liệu.')
-        return
-      }
-      handoverTargetId = Number(handoverUserId)
-      if (handoverTargetId === targetUser.id) {
-        setActionError('Không thể bàn giao dữ liệu cho chính tài khoản đang bị khóa.')
-        return
-      }
-    }
-
-    setActionLoading(true)
-    setActionError(null)
-
-    try {
-      const response = await updateUserStatus(targetUser.id, 'LOCKED', handoverTargetId)
-      showToast(response.message || `Đã khóa tài khoản "${targetUser.full_name}" thành công!`, 'success')
-      closeLockModal()
-      fetchUsers()
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Có lỗi khi khóa tài khoản.'
-      setActionError(msg)
-      showToast(msg, 'error')
-    } finally {
-      setActionLoading(false)
-    }
-  }
-
-  /* Mở modal xác nhận mở khóa tài khoản */
-  const openUnlockModal = (u: UserAccount) => {
-    setTargetUser(u)
-    setUnlockModalOpen(true)
-    setActionError(null)
-  }
-
-  /* Đóng modal mở khóa tài khoản */
-  const closeUnlockModal = () => {
-    if (actionLoading) return
-    setUnlockModalOpen(false)
-    setTargetUser(null)
-    setActionError(null)
-  }
-
-  /* Thực hiện mở khóa tài khoản */
-  const handleConfirmUnlock = async () => {
-    if (!targetUser) return
-
-    setActionLoading(true)
-    setActionError(null)
-
-    try {
-      const response = await updateUserStatus(targetUser.id, 'ACTIVE')
-      showToast(response.message || `Đã mở khóa tài khoản "${targetUser.full_name}" thành công!`, 'success')
-      closeUnlockModal()
-      fetchUsers()
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Có lỗi khi mở khóa tài khoản.'
-      setActionError(msg)
-      showToast(msg, 'error')
-    } finally {
-      setActionLoading(false)
-    }
   }
 
   /* --- Handle form submit --- */
@@ -720,41 +568,11 @@ function UserManagementPage() {
                       </td>
                       <td>
                         <div className="user-mgmt-actions">
-                          {/* S1-10: Nút Khóa / Mở khóa tài khoản */}
-                          {u.status === 'locked' ? (
-                            <button
-                              type="button"
-                              className="user-mgmt-action-btn btn-unlock"
-                              onClick={() => openUnlockModal(u)}
-                              title="Mở khóa tài khoản này"
-                              id={`user-mgmt-unlock-${u.id}`}
-                            >
-                              <IconUnlock />
-                              <span>Mở khóa</span>
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className={`user-mgmt-action-btn btn-lock ${user?.id === u.id ? 'btn-disabled' : ''}`}
-                              onClick={() => openLockModal(u)}
-                              disabled={user?.id === u.id}
-                              title={
-                                user?.id === u.id
-                                  ? 'Không thể tự khóa tài khoản của chính mình'
-                                  : 'Khóa tài khoản này'
-                              }
-                              id={`user-mgmt-lock-${u.id}`}
-                            >
-                              <IconLock />
-                              <span>Khóa</span>
-                            </button>
-                          )}
-
                           <button
                             type="button"
                             className="user-mgmt-edit-btn"
                             onClick={() => openEditModal(u)}
-                            title="Chỉnh sửa tài khoản"
+                            title="Chỉnh sửa"
                             id={`user-mgmt-edit-${u.id}`}
                           >
                             <IconEdit />
@@ -958,273 +776,6 @@ function UserManagementPage() {
                   : editingUser
                     ? 'Lưu thay đổi'
                     : 'Tạo tài khoản'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── S1-10 Modal: Xác nhận Khóa tài khoản & Bàn giao dữ liệu ── */}
-      {lockModalOpen && targetUser && (
-        <div
-          className="user-mgmt-modal-overlay"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeLockModal()
-          }}
-          id="lock-modal-overlay"
-        >
-          <div className="user-mgmt-modal lock-confirm-modal" role="dialog" aria-modal="true">
-            <div className="user-mgmt-modal-header lock-modal-header">
-              <div className="lock-modal-header-icon" aria-hidden="true">
-                <IconAlertTriangle />
-              </div>
-              <div className="lock-modal-header-title">
-                <h2>Xác nhận khóa tài khoản</h2>
-                <p>Thao tác này sẽ vô hiệu hóa quyền truy cập hệ thống của người dùng.</p>
-              </div>
-              <button
-                type="button"
-                className="user-mgmt-modal-close"
-                onClick={closeLockModal}
-                disabled={actionLoading}
-                title="Đóng modal"
-                id="lock-modal-close-btn"
-              >
-                <IconX />
-              </button>
-            </div>
-
-            <div className="user-mgmt-modal-body">
-              {/* Alert error nếu có lỗi */}
-              {actionError && (
-                <div className="user-mgmt-alert-error" role="alert" id="lock-modal-error">
-                  <IconAlertCircle />
-                  <span>{actionError}</span>
-                </div>
-              )}
-
-              {/* Thông tin tài khoản bị khóa */}
-              <div className="lock-user-preview">
-                <div className={`user-mgmt-avatar avatar-${targetUser.role.toLowerCase()}`}>
-                  {getInitials(targetUser.full_name)}
-                </div>
-                <div className="lock-user-preview-details">
-                  <span className="lock-user-name">{targetUser.full_name}</span>
-                  <span className="lock-user-email">{targetUser.email}</span>
-                  <span className="lock-user-role-badge">
-                    {ROLE_LABELS[targetUser.role] || targetUser.role} {targetUser.team ? `• ${targetUser.team}` : ''}
-                  </span>
-                </div>
-              </div>
-
-              {/* Cảnh báo hậu quả khi khóa */}
-              <div className="lock-warning-card">
-                <p>
-                  <strong>Lưu ý:</strong> Sau khi khóa, tài khoản này sẽ không thể đăng nhập vào hệ thống. Các phiên làm việc hiện tại sẽ bị vô hiệu hóa.
-                </p>
-              </div>
-
-              {/* S1-10 Chức năng Bàn giao dữ liệu (Data Handover) */}
-              <div className="lock-handover-section">
-                <div className="lock-handover-header">
-                  <label className="lock-handover-toggle-label">
-                    <input
-                      type="checkbox"
-                      checked={handoverEnabled}
-                      onChange={(e) => setHandoverEnabled(e.target.checked)}
-                      disabled={actionLoading}
-                      id="handover-toggle-checkbox"
-                    />
-                    <span className="lock-handover-toggle-text">
-                      Bàn giao dữ liệu của tài khoản này sang nhân viên khác
-                    </span>
-                  </label>
-                </div>
-
-                {loadingAssignedItems ? (
-                  <div className="lock-handover-loading">
-                    <div className="user-mgmt-spinner" />
-                    <span>Đang kiểm tra dữ liệu phụ trách của tài khoản...</span>
-                  </div>
-                ) : userAssignedItems.length > 0 ? (
-                  <div className="lock-assigned-items-summary">
-                    <span className="lock-assigned-count-badge">
-                      Tài khoản đang phụ trách {userAssignedItems.length} khách hàng / dữ liệu:
-                    </span>
-                    <ul className="lock-assigned-items-list">
-                      {userAssignedItems.map((item) => (
-                        <li key={item.id}>
-                          <span className="assigned-item-dot" />
-                          <span className="assigned-item-name">{item.name}</span>
-                          <span className="assigned-item-type">({item.type})</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <p className="lock-no-assigned-items">
-                    Tài khoản hiện không phụ trách khách hàng nào. Bạn vẫn có thể chọn người tiếp nhận nếu muốn.
-                  </p>
-                )}
-
-                {/* Dropdown chọn người tiếp nhận bàn giao */}
-                {handoverEnabled && (
-                  <div className="lock-handover-select-group">
-                    <label className="user-mgmt-form-label" htmlFor="handover-user-select">
-                      Chọn người nhận bàn giao<span className="user-mgmt-form-required">*</span>
-                    </label>
-                    <select
-                      id="handover-user-select"
-                      className="user-mgmt-form-select"
-                      value={handoverUserId}
-                      onChange={(e) => {
-                        setHandoverUserId(e.target.value)
-                        setActionError(null)
-                      }}
-                      disabled={actionLoading}
-                    >
-                      <option value="">-- Chọn nhân viên tiếp nhận bàn giao --</option>
-                      {users
-                        .filter(
-                          (u) =>
-                            u.id !== targetUser.id &&
-                            u.status === 'active' &&
-                            u.is_active !== false
-                        )
-                        .map((u) => (
-                          <option key={u.id} value={u.id}>
-                            {u.full_name} ({u.email}) - {ROLE_LABELS[u.role] || u.role}
-                          </option>
-                        ))}
-                    </select>
-                    <span className="lock-handover-hint">
-                      Tất cả khách hàng và tác vụ liên quan sẽ được tự động chuyển quyền phụ trách sang nhân viên được chọn.
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="user-mgmt-modal-footer">
-              <button
-                type="button"
-                className="user-mgmt-modal-cancel"
-                onClick={closeLockModal}
-                disabled={actionLoading}
-                id="lock-modal-cancel-btn"
-              >
-                Hủy bỏ
-              </button>
-              <button
-                type="button"
-                className="user-mgmt-modal-submit lock-confirm-btn"
-                onClick={handleConfirmLock}
-                disabled={actionLoading}
-                id="lock-modal-confirm-btn"
-              >
-                {actionLoading ? (
-                  <>
-                    <span className="user-mgmt-btn-spinner" />
-                    <span>Đang khóa tài khoản...</span>
-                  </>
-                ) : (
-                  <>
-                    <IconLock />
-                    <span>Xác nhận Khóa tài khoản</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── S1-10 Modal: Xác nhận Mở khóa tài khoản ── */}
-      {unlockModalOpen && targetUser && (
-        <div
-          className="user-mgmt-modal-overlay"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeUnlockModal()
-          }}
-          id="unlock-modal-overlay"
-        >
-          <div className="user-mgmt-modal unlock-confirm-modal" role="dialog" aria-modal="true">
-            <div className="user-mgmt-modal-header unlock-modal-header">
-              <div className="unlock-modal-header-icon" aria-hidden="true">
-                <IconUnlock />
-              </div>
-              <div className="unlock-modal-header-title">
-                <h2>Xác nhận mở khóa tài khoản</h2>
-                <p>Khôi phục quyền truy cập hệ thống cho người dùng này.</p>
-              </div>
-              <button
-                type="button"
-                className="user-mgmt-modal-close"
-                onClick={closeUnlockModal}
-                disabled={actionLoading}
-                title="Đóng modal"
-                id="unlock-modal-close-btn"
-              >
-                <IconX />
-              </button>
-            </div>
-
-            <div className="user-mgmt-modal-body">
-              {actionError && (
-                <div className="user-mgmt-alert-error" role="alert" id="unlock-modal-error">
-                  <IconAlertCircle />
-                  <span>{actionError}</span>
-                </div>
-              )}
-
-              <div className="lock-user-preview">
-                <div className={`user-mgmt-avatar avatar-${targetUser.role.toLowerCase()}`}>
-                  {getInitials(targetUser.full_name)}
-                </div>
-                <div className="lock-user-preview-details">
-                  <span className="lock-user-name">{targetUser.full_name}</span>
-                  <span className="lock-user-email">{targetUser.email}</span>
-                  <span className="lock-user-status-text status-locked">
-                    Trạng thái hiện tại: <strong>Đã khóa</strong>
-                  </span>
-                </div>
-              </div>
-
-              <div className="unlock-notice-card">
-                <p>
-                  Khi mở khóa, tài khoản <strong>{targetUser.full_name}</strong> sẽ được phép đăng nhập lại và tiếp tục sử dụng hệ thống bình thường.
-                </p>
-              </div>
-            </div>
-
-            <div className="user-mgmt-modal-footer">
-              <button
-                type="button"
-                className="user-mgmt-modal-cancel"
-                onClick={closeUnlockModal}
-                disabled={actionLoading}
-                id="unlock-modal-cancel-btn"
-              >
-                Hủy bỏ
-              </button>
-              <button
-                type="button"
-                className="user-mgmt-modal-submit unlock-confirm-btn"
-                onClick={handleConfirmUnlock}
-                disabled={actionLoading}
-                id="unlock-modal-confirm-btn"
-              >
-                {actionLoading ? (
-                  <>
-                    <span className="user-mgmt-btn-spinner" />
-                    <span>Đang mở khóa...</span>
-                  </>
-                ) : (
-                  <>
-                    <IconUnlock />
-                    <span>Xác nhận Mở khóa</span>
-                  </>
-                )}
               </button>
             </div>
           </div>
