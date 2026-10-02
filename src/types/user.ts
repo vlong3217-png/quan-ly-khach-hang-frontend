@@ -1,10 +1,10 @@
 /* ──────────── User Management Types (S1-08) ──────────── */
 
-/** Trạng thái tài khoản: active (hoạt động), inactive (không hoạt động), locked (đã khóa) */
+/** Trạng thái tài khoản */
 export type UserStatus = 'active' | 'inactive' | 'locked'
 
-/** Vai trò người dùng */
-export type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF' | 'USER'
+/** Vai trò người dùng (Hỗ trợ cả ADMIN, MANAGER, USER theo backend S1-09 và STAFF theo legacy frontend) */
+export type UserRole = 'ADMIN' | 'MANAGER' | 'USER' | 'STAFF'
 
 /** Thông tin đầy đủ của một tài khoản người dùng */
 export interface UserAccount {
@@ -14,8 +14,8 @@ export interface UserAccount {
   phone?: string
   role: UserRole
   team?: string
+  team_id?: number | null
   status: UserStatus
-  is_active?: boolean
   created_at: string
   updated_at?: string
 }
@@ -54,45 +54,52 @@ export interface UserListResponse {
   total: number
 }
 
-/* ──────────── S1-10 Lock Account & Data Handover Types ──────────── */
+/* ──────────── S1-09 Role & Team Types ──────────── */
 
-/** Payload cập nhật trạng thái khóa/mở khóa (PATCH /users/:id/status) */
-export interface UpdateStatusRequest {
-  status: 'ACTIVE' | 'LOCKED'
-  handover_to_user_id?: number | null
-}
-
-/** Mục dữ liệu bàn giao */
-export interface HandoverItem {
+/** Thông tin team trong hệ thống */
+export interface TeamOption {
   id: number
-  type: string
   name: string
 }
 
-/** Kết quả bàn giao dữ liệu */
-export interface DataHandoverResponse {
-  success: boolean
-  message: string
-  source_user_id: number
-  target_user_id: number
-  transferred_items_count: number
-  transferred_items?: HandoverItem[]
-}
-
-/** Phản hồi sau khi cập nhật trạng thái khóa/mở khóa */
-export interface UserStatusResponse {
-  id: number
+/** Thông tin Role trả về từ GET /users/:id/role */
+export interface RoleInfoResponse {
+  user_id: number
   email: string
-  username?: string | null
   full_name: string
   role: string
-  is_active: boolean
-  status: string
-  message: string
-  handover?: DataHandoverResponse | null
 }
 
-/** Yêu cầu bàn giao dữ liệu độc lập (POST /users/:id/handover) */
-export interface DataHandoverRequest {
-  target_user_id: number
+/** Thông tin Team trả về từ GET /users/:id/team */
+export interface TeamInfoResponse {
+  user_id: number
+  email: string
+  full_name: string
+  team_id: number | null
+  team_name?: string | null
+}
+
+/** Payload cập nhật Role (PUT /users/:id/role) */
+export interface UpdateRoleRequest {
+  role: string
+}
+
+/** Payload cập nhật Team (PUT /users/:id/team) */
+export interface UpdateTeamRequest {
+  team_id: number | null
+}
+
+/** Payload cập nhật Role & Team kết hợp (PUT /users/:id/assign) */
+export interface UpdateAssignmentRequest {
+  role?: string
+  team_id?: number | null
+}
+
+/** Response sau khi cập nhật phân quyền Role & Team */
+export interface AssignmentResponse {
+  success: boolean
+  message: string
+  user?: UserAccount
+  roleInfo?: RoleInfoResponse
+  teamInfo?: TeamInfoResponse
 }

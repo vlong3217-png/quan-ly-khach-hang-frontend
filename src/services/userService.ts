@@ -6,11 +6,26 @@ import type {
   UpdateUserRequest,
   UserStatus,
   UserRole,
-  UserStatusResponse,
-  DataHandoverResponse,
-  HandoverItem,
+  RoleInfoResponse,
+  TeamInfoResponse,
+  TeamOption,
+  AssignmentResponse,
 } from '../types/user.ts'
 import { API_BASE_URL } from './authService.ts'
+
+/* ──────────── System Constants (S1-09) ──────────── */
+export const SYSTEM_ROLES: { value: UserRole; label: string; description: string }[] = [
+  { value: 'ADMIN', label: 'Quản trị viên (Admin)', description: 'Toàn quyền quản trị hệ thống' },
+  { value: 'MANAGER', label: 'Quản lý (Manager)', description: 'Quản lý đội nhóm và khách hàng' },
+  { value: 'USER', label: 'Nhân viên (User)', description: 'Xem và xử lý khách hàng được phân công' },
+]
+
+export const SYSTEM_TEAMS: TeamOption[] = [
+  { id: 1, name: 'Team A' },
+  { id: 2, name: 'Team B' },
+  { id: 3, name: 'Team Kinh Doanh' },
+  { id: 4, name: 'Team Hỗ Trợ Kỹ Thuật' },
+]
 
 /* ──────────── Mock Data ──────────── */
 const MOCK_USERS: UserAccount[] = [
@@ -20,9 +35,9 @@ const MOCK_USERS: UserAccount[] = [
     email: 'admin@company.com',
     phone: '0901234567',
     role: 'ADMIN',
-    team: 'Ban Giám đốc',
+    team: 'Team A',
+    team_id: 1,
     status: 'active',
-    is_active: true,
     created_at: '2025-01-15T08:00:00Z',
   },
   {
@@ -31,9 +46,9 @@ const MOCK_USERS: UserAccount[] = [
     email: 'binh.tran@company.com',
     phone: '0912345678',
     role: 'MANAGER',
-    team: 'Kinh doanh',
+    team: 'Team A',
+    team_id: 1,
     status: 'active',
-    is_active: true,
     created_at: '2025-02-10T09:30:00Z',
   },
   {
@@ -41,20 +56,20 @@ const MOCK_USERS: UserAccount[] = [
     full_name: 'Lê Hoàng Cường',
     email: 'cuong.le@company.com',
     phone: '0923456789',
-    role: 'STAFF',
-    team: 'Kỹ thuật',
+    role: 'USER',
+    team: 'Team B',
+    team_id: 2,
     status: 'active',
-    is_active: true,
     created_at: '2025-03-05T10:15:00Z',
   },
   {
     id: 4,
     full_name: 'Phạm Minh Duy',
     email: 'duy.pham@company.com',
-    role: 'STAFF',
-    team: 'Kinh doanh',
+    role: 'USER',
+    team: 'Team A',
+    team_id: 1,
     status: 'inactive',
-    is_active: false,
     created_at: '2025-03-20T14:00:00Z',
   },
   {
@@ -62,10 +77,10 @@ const MOCK_USERS: UserAccount[] = [
     full_name: 'Hoàng Thị Em',
     email: 'em.hoang@company.com',
     phone: '0945678901',
-    role: 'STAFF',
-    team: 'Hỗ trợ',
+    role: 'USER',
+    team: 'Team B',
+    team_id: 2,
     status: 'active',
-    is_active: true,
     created_at: '2025-04-01T08:45:00Z',
   },
   {
@@ -74,9 +89,9 @@ const MOCK_USERS: UserAccount[] = [
     email: 'phuc.vo@company.com',
     phone: '0956789012',
     role: 'MANAGER',
-    team: 'Kỹ thuật',
+    team: 'Team B',
+    team_id: 2,
     status: 'locked',
-    is_active: false,
     created_at: '2025-04-15T11:20:00Z',
   },
   {
@@ -84,30 +99,23 @@ const MOCK_USERS: UserAccount[] = [
     full_name: 'Đặng Thùy Giang',
     email: 'giang.dang@company.com',
     phone: '0967890123',
-    role: 'STAFF',
-    team: 'Hỗ trợ',
+    role: 'USER',
+    team: 'Team Kinh Doanh',
+    team_id: 3,
     status: 'active',
-    is_active: true,
     created_at: '2025-05-10T09:00:00Z',
   },
   {
     id: 8,
     full_name: 'Bùi Quốc Hùng',
     email: 'hung.bui@company.com',
-    role: 'STAFF',
-    team: 'Kinh doanh',
+    phone: '0978901234',
+    role: 'USER',
+    team: 'Team Hỗ Trợ Kỹ Thuật',
+    team_id: 4,
     status: 'active',
-    is_active: true,
     created_at: '2025-06-01T13:30:00Z',
   },
-]
-
-// Mock dữ liệu phụ trách của từng user (cho tính năng bàn giao dữ liệu S1-10)
-let mockAssignedItems: Array<{ id: number; name: string; type: string; owner_id: number }> = [
-  { id: 1, name: 'Công ty TNHH Ánh Dương', type: 'customer', owner_id: 3 },
-  { id: 2, name: 'Tập đoàn Công nghệ Sao Mai', type: 'customer', owner_id: 3 },
-  { id: 3, name: 'Doanh nghiệp Tư nhân Hoàng Gia', type: 'customer', owner_id: 2 },
-  { id: 4, name: 'Công ty Cổ phần Đại Phát', type: 'customer', owner_id: 5 },
 ]
 
 let mockUsers = [...MOCK_USERS]
@@ -153,12 +161,12 @@ async function shouldUseRealApi(): Promise<boolean> {
   if (_useRealApi !== null) return _useRealApi
 
   try {
-    // Kiểm tra endpoint backend S1-10 /users
-    const res = await fetch(`${API_BASE_URL}/users`, {
+    const res = await fetch(`${API_BASE_URL}/users/me`, {
       method: 'GET',
       headers: getAuthHeaders(),
       signal: AbortSignal.timeout(3000),
     })
+    // Endpoint /users/me của S1-09 backend tồn tại (kể cả 401/403)
     _useRealApi = res.status !== 404
   } catch {
     _useRealApi = false
@@ -166,11 +174,11 @@ async function shouldUseRealApi(): Promise<boolean> {
   return _useRealApi
 }
 
-/* ──────────── API Functions ──────────── */
+/* ──────────── API Functions (Users) ──────────── */
 
 /**
  * Lấy danh sách người dùng
- * Hỗ trợ GET /users (S1-10 backend) hoặc GET /admin/users (Legacy)
+ * Thử GET /users (Backend S1-09/S1-08) hoặc GET /admin/users (Legacy)
  */
 export async function getUsers(params?: {
   search?: string
@@ -182,45 +190,54 @@ export async function getUsers(params?: {
 
   if (useReal) {
     try {
-      const query = new URLSearchParams()
-      if (params?.search) query.set('search', params.search)
-      if (params?.role) query.set('role', params.role)
-      if (params?.status === 'active') query.set('is_active', 'true')
-      if (params?.status === 'locked' || params?.status === 'inactive') query.set('is_active', 'false')
-
-      const res = await fetch(`${API_BASE_URL}/users?${query.toString()}`, {
+      // 1. Thử endpoint /users
+      const res = await fetch(`${API_BASE_URL}/users`, {
         method: 'GET',
         headers: getAuthHeaders(),
       })
 
       if (res.ok) {
         const data = await res.json()
-        const rawList: any[] = Array.isArray(data) ? data : data.users || []
-        const mappedUsers: UserAccount[] = rawList.map((u) => {
-          let userStatus: UserStatus = 'active'
-          if (u.status) {
-            userStatus = u.status.toLowerCase() === 'locked' ? 'locked' : (u.is_active === false ? 'inactive' : 'active')
-          } else if (u.is_active === false) {
-            userStatus = 'locked'
-          }
+        const rawUsers: any[] = data.users || (Array.isArray(data) ? data : [])
+        const mappedUsers: UserAccount[] = rawUsers.map((u) => {
+          const teamObj = SYSTEM_TEAMS.find((t) => t.id === u.team_id)
           return {
             id: u.id,
             full_name: u.full_name || u.username || u.email,
             email: u.email,
             phone: u.phone,
-            role: (u.role?.toUpperCase() || 'STAFF') as UserRole,
-            team: u.team,
-            status: userStatus,
-            is_active: u.is_active,
+            role: (u.role?.toUpperCase() || 'USER') as UserRole,
+            team_id: u.team_id ?? null,
+            team: teamObj ? teamObj.name : u.team_id ? `Team ${u.team_id}` : undefined,
+            status: (u.is_active === false ? 'inactive' : 'active') as UserStatus,
             created_at: u.created_at || new Date().toISOString(),
           }
         })
-        return { success: true, users: mappedUsers, total: mappedUsers.length }
+
+        let filtered = mappedUsers
+        if (params?.search) {
+          const s = params.search.toLowerCase()
+          filtered = filtered.filter(
+            (u) =>
+              u.full_name.toLowerCase().includes(s) ||
+              u.email.toLowerCase().includes(s) ||
+              (u.phone && u.phone.includes(s))
+          )
+        }
+        if (params?.role) {
+          filtered = filtered.filter((u) => u.role === params.role)
+        }
+        if (params?.team) {
+          filtered = filtered.filter((u) => u.team === params.team)
+        }
+
+        return { success: true, users: filtered, total: filtered.length }
       }
     } catch {
       // Fallback
     }
 
+    // 2. Thử endpoint legacy /admin/users
     try {
       const query = new URLSearchParams()
       if (params?.search) query.set('search', params.search)
@@ -228,13 +245,15 @@ export async function getUsers(params?: {
       if (params?.status) query.set('status', params.status)
       if (params?.team) query.set('team', params.team)
 
-      const url = `${API_BASE_URL}/admin/users${query.toString() ? '?' + query.toString() : ''}`
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-      })
-      if (response.ok) {
-        return (await response.json()) as UserListResponse
+      const res = await fetch(
+        `${API_BASE_URL}/admin/users${query.toString() ? '?' + query.toString() : ''}`,
+        {
+          method: 'GET',
+          headers: getAuthHeaders(),
+        }
+      )
+      if (res.ok) {
+        return (await res.json()) as UserListResponse
       }
     } catch {
       // Fallback to mock
@@ -242,7 +261,7 @@ export async function getUsers(params?: {
   }
 
   // ── Mock ──
-  await new Promise((r) => setTimeout(r, 200))
+  await new Promise((r) => setTimeout(r, 300))
 
   let filtered = [...mockUsers]
   if (params?.search) {
@@ -269,36 +288,14 @@ export async function getUsers(params?: {
 
 /**
  * Tạo tài khoản mới
- * POST /admin/users hoặc POST /users
  */
 export async function createUser(payload: CreateUserRequest): Promise<UserResponse> {
   const useReal = await shouldUseRealApi()
 
   if (useReal) {
+    let response: Response
     try {
-      const response = await fetch(`${API_BASE_URL}/users`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
-      })
-      if (response.ok) {
-        const u = await response.json()
-        return {
-          success: true,
-          message: 'Tạo tài khoản thành công.',
-          user: {
-            ...u,
-            status: u.is_active ? 'active' : 'locked',
-            created_at: u.created_at || new Date().toISOString(),
-          },
-        }
-      }
-    } catch {
-      // Fallback
-    }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/users`, {
+      response = await fetch(`${API_BASE_URL}/admin/users`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(payload),
@@ -312,11 +309,13 @@ export async function createUser(payload: CreateUserRequest): Promise<UserRespon
   }
 
   // ── Mock ──
-  await new Promise((r) => setTimeout(r, 300))
+  await new Promise((r) => setTimeout(r, 400))
 
   if (mockUsers.some((u) => u.email === payload.email)) {
     throw new Error('Email đã được sử dụng bởi tài khoản khác.')
   }
+
+  const teamObj = SYSTEM_TEAMS.find((t) => t.name === payload.team)
 
   const newUser: UserAccount = {
     id: nextId++,
@@ -325,8 +324,8 @@ export async function createUser(payload: CreateUserRequest): Promise<UserRespon
     phone: payload.phone,
     role: payload.role,
     team: payload.team,
+    team_id: teamObj ? teamObj.id : null,
     status: 'active',
-    is_active: true,
     created_at: new Date().toISOString(),
   }
 
@@ -336,8 +335,7 @@ export async function createUser(payload: CreateUserRequest): Promise<UserRespon
 }
 
 /**
- * Cập nhật tài khoản
- * PUT /admin/users/:id hoặc PUT /users/:id
+ * Cập nhật tài khoản (Legacy/S1-08)
  */
 export async function updateUser(
   userId: number,
@@ -347,21 +345,13 @@ export async function updateUser(
 
   if (useReal) {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(payload),
       })
       if (response.ok) {
-        const u = await response.json()
-        return {
-          success: true,
-          message: 'Cập nhật tài khoản thành công.',
-          user: {
-            ...u,
-            status: u.status?.toLowerCase() === 'locked' ? 'locked' : (u.is_active ? 'active' : 'inactive'),
-          },
-        }
+        return (await response.json()) as UserResponse
       }
     } catch {
       // Fallback
@@ -369,7 +359,7 @@ export async function updateUser(
   }
 
   // ── Mock ──
-  await new Promise((r) => setTimeout(r, 300))
+  await new Promise((r) => setTimeout(r, 350))
 
   const idx = mockUsers.findIndex((u) => u.id === userId)
   if (idx === -1) {
@@ -385,186 +375,82 @@ export async function updateUser(
   mockUsers[idx] = {
     ...mockUsers[idx],
     ...payload,
-    is_active: payload.status ? payload.status === 'active' : mockUsers[idx].is_active,
     updated_at: new Date().toISOString(),
   }
 
   return { success: true, message: 'Cập nhật tài khoản thành công.', user: mockUsers[idx] }
 }
 
-/* ──────────── S1-10: Khóa / Mở khóa tài khoản & Bàn giao dữ liệu ──────────── */
+/* ──────────── S1-09: Role & Team Assignment API Functions ──────────── */
 
 /**
- * Lấy danh sách các dữ liệu đang do user phụ trách (khách hàng)
+ * 1. Xem Role hiện tại của user (ADMIN only)
+ * GET /users/:id/role
  */
-export async function getUserAssignedData(userId: number): Promise<HandoverItem[]> {
+export async function getUserRole(userId: number): Promise<RoleInfoResponse> {
   const useReal = await shouldUseRealApi()
 
   if (useReal) {
     try {
-      // Nếu backend có endpoint riêng hoặc mock
-      const res = await fetch(`${API_BASE_URL}/users/${userId}/assigned-data`, {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/role`, {
         method: 'GET',
         headers: getAuthHeaders(),
       })
-      if (res.ok) {
-        return (await res.json()) as HandoverItem[]
+
+      if (response.ok) {
+        return (await response.json()) as RoleInfoResponse
       }
-    } catch {
-      // Fallback to mock
+
+      const errorMsg = await parseErrorResponse(response, 'Không thể tải thông tin Role của người dùng.')
+      throw new Error(errorMsg)
+    } catch (err) {
+      if (err instanceof Error && !err.message.includes('fetch')) throw err
+      // If network fails, proceed with mock fallback
     }
   }
 
   // ── Mock ──
-  await new Promise((r) => setTimeout(r, 150))
-  return mockAssignedItems.filter((item) => item.owner_id === userId)
+  await new Promise((r) => setTimeout(r, 250))
+  const u = mockUsers.find((user) => user.id === userId)
+  if (!u) {
+    throw new Error(`Không tìm thấy người dùng với ID ${userId}`)
+  }
+
+  return {
+    user_id: u.id,
+    email: u.email,
+    full_name: u.full_name,
+    role: u.role,
+  }
 }
 
 /**
- * Cập nhật trạng thái tài khoản (Khóa hoặc Mở khóa)
- * PATCH /users/:id/status
- * Body: { status: "ACTIVE" | "LOCKED", handover_to_user_id?: number | null }
+ * 2. Gán hoặc thay đổi Role của user (ADMIN only)
+ * PUT /users/:id/role
+ * Body: { role: string }
  */
-export async function updateUserStatus(
-  userId: number,
-  status: 'ACTIVE' | 'LOCKED',
-  handoverToUserId?: number | null
-): Promise<UserStatusResponse> {
+export async function assignUserRole(userId: number, role: string): Promise<RoleInfoResponse> {
   const useReal = await shouldUseRealApi()
 
   if (useReal) {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${userId}/status`, {
-        method: 'PATCH',
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/role`, {
+        method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify({
-          status,
-          handover_to_user_id: handoverToUserId || null,
-        }),
+        body: JSON.stringify({ role }),
       })
 
       if (response.ok) {
-        const data = (await response.json()) as UserStatusResponse
-        // Đồng bộ mock cache
+        const data = (await response.json()) as RoleInfoResponse
+        // Đồng bộ local mock state
         const idx = mockUsers.findIndex((u) => u.id === userId)
         if (idx !== -1) {
-          mockUsers[idx].status = status === 'LOCKED' ? 'locked' : 'active'
-          mockUsers[idx].is_active = status === 'ACTIVE'
+          mockUsers[idx] = { ...mockUsers[idx], role: data.role as UserRole }
         }
         return data
       }
 
-      const errorMsg = await parseErrorResponse(
-        response,
-        status === 'LOCKED' ? 'Không thể khóa tài khoản.' : 'Không thể mở khóa tài khoản.'
-      )
-      throw new Error(errorMsg)
-    } catch (err) {
-      if (err instanceof Error && !err.message.includes('fetch')) {
-        throw err
-      }
-      // Fallback sang mock nếu server lỗi mạng
-    }
-  }
-
-  // ── Mock ──
-  await new Promise((r) => setTimeout(r, 350))
-
-  const idx = mockUsers.findIndex((u) => u.id === userId)
-  if (idx === -1) {
-    throw new Error(`Không tìm thấy tài khoản người dùng với id ${userId}`)
-  }
-
-  let handoverResult: DataHandoverResponse | null = null
-
-  if (status === 'LOCKED') {
-    mockUsers[idx].status = 'locked'
-    mockUsers[idx].is_active = false
-
-    // Thực hiện bàn giao nếu có chỉ định người nhận
-    if (handoverToUserId) {
-      const targetUser = mockUsers.find((u) => u.id === handoverToUserId)
-      if (!targetUser) {
-        throw new Error(`Không tìm thấy người nhận bàn giao với id ${handoverToUserId}`)
-      }
-      if (targetUser.id === userId) {
-        throw new Error('Không thể bàn giao dữ liệu cho chính tài khoản này')
-      }
-      if (targetUser.status === 'locked' || targetUser.is_active === false) {
-        throw new Error('Không thể bàn giao dữ liệu cho tài khoản đang bị khóa')
-      }
-
-      const transferred: HandoverItem[] = []
-      mockAssignedItems.forEach((item) => {
-        if (item.owner_id === userId) {
-          item.owner_id = handoverToUserId
-          transferred.push({ id: item.id, type: item.type, name: item.name })
-        }
-      })
-
-      handoverResult = {
-        success: true,
-        message: `Bàn giao thành công ${transferred.length} mục dữ liệu từ user #${userId} sang user #${handoverToUserId}`,
-        source_user_id: userId,
-        target_user_id: handoverToUserId,
-        transferred_items_count: transferred.length,
-        transferred_items: transferred,
-      }
-    }
-
-    return {
-      id: mockUsers[idx].id,
-      email: mockUsers[idx].email,
-      full_name: mockUsers[idx].full_name,
-      role: mockUsers[idx].role,
-      is_active: false,
-      status: 'LOCKED',
-      message: `Đã khóa tài khoản thành công cho user #${userId}${
-        handoverToUserId ? ` và bàn giao dữ liệu sang user #${handoverToUserId}` : ''
-      }`,
-      handover: handoverResult,
-    }
-  } else {
-    // Mở khóa (ACTIVE)
-    mockUsers[idx].status = 'active'
-    mockUsers[idx].is_active = true
-
-    return {
-      id: mockUsers[idx].id,
-      email: mockUsers[idx].email,
-      full_name: mockUsers[idx].full_name,
-      role: mockUsers[idx].role,
-      is_active: true,
-      status: 'ACTIVE',
-      message: `Đã mở khóa tài khoản thành công cho user #${userId}`,
-      handover: null,
-    }
-  }
-}
-
-/**
- * Bàn giao dữ liệu riêng biệt
- * POST /users/:id/handover
- */
-export async function handoverUserData(
-  sourceUserId: number,
-  targetUserId: number
-): Promise<DataHandoverResponse> {
-  const useReal = await shouldUseRealApi()
-
-  if (useReal) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/${sourceUserId}/handover`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ target_user_id: targetUserId }),
-      })
-
-      if (response.ok) {
-        return (await response.json()) as DataHandoverResponse
-      }
-
-      const errorMsg = await parseErrorResponse(response, 'Bàn giao dữ liệu không thành công.')
+      const errorMsg = await parseErrorResponse(response, 'Không thể cập nhật Role.')
       throw new Error(errorMsg)
     } catch (err) {
       if (err instanceof Error && !err.message.includes('fetch')) throw err
@@ -572,45 +458,240 @@ export async function handoverUserData(
   }
 
   // ── Mock ──
-  await new Promise((r) => setTimeout(r, 300))
-
-  const sourceUser = mockUsers.find((u) => u.id === sourceUserId)
-  if (!sourceUser) throw new Error(`Không tìm thấy tài khoản nguồn #${sourceUserId}`)
-
-  const targetUser = mockUsers.find((u) => u.id === targetUserId)
-  if (!targetUser) throw new Error(`Không tìm thấy tài khoản nhận #${targetUserId}`)
-
-  if (targetUserId === sourceUserId) {
-    throw new Error('Không thể bàn giao dữ liệu cho chính tài khoản này')
+  await new Promise((r) => setTimeout(r, 350))
+  const validRoles = ['ADMIN', 'MANAGER', 'USER', 'STAFF']
+  if (!validRoles.includes(role.toUpperCase())) {
+    throw new Error(`Role '${role}' không hợp lệ. Các role hợp lệ: ADMIN, MANAGER, USER`)
   }
 
-  if (targetUser.status === 'locked' || targetUser.is_active === false) {
-    throw new Error('Không thể bàn giao dữ liệu cho tài khoản đang bị khóa')
+  const idx = mockUsers.findIndex((u) => u.id === userId)
+  if (idx === -1) {
+    throw new Error(`Không tìm thấy người dùng với ID ${userId}`)
   }
 
-  const transferred: HandoverItem[] = []
-  mockAssignedItems.forEach((item) => {
-    if (item.owner_id === sourceUserId) {
-      item.owner_id = targetUserId
-      transferred.push({ id: item.id, type: item.type, name: item.name })
-    }
-  })
+  mockUsers[idx] = {
+    ...mockUsers[idx],
+    role: role.toUpperCase() as UserRole,
+    updated_at: new Date().toISOString(),
+  }
 
   return {
-    success: true,
-    message: `Bàn giao thành công ${transferred.length} mục dữ liệu từ user #${sourceUserId} sang user #${targetUserId}`,
-    source_user_id: sourceUserId,
-    target_user_id: targetUserId,
-    transferred_items_count: transferred.length,
-    transferred_items: transferred,
+    user_id: mockUsers[idx].id,
+    email: mockUsers[idx].email,
+    full_name: mockUsers[idx].full_name,
+    role: mockUsers[idx].role,
   }
 }
 
 /**
- * Lấy danh sách team duy nhất (dùng cho bộ lọc)
+ * 3. Xem Team hiện tại của user (ADMIN only)
+ * GET /users/:id/team
+ */
+export async function getUserTeam(userId: number): Promise<TeamInfoResponse> {
+  const useReal = await shouldUseRealApi()
+
+  if (useReal) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/team`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
+
+      if (response.ok) {
+        return (await response.json()) as TeamInfoResponse
+      }
+
+      const errorMsg = await parseErrorResponse(response, 'Không thể tải thông tin Team của người dùng.')
+      throw new Error(errorMsg)
+    } catch (err) {
+      if (err instanceof Error && !err.message.includes('fetch')) throw err
+    }
+  }
+
+  // ── Mock ──
+  await new Promise((r) => setTimeout(r, 250))
+  const u = mockUsers.find((user) => user.id === userId)
+  if (!u) {
+    throw new Error(`Không tìm thấy người dùng với ID ${userId}`)
+  }
+
+  return {
+    user_id: u.id,
+    email: u.email,
+    full_name: u.full_name,
+    team_id: u.team_id ?? null,
+    team_name: u.team ?? null,
+  }
+}
+
+/**
+ * 4. Gán hoặc thay đổi Team của user (ADMIN only)
+ * PUT /users/:id/team
+ * Body: { team_id: number | null }
+ */
+export async function assignUserTeam(userId: number, teamId: number | null): Promise<TeamInfoResponse> {
+  const useReal = await shouldUseRealApi()
+
+  if (useReal) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/team`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ team_id: teamId }),
+      })
+
+      if (response.ok) {
+        const data = (await response.json()) as TeamInfoResponse
+        const idx = mockUsers.findIndex((u) => u.id === userId)
+        if (idx !== -1) {
+          mockUsers[idx] = {
+            ...mockUsers[idx],
+            team_id: data.team_id,
+            team: data.team_name || undefined,
+          }
+        }
+        return data
+      }
+
+      const errorMsg = await parseErrorResponse(response, 'Không thể cập nhật Team.')
+      throw new Error(errorMsg)
+    } catch (err) {
+      if (err instanceof Error && !err.message.includes('fetch')) throw err
+    }
+  }
+
+  // ── Mock ──
+  await new Promise((r) => setTimeout(r, 350))
+  const idx = mockUsers.findIndex((u) => u.id === userId)
+  if (idx === -1) {
+    throw new Error(`Không tìm thấy người dùng với ID ${userId}`)
+  }
+
+  let teamName: string | null = null
+  if (teamId !== null) {
+    const found = SYSTEM_TEAMS.find((t) => t.id === teamId)
+    if (!found) {
+      throw new Error(`Team ID ${teamId} không tồn tại trong hệ thống`)
+    }
+    teamName = found.name
+  }
+
+  mockUsers[idx] = {
+    ...mockUsers[idx],
+    team_id: teamId,
+    team: teamName || undefined,
+    updated_at: new Date().toISOString(),
+  }
+
+  return {
+    user_id: mockUsers[idx].id,
+    email: mockUsers[idx].email,
+    full_name: mockUsers[idx].full_name,
+    team_id: teamId,
+    team_name: teamName,
+  }
+}
+
+/**
+ * 5. Gán hoặc thay đổi đồng thời Role & Team (ADMIN only)
+ * PUT /users/:id/assign
+ * Body: { role?: string, team_id?: number | null }
+ */
+export async function assignUserRoleAndTeam(
+  userId: number,
+  payload: { role?: string; team_id?: number | null }
+): Promise<AssignmentResponse> {
+  const useReal = await shouldUseRealApi()
+
+  if (useReal) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/assign`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      })
+
+      if (response.ok) {
+        const updated = await response.json()
+        const teamObj = SYSTEM_TEAMS.find((t) => t.id === updated.team_id)
+        const userAccount: UserAccount = {
+          id: updated.id,
+          full_name: updated.full_name,
+          email: updated.email,
+          role: updated.role as UserRole,
+          team_id: updated.team_id,
+          team: teamObj ? teamObj.name : updated.team_id ? `Team ${updated.team_id}` : undefined,
+          status: updated.is_active ? 'active' : 'inactive',
+          created_at: new Date().toISOString(),
+        }
+
+        const idx = mockUsers.findIndex((u) => u.id === userId)
+        if (idx !== -1) {
+          mockUsers[idx] = { ...mockUsers[idx], ...userAccount }
+        }
+
+        return {
+          success: true,
+          message: 'Cập nhật Role và Team thành công.',
+          user: userAccount,
+        }
+      }
+
+      const errorMsg = await parseErrorResponse(response, 'Cập nhật phân quyền thất bại.')
+      throw new Error(errorMsg)
+    } catch (err) {
+      if (err instanceof Error && !err.message.includes('fetch')) throw err
+    }
+  }
+
+  // ── Mock ──
+  await new Promise((r) => setTimeout(r, 400))
+  const idx = mockUsers.findIndex((u) => u.id === userId)
+  if (idx === -1) {
+    throw new Error(`Không tìm thấy người dùng với ID ${userId}`)
+  }
+
+  if (payload.role) {
+    const validRoles = ['ADMIN', 'MANAGER', 'USER', 'STAFF']
+    if (!validRoles.includes(payload.role.toUpperCase())) {
+      throw new Error(`Role '${payload.role}' không hợp lệ. Các role hợp lệ: ADMIN, MANAGER, USER`)
+    }
+  }
+
+  let teamName = mockUsers[idx].team
+  if (payload.team_id !== undefined) {
+    if (payload.team_id === null) {
+      teamName = undefined
+    } else {
+      const found = SYSTEM_TEAMS.find((t) => t.id === payload.team_id)
+      if (!found) {
+        throw new Error(`Team ID ${payload.team_id} không tồn tại trong hệ thống`)
+      }
+      teamName = found.name
+    }
+  }
+
+  mockUsers[idx] = {
+    ...mockUsers[idx],
+    role: payload.role ? (payload.role.toUpperCase() as UserRole) : mockUsers[idx].role,
+    team_id: payload.team_id !== undefined ? payload.team_id : mockUsers[idx].team_id,
+    team: teamName,
+    updated_at: new Date().toISOString(),
+  }
+
+  return {
+    success: true,
+    message: 'Cập nhật Role và Team thành công.',
+    user: mockUsers[idx],
+  }
+}
+
+/**
+ * Lấy danh sách team duy nhất (dùng cho bộ lọc và select)
  */
 export function getAvailableTeams(): string[] {
   const teams = new Set<string>()
+  SYSTEM_TEAMS.forEach((t) => teams.add(t.name))
   mockUsers.forEach((u) => {
     if (u.team) teams.add(u.team)
   })

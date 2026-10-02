@@ -846,159 +846,72 @@
 }
 
 /* ============================================
-   S1-10: Lock & Unlock Account Styles
+   S1-09: Role & Team Assignment Styles
    ============================================ */
 
-/* Action buttons in table */
-.user-mgmt-action-btn {
+.user-mgmt-assign-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 11px;
-  font-size: 12px;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12.5px;
   font-weight: 600;
   font-family: var(--sans);
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
-.user-mgmt-action-btn svg {
+.user-mgmt-assign-btn svg {
   width: 14px;
   height: 14px;
+  color: #2563eb;
 }
 
-/* Nút Khóa */
-.user-mgmt-action-btn.btn-lock {
-  color: #b91c1c;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-}
-
-.user-mgmt-action-btn.btn-lock:hover:not(:disabled) {
-  background: #dc2626;
+.user-mgmt-assign-btn:hover {
+  background: #2563eb;
   color: #fff;
-  border-color: #dc2626;
-  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+  border-color: #2563eb;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
 }
 
-.user-mgmt-action-btn.btn-lock:hover:not(:disabled) svg {
+.user-mgmt-assign-btn:hover svg {
   color: #fff;
 }
 
-/* Nút Mở khóa */
-.user-mgmt-action-btn.btn-unlock {
-  color: #047857;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
+.assign-role-modal {
+  max-width: 540px;
 }
 
-.user-mgmt-action-btn.btn-unlock:hover:not(:disabled) {
-  background: #10b981;
-  color: #fff;
-  border-color: #10b981;
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
-}
-
-.user-mgmt-action-btn.btn-unlock:hover:not(:disabled) svg {
-  color: #fff;
-}
-
-/* Nút bị disable (tự khóa chính mình) */
-.user-mgmt-action-btn.btn-disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  filter: grayscale(0.6);
-}
-
-/* Badge trạng thái */
-.user-mgmt-status-badge.status-locked {
-  background: #fef2f2;
-  color: #b91c1c;
-}
-
-.user-mgmt-status-badge.status-locked .user-mgmt-status-dot {
-  background: #ef4444;
-}
-
-.user-mgmt-status-badge.status-active {
-  background: #ecfdf5;
-  color: #047857;
-}
-
-.user-mgmt-status-badge.status-active .user-mgmt-status-dot {
-  background: #10b981;
-}
-
-/* Lock & Unlock Confirm Modals */
-.lock-confirm-modal,
-.unlock-confirm-modal {
-  max-width: 520px;
-}
-
-.lock-modal-header,
-.unlock-modal-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.lock-modal-header-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: #fee2e2;
-  color: #dc2626;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.lock-modal-header-icon svg {
-  width: 22px;
-  height: 22px;
-}
-
-.unlock-modal-header-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: #d1fae5;
-  color: #059669;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.unlock-modal-header-icon svg {
-  width: 22px;
-  height: 22px;
-}
-
-.lock-modal-header-title,
-.unlock-modal-header-title {
-  flex: 1;
-}
-
-.lock-modal-header-title h2,
-.unlock-modal-header-title h2 {
+.assign-modal-header-text h2 {
   font-size: 18px;
   font-weight: 700;
   color: var(--text-h);
   margin: 0 0 4px 0;
 }
 
-.lock-modal-header-title p,
-.unlock-modal-header-title p {
-  font-size: 13px;
+.assign-modal-subtitle {
+  font-size: 12.5px;
   color: #64748b;
   margin: 0;
 }
 
-.user-mgmt-alert-error {
+.assign-modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  gap: 12px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.assign-alert-error {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1011,182 +924,87 @@
   margin-bottom: 16px;
 }
 
-.user-mgmt-alert-error svg {
+.assign-alert-error svg {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
 }
 
-.lock-user-preview {
+.assign-user-card {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 16px;
+  padding: 14px 18px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   margin-bottom: 16px;
 }
 
-.lock-user-preview-details {
+.assign-user-card-details {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.lock-user-name {
+.assign-user-name {
   font-size: 15px;
   font-weight: 600;
   color: var(--text-h);
 }
 
-.lock-user-email {
+.assign-user-email {
   font-size: 13px;
   color: #64748b;
 }
 
-.lock-user-role-badge {
-  font-size: 12px;
-  font-weight: 500;
-  color: #475569;
+.assign-user-id {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #94a3b8;
 }
 
-.lock-user-status-text.status-locked {
-  font-size: 12.5px;
-  color: #b91c1c;
-}
-
-.lock-warning-card {
-  background: #fffbeb;
-  border: 1px solid #fef3c7;
-  border-radius: 10px;
+.assign-current-status-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
   padding: 12px 16px;
-  font-size: 13px;
-  color: #92400e;
-  margin-bottom: 18px;
-  line-height: 1.5;
-}
-
-.unlock-notice-card {
-  background: #f0fdf4;
-  border: 1px solid #dcfce7;
-  border-radius: 10px;
-  padding: 14px 16px;
-  font-size: 13.5px;
-  color: #166534;
-  margin-bottom: 16px;
-  line-height: 1.5;
-}
-
-/* Handover Section */
-.lock-handover-section {
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 10px;
-}
-
-.lock-handover-header {
-  display: flex;
-  align-items: center;
-}
-
-.lock-handover-toggle-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.lock-handover-toggle-label input[type='checkbox'] {
-  width: 17px;
-  height: 17px;
-  cursor: pointer;
-  accent-color: var(--accent);
-}
-
-.lock-handover-toggle-text {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--text-h);
-}
-
-.lock-handover-loading {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 0;
-  font-size: 13px;
-  color: #64748b;
-}
-
-.lock-assigned-items-summary {
-  margin-top: 12px;
-  padding: 10px 14px;
   background: #fff;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  margin-bottom: 20px;
 }
 
-.lock-assigned-count-badge {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #334155;
-  display: block;
-  margin-bottom: 8px;
-}
-
-.lock-assigned-items-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.assign-current-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 120px;
-  overflow-y: auto;
+  gap: 4px;
 }
 
-.lock-assigned-items-list li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
-  color: #475569;
-}
-
-.assigned-item-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #3b82f6;
-}
-
-.assigned-item-name {
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-.assigned-item-type {
-  font-size: 11px;
-  color: #94a3b8;
-  text-transform: capitalize;
-}
-
-.lock-no-assigned-items {
-  font-size: 12.5px;
+.assign-current-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: #64748b;
-  margin: 8px 0 0 0;
-  font-style: italic;
 }
 
-.lock-handover-select-group {
-  margin-top: 14px;
+.assign-current-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-.lock-handover-hint {
+.assign-current-team {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.assign-field-hint {
   display: block;
   font-size: 12px;
   color: #64748b;
@@ -1194,32 +1012,24 @@
   line-height: 1.4;
 }
 
-/* Submit buttons */
-.lock-confirm-btn {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+.assign-submit-btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
-.lock-confirm-btn:hover {
-  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35) !important;
+.assign-submit-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
 }
 
-.unlock-confirm-btn {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+.assign-submit-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
-.unlock-confirm-btn:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35) !important;
-}
-
-.user-mgmt-btn-spinner {
+.assign-btn-spinner {
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.4);
@@ -1228,4 +1038,3 @@
   animation: umSpin 0.6s linear infinite;
   display: inline-block;
 }
-
