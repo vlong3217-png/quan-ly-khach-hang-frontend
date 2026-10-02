@@ -25,8 +25,10 @@ export function validateChangePassword(
 
   if (!newPassword || !newPassword.trim()) {
     errors.newPassword = 'Vui lòng nhập mật khẩu mới.'
-  } else if (newPassword.trim().length < 6) {
-    errors.newPassword = 'Mật khẩu mới phải có ít nhất 6 ký tự.'
+  } else if (newPassword.trim().length < 8) {
+    errors.newPassword = 'Mật khẩu mới phải có ít nhất 8 ký tự.'
+  } else if (!/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
+    errors.newPassword = 'Mật khẩu mới phải bao gồm cả chữ và số.'
   }
 
   if (!confirmPassword || !confirmPassword.trim()) {
