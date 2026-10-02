@@ -387,6 +387,18 @@ function UserManagementPage() {
       return
     }
 
+    // Tiêu chí S1-09: Không thể tự thu hồi vai trò quản trị của chính mình
+    if (user && user.id === assignTargetUser.id && assignRole !== 'ADMIN' && assignTargetUser.role === 'ADMIN') {
+      setAssignError('Không thể tự thu hồi vai trò Quản trị viên (ADMIN) của chính mình.')
+      return
+    }
+
+    // Tiêu chí S1-09: Người giữ vai trò Trưởng nhóm phải được gán một nhóm cụ thể
+    if (assignRole === 'MANAGER' && !assignTeamId) {
+      setAssignError('Người giữ vai trò Trưởng nhóm (MANAGER) bắt buộc phải được gán vào một nhóm cụ thể.')
+      return
+    }
+
     setAssignSubmitting(true)
     setAssignError(null)
 
