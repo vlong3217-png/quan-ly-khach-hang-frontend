@@ -1,11 +1,27 @@
 /* ──────────── Auth Types ──────────── */
 
-/** User info returned from the API (matches backend UserResponse) */
+export type Role = 'ADMIN' | 'MANAGER' | 'USER' | (string & {})
+export type DataScope = 'MY' | 'TEAM' | 'ALL'
+
+export type Permission =
+  | 'CUSTOMER_VIEW'
+  | 'CUSTOMER_CREATE'
+  | 'CUSTOMER_EDIT'
+  | 'CUSTOMER_DELETE'
+  | 'CUSTOMER_EXPORT'
+  | 'REPORT_VIEW'
+  | 'SYSTEM_SETTINGS'
+
+/** User info returned from the API (matches backend UserResponse, extended with scope/team) */
 export interface User {
   id: number
   email: string
   full_name: string
-  role: string
+  role: Role
+  team_id?: number | string
+  team_name?: string
+  data_scope?: DataScope
+  permissions?: Permission[]
 }
 
 /** Login request payload (matches backend LoginRequest) */
@@ -30,40 +46,4 @@ export interface AuthState {
   token: string | null
   isAuthenticated: boolean
   isLoading: boolean
-}
-
-/** Forgot password request payload (POST /auth/forgot-password) */
-export interface ForgotPasswordRequest {
-  email: string
-}
-
-/** Forgot password response from the API */
-export interface ForgotPasswordResponse {
-  success: boolean
-  message: string
-  reset_token?: string
-}
-
-/** Reset password request payload (POST /auth/reset-password) */
-export interface ResetPasswordRequest {
-  token: string
-  new_password: string
-}
-
-/** Reset password response from the API */
-export interface ResetPasswordResponse {
-  success: boolean
-  message: string
-}
-
-/** Change password request payload (POST /auth/change-password) */
-export interface ChangePasswordRequest {
-  current_password: string
-  new_password: string
-}
-
-/** Change password response from the API */
-export interface ChangePasswordResponse {
-  success: boolean
-  message: string
 }
