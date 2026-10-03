@@ -22,6 +22,8 @@ export interface User {
   team_name?: string
   data_scope?: DataScope
   permissions?: Permission[]
+  phone?: string
+  email_signature?: string
 }
 
 /** Login request payload (matches backend LoginRequest) */

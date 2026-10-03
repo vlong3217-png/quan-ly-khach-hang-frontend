@@ -37,6 +37,8 @@ interface AuthContextValue extends AuthState {
   login: (token: string, user: User, rememberMe?: boolean) => void
   /** Cập nhật vai trò/phạm vi tạm thời (hỗ trợ kiểm thử & demo trực quan) */
   switchRole: (newRole: Role, newScope?: DataScope) => void
+  /** Cập nhật thông tin hồ sơ người dùng hiện tại (họ tên, SĐT, chữ ký...) */
+  updateCurrentUser: (updates: Partial<User>) => void
   /** Đăng xuất: xóa token, user session, cập nhật state */
   logout: () => void
 }
@@ -287,6 +289,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  /* --- Update Current User Profile handler --- */
+  const updateCurrentUser = useCallback((updates: Partial<User>) => {
+    setState((prev) => {
+      if (!prev.user) return prev
+      const updatedUser: User = normalizeUser({
+        ...prev.user,
+        ...updates,
+      })
+      try {
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser))
+        sessionStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser))
+      } catch {
+        // ignore storage errors
+      }
+      return {
+        ...prev,
+        user: updatedUser,
+      }
+    })
+  }, [])
+
   /* --- Logout handler --- */
   const logout = useCallback(() => {
     clearAllStorage()
@@ -328,6 +351,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasPermission,
         login,
         switchRole,
+        updateCurrentUser,
         logout,
       }}
     >
