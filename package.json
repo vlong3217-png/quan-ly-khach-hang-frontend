@@ -11,7 +11,8 @@
     "test:frontend": "node test_frontend_validation.mjs",
     "test:permission": "node --experimental-strip-types test_s1_05_permission.mjs",
     "test:e2e": "node test_e2e_integration.mjs",
-    "test": "node test_frontend_validation.mjs && node --experimental-strip-types test_s1_05_permission.mjs"
+    "test": "node test_frontend_validation.mjs && node --experimental-strip-types test_s1_05_permission.mjs",
+    "test:avatar": "node test_s2_03_avatar.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

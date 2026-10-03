@@ -24,6 +24,8 @@ export interface User {
   permissions?: Permission[]
   phone?: string
   email_signature?: string
+  avatar?: string
+  thumbnail?: string
 }
 
 /** Login request payload (matches backend LoginRequest) */
