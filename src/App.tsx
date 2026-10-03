@@ -4,7 +4,6 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage.ts
 import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage.tsx'
 import ChangePasswordPage from './pages/ChangePasswordPage/ChangePasswordPage.tsx'
 import DashboardPage from './pages/DashboardPage/DashboardPage.tsx'
-import UserManagementPage from './pages/UserManagementPage/UserManagementPage.tsx'
 import ForbiddenPage from './pages/ForbiddenPage/ForbiddenPage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import AdminRoute from './components/AdminRoute.tsx'
@@ -84,20 +83,20 @@ function App() {
 
       {/* 5. Quản lý tài khoản (S1-08 / S1-10) */}
       <Route
-        path="/admin/users"
+        path="/dashboard/users/*"
         element={
           <AdminRoute>
-            <UserManagementPage />
+            <DashboardPage />
           </AdminRoute>
         }
       />
       <Route
+        path="/admin/users"
+        element={<Navigate to="/dashboard/users" replace />}
+      />
+      <Route
         path="/users"
-        element={
-          <AdminRoute>
-            <UserManagementPage />
-          </AdminRoute>
-        }
+        element={<Navigate to="/dashboard/users" replace />}
       />
 
       {/* 6. Route Dashboard tổng quan */}

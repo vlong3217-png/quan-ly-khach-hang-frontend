@@ -17,6 +17,7 @@ import type {
   UpdateUserRequest,
   HandoverItem,
 } from '../../types/user.ts'
+import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal.tsx'
 import './UserManagementPage.css'
 
 /* ──────────── Inline SVG Icons ──────────── */
@@ -216,7 +217,11 @@ interface Toast {
 }
 
 /* ──────────── Component ──────────── */
-function UserManagementPage() {
+export interface UserManagementPageProps {
+  embedded?: boolean
+}
+
+function UserManagementPage({ embedded = false }: UserManagementPageProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -515,62 +520,68 @@ function UserManagementPage() {
     navigate('/login', { replace: true })
   }
 
+  const [isChangePwdModalOpen, setIsChangePwdModalOpen] = useState(false)
+
   /* ──────────── Render ──────────── */
   return (
-    <div className="user-mgmt-page">
-      {/* ── Header (reuse dashboard header style) ── */}
-      <header className="dashboard-header">
-        <div className="dashboard-header-inner">
-          <div className="dashboard-brand">
-            <div className="dashboard-brand-icon" aria-hidden="true">
-              <IconShield />
+    <div className={`user-mgmt-page ${embedded ? 'user-mgmt-page--embedded' : ''}`}>
+      {/* ── Header (only render when accessed standalone) ── */}
+      {!embedded && (
+        <header className="dashboard-header">
+          <div className="dashboard-header-inner">
+            <div className="dashboard-brand">
+              <div className="dashboard-brand-icon" aria-hidden="true">
+                <IconShield />
+              </div>
+              <span className="dashboard-brand-text">Quản lý khách hàng</span>
             </div>
-            <span className="dashboard-brand-text">Quản lý khách hàng</span>
-          </div>
 
-          <div className="dashboard-user-area">
-            <div className="dashboard-user-info">
-              <div className="dashboard-user-avatar">
-                <IconUser />
+            <div className="dashboard-user-area">
+              <div className="dashboard-user-info">
+                <div className="dashboard-user-avatar">
+                  <IconUser />
+                </div>
+                <div className="dashboard-user-details">
+                  <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
+                  <span className="dashboard-user-role">{user?.role ?? ''}</span>
+                </div>
               </div>
-              <div className="dashboard-user-details">
-                <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
-                <span className="dashboard-user-role">{user?.role ?? ''}</span>
-              </div>
+              <button
+                type="button"
+                className="dashboard-change-pwd-btn"
+                onClick={() => setIsChangePwdModalOpen(true)}
+                title="Đổi mật khẩu"
+              >
+                <IconKey />
+                <span>Đổi mật khẩu</span>
+              </button>
+              <button
+                type="button"
+                className="dashboard-logout-btn"
+                onClick={handleLogout}
+                title="Đăng xuất"
+              >
+                <IconLogout />
+                <span>Đăng xuất</span>
+              </button>
             </div>
-            <button
-              type="button"
-              className="dashboard-change-pwd-btn"
-              onClick={() => navigate('/change-password')}
-              title="Đổi mật khẩu"
-            >
-              <IconKey />
-              <span>Đổi mật khẩu</span>
-            </button>
-            <button
-              type="button"
-              className="dashboard-logout-btn"
-              onClick={handleLogout}
-              title="Đăng xuất"
-            >
-              <IconLogout />
-              <span>Đăng xuất</span>
-            </button>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* ── Main ── */}
-      <main className="user-mgmt-main">
-        {/* Back link */}
-        <button
-          className="user-mgmt-back-link"
-          onClick={() => navigate('/dashboard')}
-          type="button"
-        >
-          <IconArrowLeft />
-          Quay lại Dashboard
-        </button>
+      <main className={`user-mgmt-main ${embedded ? 'user-mgmt-main--embedded' : ''}`}>
+        {/* Back link (only in standalone mode) */}
+        {!embedded && (
+          <button
+            className="user-mgmt-back-link"
+            onClick={() => navigate('/dashboard')}
+            type="button"
+          >
+            <IconArrowLeft />
+            Quay lại Dashboard
+          </button>
+        )}
 
         {/* Title bar */}
         <div className="user-mgmt-title-bar">
@@ -1276,6 +1287,15 @@ function UserManagementPage() {
           {toast.message}
         </div>
       )}
+
+      {/* ── Change Password Modal ── */}
+      <ChangePasswordModal
+        isOpen={isChangePwdModalOpen}
+        onClose={() => setIsChangePwdModalOpen(false)}
+        onSuccess={() => {
+          showToast('Đổi mật khẩu thành công!', 'success')
+        }}
+      />
     </div>
   )
 }

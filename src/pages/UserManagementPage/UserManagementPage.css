@@ -10,6 +10,12 @@
   background: #f1f5f9;
 }
 
+.user-mgmt-page--embedded {
+  min-height: auto;
+  background: transparent;
+  width: 100%;
+}
+
 /* ---------- Main content ---------- */
 .user-mgmt-main {
   flex: 1;
@@ -17,6 +23,12 @@
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
+}
+
+.user-mgmt-main--embedded {
+  padding: 0;
+  max-width: 100%;
+  margin: 0;
 }
 
 /* ---------- Page title bar ---------- */
