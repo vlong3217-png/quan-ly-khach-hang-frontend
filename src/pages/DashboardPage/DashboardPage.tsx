@@ -7,7 +7,6 @@ import { PermissionGate } from '../../components/PermissionGate.tsx'
 import Sidebar from '../../components/Sidebar/Sidebar.tsx'
 import {
   ROLES,
-  ROLE_LABELS,
   PERMISSIONS,
   PERMISSION_LABELS,
   SCOPE_LABELS,
@@ -298,9 +297,6 @@ function DashboardPage() {
                 </div>
                 <div className="dashboard-user-details">
                   <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
-                  <span className="dashboard-user-role">
-                    {user?.role ? ROLE_LABELS[user.role] ?? user.role : ''}
-                  </span>
                 </div>
               </div>
               <button
