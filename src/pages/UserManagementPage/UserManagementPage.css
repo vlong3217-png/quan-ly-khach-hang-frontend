@@ -1199,7 +1199,20 @@
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  height: auto;
+  line-height: 1.4;
+}
+
+.lock-confirm-btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 
 .lock-confirm-btn:hover {
@@ -1211,7 +1224,20 @@
   background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  height: auto;
+  line-height: 1.4;
+}
+
+.unlock-confirm-btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 
 .unlock-confirm-btn:hover {
