@@ -74,8 +74,6 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         path: '/dashboard/reports',
         roles: [ROLES.ADMIN, ROLES.MANAGER],
         permissions: [PERMISSIONS.REPORT_VIEW],
-        badge: 'Quản lý',
-        badgeVariant: 'warning',
         description: 'Xem báo cáo doanh số, chuyển đổi và thống kê dữ liệu',
         children: [
           {
@@ -99,8 +97,6 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         title: 'Quản lý Đội nhóm',
         path: '/dashboard/teams',
         roles: [ROLES.ADMIN, ROLES.MANAGER],
-        badge: 'Nội bộ',
-        badgeVariant: 'info',
         description: 'Quản lý thành viên phòng ban và phân chia phụ trách',
         children: [
           {
@@ -130,8 +126,6 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         path: '/dashboard/settings',
         roles: [ROLES.ADMIN],
         permissions: [PERMISSIONS.SYSTEM_SETTINGS],
-        badge: 'Admin',
-        badgeVariant: 'danger',
         description: 'Cấu hình tham số, phân quyền vai trò và nhật ký hệ thống',
         children: [
           {
@@ -163,8 +157,6 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         path: '/admin/users',
         roles: [ROLES.ADMIN],
         permissions: [PERMISSIONS.SYSTEM_SETTINGS],
-        badge: 'Admin',
-        badgeVariant: 'danger',
         description: 'Tạo, phân quyền vai trò, nhóm và khóa tài khoản người dùng',
       },
     ],

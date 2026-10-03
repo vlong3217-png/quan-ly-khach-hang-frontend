@@ -159,17 +159,21 @@ export function Sidebar({
         )}
       </div>
 
-      {/* ── 2. User Role Badge Area ── */}
+      {/* ── 2. User Profile Area ── */}
       <div className="sidebar-role-indicator">
-        <div className="role-indicator-badge" data-role={role} id="sidebar-role-badge">
-          <span className="role-dot" />
-          <span className="role-text">{ROLE_LABELS[role] ?? role}</span>
-        </div>
-        <div className="role-user-name" title={user.email}>
-          {user.full_name}
-        </div>
-        <div className="role-user-team" title={user.team_name ?? 'Chưa phân nhóm'}>
-          {user.team_name ?? 'Ban Quản Trị'}
+        <div className="sidebar-user-row">
+          <div className="sidebar-user-avatar" aria-hidden="true">
+            {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+          </div>
+          <div className="sidebar-user-meta">
+            <div className="role-user-name" title={user.email}>
+              {user.full_name}
+            </div>
+            <div className="role-indicator-badge" data-role={role} id="sidebar-role-badge">
+              <span className="role-dot" />
+              <span className="role-text">{ROLE_LABELS[role] ?? role}</span>
+            </div>
+          </div>
         </div>
       </div>
 
