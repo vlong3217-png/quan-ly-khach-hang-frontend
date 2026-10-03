@@ -536,10 +536,6 @@ function DashboardPage() {
               <div className="section-header">
                 <div>
                   <h2 className="section-title">Danh sách khách hàng theo phạm vi dữ liệu</h2>
-                  <p className="section-desc">
-                    Lọc dữ liệu khách hàng theo phạm vi: <strong>MY</strong> (bản thân),{' '}
-                    <strong>TEAM</strong> (đội nhóm), <strong>ALL</strong> (toàn hệ thống).
-                  </p>
                 </div>
 
                 <div className="scope-actions-group">
@@ -573,19 +569,6 @@ function DashboardPage() {
                     </button>
                   </PermissionGate>
                 </div>
-              </div>
-
-              {/* Status strip */}
-              <div className="scope-status-strip">
-                <span className="scope-status-text">
-                  Phạm vi hiện tại: <strong className="scope-tag">{scope}</strong> — Hiển thị{' '}
-                  <strong>{scopedCustomers.length}</strong> / {customerList.length} khách hàng
-                </span>
-                <span className="scope-note">
-                  {scope === 'MY' && 'Chỉ hiển thị các khách hàng do chính bạn phụ trách.'}
-                  {scope === 'TEAM' && 'Hiển thị khách hàng của bạn và đồng nghiệp trong Đội Kinh Doanh 1.'}
-                  {scope === 'ALL' && 'Hiển thị toàn bộ khách hàng từ tất cả phòng ban/đội nhóm.'}
-                </span>
               </div>
 
               {/* Customer table */}
