@@ -5,6 +5,8 @@ import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage.tsx'
 import ChangePasswordPage from './pages/ChangePasswordPage/ChangePasswordPage.tsx'
 import DashboardPage from './pages/DashboardPage/DashboardPage.tsx'
 import UserManagementPage from './pages/UserManagementPage/UserManagementPage.tsx'
+import AuditLogPage from './pages/AuditLogPage/AuditLogPage.tsx'
+import ProfilePage from './pages/ProfilePage/ProfilePage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import AdminRoute from './components/AdminRoute.tsx'
 
@@ -19,6 +21,14 @@ function App() {
         element={
           <ProtectedRoute>
             <ChangePasswordPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />
@@ -43,6 +53,23 @@ function App() {
         element={
           <AdminRoute>
             <UserManagementPage />
+          </AdminRoute>
+        }
+      />
+      {/* ── Route Nhật ký thay đổi dữ liệu nhạy cảm (User Story S2-04: Dành riêng cho ADMIN) ── */}
+      <Route
+        path="/admin/audit-logs"
+        element={
+          <AdminRoute>
+            <AuditLogPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/audit-logs"
+        element={
+          <AdminRoute>
+            <AuditLogPage />
           </AdminRoute>
         }
       />

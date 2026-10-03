@@ -197,6 +197,79 @@ function DashboardPage() {
                 </span>
               </div>
             </div>
+            {user?.role?.toUpperCase() === 'ADMIN' && (
+              <>
+                <button
+                  type="button"
+                  className="dashboard-admin-nav-btn"
+                  onClick={() => navigate('/admin/audit-logs')}
+                  id="dashboard-audit-logs-btn"
+                  title="Xem nhật ký thay đổi dữ liệu nhạy cảm (S2-04)"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '7px 12px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: '#4338ca',
+                    background: '#e0e7ff',
+                    border: '1px solid #c7d2fe',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    marginRight: '8px',
+                  }}
+                >
+                  <span>Nhật ký thay đổi</span>
+                </button>
+                <button
+                  type="button"
+                  className="dashboard-admin-nav-btn"
+                  onClick={() => navigate('/admin/users')}
+                  id="dashboard-admin-users-btn"
+                  title="Quản lý tài khoản"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '7px 12px',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                    color: '#2563eb',
+                    background: '#eff6ff',
+                    border: '1px solid #bfdbfe',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    marginRight: '8px',
+                  }}
+                >
+                  <span>Quản lý tài khoản</span>
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              className="dashboard-profile-btn"
+              onClick={() => navigate('/profile')}
+              id="dashboard-profile-btn"
+              title="Hồ sơ cá nhân"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 12px',
+                fontSize: '13px',
+                fontWeight: 500,
+                color: '#334155',
+                background: '#f1f5f9',
+                border: '1px solid #cbd5e1',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                marginRight: '8px',
+              }}
+            >
+              <span>Hồ sơ</span>
+            </button>
             <button
               type="button"
               className="dashboard-logout-btn"

@@ -137,6 +137,15 @@ const IconKey = () => (
   </svg>
 )
 
+const IconClipboardList = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    <path d="M12 11h4" />
+    <path d="M12 16h4" />
+  </svg>
+)
+
 /* ──────────── Helpers ──────────── */
 const ROLE_LABELS: Record<UserRole, string> = {
   ADMIN: 'Admin',
@@ -538,6 +547,23 @@ function UserManagementPage() {
                 <span className="dashboard-user-role">{user?.role ?? ''}</span>
               </div>
             </div>
+            {user?.role?.toUpperCase() === 'ADMIN' && (
+              <button
+                type="button"
+                className="dashboard-change-pwd-btn"
+                onClick={() => navigate('/admin/audit-logs')}
+                id="header-audit-logs-btn"
+                title="Xem nhật ký thay đổi dữ liệu nhạy cảm (S2-04)"
+                style={{
+                  color: '#4338ca',
+                  backgroundColor: '#e0e7ff',
+                  borderColor: '#c7d2fe',
+                }}
+              >
+                <IconClipboardList />
+                <span>Nhật ký thay đổi</span>
+              </button>
+            )}
             <button
               type="button"
               className="dashboard-change-pwd-btn"
