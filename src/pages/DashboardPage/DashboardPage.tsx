@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext.tsx'
 import { usePermission } from '../../hooks/usePermission.ts'
 import { PermissionGate } from '../../components/PermissionGate.tsx'
 import Sidebar from '../../components/Sidebar/Sidebar.tsx'
+import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal.tsx'
 import {
   ROLES,
   ROLE_LABELS,
@@ -196,6 +197,7 @@ function DashboardPage() {
   const [editingCustomer, setEditingCustomer] = useState<CustomerItem | null>(null)
   const [deletingCustomer, setDeletingCustomer] = useState<CustomerItem | null>(null)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+  const [isChangePwdModalOpen, setIsChangePwdModalOpen] = useState(false)
 
   // Form states cho thêm mới
   const [createForm, setCreateForm] = useState({
@@ -410,7 +412,7 @@ function DashboardPage() {
               <button
                 type="button"
                 className="dashboard-change-pwd-btn"
-                onClick={() => navigate('/change-password')}
+                onClick={() => setIsChangePwdModalOpen(true)}
                 id="dashboard-change-pwd-btn"
                 title="Đổi mật khẩu"
                 style={{
@@ -1125,6 +1127,15 @@ function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* ── MODAL 5: ĐỔI MẬT KHẨU (POP-UP TRỰC TIẾP TRÊN TRANG CHỦ) ── */}
+      <ChangePasswordModal
+        isOpen={isChangePwdModalOpen}
+        onClose={() => setIsChangePwdModalOpen(false)}
+        onSuccess={() => {
+          showNotice('Đổi mật khẩu thành công! Tài khoản của bạn đã được cập nhật.')
+        }}
+      />
     </div>
   )
 }
