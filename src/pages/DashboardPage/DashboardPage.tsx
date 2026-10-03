@@ -130,6 +130,87 @@ function DashboardPage() {
   // State cho thông báo tương tác nhanh
   const [actionNotice, setActionNotice] = useState<string | null>(null)
 
+  // Quản lý danh sách khách hàng trong state để người dùng có thể Thêm, Sửa, Xóa trực tiếp
+  const [customerList, setCustomerList] = useState<CustomerItem[]>([
+    {
+      id: 1,
+      code: 'KH-001',
+      name: 'Công ty Cổ phần Công Nghệ Alpha',
+      phone: '0901 234 567',
+      company: 'Alpha Tech Corp',
+      owner_id: user?.id ?? 1,
+      owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 2,
+      code: 'KH-002',
+      name: 'Tập đoàn Bất Động Sản Hòa Bình',
+      phone: '0912 345 678',
+      company: 'Hoa Binh Group',
+      owner_id: 99,
+      owner_name: 'Nguyễn Văn Tuấn (Đồng nghiệp)',
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 3,
+      code: 'KH-003',
+      name: 'Hệ thống Bán Lẻ Toàn Cầu Mekong',
+      phone: '0988 777 666',
+      company: 'Mekong Retail',
+      owner_id: 101,
+      owner_name: 'Trần Thị Mai (Nhóm khác)',
+      team_id: 2,
+      team_name: 'Đội Kinh Doanh 2',
+    },
+    {
+      id: 4,
+      code: 'KH-004',
+      name: 'Tổng Công ty Logistics Sao Vàng',
+      phone: '0933 222 111',
+      company: 'Golden Star Logistics',
+      owner_id: 102,
+      owner_name: 'Lê Đình Trọng (Nhóm khác)',
+      team_id: 2,
+      team_name: 'Đội Kinh Doanh 2',
+    },
+  ])
+
+  // Cập nhật tên của chính mình nếu thông tin user thay đổi
+  useEffect(() => {
+    if (user?.id) {
+      setCustomerList((prev) =>
+        prev.map((c) =>
+          c.owner_id === user.id
+            ? { ...c, owner_name: `Bạn (${user.full_name ?? 'Tôi'})` }
+            : c
+        )
+      )
+    }
+  }, [user])
+
+  // Modals state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [editingCustomer, setEditingCustomer] = useState<CustomerItem | null>(null)
+  const [deletingCustomer, setDeletingCustomer] = useState<CustomerItem | null>(null)
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+
+  // Form states cho thêm mới
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    company: '',
+    phone: '',
+  })
+
+  // Form states cho chỉnh sửa
+  const [editForm, setEditForm] = useState({
+    name: '',
+    company: '',
+    phone: '',
+  })
+
   const handleLogout = () => {
     logout()
     navigate('/login', { replace: true })
@@ -142,64 +223,115 @@ function DashboardPage() {
     }, 3500)
   }
 
-  // Danh sách khách hàng mẫu minh họa lọc theo scope
-  const rawCustomers: CustomerItem[] = useMemo(() => {
-    const currentUserId = user?.id ?? 1
-    return [
-      {
-        id: 1,
-        code: 'KH-001',
-        name: 'Công ty Cổ phần Công Nghệ Alpha',
-        phone: '0901 234 567',
-        company: 'Alpha Tech Corp',
-        owner_id: currentUserId,
-        owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
-        team_id: 1,
-        team_name: 'Đội Kinh Doanh 1',
-      },
-      {
-        id: 2,
-        code: 'KH-002',
-        name: 'Tập đoàn Bất Động Sản Hòa Bình',
-        phone: '0912 345 678',
-        company: 'Hoa Binh Group',
-        owner_id: 99,
-        owner_name: 'Nguyễn Văn Tuấn (Đồng nghiệp)',
-        team_id: 1,
-        team_name: 'Đội Kinh Doanh 1',
-      },
-      {
-        id: 3,
-        code: 'KH-003',
-        name: 'Hệ thống Bán Lẻ Toàn Cầu Mekong',
-        phone: '0988 777 666',
-        company: 'Mekong Retail',
-        owner_id: 101,
-        owner_name: 'Trần Thị Mai (Nhóm khác)',
-        team_id: 2,
-        team_name: 'Đội Kinh Doanh 2',
-      },
-      {
-        id: 4,
-        code: 'KH-004',
-        name: 'Tổng Công ty Logistics Sao Vàng',
-        phone: '0933 222 111',
-        company: 'Golden Star Logistics',
-        owner_id: 102,
-        owner_name: 'Lê Đình Trọng (Nhóm khác)',
-        team_id: 2,
-        team_name: 'Đội Kinh Doanh 2',
-      },
-    ]
-  }, [user])
-
   // Lọc dữ liệu khách hàng theo scope
   const scopedCustomers = useMemo(() => {
-    return filterScopedData(rawCustomers, {
+    return filterScopedData(customerList, {
       getOwnerId: (c) => c.owner_id,
       getTeamId: (c) => c.team_id,
     })
-  }, [rawCustomers, filterScopedData])
+  }, [customerList, filterScopedData])
+
+  // Mở modal thêm khách hàng
+  const handleOpenCreateModal = () => {
+    setCreateForm({ name: '', company: '', phone: '' })
+    setIsCreateModalOpen(true)
+  }
+
+  // Submit thêm mới khách hàng
+  const handleCreateCustomerSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!createForm.name.trim()) return
+
+    const newId = Date.now()
+    const nextCode = `KH-${String(customerList.length + 1).padStart(3, '0')}`
+    const newCustomer: CustomerItem = {
+      id: newId,
+      code: nextCode,
+      name: createForm.name.trim(),
+      company: createForm.company.trim() || 'Chưa cập nhật',
+      phone: createForm.phone.trim() || 'Chưa cập nhật',
+      owner_id: user?.id ?? 1,
+      owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    }
+
+    setCustomerList((prev) => [newCustomer, ...prev])
+    setIsCreateModalOpen(false)
+    showNotice(`Đã thêm thành công khách hàng "${newCustomer.name}" (${newCustomer.code})!`)
+  }
+
+  // Mở modal sửa khách hàng
+  const handleOpenEditModal = (cust: CustomerItem) => {
+    setEditingCustomer(cust)
+    setEditForm({
+      name: cust.name,
+      company: cust.company,
+      phone: cust.phone,
+    })
+  }
+
+  // Submit cập nhật khách hàng
+  const handleEditCustomerSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingCustomer || !editForm.name.trim()) return
+
+    setCustomerList((prev) =>
+      prev.map((c) =>
+        c.id === editingCustomer.id
+          ? {
+              ...c,
+              name: editForm.name.trim(),
+              company: editForm.company.trim() || 'Chưa cập nhật',
+              phone: editForm.phone.trim() || 'Chưa cập nhật',
+            }
+          : c
+      )
+    )
+    showNotice(`Đã cập nhật thông tin khách hàng "${editingCustomer.code}"!`)
+    setEditingCustomer(null)
+  }
+
+  // Mở modal xác nhận xóa
+  const handleOpenDeleteModal = (cust: CustomerItem) => {
+    setDeletingCustomer(cust)
+  }
+
+  // Submit xóa khách hàng
+  const handleConfirmDelete = () => {
+    if (!deletingCustomer) return
+    const targetCode = deletingCustomer.code
+    setCustomerList((prev) => prev.filter((c) => c.id !== deletingCustomer.id))
+    setDeletingCustomer(null)
+    showNotice(`Đã xóa khách hàng "${targetCode}" thành công!`)
+  }
+
+  // Xuất file CSV / Excel thực tế
+  const handleExecuteExport = (format: 'csv' | 'xlsx') => {
+    const headers = ['Mã KH', 'Tên khách hàng', 'Công ty', 'Số điện thoại', 'Người phụ trách', 'Đội nhóm']
+    const rows = scopedCustomers.map((c) => [
+      c.code,
+      `"${c.name}"`,
+      `"${c.company}"`,
+      c.phone,
+      `"${c.owner_name}"`,
+      `"${c.team_name}"`,
+    ])
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `danh_sach_khach_hang_${scope.toLowerCase()}.${format === 'csv' ? 'csv' : 'csv'}`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    setIsExportModalOpen(false)
+    showNotice(`Đã xuất thành công tệp danh sách khách hàng (${scopedCustomers.length} bản ghi)!`)
+  }
 
   // Xử lý click chọn menu trên Sidebar
   const handleSelectMenu = (item: MenuItem) => {
@@ -208,9 +340,9 @@ function DashboardPage() {
       navigate(item.path)
     }
     if (item.path && item.path.includes('action=create')) {
-      showNotice('Mở hộp thoại tạo khách hàng mới')
+      handleOpenCreateModal()
     } else if (item.path && item.path.includes('action=export')) {
-      showNotice('Đã xuất báo cáo khách hàng thành công!')
+      setIsExportModalOpen(true)
     }
   }
 
@@ -414,7 +546,7 @@ function DashboardPage() {
                     <button
                       type="button"
                       className="btn btn-secondary"
-                      onClick={() => showNotice('Đã xuất báo cáo khách hàng thành công!')}
+                      onClick={() => setIsExportModalOpen(true)}
                       id="btn-export-customers"
                     >
                       <IconDownload />
@@ -429,7 +561,7 @@ function DashboardPage() {
                     <button
                       type="button"
                       className="btn btn-primary"
-                      onClick={() => showNotice('Mở hộp thoại tạo khách hàng mới')}
+                      onClick={handleOpenCreateModal}
                       id="btn-create-customer"
                     >
                       <IconPlus />
@@ -443,7 +575,7 @@ function DashboardPage() {
               <div className="scope-status-strip">
                 <span className="scope-status-text">
                   Phạm vi hiện tại: <strong className="scope-tag">{scope}</strong> — Hiển thị{' '}
-                  <strong>{scopedCustomers.length}</strong> / {rawCustomers.length} khách hàng
+                  <strong>{scopedCustomers.length}</strong> / {customerList.length} khách hàng
                 </span>
                 <span className="scope-note">
                   {scope === 'MY' && 'Chỉ hiển thị các khách hàng do chính bạn phụ trách.'}
@@ -502,7 +634,7 @@ function DashboardPage() {
                                 type="button"
                                 className="action-icon-btn edit-btn"
                                 title="Chỉnh sửa"
-                                onClick={() => showNotice(`Chỉnh sửa khách hàng ${cust.code}`)}
+                                onClick={() => handleOpenEditModal(cust)}
                               >
                                 <IconEdit />
                               </button>
@@ -516,7 +648,7 @@ function DashboardPage() {
                                 type="button"
                                 className="action-icon-btn delete-btn"
                                 title="Xóa khách hàng"
-                                onClick={() => showNotice(`Xóa khách hàng ${cust.code}`)}
+                                onClick={() => handleOpenDeleteModal(cust)}
                               >
                                 <IconTrash />
                               </button>
@@ -765,6 +897,234 @@ function DashboardPage() {
           )}
         </main>
       </div>
+
+      {/* ── MODAL 1: THÊM KHÁCH HÀNG MỚI ── */}
+      {isCreateModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsCreateModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>
+                <IconPlus /> Thêm khách hàng mới
+              </h3>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setIsCreateModalOpen(false)}
+                title="Đóng"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleCreateCustomerSubmit}>
+              <div className="modal-body">
+                <div className="modal-form-group">
+                  <label htmlFor="create-cust-name">Tên khách hàng / Tổ chức *</label>
+                  <input
+                    id="create-cust-name"
+                    type="text"
+                    required
+                    placeholder="VD: Công ty TNHH Giải pháp Đổi mới"
+                    value={createForm.name}
+                    onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                    autoFocus
+                  />
+                </div>
+                <div className="modal-form-group">
+                  <label htmlFor="create-cust-company">Tên thương hiệu / Công ty viết tắt</label>
+                  <input
+                    id="create-cust-company"
+                    type="text"
+                    placeholder="VD: Innovate Solutions"
+                    value={createForm.company}
+                    onChange={(e) => setCreateForm({ ...createForm, company: e.target.value })}
+                  />
+                </div>
+                <div className="modal-form-group">
+                  <label htmlFor="create-cust-phone">Số điện thoại liên hệ</label>
+                  <input
+                    id="create-cust-phone"
+                    type="tel"
+                    placeholder="VD: 0987 654 321"
+                    value={createForm.phone}
+                    onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setIsCreateModalOpen(false)}
+                >
+                  Hủy bỏ
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Lưu khách hàng
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL 2: CHỈNH SỬA KHÁCH HÀNG ── */}
+      {editingCustomer && (
+        <div className="modal-overlay" onClick={() => setEditingCustomer(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>
+                <IconEdit /> Chỉnh sửa khách hàng ({editingCustomer.code})
+              </h3>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setEditingCustomer(null)}
+                title="Đóng"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleEditCustomerSubmit}>
+              <div className="modal-body">
+                <div className="modal-form-group">
+                  <label htmlFor="edit-cust-name">Tên khách hàng / Tổ chức *</label>
+                  <input
+                    id="edit-cust-name"
+                    type="text"
+                    required
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    autoFocus
+                  />
+                </div>
+                <div className="modal-form-group">
+                  <label htmlFor="edit-cust-company">Tên thương hiệu / Công ty viết tắt</label>
+                  <input
+                    id="edit-cust-company"
+                    type="text"
+                    value={editForm.company}
+                    onChange={(e) => setEditForm({ ...editForm, company: e.target.value })}
+                  />
+                </div>
+                <div className="modal-form-group">
+                  <label htmlFor="edit-cust-phone">Số điện thoại liên hệ</label>
+                  <input
+                    id="edit-cust-phone"
+                    type="tel"
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setEditingCustomer(null)}
+                >
+                  Hủy bỏ
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Cập nhật thay đổi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL 3: XÁC NHẬN XÓA KHÁCH HÀNG ── */}
+      {deletingCustomer && (
+        <div className="modal-overlay" onClick={() => setDeletingCustomer(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{ color: '#dc2626' }}>
+                <IconTrash /> Xác nhận xóa khách hàng
+              </h3>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setDeletingCustomer(null)}
+                title="Đóng"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal-body">
+              <p className="modal-delete-warning">
+                Bạn có chắc chắn muốn xóa hồ sơ khách hàng này khỏi danh sách? Thao tác này không thể hoàn tác.
+              </p>
+              <div className="modal-delete-target">
+                <div><strong>Mã:</strong> {deletingCustomer.code}</div>
+                <div><strong>Tên:</strong> {deletingCustomer.name}</div>
+                <div><strong>Công ty:</strong> {deletingCustomer.company}</div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setDeletingCustomer(null)}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleConfirmDelete}
+              >
+                Xác nhận xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL 4: XUẤT DỮ LIỆU EXCEL / CSV ── */}
+      {isExportModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsExportModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>
+                <IconDownload /> Xuất dữ liệu khách hàng
+              </h3>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setIsExportModalOpen(false)}
+                title="Đóng"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal-body">
+              <p style={{ color: '#475569', fontSize: '14px', lineHeight: 1.5, margin: 0 }}>
+                Hệ thống sẽ tổng hợp danh sách khách hàng đang được lọc theo phạm vi <strong>{scope}</strong> (gồm <strong>{scopedCustomers.length}</strong> khách hàng) và tải xuống trực tiếp về thiết bị của bạn.
+              </p>
+              <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px' }}>
+                <div>• Định dạng: CSV hỗ trợ UTF-8 (mở bằng Excel không lỗi font)</div>
+                <div>• Quyền phân phạm vi: {scope} ({scopedCustomers.length} dòng dữ liệu)</div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setIsExportModalOpen(false)}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => handleExecuteExport('csv')}
+              >
+                <IconDownload /> Tải xuống file CSV/Excel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
