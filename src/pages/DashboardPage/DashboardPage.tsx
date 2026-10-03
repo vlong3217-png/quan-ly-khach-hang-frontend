@@ -2,18 +2,14 @@ import { useState, useMemo, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import { usePermission } from '../../hooks/usePermission.ts'
-import { useRoleMenu } from '../../hooks/useRoleMenu.ts'
 import { PermissionGate } from '../../components/PermissionGate.tsx'
 import Sidebar from '../../components/Sidebar/Sidebar.tsx'
 import {
   ROLES,
   ROLE_LABELS,
   PERMISSIONS,
-  PERMISSION_LABELS,
   SCOPE_LABELS,
 } from '../../constants/permissions.ts'
-import { APP_MENU_GROUPS } from '../../constants/menuConfig.ts'
-import { flattenMenuItems } from '../../utils/menuUtils.ts'
 import type { MenuItem } from '../../types/menu.ts'
 import './DashboardPage.css'
 
@@ -103,18 +99,11 @@ const IconLock = () => (
   </svg>
 )
 
-const IconEyeOff = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-    <line x1="1" y1="1" x2="23" y2="23" />
-  </svg>
-)
 
 /* ──────────── Component ──────────── */
 function DashboardPage() {
   const { user, logout } = useAuth()
-  const { scope, hasPermission, filterScopedData } = usePermission()
-  const { canAccessMenuId, allowedMenuItems } = useRoleMenu()
+  const { scope, filterScopedData } = usePermission()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -211,18 +200,6 @@ function DashboardPage() {
       getTeamId: (c) => c.team_id,
     })
   }, [rawCustomers, filterScopedData])
-
-  // Toàn bộ các quyền trong hệ thống để đối chiếu
-  const allSystemPermissions = Object.values(PERMISSIONS)
-
-  // Danh sách phẳng tất cả menu trong hệ thống để đối chiếu phân quyền trực quan
-  const allSystemMenuItems = useMemo(() => {
-    const list: MenuItem[] = []
-    for (const group of APP_MENU_GROUPS) {
-      list.push(...flattenMenuItems(group.items))
-    }
-    return list
-  }, [])
 
   // Xử lý click chọn menu trên Sidebar
   const handleSelectMenu = (item: MenuItem) => {
@@ -378,114 +355,38 @@ function DashboardPage() {
                 </div>
               </div>
 
-              {/* BẢNG ĐỐI CHIẾU MENU THEO QUYỀN (S1-06) */}
-              <section className="dashboard-section menu-rbac-section">
+              {/* Thống kê nhanh chỉ số hoạt động kinh doanh */}
+              <section className="dashboard-section kpi-overview-section">
                 <div className="section-header">
                   <div>
-                    <h2 className="section-title">Hệ thống Menu phân quyền theo Role (S1-06)</h2>
+                    <h2 className="section-title">Chỉ số hoạt động kinh doanh</h2>
                     <p className="section-desc">
-                      Bảng đối chiếu danh mục menu/chức năng được phép hiển thị trên thanh điều hướng Sidebar
-                      theo vai trò <strong>{user?.role}</strong> hiện tại.
-                    </p>
-                  </div>
-                  <div className="menu-count-badge">
-                    Hiển thị <strong>{allowedMenuItems.length}</strong> / {allSystemMenuItems.length} menu item
-                  </div>
-                </div>
-
-                <div className="menu-rbac-table-container">
-                  <table className="menu-rbac-table">
-                    <thead>
-                      <tr>
-                        <th>Tên Menu / Chức năng</th>
-                        <th>Đường dẫn</th>
-                        <th>Vai trò cho phép</th>
-                        <th>Quyền chi tiết</th>
-                        <th style={{ textAlign: 'center' }}>Trạng thái hiển thị</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allSystemMenuItems.map((item) => {
-                        const isGranted = canAccessMenuId(item.id)
-                        const allowedRolesStr = item.roles ? item.roles.join(', ') : 'Tất cả'
-                        const permStr = item.permissions ? item.permissions.join(', ') : '—'
-
-                        return (
-                          <tr
-                            key={item.id}
-                            className={`menu-row ${isGranted ? 'row-granted' : 'row-hidden'}`}
-                            id={`rbac-row-${item.id}`}
-                          >
-                            <td>
-                              <div className="menu-row-info">
-                                <span className="menu-row-title">{item.title}</span>
-                                {item.badge && (
-                                  <span className={`menu-row-tag badge-${item.badgeVariant ?? 'primary'}`}>
-                                    {item.badge}
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                            <td>
-                              <code className="path-code">{item.path}</code>
-                            </td>
-                            <td>
-                              <span className="roles-pill-list">{allowedRolesStr}</span>
-                            </td>
-                            <td>
-                              <span className="perm-code-text">{permStr}</span>
-                            </td>
-                            <td style={{ textAlign: 'center' }}>
-                              {isGranted ? (
-                                <span className="status-badge status-visible" title="Hiển thị trên Sidebar">
-                                  <IconCheckCircle />
-                                  <span>Hiển thị trên Menu</span>
-                                </span>
-                              ) : (
-                                <span className="status-badge status-hidden" title="Không có quyền - Bị ẩn hoàn toàn">
-                                  <IconEyeOff />
-                                  <span>Bị ẩn (Không có quyền)</span>
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-
-              {/* Ma trận quyền hạn S1-05 */}
-              <section className="dashboard-section permission-section">
-                <div className="section-header">
-                  <div>
-                    <h2 className="section-title">Ma trận quyền hạn chi tiết (S1-05)</h2>
-                    <p className="section-desc">
-                      Danh sách các quyền hành động chi tiết áp dụng cho vai trò <strong>{user?.role}</strong>.
+                      Tổng hợp hiệu suất làm việc và tiến độ khách hàng trong kỳ hiện tại.
                     </p>
                   </div>
                 </div>
 
-                <div className="permissions-matrix-grid">
-                  {allSystemPermissions.map((perm) => {
-                    const granted = hasPermission(perm)
-                    return (
-                      <div
-                        key={perm}
-                        className={`permission-chip ${granted ? 'granted' : 'denied'}`}
-                        title={granted ? 'Quyền đã được cấp' : 'Không có quyền này'}
-                      >
-                        <span className="chip-icon">
-                          {granted ? <IconCheckCircle /> : <IconLock />}
-                        </span>
-                        <div className="chip-content">
-                          <span className="chip-code">{perm}</span>
-                          <span className="chip-desc">{PERMISSION_LABELS[perm]}</span>
-                        </div>
-                      </div>
-                    )
-                  })}
+                <div className="kpi-cards-grid">
+                  <div className="kpi-card">
+                    <span className="kpi-label">Khách hàng được giao</span>
+                    <span className="kpi-value">{scopedCustomers.length}</span>
+                    <span className="kpi-trend positive">Trong phạm vi {scope}</span>
+                  </div>
+                  <div className="kpi-card">
+                    <span className="kpi-label">Hợp đồng hoàn tất</span>
+                    <span className="kpi-value">46</span>
+                    <span className="kpi-trend positive">+12.0% so với tháng trước</span>
+                  </div>
+                  <div className="kpi-card">
+                    <span className="kpi-label">Tỷ lệ tương tác thành công</span>
+                    <span className="kpi-value">72.4%</span>
+                    <span className="kpi-trend positive">+5.1% so với mục tiêu</span>
+                  </div>
+                  <div className="kpi-card">
+                    <span className="kpi-label">Doanh số ghi nhận</span>
+                    <span className="kpi-value">2.48 tỷ</span>
+                    <span className="kpi-trend positive">+24.8% tăng trưởng</span>
+                  </div>
                 </div>
               </section>
             </>
