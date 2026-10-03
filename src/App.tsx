@@ -1,18 +1,49 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage/LoginPage.tsx'
+import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage.tsx'
+import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage.tsx'
+import ChangePasswordPage from './pages/ChangePasswordPage/ChangePasswordPage.tsx'
 import DashboardPage from './pages/DashboardPage/DashboardPage.tsx'
+import UserManagementPage from './pages/UserManagementPage/UserManagementPage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
+import AdminRoute from './components/AdminRoute.tsx'
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route
+        path="/change-password"
+        element={
+          <ProtectedRoute>
+            <ChangePasswordPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
             <DashboardPage />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <AdminRoute>
+            <UserManagementPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <AdminRoute>
+            <UserManagementPage />
+          </AdminRoute>
         }
       />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
