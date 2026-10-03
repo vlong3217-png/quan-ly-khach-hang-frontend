@@ -8,7 +8,6 @@ import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePass
 import UserManagementPage from '../UserManagementPage/UserManagementPage.tsx'
 import {
   ROLES,
-  ROLE_LABELS,
   PERMISSIONS,
   SCOPE_LABELS,
 } from '../../constants/permissions.ts'
@@ -410,9 +409,6 @@ function DashboardPage() {
                 </div>
                 <div className="dashboard-user-details">
                   <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
-                  <span className="dashboard-user-role">
-                    {user?.role ? ROLE_LABELS[user.role] ?? user.role : ''}
-                  </span>
                 </div>
               </div>
               <button
