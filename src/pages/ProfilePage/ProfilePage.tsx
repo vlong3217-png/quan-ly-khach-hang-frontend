@@ -1,8 +1,15 @@
-import { useState, useEffect, useCallback, type FormEvent } from 'react'
+import { useState, useEffect, useCallback, useRef, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import { getProfile, updateProfile } from '../../services/profileService.ts'
 import { validateFullName, validateVietnamesePhone } from '../../utils/phoneValidation.ts'
+import {
+  validateAvatarFile,
+  readFileAsDataUrl,
+  saveAvatarToStorage,
+  removeAvatarFromStorage,
+} from '../../services/avatarService.ts'
+import { AvatarCropModal } from '../../components/AvatarCropModal/AvatarCropModal.tsx'
 import { ROLE_LABELS } from '../../constants/permissions.ts'
 import type { UserProfile, ProfileFormErrors } from '../../types/profile.ts'
 import './ProfilePage.css'
@@ -11,6 +18,28 @@ import './ProfilePage.css'
 const IconShield = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+  </svg>
+)
+
+const IconCamera = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+    <circle cx="12" cy="13" r="3" />
+  </svg>
+)
+
+const IconUploadMini = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" y1="3" x2="12" y2="15" />
+  </svg>
+)
+
+const IconTrashMini = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
   </svg>
 )
 
@@ -127,6 +156,102 @@ export function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [successNotice, setSuccessNotice] = useState<string | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
+
+  // Avatar State (User Story S2-03)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false)
+  const [cropModalImageSrc, setCropModalImageSrc] = useState('')
+  const [isProcessingAvatar, setIsProcessingAvatar] = useState(false)
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
+
+  // Xử lý chọn file ảnh từ máy tính (Validate JPG/PNG, <= 2MB)
+  const handleAvatarFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setAvatarError(null)
+    const check = validateAvatarFile(file)
+    if (!check.isValid) {
+      setAvatarError(check.error || 'File ảnh không hợp lệ.')
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
+
+    setIsProcessingAvatar(true)
+    try {
+      const dataUrl = await readFileAsDataUrl(file)
+      setCropModalImageSrc(dataUrl)
+      setIsCropModalOpen(true)
+    } catch (err) {
+      const error = err as Error
+      setAvatarError(error.message || 'Không thể đọc file ảnh. Vui lòng thử lại.')
+    } finally {
+      setIsProcessingAvatar(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  // Xử lý lưu avatar sau khi crop thành công
+  const handleSaveCroppedAvatar = async (croppedDataUrl: string, thumbnailDataUrl: string) => {
+    setIsSavingAvatar(true)
+    setAvatarError(null)
+    try {
+      const currentUserId = profile?.id || user?.id || 1
+      saveAvatarToStorage(currentUserId, croppedDataUrl, thumbnailDataUrl)
+
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              avatar: croppedDataUrl,
+              thumbnail: thumbnailDataUrl,
+            }
+          : null
+      )
+
+      updateCurrentUser({
+        avatar: croppedDataUrl,
+        thumbnail: thumbnailDataUrl,
+      })
+
+      setIsCropModalOpen(false)
+      setSuccessNotice('Cập nhật ảnh đại diện thành công!')
+      setTimeout(() => {
+        setSuccessNotice(null)
+      }, 4000)
+    } catch {
+      setAvatarError('Lỗi khi lưu ảnh đại diện. Vui lòng thử lại.')
+    } finally {
+      setIsSavingAvatar(false)
+    }
+  }
+
+  // Xử lý gỡ ảnh đại diện (quay về avatar mặc định theo chữ cái)
+  const handleRemoveAvatar = () => {
+    const currentUserId = profile?.id || user?.id || 1
+    removeAvatarFromStorage(currentUserId)
+
+    setProfile((prev) =>
+      prev
+        ? {
+            ...prev,
+            avatar: undefined,
+            thumbnail: undefined,
+          }
+        : null
+    )
+
+    updateCurrentUser({
+      avatar: undefined,
+      thumbnail: undefined,
+    })
+
+    setSuccessNotice('Đã gỡ ảnh đại diện.')
+    setTimeout(() => {
+      setSuccessNotice(null)
+    }, 3000)
+  }
 
   // 1. Tải thông tin hồ sơ người dùng
   const loadProfileData = useCallback(async () => {
@@ -304,8 +429,16 @@ export function ProfilePage() {
 
           <div className="profile-header-user-area">
             <div className="profile-header-user-info">
-              <div className="profile-header-avatar">
-                {getInitials(user?.full_name || 'Người dùng')}
+              <div className="profile-header-avatar" id="profile-header-avatar-display">
+                {profile?.avatar || user?.avatar ? (
+                  <img
+                    src={profile?.avatar || user?.avatar}
+                    alt={user?.full_name || 'Ảnh đại diện'}
+                    className="profile-header-avatar-img"
+                  />
+                ) : (
+                  getInitials(user?.full_name || 'Người dùng')
+                )}
               </div>
               <div className="profile-header-details">
                 <span className="profile-header-name">{user?.full_name ?? 'Người dùng'}</span>
@@ -425,9 +558,97 @@ export function ProfilePage() {
             {/* ── CỘT TRÁI: THẺ TỔNG QUAN TÀI KHOẢN ── */}
             <aside className="profile-overview-card">
               <div className="profile-avatar-wrapper">
-                <div className="profile-avatar-circle" id="profile-avatar-display">
-                  {getInitials(fullName || 'Người dùng')}
+                {/* Input chọn file ẩn */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                  style={{ display: 'none' }}
+                  onChange={handleAvatarFileSelect}
+                  id="profile-avatar-file-input"
+                />
+
+                {/* Vùng avatar có badge camera tương tác */}
+                <div
+                  className="profile-avatar-container"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Nhấp để tải lên hoặc đổi ảnh đại diện"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      fileInputRef.current?.click()
+                    }
+                  }}
+                  aria-label="Tải lên hoặc thay đổi ảnh đại diện"
+                  id="profile-avatar-clickable-area"
+                >
+                  <div className="profile-avatar-circle" id="profile-avatar-display">
+                    {profile?.avatar || user?.avatar ? (
+                      <img
+                        src={profile?.avatar || user?.avatar}
+                        alt={fullName || 'Ảnh đại diện'}
+                        className="profile-avatar-img"
+                        id="profile-avatar-img"
+                      />
+                    ) : (
+                      getInitials(fullName || 'Người dùng')
+                    )}
+                  </div>
+                  <div className="profile-avatar-badge" title="Tải ảnh lên" aria-hidden="true">
+                    <IconCamera />
+                  </div>
                 </div>
+
+                {/* Loading state khi đang đọc file ảnh */}
+                {isProcessingAvatar && (
+                  <div className="profile-avatar-loading-spinner" id="avatar-processing-spinner">
+                    <span className="profile-avatar-mini-spinner" aria-hidden="true" />
+                    <span>Đang xử lý file ảnh...</span>
+                  </div>
+                )}
+
+                {/* Thông báo lỗi validation ảnh */}
+                {avatarError && (
+                  <div className="profile-avatar-error-inline" role="alert" id="avatar-validation-error">
+                    <IconAlertCircle />
+                    <span>{avatarError}</span>
+                  </div>
+                )}
+
+                {/* Nút hành động cho Avatar */}
+                <div className="profile-avatar-actions">
+                  <div className="profile-avatar-btn-row">
+                    <button
+                      type="button"
+                      className="profile-avatar-upload-btn"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isProcessingAvatar || isSavingAvatar}
+                      id="profile-upload-avatar-btn"
+                    >
+                      <IconUploadMini />
+                      <span>{profile?.avatar || user?.avatar ? 'Đổi ảnh' : 'Tải ảnh lên'}</span>
+                    </button>
+                    {(profile?.avatar || user?.avatar) && (
+                      <button
+                        type="button"
+                        className="profile-avatar-remove-btn"
+                        onClick={handleRemoveAvatar}
+                        disabled={isProcessingAvatar || isSavingAvatar}
+                        title="Gỡ ảnh đại diện"
+                        id="profile-remove-avatar-btn"
+                      >
+                        <IconTrashMini />
+                        <span>Gỡ ảnh</span>
+                      </button>
+                    )}
+                  </div>
+                  <span className="profile-avatar-hint">
+                    JPG, PNG • Tối đa 2MB • Cắt vuông 1:1
+                  </span>
+                </div>
+
                 <h2 className="profile-card-name" id="profile-card-fullname">{fullName || 'Người dùng'}</h2>
                 <span className="profile-card-email" id="profile-card-email-display">{emailDisplay}</span>
               </div>
@@ -724,6 +945,19 @@ export function ProfilePage() {
           </div>
         )}
       </main>
+
+      {/* ── Modal Cắt Ảnh Đại Diện Tỷ Lệ 1:1 (User Story S2-03) ── */}
+      <AvatarCropModal
+        isOpen={isCropModalOpen}
+        initialImageSrc={cropModalImageSrc}
+        onClose={() => {
+          setIsCropModalOpen(false)
+          setCropModalImageSrc('')
+          setAvatarError(null)
+        }}
+        onSave={handleSaveCroppedAvatar}
+        isSaving={isSavingAvatar}
+      />
     </div>
   )
 }
