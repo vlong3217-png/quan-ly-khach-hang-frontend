@@ -543,7 +543,6 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
                 </div>
                 <div className="dashboard-user-details">
                   <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
-                  <span className="dashboard-user-role">{user?.role ?? ''}</span>
                 </div>
               </div>
               <button
