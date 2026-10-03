@@ -188,6 +188,9 @@ export function Sidebar({
         <div className="role-user-name" title={user.email}>
           {user.full_name}
         </div>
+        <div className="role-user-team" title={user.team_name ?? 'Chưa phân nhóm'}>
+          {user.team_name ?? 'Ban Quản Trị'}
+        </div>
       </div>
 
       {/* ── 3. Navigation Menu Groups ── */}
