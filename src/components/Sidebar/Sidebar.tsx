@@ -123,12 +123,12 @@ export function Sidebar({
 }: SidebarProps) {
   const { user, role, isAuthenticated, menuGroups } = useRoleMenu()
 
-  // State quản lý việc mở rộng / đóng các submenu (mặc định mở menu cha của item đang chọn)
+  // State quản lý việc mở rộng / đóng các submenu (mặc định đóng gọn gàng như ảnh số 2)
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
-    'menu-customers': true,
-    'menu-reports': true,
-    'menu-teams': true,
-    'menu-settings': true,
+    'menu-customers': false,
+    'menu-reports': false,
+    'menu-teams': false,
+    'menu-settings': false,
   })
 
   const toggleSubmenu = (menuId: string) => {
