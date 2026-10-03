@@ -5,6 +5,7 @@ import { usePermission } from '../../hooks/usePermission.ts'
 import { PermissionGate } from '../../components/PermissionGate.tsx'
 import Sidebar from '../../components/Sidebar/Sidebar.tsx'
 import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal.tsx'
+import UserManagementPage from '../UserManagementPage/UserManagementPage.tsx'
 import {
   ROLES,
   ROLE_LABELS,
@@ -115,7 +116,9 @@ function DashboardPage() {
   // Đồng bộ activeMenuId theo URL pathname khi truy cập trực tiếp hoặc chuyển route
   useEffect(() => {
     const path = location.pathname
-    if (path.startsWith('/dashboard/settings')) {
+    if (path.startsWith('/dashboard/users')) {
+      setActiveMenuId('menu-users')
+    } else if (path.startsWith('/dashboard/settings')) {
       setActiveMenuId('menu-settings')
     } else if (path.startsWith('/dashboard/reports')) {
       setActiveMenuId('menu-reports')
@@ -362,6 +365,9 @@ function DashboardPage() {
   const isSettingView =
     activeMenuId === 'menu-settings' ||
     activeMenuId.startsWith('menu-settings-')
+  const isUserView =
+    activeMenuId === 'menu-users' ||
+    activeMenuId.startsWith('menu-users-')
 
   return (
     <div className="dashboard-layout">
@@ -894,6 +900,46 @@ function DashboardPage() {
                     </button>
                   </div>
                 </div>
+              </section>
+            </PermissionGate>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW 6: QUẢN LÝ TÀI KHOẢN (USER MANAGEMENT - ADMIN ONLY)
+              ───────────────────────────────────────────────────────────── */}
+          {isUserView && (
+            <PermissionGate
+              role={[ROLES.ADMIN]}
+              permission={PERMISSIONS.SYSTEM_SETTINGS}
+              fallback={
+                <div className="access-denied-card" id="forbidden-users-card">
+                  <IconLock />
+                  <h3>Không có quyền truy cập Quản lý tài khoản (Mã lỗi 403)</h3>
+                  <p>Chức năng này chỉ dành riêng cho Quản trị viên cao nhất (ADMIN).</p>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/users' } })}
+                    >
+                      Mở trang lỗi 403
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setActiveMenuId('menu-dashboard')
+                        navigate('/dashboard')
+                      }}
+                    >
+                      Về trang chủ
+                    </button>
+                  </div>
+                </div>
+              }
+            >
+              <section className="dashboard-section user-management-section">
+                <UserManagementPage embedded={true} />
               </section>
             </PermissionGate>
           )}

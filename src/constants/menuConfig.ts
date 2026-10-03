@@ -154,7 +154,7 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
       {
         id: 'menu-users',
         title: 'Quản lý tài khoản',
-        path: '/admin/users',
+        path: '/dashboard/users',
         roles: [ROLES.ADMIN],
         permissions: [PERMISSIONS.SYSTEM_SETTINGS],
         description: 'Tạo, phân quyền vai trò, nhóm và khóa tài khoản người dùng',
