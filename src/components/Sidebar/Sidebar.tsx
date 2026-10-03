@@ -1,6 +1,5 @@
 import type { MenuItem } from '../../types/menu.ts'
 import { useRoleMenu } from '../../hooks/useRoleMenu.ts'
-import { ROLE_LABELS } from '../../constants/permissions.ts'
 import './Sidebar.css'
 
 /* ──────────── Inline SVG Icons ──────────── */
@@ -168,10 +167,6 @@ export function Sidebar({
           <div className="sidebar-user-meta">
             <div className="role-user-name" title={user.email}>
               {user.full_name}
-            </div>
-            <div className="role-indicator-badge" data-role={role} id="sidebar-role-badge">
-              <span className="role-dot" />
-              <span className="role-text">{ROLE_LABELS[role] ?? role}</span>
             </div>
           </div>
         </div>
