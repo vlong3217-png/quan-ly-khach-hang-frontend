@@ -1,8 +1,10 @@
-import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useMemo, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import { usePermission } from '../../hooks/usePermission.ts'
+import { useRoleMenu } from '../../hooks/useRoleMenu.ts'
 import { PermissionGate } from '../../components/PermissionGate.tsx'
+import Sidebar from '../../components/Sidebar/Sidebar.tsx'
 import {
   ROLES,
   ROLE_LABELS,
@@ -10,9 +12,13 @@ import {
   PERMISSION_LABELS,
   SCOPE_LABELS,
 } from '../../constants/permissions.ts'
+import { APP_MENU_GROUPS } from '../../constants/menuConfig.ts'
+import { flattenMenuItems } from '../../utils/menuUtils.ts'
+import type { Role, DataScope } from '../../types/auth.ts'
+import type { MenuItem } from '../../types/menu.ts'
 import './DashboardPage.css'
 
-/* ──────────── Mock Data for Data Scope Demonstration ──────────── */
+/* ──────────── Mock Data for Customer Data Scope Demonstration ──────────── */
 interface CustomerItem {
   id: number
   code: string
@@ -44,6 +50,14 @@ const IconUser = () => (
 const IconShield = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+  </svg>
+)
+
+const IconMenu = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="18" x2="21" y2="18" />
   </svg>
 )
 
@@ -90,13 +104,42 @@ const IconLock = () => (
   </svg>
 )
 
+const IconEyeOff = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+    <line x1="1" y1="1" x2="23" y2="23" />
+  </svg>
+)
+
 /* ──────────── Component ──────────── */
 function DashboardPage() {
   const { user, logout, switchRole } = useAuth()
   const { scope, hasPermission, filterScopedData } = usePermission()
+  const { canAccessMenuId, allowedMenuItems } = useRoleMenu()
   const navigate = useNavigate()
+  const location = useLocation()
 
-  // State cho thông báo khi thao tác các nút phân quyền
+  // State quản lý menu đang chọn và trạng thái đóng mở của Sidebar
+  const [activeMenuId, setActiveMenuId] = useState<string>('menu-dashboard')
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false)
+
+  // Đồng bộ activeMenuId theo URL pathname khi truy cập trực tiếp hoặc chuyển route
+  useEffect(() => {
+    const path = location.pathname
+    if (path.startsWith('/dashboard/settings')) {
+      setActiveMenuId('menu-settings')
+    } else if (path.startsWith('/dashboard/reports')) {
+      setActiveMenuId('menu-reports')
+    } else if (path.startsWith('/dashboard/teams')) {
+      setActiveMenuId('menu-teams')
+    } else if (path.startsWith('/dashboard/customers')) {
+      setActiveMenuId('menu-customers')
+    } else if (path === '/dashboard' || path === '/dashboard/') {
+      setActiveMenuId('menu-dashboard')
+    }
+  }, [location.pathname])
+
+  // State cho thông báo tương tác nhanh
   const [actionNotice, setActionNotice] = useState<string | null>(null)
 
   const handleLogout = () => {
@@ -104,7 +147,14 @@ function DashboardPage() {
     navigate('/login', { replace: true })
   }
 
-  // Danh sách khách hàng mẫu đại diện cho các owner và team khác nhau
+  const showNotice = (msg: string) => {
+    setActionNotice(msg)
+    setTimeout(() => {
+      setActionNotice(null)
+    }, 3500)
+  }
+
+  // Danh sách khách hàng mẫu minh họa lọc theo scope
   const rawCustomers: CustomerItem[] = useMemo(() => {
     const currentUserId = user?.id ?? 1
     return [
@@ -155,7 +205,7 @@ function DashboardPage() {
     ]
   }, [user])
 
-  // Lọc dữ liệu khách hàng theo phạm vi dữ liệu của người dùng hiện tại (MY, TEAM, ALL)
+  // Lọc dữ liệu khách hàng theo scope
   const scopedCustomers = useMemo(() => {
     return filterScopedData(rawCustomers, {
       getOwnerId: (c) => c.owner_id,
@@ -163,295 +213,740 @@ function DashboardPage() {
     })
   }, [rawCustomers, filterScopedData])
 
-  const showNotice = (msg: string) => {
-    setActionNotice(msg)
-    setTimeout(() => {
-      setActionNotice(null)
-    }, 3500)
-  }
-
   // Toàn bộ các quyền trong hệ thống để đối chiếu
   const allSystemPermissions = Object.values(PERMISSIONS)
 
+  // Danh sách phẳng tất cả menu trong hệ thống để đối chiếu phân quyền trực quan
+  const allSystemMenuItems = useMemo(() => {
+    const list: MenuItem[] = []
+    for (const group of APP_MENU_GROUPS) {
+      list.push(...flattenMenuItems(group.items))
+    }
+    return list
+  }, [])
+
+  // Xử lý chuyển đổi vai trò (Switch Role)
+  const handleRoleSwitch = (newRole: Role, newScope?: DataScope) => {
+    switchRole(newRole, newScope)
+
+    // Nếu tab hiện tại không được phép ở role mới, tự động điều hướng sang trang Forbidden
+    const targetUpper = String(newRole).toUpperCase()
+    if (targetUpper === 'USER') {
+      if (
+        activeMenuId.startsWith('menu-reports') ||
+        activeMenuId.startsWith('menu-teams') ||
+        activeMenuId.startsWith('menu-settings')
+      ) {
+        navigate('/forbidden', {
+          state: {
+            from: location.pathname,
+            reason: 'role',
+            message: `Tài khoản vai trò ${newRole} không có quyền truy cập chức năng này.`,
+          },
+        })
+        return
+      }
+    } else if (targetUpper === 'MANAGER') {
+      if (activeMenuId.startsWith('menu-settings')) {
+        navigate('/forbidden', {
+          state: {
+            from: location.pathname,
+            reason: 'role',
+            message: `Tài khoản vai trò ${newRole} không có quyền truy cập Cấu hình hệ thống.`,
+          },
+        })
+        return
+      }
+    }
+
+    showNotice(`Đã chuyển vai trò sang ${newRole} (Phạm vi: ${newScope ?? 'mặc định'})`)
+  }
+
+  // Xử lý click chọn menu trên Sidebar
+  const handleSelectMenu = (item: MenuItem) => {
+    setActiveMenuId(item.id)
+    if (item.path) {
+      navigate(item.path)
+    }
+    if (item.path && item.path.includes('action=create')) {
+      showNotice('Mở hộp thoại tạo khách hàng mới')
+    } else if (item.path && item.path.includes('action=export')) {
+      showNotice('Đã xuất báo cáo khách hàng thành công!')
+    }
+  }
+
+  // Xác định view chính hiển thị dựa theo menu đang chọn
+  const isDashboardView = activeMenuId === 'menu-dashboard'
+  const isCustomerView =
+    activeMenuId === 'menu-customers' ||
+    activeMenuId.startsWith('menu-customers-')
+  const isReportView =
+    activeMenuId === 'menu-reports' ||
+    activeMenuId.startsWith('menu-reports-')
+  const isTeamView =
+    activeMenuId === 'menu-teams' ||
+    activeMenuId.startsWith('menu-teams-')
+  const isSettingView =
+    activeMenuId === 'menu-settings' ||
+    activeMenuId.startsWith('menu-settings-')
+
   return (
-    <div className="dashboard-page">
-      {/* ── Header / Navbar ── */}
-      <header className="dashboard-header">
-        <div className="dashboard-header-inner">
-          <div className="dashboard-brand">
-            <div className="dashboard-brand-icon" aria-hidden="true">
-              <IconShield />
-            </div>
-            <span className="dashboard-brand-text">Quản lý khách hàng</span>
-          </div>
+    <div className="dashboard-layout">
+      {/* ── 1. SIDEBAR PHÂN QUYỀN THEO ROLE (User Story S1-06) ── */}
+      <Sidebar
+        activeMenuId={activeMenuId}
+        onSelectMenu={handleSelectMenu}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
 
-          <div className="dashboard-user-area">
-            <div className="dashboard-user-info">
-              <div className="dashboard-user-avatar">
-                <IconUser />
+      {/* ── 2. WORKSPACE CONTENT AREA ── */}
+      <div className="dashboard-content-area">
+        {/* Header / Navbar */}
+        <header className="dashboard-header">
+          <div className="dashboard-header-inner">
+            <div className="dashboard-header-left">
+              <button
+                type="button"
+                className="sidebar-toggle-btn"
+                id="sidebar-toggle-btn"
+                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                title={isSidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
+                aria-label="Thu gọn hoặc mở rộng menu"
+              >
+                <IconMenu />
+              </button>
+              <div className="dashboard-brand">
+                <div className="dashboard-brand-icon" aria-hidden="true">
+                  <IconShield />
+                </div>
+                <span className="dashboard-brand-text">Quản lý khách hàng</span>
               </div>
-              <div className="dashboard-user-details">
-                <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
-                <span className="dashboard-user-role">
-                  {user?.role ? ROLE_LABELS[user.role] ?? user.role : ''}
-                </span>
+            </div>
+
+            <div className="dashboard-user-area">
+              <div className="dashboard-user-info">
+                <div className="dashboard-user-avatar">
+                  <IconUser />
+                </div>
+                <div className="dashboard-user-details">
+                  <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
+                  <span className="dashboard-user-role">
+                    {user?.role ? ROLE_LABELS[user.role] ?? user.role : ''}
+                  </span>
+                </div>
               </div>
-            </div>
-            <button
-              type="button"
-              className="dashboard-logout-btn"
-              onClick={handleLogout}
-              id="logout-btn"
-              title="Đăng xuất"
-            >
-              <IconLogout />
-              <span>Đăng xuất</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* ── Main content ── */}
-      <main className="dashboard-main">
-        {/* Banner thông báo tương tác */}
-        {actionNotice && (
-          <div className="action-notice-toast" role="status">
-            <IconCheckCircle />
-            <span>{actionNotice}</span>
-          </div>
-        )}
-
-        {/* 1. Welcome Card giữ nguyên cấu trúc chuẩn */}
-        <div className="dashboard-welcome-card">
-          <h1>Chào mừng, {user?.full_name ?? 'Người dùng'}!</h1>
-          <p>Bạn đã đăng nhập thành công vào hệ thống quản lý khách hàng.</p>
-          <div className="dashboard-info-grid">
-            <div className="dashboard-info-item">
-              <span className="dashboard-info-label">Email</span>
-              <span className="dashboard-info-value">{user?.email ?? '—'}</span>
-            </div>
-            <div className="dashboard-info-item">
-              <span className="dashboard-info-label">Vai trò hiện tại</span>
-              <span className="dashboard-info-value role-badge" data-role={user?.role}>
-                {user?.role ?? '—'}
-              </span>
-            </div>
-            <div className="dashboard-info-item">
-              <span className="dashboard-info-label">Phạm vi dữ liệu (Scope)</span>
-              <span className="dashboard-info-value scope-badge" data-scope={scope}>
-                {scope} — {SCOPE_LABELS[scope]?.split('(')[0]?.trim()}
-              </span>
-            </div>
-            <div className="dashboard-info-item">
-              <span className="dashboard-info-label">Đội nhóm (Team)</span>
-              <span className="dashboard-info-value">{user?.team_name ?? 'Chưa phân nhóm'}</span>
+              <button
+                type="button"
+                className="dashboard-change-pwd-btn"
+                onClick={() => navigate('/change-password')}
+                id="dashboard-change-pwd-btn"
+                title="Đổi mật khẩu"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '7px 12px',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  color: '#2563eb',
+                  background: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  marginRight: '8px',
+                }}
+              >
+                <span>Đổi mật khẩu</span>
+              </button>
+              <button
+                type="button"
+                className="dashboard-logout-btn"
+                onClick={handleLogout}
+                id="logout-btn"
+                title="Đăng xuất"
+              >
+                <IconLogout />
+                <span>Đăng xuất</span>
+              </button>
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* 2. Khối Phân quyền & Chuyển đổi thử nghiệm Role (Story S1-05) */}
-        <section className="dashboard-section permission-section">
-          <div className="section-header">
-            <div>
-              <h2 className="section-title">Phân quyền người dùng & Kiểm thử Role (S1-05)</h2>
-              <p className="section-desc">
-                Kiểm tra quyền hạn thực tế và phạm vi dữ liệu dựa theo vai trò của người dùng trong hệ thống.
-              </p>
+        {/* Main Content */}
+        <main className="dashboard-main">
+          {/* Toast thông báo tương tác */}
+          {actionNotice && (
+            <div className="action-notice-toast" role="status">
+              <IconCheckCircle />
+              <span>{actionNotice}</span>
             </div>
+          )}
 
-            {/* Role Switcher phục vụ test nhanh các quyền ngay trên giao diện */}
-            <div className="role-switcher-box">
-              <span className="role-switcher-label">Chuyển vai trò thử nghiệm:</span>
+          {/* Quick Role Switcher (Hiển thị xuyên suốt để hỗ trợ kiểm thử role nhanh) */}
+          <div className="global-role-switcher-banner">
+            <div className="role-switcher-inner">
+              <div className="role-switcher-title">
+                <span className="badge-tag">S1-06</span>
+                <strong>Kiểm thử chuyển vai trò (Role Switcher):</strong>
+              </div>
               <div className="role-buttons-group">
                 <button
                   type="button"
                   className={`role-btn ${user?.role === ROLES.ADMIN ? 'active' : ''}`}
-                  onClick={() => switchRole(ROLES.ADMIN, 'ALL')}
+                  onClick={() => handleRoleSwitch(ROLES.ADMIN, 'ALL')}
                   id="test-switch-admin"
                 >
-                  ADMIN (ALL)
+                  ADMIN (Toàn quyền)
                 </button>
                 <button
                   type="button"
                   className={`role-btn ${user?.role === ROLES.MANAGER ? 'active' : ''}`}
-                  onClick={() => switchRole(ROLES.MANAGER, 'TEAM')}
+                  onClick={() => handleRoleSwitch(ROLES.MANAGER, 'TEAM')}
                   id="test-switch-manager"
                 >
-                  MANAGER (TEAM)
+                  MANAGER (Quản lý)
                 </button>
                 <button
                   type="button"
                   className={`role-btn ${user?.role === ROLES.USER ? 'active' : ''}`}
-                  onClick={() => switchRole(ROLES.USER, 'MY')}
+                  onClick={() => handleRoleSwitch(ROLES.USER, 'MY')}
                   id="test-switch-user"
                 >
-                  USER (MY)
+                  USER (Nhân viên)
+                </button>
+                <button
+                  type="button"
+                  className="role-btn test-forbidden-btn"
+                  onClick={() => navigate('/forbidden', { state: { from: location.pathname } })}
+                  id="test-view-forbidden"
+                  style={{ background: '#fee2e2', color: '#b91c1c', borderColor: '#fca5a5' }}
+                >
+                  Thử xem trang 403
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Danh sách ma trận quyền thực tế của người dùng */}
-          <div className="permissions-matrix-grid">
-            {allSystemPermissions.map((perm) => {
-              const granted = hasPermission(perm)
-              return (
-                <div
-                  key={perm}
-                  className={`permission-chip ${granted ? 'granted' : 'denied'}`}
-                  title={granted ? 'Quyền đã được cấp' : 'Không có quyền này'}
-                >
-                  <span className="chip-icon">
-                    {granted ? <IconCheckCircle /> : <IconLock />}
-                  </span>
-                  <div className="chip-content">
-                    <span className="chip-code">{perm}</span>
-                    <span className="chip-desc">{PERMISSION_LABELS[perm]}</span>
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW 1: TỔNG QUAN (DASHBOARD)
+              ───────────────────────────────────────────────────────────── */}
+          {isDashboardView && (
+            <>
+              {/* Welcome Card */}
+              <div className="dashboard-welcome-card">
+                <h1>Chào mừng, {user?.full_name ?? 'Người dùng'}!</h1>
+                <p>Bạn đã đăng nhập thành công vào hệ thống quản lý khách hàng.</p>
+                <div className="dashboard-info-grid">
+                  <div className="dashboard-info-item">
+                    <span className="dashboard-info-label">Email</span>
+                    <span className="dashboard-info-value">{user?.email ?? '—'}</span>
+                  </div>
+                  <div className="dashboard-info-item">
+                    <span className="dashboard-info-label">Vai trò hiện tại</span>
+                    <span className="dashboard-info-value role-badge" data-role={user?.role}>
+                      {user?.role ?? '—'}
+                    </span>
+                  </div>
+                  <div className="dashboard-info-item">
+                    <span className="dashboard-info-label">Phạm vi dữ liệu (Scope)</span>
+                    <span className="dashboard-info-value scope-badge" data-scope={scope}>
+                      {scope} — {SCOPE_LABELS[scope]?.split('(')[0]?.trim()}
+                    </span>
+                  </div>
+                  <div className="dashboard-info-item">
+                    <span className="dashboard-info-label">Đội nhóm (Team)</span>
+                    <span className="dashboard-info-value">{user?.team_name ?? 'Chưa phân nhóm'}</span>
                   </div>
                 </div>
-              )
-            })}
-          </div>
-        </section>
+              </div>
 
-        {/* 3. Khối Minh họa Quản lý Khách hàng theo Phạm vi Dữ liệu (Data Scope) */}
-        <section className="dashboard-section data-scope-section">
-          <div className="section-header">
-            <div>
-              <h2 className="section-title">Danh sách khách hàng theo phạm vi dữ liệu</h2>
-              <p className="section-desc">
-                Cơ chế lọc dữ liệu phía Frontend theo scope: <strong>MY</strong> (chỉ bản thân),{' '}
-                <strong>TEAM</strong> (cùng đội nhóm), <strong>ALL</strong> (toàn hệ thống).
-              </p>
-            </div>
+              {/* BẢNG ĐỐI CHIẾU MENU THEO QUYỀN (S1-06) */}
+              <section className="dashboard-section menu-rbac-section">
+                <div className="section-header">
+                  <div>
+                    <h2 className="section-title">Hệ thống Menu phân quyền theo Role (S1-06)</h2>
+                    <p className="section-desc">
+                      Bảng đối chiếu danh mục menu/chức năng được phép hiển thị trên thanh điều hướng Sidebar
+                      theo vai trò <strong>{user?.role}</strong> hiện tại.
+                    </p>
+                  </div>
+                  <div className="menu-count-badge">
+                    Hiển thị <strong>{allowedMenuItems.length}</strong> / {allSystemMenuItems.length} menu item
+                  </div>
+                </div>
 
-            {/* Các nút hành động được bảo vệ bởi PermissionGate */}
-            <div className="scope-actions-group">
-              <PermissionGate
-                permission={PERMISSIONS.CUSTOMER_EXPORT}
-                fallback={null}
-              >
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => showNotice('Đã xuất báo cáo khách hàng thành công!')}
-                  id="btn-export-customers"
-                >
-                  <IconDownload />
-                  <span>Xuất dữ liệu</span>
-                </button>
-              </PermissionGate>
+                <div className="menu-rbac-table-container">
+                  <table className="menu-rbac-table">
+                    <thead>
+                      <tr>
+                        <th>Tên Menu / Chức năng</th>
+                        <th>Đường dẫn</th>
+                        <th>Vai trò cho phép</th>
+                        <th>Quyền chi tiết</th>
+                        <th style={{ textAlign: 'center' }}>Trạng thái hiển thị</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allSystemMenuItems.map((item) => {
+                        const isGranted = canAccessMenuId(item.id)
+                        const allowedRolesStr = item.roles ? item.roles.join(', ') : 'Tất cả'
+                        const permStr = item.permissions ? item.permissions.join(', ') : '—'
 
-              <PermissionGate
-                permission={PERMISSIONS.CUSTOMER_CREATE}
-                fallback={null}
-              >
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => showNotice('Mở hộp thoại tạo khách hàng mới')}
-                  id="btn-create-customer"
-                >
-                  <IconPlus />
-                  <span>Thêm khách hàng</span>
-                </button>
-              </PermissionGate>
-            </div>
-          </div>
+                        return (
+                          <tr
+                            key={item.id}
+                            className={`menu-row ${isGranted ? 'row-granted' : 'row-hidden'}`}
+                            id={`rbac-row-${item.id}`}
+                          >
+                            <td>
+                              <div className="menu-row-info">
+                                <span className="menu-row-title">{item.title}</span>
+                                {item.badge && (
+                                  <span className={`menu-row-tag badge-${item.badgeVariant ?? 'primary'}`}>
+                                    {item.badge}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td>
+                              <code className="path-code">{item.path}</code>
+                            </td>
+                            <td>
+                              <span className="roles-pill-list">{allowedRolesStr}</span>
+                            </td>
+                            <td>
+                              <span className="perm-code-text">{permStr}</span>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              {isGranted ? (
+                                <span className="status-badge status-visible" title="Hiển thị trên Sidebar">
+                                  <IconCheckCircle />
+                                  <span>Hiển thị trên Menu</span>
+                                </span>
+                              ) : (
+                                <span className="status-badge status-hidden" title="Không có quyền - Bị ẩn hoàn toàn">
+                                  <IconEyeOff />
+                                  <span>Bị ẩn (Không có quyền)</span>
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
 
-          {/* Dải thông báo trạng thái lọc Scope */}
-          <div className="scope-status-strip">
-            <span className="scope-status-text">
-              Phạm vi hiện tại: <strong className="scope-tag">{scope}</strong> — Hiển thị{' '}
-              <strong>{scopedCustomers.length}</strong> / {rawCustomers.length} khách hàng
-            </span>
-            <span className="scope-note">
-              {scope === 'MY' && 'Chỉ hiển thị các khách hàng do chính bạn phụ trách.'}
-              {scope === 'TEAM' && 'Hiển thị khách hàng của bạn và đồng nghiệp trong Đội Kinh Doanh 1.'}
-              {scope === 'ALL' && 'Hiển thị toàn bộ khách hàng từ tất cả phòng ban/đội nhóm.'}
-            </span>
-          </div>
+              {/* Ma trận quyền hạn S1-05 */}
+              <section className="dashboard-section permission-section">
+                <div className="section-header">
+                  <div>
+                    <h2 className="section-title">Ma trận quyền hạn chi tiết (S1-05)</h2>
+                    <p className="section-desc">
+                      Danh sách các quyền hành động chi tiết áp dụng cho vai trò <strong>{user?.role}</strong>.
+                    </p>
+                  </div>
+                </div>
 
-          {/* Bảng dữ liệu khách hàng */}
-          <div className="customer-table-container">
-            <table className="customer-table">
-              <thead>
-                <tr>
-                  <th>Mã KH</th>
-                  <th>Tên khách hàng</th>
-                  <th>Công ty</th>
-                  <th>Số điện thoại</th>
-                  <th>Người phụ trách</th>
-                  <th>Đội nhóm</th>
-                  <th style={{ textAlign: 'right' }}>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {scopedCustomers.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="empty-row">
-                      Không có khách hàng nào trong phạm vi dữ liệu của bạn.
-                    </td>
-                  </tr>
-                ) : (
-                  scopedCustomers.map((cust) => (
-                    <tr key={cust.id}>
-                      <td className="code-cell">{cust.code}</td>
-                      <td className="name-cell">{cust.name}</td>
-                      <td>{cust.company}</td>
-                      <td>{cust.phone}</td>
-                      <td>
-                        <span
-                          className={`owner-badge ${
-                            cust.owner_id === user?.id ? 'owner-self' : ''
-                          }`}
-                        >
-                          {cust.owner_name}
+                <div className="permissions-matrix-grid">
+                  {allSystemPermissions.map((perm) => {
+                    const granted = hasPermission(perm)
+                    return (
+                      <div
+                        key={perm}
+                        className={`permission-chip ${granted ? 'granted' : 'denied'}`}
+                        title={granted ? 'Quyền đã được cấp' : 'Không có quyền này'}
+                      >
+                        <span className="chip-icon">
+                          {granted ? <IconCheckCircle /> : <IconLock />}
                         </span>
-                      </td>
-                      <td>
-                        <span className="team-badge">{cust.team_name}</span>
-                      </td>
-                      <td className="actions-cell">
-                        {/* Nút Sửa: bọc PermissionGate với renderDisabled */}
-                        <PermissionGate
-                          permission={PERMISSIONS.CUSTOMER_EDIT}
-                          renderDisabled={true}
-                          disabledReason="Bạn không có quyền chỉnh sửa khách hàng này"
-                        >
-                          <button
-                            type="button"
-                            className="action-icon-btn edit-btn"
-                            title="Chỉnh sửa"
-                            onClick={() => showNotice(`Chỉnh sửa khách hàng ${cust.code}`)}
-                          >
-                            <IconEdit />
-                          </button>
-                        </PermissionGate>
+                        <div className="chip-content">
+                          <span className="chip-code">{perm}</span>
+                          <span className="chip-desc">{PERMISSION_LABELS[perm]}</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            </>
+          )}
 
-                        {/* Nút Xóa: chỉ ADMIN mới có quyền xóa (CUSTOMER_DELETE) */}
-                        <PermissionGate
-                          permission={PERMISSIONS.CUSTOMER_DELETE}
-                          fallback={null}
-                        >
-                          <button
-                            type="button"
-                            className="action-icon-btn delete-btn"
-                            title="Xóa khách hàng"
-                            onClick={() => showNotice(`Xóa khách hàng ${cust.code}`)}
-                          >
-                            <IconTrash />
-                          </button>
-                        </PermissionGate>
-                      </td>
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW 2: QUẢN LÝ KHÁCH HÀNG (CUSTOMERS)
+              ───────────────────────────────────────────────────────────── */}
+          {(isCustomerView || isDashboardView) && (
+            <section className="dashboard-section data-scope-section">
+              <div className="section-header">
+                <div>
+                  <h2 className="section-title">Danh sách khách hàng theo phạm vi dữ liệu</h2>
+                  <p className="section-desc">
+                    Lọc dữ liệu khách hàng theo phạm vi: <strong>MY</strong> (bản thân),{' '}
+                    <strong>TEAM</strong> (đội nhóm), <strong>ALL</strong> (toàn hệ thống).
+                  </p>
+                </div>
+
+                <div className="scope-actions-group">
+                  <PermissionGate
+                    permission={PERMISSIONS.CUSTOMER_EXPORT}
+                    fallback={null}
+                  >
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => showNotice('Đã xuất báo cáo khách hàng thành công!')}
+                      id="btn-export-customers"
+                    >
+                      <IconDownload />
+                      <span>Xuất dữ liệu</span>
+                    </button>
+                  </PermissionGate>
+
+                  <PermissionGate
+                    permission={PERMISSIONS.CUSTOMER_CREATE}
+                    fallback={null}
+                  >
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => showNotice('Mở hộp thoại tạo khách hàng mới')}
+                      id="btn-create-customer"
+                    >
+                      <IconPlus />
+                      <span>Thêm khách hàng</span>
+                    </button>
+                  </PermissionGate>
+                </div>
+              </div>
+
+              {/* Status strip */}
+              <div className="scope-status-strip">
+                <span className="scope-status-text">
+                  Phạm vi hiện tại: <strong className="scope-tag">{scope}</strong> — Hiển thị{' '}
+                  <strong>{scopedCustomers.length}</strong> / {rawCustomers.length} khách hàng
+                </span>
+                <span className="scope-note">
+                  {scope === 'MY' && 'Chỉ hiển thị các khách hàng do chính bạn phụ trách.'}
+                  {scope === 'TEAM' && 'Hiển thị khách hàng của bạn và đồng nghiệp trong Đội Kinh Doanh 1.'}
+                  {scope === 'ALL' && 'Hiển thị toàn bộ khách hàng từ tất cả phòng ban/đội nhóm.'}
+                </span>
+              </div>
+
+              {/* Customer table */}
+              <div className="customer-table-container">
+                <table className="customer-table">
+                  <thead>
+                    <tr>
+                      <th>Mã KH</th>
+                      <th>Tên khách hàng</th>
+                      <th>Công ty</th>
+                      <th>Số điện thoại</th>
+                      <th>Người phụ trách</th>
+                      <th>Đội nhóm</th>
+                      <th style={{ textAlign: 'right' }}>Thao tác</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </main>
+                  </thead>
+                  <tbody>
+                    {scopedCustomers.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="empty-row">
+                          Không có khách hàng nào trong phạm vi dữ liệu của bạn.
+                        </td>
+                      </tr>
+                    ) : (
+                      scopedCustomers.map((cust) => (
+                        <tr key={cust.id}>
+                          <td className="code-cell">{cust.code}</td>
+                          <td className="name-cell">{cust.name}</td>
+                          <td>{cust.company}</td>
+                          <td>{cust.phone}</td>
+                          <td>
+                            <span
+                              className={`owner-badge ${
+                                cust.owner_id === user?.id ? 'owner-self' : ''
+                              }`}
+                            >
+                              {cust.owner_name}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="team-badge">{cust.team_name}</span>
+                          </td>
+                          <td className="actions-cell">
+                            <PermissionGate
+                              permission={PERMISSIONS.CUSTOMER_EDIT}
+                              renderDisabled={true}
+                              disabledReason="Bạn không có quyền chỉnh sửa khách hàng này"
+                            >
+                              <button
+                                type="button"
+                                className="action-icon-btn edit-btn"
+                                title="Chỉnh sửa"
+                                onClick={() => showNotice(`Chỉnh sửa khách hàng ${cust.code}`)}
+                              >
+                                <IconEdit />
+                              </button>
+                            </PermissionGate>
+
+                            <PermissionGate
+                              permission={PERMISSIONS.CUSTOMER_DELETE}
+                              fallback={null}
+                            >
+                              <button
+                                type="button"
+                                className="action-icon-btn delete-btn"
+                                title="Xóa khách hàng"
+                                onClick={() => showNotice(`Xóa khách hàng ${cust.code}`)}
+                              >
+                                <IconTrash />
+                              </button>
+                            </PermissionGate>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW 3: BÁO CÁO & THỐNG KÊ (REPORTS - ADMIN & MANAGER ONLY)
+              ───────────────────────────────────────────────────────────── */}
+          {isReportView && (
+            <PermissionGate
+              permission={PERMISSIONS.REPORT_VIEW}
+              fallback={
+                <div className="access-denied-card" id="forbidden-reports-card">
+                  <IconLock />
+                  <h3>Không có quyền truy cập Báo cáo & Thống kê (Mã lỗi 403)</h3>
+                  <p>Menu này chỉ dành cho vai trò Quản lý (MANAGER) hoặc Quản trị viên (ADMIN).</p>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/reports' } })}
+                    >
+                      Mở trang lỗi 403
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setActiveMenuId('menu-dashboard')
+                        navigate('/dashboard')
+                      }}
+                    >
+                      Về trang chủ
+                    </button>
+                  </div>
+                </div>
+              }
+            >
+              <section className="dashboard-section reports-section">
+                <div className="section-header">
+                  <div>
+                    <h2 className="section-title">Báo cáo & Thống kê kinh doanh</h2>
+                    <p className="section-desc">
+                      Phân tích số liệu khách hàng, tỷ lệ chuyển đổi và doanh số định kỳ.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => showNotice('Đang tạo file xuất thống kê PDF/Excel...')}
+                  >
+                    <IconDownload />
+                    <span>Xuất báo cáo tổng hợp</span>
+                  </button>
+                </div>
+
+                <div className="kpi-cards-grid">
+                  <div className="kpi-card">
+                    <span className="kpi-label">Tổng khách hàng mới</span>
+                    <span className="kpi-value">128</span>
+                    <span className="kpi-trend positive">+18.5% so với tháng trước</span>
+                  </div>
+                  <div className="kpi-card">
+                    <span className="kpi-label">Hợp đồng hoàn tất</span>
+                    <span className="kpi-value">46</span>
+                    <span className="kpi-trend positive">+12.0%</span>
+                  </div>
+                  <div className="kpi-card">
+                    <span className="kpi-label">Tỷ lệ tương tác thành công</span>
+                    <span className="kpi-value">72.4%</span>
+                    <span className="kpi-trend positive">+5.1%</span>
+                  </div>
+                  <div className="kpi-card">
+                    <span className="kpi-label">Doanh số ghi nhận</span>
+                    <span className="kpi-value">2.48 tỷ</span>
+                    <span className="kpi-trend positive">+24.8%</span>
+                  </div>
+                </div>
+              </section>
+            </PermissionGate>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW 4: QUẢN LÝ ĐỘI NHÓM (TEAMS - ADMIN & MANAGER ONLY)
+              ───────────────────────────────────────────────────────────── */}
+          {isTeamView && (
+            <PermissionGate
+              role={[ROLES.ADMIN, ROLES.MANAGER]}
+              fallback={
+                <div className="access-denied-card" id="forbidden-teams-card">
+                  <IconLock />
+                  <h3>Không có quyền truy cập Quản lý Đội nhóm (Mã lỗi 403)</h3>
+                  <p>Chức năng này chỉ hiển thị và cho phép với vai trò MANAGER hoặc ADMIN.</p>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/teams' } })}
+                    >
+                      Mở trang lỗi 403
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setActiveMenuId('menu-dashboard')
+                        navigate('/dashboard')
+                      }}
+                    >
+                      Về trang chủ
+                    </button>
+                  </div>
+                </div>
+              }
+            >
+              <section className="dashboard-section teams-section">
+                <div className="section-header">
+                  <div>
+                    <h2 className="section-title">Danh sách phòng ban & Đội nhóm kinh doanh</h2>
+                    <p className="section-desc">
+                      Quản lý cơ cấu nhân sự, phân bổ khách hàng mục tiêu cho từng thành viên.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="teams-grid">
+                  <div className="team-card">
+                    <div className="team-card-header">
+                      <h3>Đội Kinh Doanh 1</h3>
+                      <span className="team-status-tag">Đang hoạt động</span>
+                    </div>
+                    <p className="team-desc">Phụ trách thị trường miền Bắc và khách hàng doanh nghiệp</p>
+                    <ul className="team-meta-list">
+                      <li>Trưởng nhóm: <strong>Nguyễn Văn Tuấn</strong></li>
+                      <li>Quy mô: <strong>5 nhân viên</strong></li>
+                      <li>Phạm vi dữ liệu: <strong>TEAM</strong></li>
+                    </ul>
+                  </div>
+
+                  <div className="team-card">
+                    <div className="team-card-header">
+                      <h3>Đội Kinh Doanh 2</h3>
+                      <span className="team-status-tag">Đang hoạt động</span>
+                    </div>
+                    <p className="team-desc">Phụ trách thị trường miền Nam và khách hàng bán lẻ</p>
+                    <ul className="team-meta-list">
+                      <li>Trưởng nhóm: <strong>Trần Thị Mai</strong></li>
+                      <li>Quy mô: <strong>4 nhân viên</strong></li>
+                      <li>Phạm vi dữ liệu: <strong>TEAM</strong></li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+            </PermissionGate>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW 5: CẤU HÌNH HỆ THỐNG (SETTINGS - ADMIN ONLY)
+              ───────────────────────────────────────────────────────────── */}
+          {isSettingView && (
+            <PermissionGate
+              permission={PERMISSIONS.SYSTEM_SETTINGS}
+              fallback={
+                <div className="access-denied-card" id="forbidden-settings-card">
+                  <IconLock />
+                  <h3>Không có quyền truy cập Cấu hình hệ thống (Mã lỗi 403)</h3>
+                  <p>Menu này chỉ dành riêng cho Quản trị viên cao nhất (ADMIN).</p>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/settings' } })}
+                    >
+                      Mở trang lỗi 403
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setActiveMenuId('menu-dashboard')
+                        navigate('/dashboard')
+                      }}
+                    >
+                      Về trang chủ
+                    </button>
+                  </div>
+                </div>
+              }
+            >
+              <section className="dashboard-section settings-section">
+                <div className="section-header">
+                  <div>
+                    <h2 className="section-title">Cấu hình hệ thống & Quản trị phân quyền (ADMIN)</h2>
+                    <p className="section-desc">
+                      Quản trị người dùng, phân bổ vai trò và theo dõi nhật ký hoạt động toàn hệ thống.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="settings-cards-grid">
+                  <div className="setting-card">
+                    <h4>Phân quyền & Vai trò (RBAC)</h4>
+                    <p>Thiết lập danh sách quyền hạn cho từng nhóm ADMIN, MANAGER, USER.</p>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => showNotice('Mở cấu hình ma trận phân quyền')}
+                    >
+                      Cấu hình vai trò
+                    </button>
+                  </div>
+                  <div className="setting-card">
+                    <h4>Chính sách bảo mật & Session</h4>
+                    <p>Thời hạn token JWT, giới hạn phiên đăng nhập và xác thực hai bước (2FA).</p>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => showNotice('Mở cài đặt chính sách an ninh')}
+                    >
+                      Thiết lập bảo mật
+                    </button>
+                  </div>
+                  <div className="setting-card">
+                    <h4>Nhật ký hoạt động hệ thống (Audit Logs)</h4>
+                    <p>Ghi lại lịch sử đăng nhập, thay đổi dữ liệu khách hàng và truy cập API.</p>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => showNotice('Mở danh sách nhật ký kiểm toán')}
+                    >
+                      Xem Audit Log
+                    </button>
+                  </div>
+                </div>
+              </section>
+            </PermissionGate>
+          )}
+        </main>
+      </div>
     </div>
   )
 }
