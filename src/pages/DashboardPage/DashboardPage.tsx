@@ -14,7 +14,6 @@ import {
 } from '../../constants/permissions.ts'
 import { APP_MENU_GROUPS } from '../../constants/menuConfig.ts'
 import { flattenMenuItems } from '../../utils/menuUtils.ts'
-import type { Role, DataScope } from '../../types/auth.ts'
 import type { MenuItem } from '../../types/menu.ts'
 import './DashboardPage.css'
 
@@ -113,7 +112,7 @@ const IconEyeOff = () => (
 
 /* ──────────── Component ──────────── */
 function DashboardPage() {
-  const { user, logout, switchRole } = useAuth()
+  const { user, logout } = useAuth()
   const { scope, hasPermission, filterScopedData } = usePermission()
   const { canAccessMenuId, allowedMenuItems } = useRoleMenu()
   const navigate = useNavigate()
@@ -224,43 +223,6 @@ function DashboardPage() {
     }
     return list
   }, [])
-
-  // Xử lý chuyển đổi vai trò (Switch Role)
-  const handleRoleSwitch = (newRole: Role, newScope?: DataScope) => {
-    switchRole(newRole, newScope)
-
-    // Nếu tab hiện tại không được phép ở role mới, tự động điều hướng sang trang Forbidden
-    const targetUpper = String(newRole).toUpperCase()
-    if (targetUpper === 'USER') {
-      if (
-        activeMenuId.startsWith('menu-reports') ||
-        activeMenuId.startsWith('menu-teams') ||
-        activeMenuId.startsWith('menu-settings')
-      ) {
-        navigate('/forbidden', {
-          state: {
-            from: location.pathname,
-            reason: 'role',
-            message: `Tài khoản vai trò ${newRole} không có quyền truy cập chức năng này.`,
-          },
-        })
-        return
-      }
-    } else if (targetUpper === 'MANAGER') {
-      if (activeMenuId.startsWith('menu-settings')) {
-        navigate('/forbidden', {
-          state: {
-            from: location.pathname,
-            reason: 'role',
-            message: `Tài khoản vai trò ${newRole} không có quyền truy cập Cấu hình hệ thống.`,
-          },
-        })
-        return
-      }
-    }
-
-    showNotice(`Đã chuyển vai trò sang ${newRole} (Phạm vi: ${newScope ?? 'mặc định'})`)
-  }
 
   // Xử lý click chọn menu trên Sidebar
   const handleSelectMenu = (item: MenuItem) => {
@@ -382,51 +344,6 @@ function DashboardPage() {
               <span>{actionNotice}</span>
             </div>
           )}
-
-          {/* Quick Role Switcher (Hiển thị xuyên suốt để hỗ trợ kiểm thử role nhanh) */}
-          <div className="global-role-switcher-banner">
-            <div className="role-switcher-inner">
-              <div className="role-switcher-title">
-                <span className="badge-tag">S1-06</span>
-                <strong>Kiểm thử chuyển vai trò (Role Switcher):</strong>
-              </div>
-              <div className="role-buttons-group">
-                <button
-                  type="button"
-                  className={`role-btn ${user?.role === ROLES.ADMIN ? 'active' : ''}`}
-                  onClick={() => handleRoleSwitch(ROLES.ADMIN, 'ALL')}
-                  id="test-switch-admin"
-                >
-                  ADMIN (Toàn quyền)
-                </button>
-                <button
-                  type="button"
-                  className={`role-btn ${user?.role === ROLES.MANAGER ? 'active' : ''}`}
-                  onClick={() => handleRoleSwitch(ROLES.MANAGER, 'TEAM')}
-                  id="test-switch-manager"
-                >
-                  MANAGER (Quản lý)
-                </button>
-                <button
-                  type="button"
-                  className={`role-btn ${user?.role === ROLES.USER ? 'active' : ''}`}
-                  onClick={() => handleRoleSwitch(ROLES.USER, 'MY')}
-                  id="test-switch-user"
-                >
-                  USER (Nhân viên)
-                </button>
-                <button
-                  type="button"
-                  className="role-btn test-forbidden-btn"
-                  onClick={() => navigate('/forbidden', { state: { from: location.pathname } })}
-                  id="test-view-forbidden"
-                  style={{ background: '#fee2e2', color: '#b91c1c', borderColor: '#fca5a5' }}
-                >
-                  Thử xem trang 403
-                </button>
-              </div>
-            </div>
-          </div>
 
           {/* ─────────────────────────────────────────────────────────────
               VIEW 1: TỔNG QUAN (DASHBOARD)
