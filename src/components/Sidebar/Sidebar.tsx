@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import type { MenuItem } from '../../types/menu.ts'
 import { useRoleMenu } from '../../hooks/useRoleMenu.ts'
 import { ROLE_LABELS } from '../../constants/permissions.ts'
@@ -68,10 +67,6 @@ const IconUsers = () => (
   </svg>
 )
 
-const IconDot = () => (
-  <span className="submenu-dot" aria-hidden="true" />
-)
-
 // Map icon theo id của menu item
 function getMenuIcon(id: string) {
   switch (id) {
@@ -122,21 +117,6 @@ export function Sidebar({
   onToggleCollapse,
 }: SidebarProps) {
   const { user, role, isAuthenticated, menuGroups } = useRoleMenu()
-
-  // State quản lý việc mở rộng / đóng các submenu (mặc định đóng gọn gàng như ảnh số 2)
-  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
-    'menu-customers': false,
-    'menu-reports': false,
-    'menu-teams': false,
-    'menu-settings': false,
-  })
-
-  const toggleSubmenu = (menuId: string) => {
-    setExpandedMenus((prev) => ({
-      ...prev,
-      [menuId]: !prev[menuId],
-    }))
-  }
 
   // Trường hợp chưa đăng nhập hoặc chưa có thông tin role
   if (!isAuthenticated || !user || !role) {
@@ -202,19 +182,12 @@ export function Sidebar({
             </div>
             <ul className="menu-list">
               {group.items.map((item) => {
-                const hasChildren = item.children && item.children.length > 0
-                const isExpanded = !!expandedMenus[item.id]
-                const isDirectActive = activeMenuId === item.id
-                const isChildActive =
-                  hasChildren && item.children!.some((c) => c.id === activeMenuId)
-                const isActive = isDirectActive || isChildActive
+                const isActive = activeMenuId === item.id
 
                 return (
                   <li
                     key={item.id}
-                    className={`menu-item-wrapper ${hasChildren ? 'has-children' : ''} ${
-                      isActive ? 'active' : ''
-                    }`}
+                    className={`menu-item-wrapper ${isActive ? 'active' : ''}`}
                     id={`menu-item-wrapper-${item.id}`}
                   >
                     {/* Item chính */}
@@ -222,14 +195,8 @@ export function Sidebar({
                       type="button"
                       className={`menu-item-btn ${isActive ? 'is-active' : ''}`}
                       id={item.id}
-                      onClick={() => {
-                        if (hasChildren) {
-                          toggleSubmenu(item.id)
-                        }
-                        onSelectMenu(item)
-                      }}
-                      aria-expanded={hasChildren ? isExpanded : undefined}
-                      aria-current={isDirectActive ? 'page' : undefined}
+                      onClick={() => onSelectMenu(item)}
+                      aria-current={isActive ? 'page' : undefined}
                       title={item.description ?? item.title}
                     >
                       <span className="menu-item-icon">{getMenuIcon(item.id)}</span>
@@ -243,51 +210,7 @@ export function Sidebar({
                           {item.badge}
                         </span>
                       )}
-
-                      {/* Mũi tên expand/collapse nếu có menu con */}
-                      {hasChildren && (
-                        <span
-                          className={`menu-chevron ${isExpanded ? 'rotated' : ''}`}
-                          aria-hidden="true"
-                        >
-                          <IconChevronDown />
-                        </span>
-                      )}
                     </button>
-
-                    {/* Submenu con nếu có quyền */}
-                    {hasChildren && isExpanded && (
-                      <ul className="submenu-list" id={`submenu-${item.id}`}>
-                        {item.children!.map((child) => {
-                          const isSubActive = activeMenuId === child.id
-
-                          return (
-                            <li key={child.id} className="submenu-item">
-                              <button
-                                type="button"
-                                className={`submenu-btn ${isSubActive ? 'is-active' : ''}`}
-                                id={child.id}
-                                onClick={() => onSelectMenu(child)}
-                                aria-current={isSubActive ? 'page' : undefined}
-                                title={child.description ?? child.title}
-                              >
-                                <IconDot />
-                                <span className="submenu-text">{child.title}</span>
-                                {child.badge && (
-                                  <span
-                                    className={`submenu-badge badge-${
-                                      child.badgeVariant ?? 'primary'
-                                    }`}
-                                  >
-                                    {child.badge}
-                                  </span>
-                                )}
-                              </button>
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    )}
                   </li>
                 )
               })}
