@@ -1,7 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage/LoginPage.tsx'
 import DashboardPage from './pages/DashboardPage/DashboardPage.tsx'
+import ImportUsersPage from './pages/ImportUsersPage/ImportUsersPage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
+import AdminRoute from './components/AdminRoute.tsx'
 
 function App() {
   return (
@@ -13,6 +15,15 @@ function App() {
           <ProtectedRoute>
             <DashboardPage />
           </ProtectedRoute>
+        }
+      />
+      {/* S2-01: Nhập danh sách người dùng hàng loạt từ Excel */}
+      <Route
+        path="/import-users"
+        element={
+          <AdminRoute>
+            <ImportUsersPage />
+          </AdminRoute>
         }
       />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />

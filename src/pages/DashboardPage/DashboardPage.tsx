@@ -247,6 +247,22 @@ function DashboardPage() {
               <span className="dashboard-info-value">{user?.team_name ?? 'Chưa phân nhóm'}</span>
             </div>
           </div>
+
+          {/* S2-01: Nút điều hướng đến trang Nhập người dùng hàng loạt (chỉ ADMIN) */}
+          {user?.role?.toUpperCase() === 'ADMIN' && (
+            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => navigate('/import-users')}
+                id="btn-import-users"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+              >
+                <IconPlus />
+                <span>Nhập dữ liệu người dùng từ excel</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* 2. Khối Phân quyền & Chuyển đổi thử nghiệm Role (Story S1-05) */}

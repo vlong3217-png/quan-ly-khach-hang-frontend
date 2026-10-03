@@ -10,13 +10,15 @@
     "preview": "vite preview",
     "test:frontend": "node test_frontend_validation.mjs",
     "test:permission": "node --experimental-strip-types test_s1_05_permission.mjs",
+    "test:s2_01": "node --experimental-strip-types test_s2_01_import.mjs",
     "test:e2e": "node test_e2e_integration.mjs",
-    "test": "node test_frontend_validation.mjs && node --experimental-strip-types test_s1_05_permission.mjs"
+    "test": "node test_frontend_validation.mjs && node --experimental-strip-types test_s1_05_permission.mjs && node --experimental-strip-types test_s2_01_import.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router-dom": "^7.6.2"
+    "react-router-dom": "^7.6.2",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

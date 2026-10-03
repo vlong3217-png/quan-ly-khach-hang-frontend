@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import { API_BASE_URL } from '../../services/authService.ts'
 import type { LoginRequest, LoginResponse } from '../../types/auth.ts'
@@ -102,8 +102,7 @@ function LoginPage() {
 
   /* ---- Redirect if already logged in ---- */
   if (!authLoading && isAuthenticated) {
-    navigate('/dashboard', { replace: true })
-    return null
+    return <Navigate to="/dashboard" replace />
   }
 
   /* ---- Handlers ---- */
