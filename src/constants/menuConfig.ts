@@ -150,6 +150,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
             permissions: [PERMISSIONS.SYSTEM_SETTINGS],
           },
           {
+            id: 'menu-settings-categories',
+            title: 'Danh mục bán hàng',
+            path: '/dashboard/settings/categories',
+            roles: [ROLES.ADMIN, ROLES.MANAGER],
+            description: 'Khai báo ngành nghề, quy mô, nguồn lead và loại hoạt động (S2-07)',
+          },
+          {
             id: 'menu-settings-logs',
             title: 'Nhật ký hoạt động',
             path: '/dashboard/settings/audit-logs',
