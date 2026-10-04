@@ -165,6 +165,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
             description: 'Khai báo trường tuỳ chỉnh cho khách hàng và cơ hội (S2-08)',
           },
           {
+            id: 'menu-settings-pipeline',
+            title: 'Giai đoạn Pipeline & Dự báo',
+            path: '/dashboard/settings/pipeline',
+            roles: [ROLES.ADMIN, ROLES.MANAGER],
+            description: 'Cấu hình các giai đoạn pipeline và xác suất thắng (S2-09)',
+          },
+          {
             id: 'menu-settings-logs',
             title: 'Nhật ký hoạt động',
             path: '/dashboard/settings/audit-logs',
