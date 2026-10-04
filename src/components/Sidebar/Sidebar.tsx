@@ -141,8 +141,7 @@ export function Sidebar({
             <IconShieldLogo />
           </div>
           <div className="sidebar-brand-info">
-            <span className="sidebar-brand-name">CRM HỆ THỐNG</span>
-            <span className="sidebar-brand-sub">Quản lý khách hàng</span>
+            <span className="sidebar-brand-name">Quản lý khách hàng</span>
           </div>
         </div>
         {onToggleCollapse && (
