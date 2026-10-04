@@ -172,6 +172,14 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
             description: 'Cấu hình các giai đoạn pipeline và xác suất thắng (S2-09)',
           },
           {
+            id: 'menu-settings-win-loss',
+            title: 'Lý do Thắng/Thua & Đối thủ',
+            path: '/dashboard/settings/win-loss',
+            roles: [ROLES.ADMIN, ROLES.MANAGER],
+            description: 'Khai báo danh mục lý do thắng thua và đối thủ cạnh tranh (S2-10)'
+
+          },
+          {
             id: 'menu-settings-logs',
             title: 'Nhật ký hoạt động',
             path: '/dashboard/settings/audit-logs',
