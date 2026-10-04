@@ -158,29 +158,7 @@ export function Sidebar({
         )}
       </div>
 
-      {/* ── 2. User Profile Area ── */}
-      <div className="sidebar-role-indicator">
-        <div className="sidebar-user-row">
-          <div className="sidebar-user-avatar" aria-hidden="true" style={{ overflow: 'hidden' }}>
-            {user.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.full_name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            ) : user.full_name ? (
-              user.full_name.charAt(0).toUpperCase()
-            ) : (
-              'U'
-            )}
-          </div>
-          <div className="sidebar-user-meta">
-            <div className="role-user-name" title={user.email}>
-              {user.full_name}
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* ── 3. Navigation Menu Groups ── */}
       <nav className="sidebar-nav" role="navigation">
