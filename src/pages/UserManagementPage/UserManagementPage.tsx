@@ -238,9 +238,16 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
   const [filterTeam, setFilterTeam] = useState('')
   const [teams, setTeams] = useState<string[]>([])
 
-  // Pagination (S1-08: Mặc định 20 dòng / trang)
-  const [currentPage, setCurrentPage] = useState(1)
-  const pageSize = 20
+  // Pagination (Phân trang tài khoản phía Frontend)
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(5)
+
+  // Reset trang về 1 khi số lượng bản ghi hoặc bộ lọc thay đổi
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [users.length, search, filterRole, filterStatus, filterTeam])
+
+  const totalUserPages = Math.max(1, Math.ceil(users.length / pageSize))
 
   // Modal create/edit
   const [modalOpen, setModalOpen] = useState(false)
@@ -828,31 +835,65 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
                 </tbody>
               </table>
 
-              {/* Thanh phân trang Pagination (S1-08) */}
+              {/* Thanh phân trang Pagination */}
               {users.length > 0 && (
-                <div className="user-mgmt-pagination" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderTop: '1px solid #e2e8f0', fontSize: '13px', color: '#64748b' }}>
-                  <span>
-                    Hiển thị {Math.min((currentPage - 1) * pageSize + 1, users.length)} - {Math.min(currentPage * pageSize, users.length)} trên tổng số {users.length} tài khoản (Mặc định {pageSize} dòng/trang)
-                  </span>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="user-mgmt-pagination">
+                  <div className="user-mgmt-pagination-info">
+                    <span>
+                      Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, users.length)}</strong> - <strong>{Math.min(currentPage * pageSize, users.length)}</strong> trên tổng số <strong>{users.length}</strong> tài khoản
+                    </span>
+                    <div className="user-mgmt-pagination-size">
+                      <label htmlFor="user-page-size-select">Hiển thị:</label>
+                      <select
+                        id="user-page-size-select"
+                        value={pageSize}
+                        onChange={(e) => {
+                          setPageSize(Number(e.target.value))
+                          setCurrentPage(1)
+                        }}
+                        className="user-mgmt-pagination-select"
+                      >
+                        <option value={5}>5 tài khoản / trang</option>
+                        <option value={10}>10 tài khoản / trang</option>
+                        <option value={20}>20 tài khoản / trang</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="user-mgmt-pagination-controls">
                     <button
                       type="button"
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                      style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+                      className="user-mgmt-page-btn nav-btn"
+                      title="Trang trước"
                     >
-                      Trang trước
+                      Trước
                     </button>
-                    <span style={{ padding: '6px 12px', fontWeight: 600, color: '#1e293b' }}>
-                      Trang {currentPage} / {Math.ceil(users.length / pageSize) || 1}
-                    </span>
+
+                    <div className="user-mgmt-page-numbers">
+                      {Array.from({ length: totalUserPages }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          className={`user-mgmt-page-btn number-btn ${
+                            pageNum === currentPage ? 'active' : ''
+                          }`}
+                          onClick={() => setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+                    </div>
+
                     <button
                       type="button"
-                      disabled={currentPage >= Math.ceil(users.length / pageSize)}
-                      onClick={() => setCurrentPage((p) => p + 1)}
-                      style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', cursor: currentPage >= Math.ceil(users.length / pageSize) ? 'not-allowed' : 'pointer', opacity: currentPage >= Math.ceil(users.length / pageSize) ? 0.5 : 1 }}
+                      disabled={currentPage >= totalUserPages}
+                      onClick={() => setCurrentPage((p) => Math.min(p + 1, totalUserPages))}
+                      className="user-mgmt-page-btn nav-btn"
+                      title="Trang sau"
                     >
-                      Trang sau
+                      Sau
                     </button>
                   </div>
                 </div>
