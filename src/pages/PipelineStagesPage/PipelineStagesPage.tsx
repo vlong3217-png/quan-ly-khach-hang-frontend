@@ -129,7 +129,7 @@ export default function PipelineStagesPage() {
 
       <div className="pipe-header">
         <div>
-          <h2>📊 Cấu hình Giai đoạn Pipeline & Xác suất Thắng (S2-09)</h2>
+          <h2>📊 Cấu hình Giai đoạn Pipeline & Xác suất Thắng</h2>
           <p className="pipe-subtitle">
             Thiết lập chuỗi giai đoạn bán hàng, xác suất thắng mặc định để tính dự báo doanh số chuẩn xác.
           </p>
@@ -244,12 +244,6 @@ export default function PipelineStagesPage() {
             ))}
           </tbody>
         </table>
-      </div>
-
-      <div className="pipe-footer-note">
-        <p>
-          🛡️ <em>Quy tắc S2-09: Thay đổi cấu hình giai đoạn tuyệt đối không làm mất dữ liệu các cơ hội bán hàng đang xử lý. Giai đoạn có cơ hội đang chạy sẽ được bảo vệ ngăn xóa bất cẩn.</em>
-        </p>
       </div>
 
       {/* Modal Thêm / Chỉnh sửa Giai đoạn */}

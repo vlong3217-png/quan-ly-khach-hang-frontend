@@ -123,7 +123,7 @@ export default function CategoriesPage() {
 
       <div className="cat-header">
         <div>
-          <h2>📑 Khai báo Danh mục Bán hàng dùng chung (S2-07)</h2>
+          <h2>📑 Khai báo Danh mục Bán hàng dùng chung</h2>
           <p className="cat-subtitle">
             Chuẩn hóa danh mục toàn khối để số liệu đồng nhất: ngành nghề, quy mô, nguồn lead, hoạt động.
           </p>
@@ -227,10 +227,6 @@ export default function CategoriesPage() {
             )}
           </tbody>
         </table>
-      </div>
-
-      <div className="cat-footer-note">
-        <p>💡 <em>Quy tắc S2-07: Giá trị đang được tham chiếu bởi các bản ghi khách hàng hoặc hoạt động sẽ bị khóa nút Xóa để bảo vệ tính toàn vẹn của dữ liệu báo cáo.</em></p>
       </div>
 
       {/* Modal Thêm / Chỉnh sửa */}

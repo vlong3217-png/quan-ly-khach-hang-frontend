@@ -162,7 +162,7 @@ export default function WinLossCompetitorsPage() {
 
       <div className="wl-header">
         <div>
-          <h2>🎯 Danh mục Lý do Thắng / Thua & Đối thủ cạnh tranh (S2-10)</h2>
+          <h2>🎯 Danh mục Lý do Thắng / Thua & Đối thủ cạnh tranh</h2>
           <p className="wl-subtitle">
             Khai báo danh mục nguyên nhân thắng thua và hồ sơ đối thủ, phục vụ phân tích rút kinh nghiệm khi đóng cơ hội (Sprint 5).
           </p>
@@ -301,12 +301,6 @@ export default function WinLossCompetitorsPage() {
           ))}
         </div>
       )}
-
-      <div className="wl-footer-note">
-        <p>
-          🎯 <em>Tiêu chí chấp nhận S2-10: Lý do thắng và thua được phân loại độc lập. Danh mục đối thủ cạnh tranh được chuẩn hóa để bắt buộc lựa chọn khi kết thúc cơ hội (Sprint 5).</em>
-        </p>
-      </div>
 
       {/* Modal Lý do Thắng/Thua */}
       {isReasonModalOpen && (
