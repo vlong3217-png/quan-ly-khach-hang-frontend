@@ -9,6 +9,7 @@ import UserManagementPage from '../UserManagementPage/UserManagementPage.tsx'
 import ProductsPage from '../ProductsPage/ProductsPage.tsx'
 import OrganizationPage from '../OrganizationPage/OrganizationPage.tsx'
 import CategoriesPage from '../CategoriesPage/CategoriesPage.tsx'
+import CustomFieldsPage from '../CustomFieldsPage/CustomFieldsPage.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -1030,6 +1031,10 @@ function DashboardPage() {
 
                 <div style={{ marginTop: '28px' }}>
                   <CategoriesPage />
+                </div>
+
+                <div style={{ marginTop: '28px' }}>
+                  <CustomFieldsPage />
                 </div>
               </section>
             </PermissionGate>

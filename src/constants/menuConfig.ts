@@ -157,6 +157,14 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
             description: 'Khai báo ngành nghề, quy mô, nguồn lead và loại hoạt động (S2-07)',
           },
           {
+            id: 'menu-settings-custom-fields',
+            title: 'Trường tuỳ chỉnh',
+            path: '/dashboard/settings/custom-fields',
+            roles: [ROLES.ADMIN],
+            permissions: [PERMISSIONS.SYSTEM_SETTINGS],
+            description: 'Khai báo trường tuỳ chỉnh cho khách hàng và cơ hội (S2-08)',
+          },
+          {
             id: 'menu-settings-logs',
             title: 'Nhật ký hoạt động',
             path: '/dashboard/settings/audit-logs',
