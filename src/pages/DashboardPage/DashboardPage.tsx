@@ -11,6 +11,7 @@ import OrganizationPage from '../OrganizationPage/OrganizationPage.tsx'
 import CategoriesPage from '../CategoriesPage/CategoriesPage.tsx'
 import CustomFieldsPage from '../CustomFieldsPage/CustomFieldsPage.tsx'
 import PipelineStagesPage from '../PipelineStagesPage/PipelineStagesPage.tsx'
+import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -1040,6 +1041,10 @@ function DashboardPage() {
 
                 <div style={{ marginTop: '28px' }}>
                   <PipelineStagesPage />
+                </div>
+
+                <div style={{ marginTop: '28px' }}>
+                  <WinLossCompetitorsPage />
                 </div>
               </section>
             </PermissionGate>
