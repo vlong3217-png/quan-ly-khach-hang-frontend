@@ -143,7 +143,7 @@ export default function OrganizationPage() {
 
       <div className="org-header">
         <div>
-          <h2>🌳 Cơ cấu Tổ chức Kinh doanh & Khu vực địa lý (S2-06)</h2>
+          <h2>🌳 Cơ cấu Tổ chức Kinh doanh & Khu vực địa lý</h2>
           <p className="org-subtitle">
             Mô hình cấu trúc cây phân quyền dữ liệu cho Trưởng nhóm và nhân viên. Mỗi nhân viên thuộc duy nhất một nhóm.
           </p>
@@ -215,9 +215,6 @@ export default function OrganizationPage() {
                     </tbody>
                   </table>
                 </div>
-                <p className="ac-rule-note">
-                  ℹ️ *Theo tiêu chí chấp nhận S2-06: Mỗi nhân viên thuộc đúng một nhóm tại một thời điểm. Dữ liệu báo cáo của Trưởng nhóm sẽ tổng hợp toàn bộ các nhánh con bên dưới.*
-                </p>
               </div>
             </div>
           ) : (
