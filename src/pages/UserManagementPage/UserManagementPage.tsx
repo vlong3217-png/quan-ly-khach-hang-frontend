@@ -589,15 +589,61 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
             Quản lý tài khoản
             <span className="user-mgmt-title-count">{total}</span>
           </h1>
-          <button
-            type="button"
-            className="user-mgmt-add-btn"
-            onClick={openCreateModal}
-            id="user-mgmt-add-btn"
-          >
-            <IconPlus />
-            Thêm tài khoản
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              type="button"
+              className="user-mgmt-add-btn"
+              onClick={() => navigate('/import-users')}
+              id="user-mgmt-import-btn"
+              style={{
+                background: '#f1f5f9',
+                color: '#334155',
+                border: '1px solid #cbd5e1',
+                boxShadow: 'none',
+              }}
+              title="Nhập danh sách người dùng từ file Excel (S2-01)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                <path d="M8 13h2" />
+                <path d="M14 13h2" />
+                <path d="M8 17h2" />
+                <path d="M14 17h2" />
+              </svg>
+              Nhập từ Excel
+            </button>
+            <button
+              type="button"
+              className="user-mgmt-add-btn"
+              onClick={() => navigate('/admin/audit-logs')}
+              id="user-mgmt-audit-btn"
+              style={{
+                background: '#e0e7ff',
+                color: '#4338ca',
+                border: '1px solid #c7d2fe',
+                boxShadow: 'none',
+              }}
+              title="Xem nhật ký thay đổi dữ liệu nhạy cảm (S2-04)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                <path d="M9 12h6" />
+                <path d="M9 16h6" />
+              </svg>
+              Nhật ký thay đổi
+            </button>
+            <button
+              type="button"
+              className="user-mgmt-add-btn"
+              onClick={openCreateModal}
+              id="user-mgmt-add-btn"
+            >
+              <IconPlus />
+              Thêm tài khoản
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
