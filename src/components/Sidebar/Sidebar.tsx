@@ -205,13 +205,7 @@ export function Sidebar({
         ))}
       </nav>
 
-      {/* ── 4. Sidebar Footer ── */}
-      <div className="sidebar-footer">
-        <div className="sidebar-footer-info">
-          <span>Phiên bản 1.0 (S1-06)</span>
-          <span className="sidebar-security-tag">Phân quyền RBAC</span>
-        </div>
-      </div>
+
     </aside>
   )
 }
