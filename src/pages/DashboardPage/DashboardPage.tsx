@@ -6,6 +6,7 @@ import { PermissionGate } from '../../components/PermissionGate.tsx'
 import Sidebar from '../../components/Sidebar/Sidebar.tsx'
 import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal.tsx'
 import UserManagementPage from '../UserManagementPage/UserManagementPage.tsx'
+import OrganizationPage from '../OrganizationPage/OrganizationPage.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -929,42 +930,7 @@ function DashboardPage() {
               }
             >
               <section className="dashboard-section teams-section">
-                <div className="section-header">
-                  <div>
-                    <h2 className="section-title">Danh sách phòng ban & Đội nhóm kinh doanh</h2>
-                    <p className="section-desc">
-                      Quản lý cơ cấu nhân sự, phân bổ khách hàng mục tiêu cho từng thành viên.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="teams-grid">
-                  <div className="team-card">
-                    <div className="team-card-header">
-                      <h3>Đội Kinh Doanh 1</h3>
-                      <span className="team-status-tag">Đang hoạt động</span>
-                    </div>
-                    <p className="team-desc">Phụ trách thị trường miền Bắc và khách hàng doanh nghiệp</p>
-                    <ul className="team-meta-list">
-                      <li>Trưởng nhóm: <strong>Nguyễn Văn Tuấn</strong></li>
-                      <li>Quy mô: <strong>5 nhân viên</strong></li>
-                      <li>Phạm vi dữ liệu: <strong>TEAM</strong></li>
-                    </ul>
-                  </div>
-
-                  <div className="team-card">
-                    <div className="team-card-header">
-                      <h3>Đội Kinh Doanh 2</h3>
-                      <span className="team-status-tag">Đang hoạt động</span>
-                    </div>
-                    <p className="team-desc">Phụ trách thị trường miền Nam và khách hàng bán lẻ</p>
-                    <ul className="team-meta-list">
-                      <li>Trưởng nhóm: <strong>Trần Thị Mai</strong></li>
-                      <li>Quy mô: <strong>4 nhân viên</strong></li>
-                      <li>Phạm vi dữ liệu: <strong>TEAM</strong></li>
-                    </ul>
-                  </div>
-                </div>
+                <OrganizationPage />
               </section>
             </PermissionGate>
           )}
