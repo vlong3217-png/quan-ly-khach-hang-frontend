@@ -61,6 +61,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
           },
         ],
       },
+      {
+        id: 'menu-products',
+        title: 'Sản phẩm & Bảng giá',
+        path: '/dashboard/products',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Quản lý danh mục sản phẩm, dịch vụ và bảng giá niêm yết (S2-05)',
+      },
     ],
   },
   {

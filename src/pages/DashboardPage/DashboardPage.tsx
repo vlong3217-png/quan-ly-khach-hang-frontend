@@ -6,6 +6,7 @@ import { PermissionGate } from '../../components/PermissionGate.tsx'
 import Sidebar from '../../components/Sidebar/Sidebar.tsx'
 import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal.tsx'
 import UserManagementPage from '../UserManagementPage/UserManagementPage.tsx'
+import ProductsPage from '../ProductsPage/ProductsPage.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -456,6 +457,9 @@ function DashboardPage() {
   const isCustomerView =
     activeMenuId === 'menu-customers' ||
     activeMenuId.startsWith('menu-customers-')
+  const isProductView =
+    activeMenuId === 'menu-products' ||
+    activeMenuId.startsWith('menu-products-')
   const isReportView =
     activeMenuId === 'menu-reports' ||
     activeMenuId.startsWith('menu-reports-')
@@ -815,6 +819,15 @@ function DashboardPage() {
                   </div>
                 )}
               </div>
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: SẢN PHẨM & BẢNG GIÁ NIÊM YẾT (S2-05)
+              ───────────────────────────────────────────────────────────── */}
+          {isProductView && (
+            <section className="dashboard-section products-section">
+              <ProductsPage />
             </section>
           )}
 
