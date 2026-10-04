@@ -66,7 +66,7 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         title: 'Sản phẩm & Bảng giá',
         path: '/dashboard/products',
         roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
-        description: 'Quản lý danh mục sản phẩm, dịch vụ và bảng giá niêm yết (S2-05)',
+        description: 'Quản lý danh mục sản phẩm, dịch vụ và bảng giá niêm yết',
       },
     ],
   },
@@ -154,7 +154,7 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
             title: 'Danh mục bán hàng',
             path: '/dashboard/settings/categories',
             roles: [ROLES.ADMIN, ROLES.MANAGER],
-            description: 'Khai báo ngành nghề, quy mô, nguồn lead và loại hoạt động (S2-07)',
+            description: 'Khai báo ngành nghề, quy mô, nguồn lead và loại hoạt động',
           },
           {
             id: 'menu-settings-custom-fields',
@@ -162,21 +162,21 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
             path: '/dashboard/settings/custom-fields',
             roles: [ROLES.ADMIN],
             permissions: [PERMISSIONS.SYSTEM_SETTINGS],
-            description: 'Khai báo trường tuỳ chỉnh cho khách hàng và cơ hội (S2-08)',
+            description: 'Khai báo trường tuỳ chỉnh cho khách hàng và cơ hội',
           },
           {
             id: 'menu-settings-pipeline',
             title: 'Giai đoạn Pipeline & Dự báo',
             path: '/dashboard/settings/pipeline',
             roles: [ROLES.ADMIN, ROLES.MANAGER],
-            description: 'Cấu hình các giai đoạn pipeline và xác suất thắng (S2-09)',
+            description: 'Cấu hình các giai đoạn pipeline và xác suất thắng',
           },
           {
             id: 'menu-settings-win-loss',
             title: 'Lý do Thắng/Thua & Đối thủ',
             path: '/dashboard/settings/win-loss',
             roles: [ROLES.ADMIN, ROLES.MANAGER],
-            description: 'Khai báo danh mục lý do thắng thua và đối thủ cạnh tranh (S2-10)'
+            description: 'Khai báo danh mục lý do thắng thua và đối thủ cạnh tranh'
 
           },
           {

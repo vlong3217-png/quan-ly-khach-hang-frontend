@@ -144,7 +144,7 @@ export default function CustomFieldsPage() {
 
       <div className="cf-header">
         <div>
-          <h2>🧩 Khai báo Trường tuỳ chỉnh - Custom Fields (S2-08)</h2>
+          <h2>🧩 Khai báo Trường tuỳ chỉnh - Custom Fields</h2>
           <p className="cf-subtitle">
             Mở rộng cấu trúc dữ liệu cho Khách hàng và Cơ hội bán hàng mà không cần sửa code backend.
           </p>
@@ -240,12 +240,6 @@ export default function CustomFieldsPage() {
             )}
           </tbody>
         </table>
-      </div>
-
-      <div className="cf-footer-note">
-        <p>
-          🎯 <em>Tiêu chí chấp nhận S2-08: Hỗ trợ 4 kiểu dữ liệu (Văn bản, Số, Ngày tháng, Danh sách chọn), cấu hình bắt buộc và tự động đồng bộ lên bộ lọc tìm kiếm & bản xuất tệp Excel.</em>
-        </p>
       </div>
 
       {/* Modal Thêm / Chỉnh sửa Trường */}
