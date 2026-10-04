@@ -997,28 +997,6 @@ function DashboardPage() {
 
                 <div className="settings-cards-grid">
                   <div className="setting-card">
-                    <h4>Phân quyền & Vai trò (RBAC)</h4>
-                    <p>Thiết lập danh sách quyền hạn cho từng nhóm ADMIN, MANAGER, USER.</p>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => showNotice('Mở cấu hình ma trận phân quyền')}
-                    >
-                      Cấu hình vai trò
-                    </button>
-                  </div>
-                  <div className="setting-card">
-                    <h4>Chính sách bảo mật & Session</h4>
-                    <p>Thời hạn token JWT, giới hạn phiên đăng nhập và xác thực hai bước (2FA).</p>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => showNotice('Mở cài đặt chính sách an ninh')}
-                    >
-                      Thiết lập bảo mật
-                    </button>
-                  </div>
-                  <div className="setting-card">
                     <h4>Nhật ký hoạt động hệ thống (Audit Logs)</h4>
                     <p>Ghi lại lịch sử đăng nhập, thay đổi dữ liệu khách hàng và truy cập API.</p>
                     <button
