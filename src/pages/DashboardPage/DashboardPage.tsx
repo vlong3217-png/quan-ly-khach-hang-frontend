@@ -6,6 +6,7 @@ import { PermissionGate } from '../../components/PermissionGate.tsx'
 import Sidebar from '../../components/Sidebar/Sidebar.tsx'
 import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal.tsx'
 import UserManagementPage from '../UserManagementPage/UserManagementPage.tsx'
+import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -1046,6 +1047,10 @@ function DashboardPage() {
                       Xem Audit Log
                     </button>
                   </div>
+                </div>
+
+                <div style={{ marginTop: '28px' }}>
+                  <WinLossCompetitorsPage />
                 </div>
               </section>
             </PermissionGate>
