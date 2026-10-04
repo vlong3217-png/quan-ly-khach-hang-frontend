@@ -8,6 +8,7 @@ import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePass
 import UserManagementPage from '../UserManagementPage/UserManagementPage.tsx'
 import ProductsPage from '../ProductsPage/ProductsPage.tsx'
 import OrganizationPage from '../OrganizationPage/OrganizationPage.tsx'
+import CategoriesPage from '../CategoriesPage/CategoriesPage.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -1025,6 +1026,10 @@ function DashboardPage() {
                       Xem Audit Log
                     </button>
                   </div>
+                </div>
+
+                <div style={{ marginTop: '28px' }}>
+                  <CategoriesPage />
                 </div>
               </section>
             </PermissionGate>
