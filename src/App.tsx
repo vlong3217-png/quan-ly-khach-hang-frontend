@@ -5,6 +5,9 @@ import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage.tsx'
 import ChangePasswordPage from './pages/ChangePasswordPage/ChangePasswordPage.tsx'
 import DashboardPage from './pages/DashboardPage/DashboardPage.tsx'
 import ForbiddenPage from './pages/ForbiddenPage/ForbiddenPage.tsx'
+import ImportUsersPage from './pages/ImportUsersPage/ImportUsersPage.tsx'
+import ProfilePage from './pages/ProfilePage/ProfilePage.tsx'
+import AuditLogPage from './pages/AuditLogPage/AuditLogPage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import AdminRoute from './components/AdminRoute.tsx'
 import { ROLES, PERMISSIONS } from './constants/permissions.ts'
@@ -97,6 +100,40 @@ function App() {
       <Route
         path="/users"
         element={<Navigate to="/dashboard/users" replace />}
+      />
+
+      {/* ── S2-01: Nhập danh sách người dùng từ Excel ── */}
+      <Route
+        path="/import-users"
+        element={
+          <AdminRoute>
+            <ImportUsersPage />
+          </AdminRoute>
+        }
+      />
+
+      {/* ── S2-02 / S2-03: Hồ sơ cá nhân & Ảnh đại diện ── */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ── S2-04: Nhật ký thay đổi dữ liệu nhạy cảm (Audit Logs) ── */}
+      <Route
+        path="/admin/audit-logs"
+        element={
+          <AdminRoute>
+            <AuditLogPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/audit-logs"
+        element={<Navigate to="/admin/audit-logs" replace />}
       />
 
       {/* 6. Route Dashboard tổng quan */}

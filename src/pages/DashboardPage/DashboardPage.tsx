@@ -403,9 +403,22 @@ function DashboardPage() {
             </div>
 
             <div className="dashboard-user-area">
-              <div className="dashboard-user-info">
-                <div className="dashboard-user-avatar">
-                  <IconUser />
+              <div
+                className="dashboard-user-info"
+                onClick={() => navigate('/profile')}
+                style={{ cursor: 'pointer' }}
+                title="Xem hồ sơ cá nhân"
+              >
+                <div className="dashboard-user-avatar" style={{ overflow: 'hidden' }}>
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.full_name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                    />
+                  ) : (
+                    <IconUser />
+                  )}
                 </div>
                 <div className="dashboard-user-details">
                   <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
@@ -873,7 +886,7 @@ function DashboardPage() {
                     <button
                       type="button"
                       className="btn btn-secondary"
-                      onClick={() => showNotice('Mở danh sách nhật ký kiểm toán')}
+                      onClick={() => navigate('/admin/audit-logs')}
                     >
                       Xem Audit Log
                     </button>
