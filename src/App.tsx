@@ -84,6 +84,16 @@ function App() {
         }
       />
 
+      {/* 4b. S2-05: Quản lý Sản phẩm / Dịch vụ & Bảng giá */}
+      <Route
+        path="/dashboard/products/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* 5. Quản lý tài khoản (S1-08 / S1-10) */}
       <Route
         path="/dashboard/users/*"
