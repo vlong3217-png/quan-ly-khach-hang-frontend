@@ -175,6 +175,94 @@ function DashboardPage() {
       team_id: 2,
       team_name: 'Đội Kinh Doanh 2',
     },
+    {
+      id: 5,
+      code: 'KH-005',
+      name: 'Tập đoàn Nông nghiệp Xanh Việt',
+      phone: '0945 111 222',
+      company: 'Green Viet Agri',
+      owner_id: user?.id ?? 1,
+      owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 6,
+      code: 'KH-006',
+      name: 'Công ty Dược phẩm Hải Đăng',
+      phone: '0978 333 444',
+      company: 'Hai Dang Pharma',
+      owner_id: 99,
+      owner_name: 'Nguyễn Văn Tuấn (Đồng nghiệp)',
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 7,
+      code: 'KH-007',
+      name: 'Công ty TNHH Thời Trang Tân Á',
+      phone: '0911 555 666',
+      company: 'Tan A Fashion',
+      owner_id: user?.id ?? 1,
+      owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 8,
+      code: 'KH-008',
+      name: 'Tập đoàn Năng Lượng Mặt Trời SolarV',
+      phone: '0908 888 999',
+      company: 'SolarV Energy',
+      owner_id: 101,
+      owner_name: 'Trần Thị Mai (Nhóm khác)',
+      team_id: 2,
+      team_name: 'Đội Kinh Doanh 2',
+    },
+    {
+      id: 9,
+      code: 'KH-009',
+      name: 'Công ty Thực phẩm Sạch An Tâm',
+      phone: '0966 222 333',
+      company: 'An Tam Food',
+      owner_id: user?.id ?? 1,
+      owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 10,
+      code: 'KH-010',
+      name: 'Công ty CP Đầu tư & Xây dựng An Gia',
+      phone: '0937 444 555',
+      company: 'An Gia Construction',
+      owner_id: 99,
+      owner_name: 'Nguyễn Văn Tuấn (Đồng nghiệp)',
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 11,
+      code: 'KH-011',
+      name: 'Hệ thống Khách sạn & Nghỉ dưỡng Biển Xanh',
+      phone: '0989 666 777',
+      company: 'Blue Sea Resorts',
+      owner_id: 102,
+      owner_name: 'Lê Đình Trọng (Nhóm khác)',
+      team_id: 2,
+      team_name: 'Đội Kinh Doanh 2',
+    },
+    {
+      id: 12,
+      code: 'KH-012',
+      name: 'Công ty Công nghệ Giáo dục EduNext',
+      phone: '0918 999 000',
+      company: 'EduNext Corp',
+      owner_id: user?.id ?? 1,
+      owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
   ])
 
   // Cập nhật tên của chính mình nếu thông tin user thay đổi
@@ -223,6 +311,10 @@ function DashboardPage() {
     }, 3500)
   }
 
+  // Phân trang khách hàng phía Frontend
+  const [customerPage, setCustomerPage] = useState<number>(1)
+  const [customerPageSize, setCustomerPageSize] = useState<number>(5)
+
   // Lọc dữ liệu khách hàng theo scope
   const scopedCustomers = useMemo(() => {
     return filterScopedData(customerList, {
@@ -230,6 +322,19 @@ function DashboardPage() {
       getTeamId: (c) => c.team_id,
     })
   }, [customerList, filterScopedData])
+
+  // Reset trang về 1 khi số lượng bản ghi hoặc scope thay đổi
+  useEffect(() => {
+    setCustomerPage(1)
+  }, [scopedCustomers.length, scope])
+
+  const totalCustomerPages = Math.max(1, Math.ceil(scopedCustomers.length / customerPageSize))
+
+  // Danh sách khách hàng của trang hiện tại
+  const pagedCustomers = useMemo(() => {
+    const startIndex = (customerPage - 1) * customerPageSize
+    return scopedCustomers.slice(startIndex, startIndex + customerPageSize)
+  }, [scopedCustomers, customerPage, customerPageSize])
 
   // Mở modal thêm khách hàng
   const handleOpenCreateModal = () => {
@@ -596,7 +701,7 @@ function DashboardPage() {
                         </td>
                       </tr>
                     ) : (
-                      scopedCustomers.map((cust) => (
+                      pagedCustomers.map((cust) => (
                         <tr key={cust.id}>
                           <td className="code-cell">{cust.code}</td>
                           <td className="name-cell">{cust.name}</td>
@@ -649,6 +754,66 @@ function DashboardPage() {
                     )}
                   </tbody>
                 </table>
+
+                {scopedCustomers.length > 0 && (
+                  <div className="customer-pagination">
+                    <div className="customer-pagination-info">
+                      <span>
+                        Hiển thị <strong>{Math.min((customerPage - 1) * customerPageSize + 1, scopedCustomers.length)}</strong> - <strong>{Math.min(customerPage * customerPageSize, scopedCustomers.length)}</strong> trên tổng số <strong>{scopedCustomers.length}</strong> khách hàng
+                      </span>
+                      <div className="customer-pagination-size">
+                        <label htmlFor="customer-page-size-select">Hiển thị:</label>
+                        <select
+                          id="customer-page-size-select"
+                          value={customerPageSize}
+                          onChange={(e) => setCustomerPageSize(Number(e.target.value))}
+                          className="customer-pagination-select"
+                        >
+                          <option value={5}>5 khách hàng / trang</option>
+                          <option value={10}>10 khách hàng / trang</option>
+                          <option value={20}>20 khách hàng / trang</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="customer-pagination-controls">
+                      <button
+                        type="button"
+                        disabled={customerPage === 1}
+                        onClick={() => setCustomerPage((p) => Math.max(p - 1, 1))}
+                        className="customer-page-btn nav-btn"
+                        title="Trang trước"
+                      >
+                        Trước
+                      </button>
+
+                      <div className="customer-page-numbers">
+                        {Array.from({ length: totalCustomerPages }, (_, i) => i + 1).map((pageNum) => (
+                          <button
+                            key={pageNum}
+                            type="button"
+                            className={`customer-page-btn number-btn ${
+                              pageNum === customerPage ? 'active' : ''
+                            }`}
+                            onClick={() => setCustomerPage(pageNum)}
+                          >
+                            {pageNum}
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={customerPage >= totalCustomerPages}
+                        onClick={() => setCustomerPage((p) => Math.min(p + 1, totalCustomerPages))}
+                        className="customer-page-btn nav-btn"
+                        title="Trang sau"
+                      >
+                        Sau
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
           )}
