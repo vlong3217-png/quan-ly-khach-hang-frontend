@@ -161,12 +161,14 @@ export function AuditLogPage() {
     let targets = 0
     let ownerships = 0
     let roles = 0
-    logs.forEach((log) => {
-      if (log.entity_type === 'DISCOUNT') discounts++
-      else if (log.entity_type === 'TARGET') targets++
-      else if (log.entity_type === 'OWNERSHIP') ownerships++
-      else if (log.entity_type === 'USER_ROLE') roles++
-    })
+    if (Array.isArray(logs)) {
+      logs.forEach((log) => {
+        if (log.entity_type === 'DISCOUNT') discounts++
+        else if (log.entity_type === 'TARGET') targets++
+        else if (log.entity_type === 'OWNERSHIP') ownerships++
+        else if (log.entity_type === 'USER_ROLE') roles++
+      })
+    }
     return { discounts, targets, ownerships, roles, total: totalRecords }
   }, [logs, totalRecords])
 
@@ -186,9 +188,9 @@ export function AuditLogPage() {
       })
 
       if (response.success) {
-        setLogs(response.data)
-        setTotalRecords(response.total)
-        setTotalPages(response.totalPages)
+        setLogs(Array.isArray(response.data) ? response.data : [])
+        setTotalRecords(response.total ?? 0)
+        setTotalPages(response.totalPages ?? 1)
       } else {
         throw new Error(response.message || 'Không thể tải nhật ký thay đổi.')
       }
