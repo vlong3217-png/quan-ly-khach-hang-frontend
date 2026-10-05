@@ -45,15 +45,18 @@ const IconSettings = () => (
   </svg>
 )
 
-const IconChevronDown = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
-)
 
-const IconShieldLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+const IconCrmLogo = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+    {/* Người dùng trung tâm */}
+    <circle cx="12" cy="7" r="3.2" />
+    <path d="M6.5 19.5c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5" />
+    {/* Khách hàng / thành viên kết nối bên trái */}
+    <circle cx="4.5" cy="9.5" r="2.2" />
+    <path d="M2 18.5c0-2 1.5-3.5 3.5-3.5" />
+    {/* Khách hàng / thành viên kết nối bên phải */}
+    <circle cx="19.5" cy="9.5" r="2.2" />
+    <path d="M22 18.5c0-2-1.5-3.5-3.5-3.5" />
   </svg>
 )
 
@@ -66,6 +69,51 @@ const IconUsers = () => (
   </svg>
 )
 
+const IconPackage = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m7.5 4.27 9 5.15" />
+    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+    <path d="m3.3 7 8.7 5 8.7-5" />
+    <path d="M12 22V12" />
+  </svg>
+)
+
+const IconPipeline = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 3v18h18" />
+    <path d="m19 9-5 5-4-4-3 3" />
+  </svg>
+)
+
+const IconCategories = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+    <path d="M6 6h10" />
+    <path d="M6 10h10" />
+  </svg>
+)
+
+const IconWinLoss = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
+  </svg>
+)
+
+const IconCustomFields = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2v4" />
+    <path d="M12 18v4" />
+    <path d="M4.93 4.93l2.83 2.83" />
+    <path d="M16.24 16.24l2.83 2.83" />
+    <path d="M2 12h4" />
+    <path d="M18 12h4" />
+    <path d="M4.93 19.07l2.83-2.83" />
+    <path d="M16.24 7.76l2.83-2.83" />
+  </svg>
+)
+
 // Map icon theo id của menu item
 function getMenuIcon(id: string) {
   switch (id) {
@@ -73,6 +121,16 @@ function getMenuIcon(id: string) {
       return <IconDashboard />
     case 'menu-customers':
       return <IconCustomers />
+    case 'menu-products':
+      return <IconPackage />
+    case 'menu-pipeline':
+      return <IconPipeline />
+    case 'menu-categories':
+      return <IconCategories />
+    case 'menu-win-loss':
+      return <IconWinLoss />
+    case 'menu-custom-fields':
+      return <IconCustomFields />
     case 'menu-reports':
       return <IconReports />
     case 'menu-teams':
@@ -93,8 +151,6 @@ export interface SidebarProps {
   onSelectMenu: (item: MenuItem) => void
   /** Trạng thái thu gọn sidebar trên màn hình nhỏ */
   isCollapsed?: boolean
-  /** Callback bật/tắt thu gọn */
-  onToggleCollapse?: () => void
 }
 
 /**
@@ -104,7 +160,7 @@ export interface SidebarProps {
  * 1. Nhận thông tin Role (ADMIN, MANAGER, USER) từ AuthContext (session).
  * 2. Lọc bỏ hoàn toàn các menu không thuộc quyền hạn của user:
  *    - USER: Chỉ thấy Bảng điều khiển và Quản lý khách hàng.
- *    - MANAGER: Thấy thêm Báo cáo & Thống kê, Quản lý Đội nhóm.
+ *    - MANAGER: Thấy thêm Quản lý Đội nhóm, Pipeline, v.v.
  *    - ADMIN: Thấy toàn bộ, bao gồm menu Cấu hình hệ thống.
  * 3. Hỗ trợ nhóm menu (MenuGroup) và menu phân cấp (Submenu đa tầng).
  * 4. Xử lý an toàn khi chưa đăng nhập hoặc không có role.
@@ -113,7 +169,6 @@ export function Sidebar({
   activeMenuId,
   onSelectMenu,
   isCollapsed = false,
-  onToggleCollapse,
 }: SidebarProps) {
   const { user, role, isAuthenticated, menuGroups } = useRoleMenu()
 
@@ -138,28 +193,15 @@ export function Sidebar({
       <div className="sidebar-header">
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon" aria-hidden="true">
-            <IconShieldLogo />
+            <IconCrmLogo />
           </div>
           <div className="sidebar-brand-info">
             <span className="sidebar-brand-name">Quản lý khách hàng</span>
           </div>
         </div>
-        {onToggleCollapse && (
-          <button
-            type="button"
-            className="sidebar-collapse-btn"
-            onClick={onToggleCollapse}
-            title={isCollapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            aria-label="Thu gọn hoặc mở rộng menu"
-          >
-            <IconChevronDown />
-          </button>
-        )}
       </div>
 
-
-
-      {/* ── 3. Navigation Menu Groups ── */}
+      {/* ── 2. Navigation Menu Groups ── */}
       <nav className="sidebar-nav" role="navigation">
         {menuGroups.map((group) => (
           <div key={group.id} className="menu-group" id={`menu-group-${group.id}`}>

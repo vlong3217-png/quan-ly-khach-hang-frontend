@@ -1,11 +1,9 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
+import { API_BASE_URL } from '../../services/authService.ts'
 import type { LoginRequest, LoginResponse } from '../../types/auth.ts'
 import './LoginPage.css'
-
-/* ──────────── API Config ──────────── */
-const API_BASE_URL = 'http://localhost:8000'
 
 /* ──────────── Types ──────────── */
 interface LoginFormData {
@@ -98,9 +96,53 @@ function LoginPage() {
     password: '',
     rememberMe: false,
   })
-  const [errors, setErrors] = useState<FormErrors>({})
+  const [errors, setErrors] = useState<FormErrors>(() => {
+    const expiredNotice = sessionStorage.getItem('session_expired_notice')
+    if (expiredNotice) {
+      sessionStorage.removeItem('session_expired_notice')
+      return { general: expiredNotice }
+    }
+    return {}
+  })
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  const [failedAttempts, setFailedAttempts] = useState(0)
+  const [lockedUntil, setLockedUntil] = useState<number | null>(() => {
+    const saved = localStorage.getItem('login_locked_until')
+    if (saved) {
+      const time = parseInt(saved, 10)
+      if (time > Date.now()) return time
+      localStorage.removeItem('login_locked_until')
+    }
+    return null
+  })
+  const [remainingLockSeconds, setRemainingLockSeconds] = useState(0)
+
+  // Countdown cho khóa tạm 15 phút (S1-01)
+  useEffect(() => {
+    if (!lockedUntil) {
+      setRemainingLockSeconds(0)
+      return
+    }
+
+    const updateRemaining = () => {
+      const diff = Math.ceil((lockedUntil - Date.now()) / 1000)
+      if (diff <= 0) {
+        setLockedUntil(null)
+        setFailedAttempts(0)
+        localStorage.removeItem('login_locked_until')
+      } else {
+        setRemainingLockSeconds(diff)
+      }
+    }
+
+    updateRemaining()
+    const timer = setInterval(updateRemaining, 1000)
+    return () => clearInterval(timer)
+  }, [lockedUntil])
+
+  const isLockedOut = remainingLockSeconds > 0
 
   /* ---- Redirect if already logged in ---- */
   if (!authLoading && isAuthenticated) {
@@ -124,6 +166,15 @@ function LoginPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     e.stopPropagation()
+
+    if (isLockedOut) {
+      const minutes = Math.floor(remainingLockSeconds / 60)
+      const seconds = remainingLockSeconds % 60
+      setErrors({
+        general: `Tài khoản tạm thời bị khóa do nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${minutes} phút ${seconds} giây.`,
+      })
+      return
+    }
 
     const validationErrors = validateForm(formData)
     if (Object.keys(validationErrors).length > 0) {
@@ -154,17 +205,34 @@ function LoginPage() {
       const data = (await response.json()) as LoginResponse & { detail?: string | Array<{ msg: string }> }
 
       if (!response.ok) {
+        const newAttempts = failedAttempts + 1
+        setFailedAttempts(newAttempts)
+
+        if (newAttempts >= 5) {
+          const lockTime = Date.now() + 15 * 60 * 1000 // 15 phút
+          setLockedUntil(lockTime)
+          localStorage.setItem('login_locked_until', lockTime.toString())
+          setErrors({
+            general:
+              'Bạn đã nhập sai thông tin 5 lần liên tiếp. Tài khoản tạm thời bị khóa trong 15 phút.',
+          })
+          return
+        }
+
         let msg = 'Tài khoản hoặc mật khẩu không chính xác'
         if (typeof data.detail === 'string') {
           msg = data.detail
         } else if (Array.isArray(data.detail) && data.detail[0]?.msg) {
           msg = data.detail[0].msg
         }
-        setErrors({ general: msg })
+        setErrors({ general: `${msg} (Lần sai: ${newAttempts}/5)` })
         return
       }
 
-      // Success → save to auth context (never storing password) and navigate
+      // Success → clear lock & save session
+      setFailedAttempts(0)
+      setLockedUntil(null)
+      localStorage.removeItem('login_locked_until')
       authLogin(data.access_token, data.user, formData.rememberMe)
       navigate('/dashboard', { replace: true })
     } catch {
@@ -289,7 +357,7 @@ function LoginPage() {
           <button
             type="submit"
             className="login-button"
-            disabled={isLoading}
+            disabled={isLoading || isLockedOut}
             id="login-submit-btn"
           >
             {isLoading ? (
@@ -297,6 +365,8 @@ function LoginPage() {
                 <span className="spinner" />
                 Đang đăng nhập...
               </>
+            ) : isLockedOut ? (
+              `Tạm khóa (${Math.floor(remainingLockSeconds / 60)}:${(remainingLockSeconds % 60).toString().padStart(2, '0')})`
             ) : (
               'Đăng nhập'
             )}

@@ -1,19 +1,22 @@
-import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useMemo, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import { usePermission } from '../../hooks/usePermission.ts'
-import { useRoleMenu } from '../../hooks/useRoleMenu.ts'
 import { PermissionGate } from '../../components/PermissionGate.tsx'
 import Sidebar from '../../components/Sidebar/Sidebar.tsx'
+import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal.tsx'
+import UserManagementPage from '../UserManagementPage/UserManagementPage.tsx'
+import ProductsPage from '../ProductsPage/ProductsPage.tsx'
+import OrganizationPage from '../OrganizationPage/OrganizationPage.tsx'
+import CategoriesPage from '../CategoriesPage/CategoriesPage.tsx'
+import CustomFieldsPage from '../CustomFieldsPage/CustomFieldsPage.tsx'
+import PipelineStagesPage from '../PipelineStagesPage/PipelineStagesPage.tsx'
+import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
 import {
   ROLES,
   PERMISSIONS,
-  PERMISSION_LABELS,
   SCOPE_LABELS,
 } from '../../constants/permissions.ts'
-import { APP_MENU_GROUPS } from '../../constants/menuConfig.ts'
-import { flattenMenuItems } from '../../utils/menuUtils.ts'
-import type { Role, DataScope } from '../../types/auth.ts'
 import type { MenuItem } from '../../types/menu.ts'
 import './DashboardPage.css'
 
@@ -45,9 +48,13 @@ const IconUser = () => (
     <circle cx="12" cy="7" r="4" />
   </svg>
 )
-
-
-
+const IconKey = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="7.5" cy="15.5" r="5.5" />
+    <path d="m21 2-9.6 9.6" />
+    <path d="m15.5 7.5 3 3L22 7l-3-3" />
+  </svg>
+)
 const IconMenu = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="3" y1="12" x2="21" y2="12" />
@@ -99,19 +106,208 @@ const IconLock = () => (
   </svg>
 )
 
-const IconEyeOff = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-    <line x1="1" y1="1" x2="23" y2="23" />
-  </svg>
-)
 
 /* ──────────── Component ──────────── */
 function DashboardPage() {
-  const { user, logout, switchRole } = useAuth()
-  const { scope, hasPermission, filterScopedData } = usePermission()
-  const { canAccessMenuId, allowedMenuItems } = useRoleMenu()
+  const { user, logout } = useAuth()
+  const { scope, filterScopedData } = usePermission()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // State quản lý menu đang chọn và trạng thái đóng mở của Sidebar
+  const [activeMenuId, setActiveMenuId] = useState<string>('menu-dashboard')
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false)
+
+  // Đồng bộ activeMenuId theo URL pathname khi truy cập trực tiếp hoặc chuyển route
+  useEffect(() => {
+    const path = location.pathname
+    if (path.startsWith('/dashboard/users')) {
+      setActiveMenuId('menu-users')
+    } else if (path.startsWith('/dashboard/settings')) {
+      setActiveMenuId('menu-settings')
+    } else if (path.startsWith('/dashboard/reports')) {
+      setActiveMenuId('menu-reports')
+    } else if (path.startsWith('/dashboard/teams')) {
+      setActiveMenuId('menu-teams')
+    } else if (path.startsWith('/dashboard/customers')) {
+      setActiveMenuId('menu-customers')
+    } else if (path === '/dashboard' || path === '/dashboard/') {
+      setActiveMenuId('menu-dashboard')
+    }
+  }, [location.pathname])
+
+  // State cho thông báo tương tác nhanh
+  const [actionNotice, setActionNotice] = useState<string | null>(null)
+
+  // Quản lý danh sách khách hàng trong state để người dùng có thể Thêm, Sửa, Xóa trực tiếp
+  const [customerList, setCustomerList] = useState<CustomerItem[]>([
+    {
+      id: 1,
+      code: 'KH-001',
+      name: 'Công ty Cổ phần Công Nghệ Alpha',
+      phone: '0901 234 567',
+      company: 'Alpha Tech Corp',
+      owner_id: user?.id ?? 1,
+      owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 2,
+      code: 'KH-002',
+      name: 'Tập đoàn Bất Động Sản Hòa Bình',
+      phone: '0912 345 678',
+      company: 'Hoa Binh Group',
+      owner_id: 99,
+      owner_name: 'Nguyễn Văn Tuấn (Đồng nghiệp)',
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 3,
+      code: 'KH-003',
+      name: 'Hệ thống Bán Lẻ Toàn Cầu Mekong',
+      phone: '0988 777 666',
+      company: 'Mekong Retail',
+      owner_id: 101,
+      owner_name: 'Trần Thị Mai (Nhóm khác)',
+      team_id: 2,
+      team_name: 'Đội Kinh Doanh 2',
+    },
+    {
+      id: 4,
+      code: 'KH-004',
+      name: 'Tổng Công ty Logistics Sao Vàng',
+      phone: '0933 222 111',
+      company: 'Golden Star Logistics',
+      owner_id: 102,
+      owner_name: 'Lê Đình Trọng (Nhóm khác)',
+      team_id: 2,
+      team_name: 'Đội Kinh Doanh 2',
+    },
+    {
+      id: 5,
+      code: 'KH-005',
+      name: 'Tập đoàn Nông nghiệp Xanh Việt',
+      phone: '0945 111 222',
+      company: 'Green Viet Agri',
+      owner_id: user?.id ?? 1,
+      owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 6,
+      code: 'KH-006',
+      name: 'Công ty Dược phẩm Hải Đăng',
+      phone: '0978 333 444',
+      company: 'Hai Dang Pharma',
+      owner_id: 99,
+      owner_name: 'Nguyễn Văn Tuấn (Đồng nghiệp)',
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 7,
+      code: 'KH-007',
+      name: 'Công ty TNHH Thời Trang Tân Á',
+      phone: '0911 555 666',
+      company: 'Tan A Fashion',
+      owner_id: user?.id ?? 1,
+      owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 8,
+      code: 'KH-008',
+      name: 'Tập đoàn Năng Lượng Mặt Trời SolarV',
+      phone: '0908 888 999',
+      company: 'SolarV Energy',
+      owner_id: 101,
+      owner_name: 'Trần Thị Mai (Nhóm khác)',
+      team_id: 2,
+      team_name: 'Đội Kinh Doanh 2',
+    },
+    {
+      id: 9,
+      code: 'KH-009',
+      name: 'Công ty Thực phẩm Sạch An Tâm',
+      phone: '0966 222 333',
+      company: 'An Tam Food',
+      owner_id: user?.id ?? 1,
+      owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 10,
+      code: 'KH-010',
+      name: 'Công ty CP Đầu tư & Xây dựng An Gia',
+      phone: '0937 444 555',
+      company: 'An Gia Construction',
+      owner_id: 99,
+      owner_name: 'Nguyễn Văn Tuấn (Đồng nghiệp)',
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+    {
+      id: 11,
+      code: 'KH-011',
+      name: 'Hệ thống Khách sạn & Nghỉ dưỡng Biển Xanh',
+      phone: '0989 666 777',
+      company: 'Blue Sea Resorts',
+      owner_id: 102,
+      owner_name: 'Lê Đình Trọng (Nhóm khác)',
+      team_id: 2,
+      team_name: 'Đội Kinh Doanh 2',
+    },
+    {
+      id: 12,
+      code: 'KH-012',
+      name: 'Công ty Công nghệ Giáo dục EduNext',
+      phone: '0918 999 000',
+      company: 'EduNext Corp',
+      owner_id: user?.id ?? 1,
+      owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
+    },
+  ])
+
+  // Cập nhật tên của chính mình nếu thông tin user thay đổi
+  useEffect(() => {
+    if (user?.id) {
+      setCustomerList((prev) =>
+        prev.map((c) =>
+          c.owner_id === user.id
+            ? { ...c, owner_name: `Bạn (${user.full_name ?? 'Tôi'})` }
+            : c
+        )
+      )
+    }
+  }, [user])
+
+  // Modals state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [editingCustomer, setEditingCustomer] = useState<CustomerItem | null>(null)
+  const [deletingCustomer, setDeletingCustomer] = useState<CustomerItem | null>(null)
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+  const [isChangePwdModalOpen, setIsChangePwdModalOpen] = useState(false)
+
+  // Form states cho thêm mới
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    company: '',
+    phone: '',
+  })
+
+  // Form states cho chỉnh sửa
+  const [editForm, setEditForm] = useState({
+    name: '',
+    company: '',
+    phone: '',
+  })
 
   // State quản lý menu đang chọn và trạng thái đóng mở của Sidebar
   const [activeMenuId, setActiveMenuId] = useState<string>('menu-dashboard')
@@ -132,108 +328,143 @@ function DashboardPage() {
     }, 3500)
   }
 
-  // Danh sách khách hàng mẫu minh họa lọc theo scope
-  const rawCustomers: CustomerItem[] = useMemo(() => {
-    const currentUserId = user?.id ?? 1
-    return [
-      {
-        id: 1,
-        code: 'KH-001',
-        name: 'Công ty Cổ phần Công Nghệ Alpha',
-        phone: '0901 234 567',
-        company: 'Alpha Tech Corp',
-        owner_id: currentUserId,
-        owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
-        team_id: 1,
-        team_name: 'Đội Kinh Doanh 1',
-      },
-      {
-        id: 2,
-        code: 'KH-002',
-        name: 'Tập đoàn Bất Động Sản Hòa Bình',
-        phone: '0912 345 678',
-        company: 'Hoa Binh Group',
-        owner_id: 99,
-        owner_name: 'Nguyễn Văn Tuấn (Đồng nghiệp)',
-        team_id: 1,
-        team_name: 'Đội Kinh Doanh 1',
-      },
-      {
-        id: 3,
-        code: 'KH-003',
-        name: 'Hệ thống Bán Lẻ Toàn Cầu Mekong',
-        phone: '0988 777 666',
-        company: 'Mekong Retail',
-        owner_id: 101,
-        owner_name: 'Trần Thị Mai (Nhóm khác)',
-        team_id: 2,
-        team_name: 'Đội Kinh Doanh 2',
-      },
-      {
-        id: 4,
-        code: 'KH-004',
-        name: 'Tổng Công ty Logistics Sao Vàng',
-        phone: '0933 222 111',
-        company: 'Golden Star Logistics',
-        owner_id: 102,
-        owner_name: 'Lê Đình Trọng (Nhóm khác)',
-        team_id: 2,
-        team_name: 'Đội Kinh Doanh 2',
-      },
-    ]
-  }, [user])
+  // Phân trang khách hàng phía Frontend
+  const [customerPage, setCustomerPage] = useState<number>(1)
+  const [customerPageSize, setCustomerPageSize] = useState<number>(5)
 
   // Lọc dữ liệu khách hàng theo scope
   const scopedCustomers = useMemo(() => {
-    return filterScopedData(rawCustomers, {
+    return filterScopedData(customerList, {
       getOwnerId: (c) => c.owner_id,
       getTeamId: (c) => c.team_id,
     })
-  }, [rawCustomers, filterScopedData])
+  }, [customerList, filterScopedData])
 
-  // Toàn bộ các quyền trong hệ thống để đối chiếu
-  const allSystemPermissions = Object.values(PERMISSIONS)
+  // Reset trang về 1 khi số lượng bản ghi hoặc scope thay đổi
+  useEffect(() => {
+    setCustomerPage(1)
+  }, [scopedCustomers.length, scope])
 
-  // Danh sách phẳng tất cả menu trong hệ thống để đối chiếu phân quyền trực quan
-  const allSystemMenuItems = useMemo(() => {
-    const list: MenuItem[] = []
-    for (const group of APP_MENU_GROUPS) {
-      list.push(...flattenMenuItems(group.items))
+  const totalCustomerPages = Math.max(1, Math.ceil(scopedCustomers.length / customerPageSize))
+
+  // Danh sách khách hàng của trang hiện tại
+  const pagedCustomers = useMemo(() => {
+    const startIndex = (customerPage - 1) * customerPageSize
+    return scopedCustomers.slice(startIndex, startIndex + customerPageSize)
+  }, [scopedCustomers, customerPage, customerPageSize])
+
+  // Mở modal thêm khách hàng
+  const handleOpenCreateModal = () => {
+    setCreateForm({ name: '', company: '', phone: '' })
+    setIsCreateModalOpen(true)
+  }
+
+  // Submit thêm mới khách hàng
+  const handleCreateCustomerSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!createForm.name.trim()) return
+
+    const newId = Date.now()
+    const nextCode = `KH-${String(customerList.length + 1).padStart(3, '0')}`
+    const newCustomer: CustomerItem = {
+      id: newId,
+      code: nextCode,
+      name: createForm.name.trim(),
+      company: createForm.company.trim() || 'Chưa cập nhật',
+      phone: createForm.phone.trim() || 'Chưa cập nhật',
+      owner_id: user?.id ?? 1,
+      owner_name: `Bạn (${user?.full_name ?? 'Tôi'})`,
+      team_id: 1,
+      team_name: 'Đội Kinh Doanh 1',
     }
-    return list
-  }, [])
 
-  // Xử lý chuyển đổi vai trò (Switch Role)
-  const handleRoleSwitch = (newRole: Role, newScope?: DataScope) => {
-    switchRole(newRole, newScope)
+    setCustomerList((prev) => [newCustomer, ...prev])
+    setIsCreateModalOpen(false)
+    showNotice(`Đã thêm thành công khách hàng "${newCustomer.name}" (${newCustomer.code})!`)
+  }
 
-    // Nếu tab hiện tại không được phép ở role mới, tự động quay về menu-dashboard
-    const targetUpper = String(newRole).toUpperCase()
-    if (targetUpper === 'USER') {
-      if (
-        activeMenuId.startsWith('menu-reports') ||
-        activeMenuId.startsWith('menu-teams') ||
-        activeMenuId.startsWith('menu-settings') ||
-        activeMenuId === 'menu-customers-export'
-      ) {
-        setActiveMenuId('menu-dashboard')
-      }
-    } else if (targetUpper === 'MANAGER') {
-      if (activeMenuId.startsWith('menu-settings')) {
-        setActiveMenuId('menu-dashboard')
-      }
-    }
+  // Mở modal sửa khách hàng
+  const handleOpenEditModal = (cust: CustomerItem) => {
+    setEditingCustomer(cust)
+    setEditForm({
+      name: cust.name,
+      company: cust.company,
+      phone: cust.phone,
+    })
+  }
 
-    showNotice(`Đã chuyển vai trò sang ${newRole} (Phạm vi: ${newScope ?? 'mặc định'})`)
+  // Submit cập nhật khách hàng
+  const handleEditCustomerSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingCustomer || !editForm.name.trim()) return
+
+    setCustomerList((prev) =>
+      prev.map((c) =>
+        c.id === editingCustomer.id
+          ? {
+              ...c,
+              name: editForm.name.trim(),
+              company: editForm.company.trim() || 'Chưa cập nhật',
+              phone: editForm.phone.trim() || 'Chưa cập nhật',
+            }
+          : c
+      )
+    )
+    showNotice(`Đã cập nhật thông tin khách hàng "${editingCustomer.code}"!`)
+    setEditingCustomer(null)
+  }
+
+  // Mở modal xác nhận xóa
+  const handleOpenDeleteModal = (cust: CustomerItem) => {
+    setDeletingCustomer(cust)
+  }
+
+  // Submit xóa khách hàng
+  const handleConfirmDelete = () => {
+    if (!deletingCustomer) return
+    const targetCode = deletingCustomer.code
+    setCustomerList((prev) => prev.filter((c) => c.id !== deletingCustomer.id))
+    setDeletingCustomer(null)
+    showNotice(`Đã xóa khách hàng "${targetCode}" thành công!`)
+  }
+
+  // Xuất file CSV / Excel thực tế
+  const handleExecuteExport = (format: 'csv' | 'xlsx') => {
+    const headers = ['Mã KH', 'Tên khách hàng', 'Công ty', 'Số điện thoại', 'Người phụ trách', 'Đội nhóm']
+    const rows = scopedCustomers.map((c) => [
+      c.code,
+      `"${c.name}"`,
+      `"${c.company}"`,
+      c.phone,
+      `"${c.owner_name}"`,
+      `"${c.team_name}"`,
+    ])
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `danh_sach_khach_hang_${scope.toLowerCase()}.${format === 'csv' ? 'csv' : 'csv'}`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    setIsExportModalOpen(false)
+    showNotice(`Đã xuất thành công tệp danh sách khách hàng (${scopedCustomers.length} bản ghi)!`)
   }
 
   // Xử lý click chọn menu trên Sidebar
   const handleSelectMenu = (item: MenuItem) => {
     setActiveMenuId(item.id)
+    if (item.path) {
+      navigate(item.path)
+    }
     if (item.path && item.path.includes('action=create')) {
-      showNotice('Mở hộp thoại tạo khách hàng mới')
+      handleOpenCreateModal()
     } else if (item.path && item.path.includes('action=export')) {
-      showNotice('Đã xuất báo cáo khách hàng thành công!')
+      setIsExportModalOpen(true)
     }
   }
 
@@ -242,15 +473,30 @@ function DashboardPage() {
   const isCustomerView =
     activeMenuId === 'menu-customers' ||
     activeMenuId.startsWith('menu-customers-')
-  const isReportView =
-    activeMenuId === 'menu-reports' ||
-    activeMenuId.startsWith('menu-reports-')
+  const isProductView =
+    activeMenuId === 'menu-products' ||
+    activeMenuId.startsWith('menu-products-')
+  const isPipelineView =
+    activeMenuId === 'menu-pipeline' ||
+    activeMenuId.startsWith('menu-pipeline-')
+  const isCategoryView =
+    activeMenuId === 'menu-categories' ||
+    activeMenuId.startsWith('menu-categories-')
+  const isWinLossView =
+    activeMenuId === 'menu-win-loss' ||
+    activeMenuId.startsWith('menu-win-loss-')
+  const isCustomFieldView =
+    activeMenuId === 'menu-custom-fields' ||
+    activeMenuId.startsWith('menu-custom-fields-')
   const isTeamView =
     activeMenuId === 'menu-teams' ||
     activeMenuId.startsWith('menu-teams-')
   const isSettingView =
     activeMenuId === 'menu-settings' ||
     activeMenuId.startsWith('menu-settings-')
+  const isUserView =
+    activeMenuId === 'menu-users' ||
+    activeMenuId.startsWith('menu-users-')
 
   return (
     <div className="dashboard-layout">
@@ -259,7 +505,6 @@ function DashboardPage() {
         activeMenuId={activeMenuId}
         onSelectMenu={handleSelectMenu}
         isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
 
       {/* ── 2. WORKSPACE CONTENT AREA ── */}
@@ -281,14 +526,37 @@ function DashboardPage() {
             </div>
 
             <div className="dashboard-user-area">
-              <div className="dashboard-user-info">
-                <div className="dashboard-user-avatar">
-                  <IconUser />
+              <div
+                className="dashboard-user-info"
+                onClick={() => navigate('/profile')}
+                style={{ cursor: 'pointer' }}
+                title="Xem hồ sơ cá nhân"
+              >
+                <div className="dashboard-user-avatar" style={{ overflow: 'hidden' }}>
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.full_name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                    />
+                  ) : (
+                    <IconUser />
+                  )}
                 </div>
                 <div className="dashboard-user-details">
                   <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
                 </div>
               </div>
+              <button
+                type="button"
+                className="dashboard-change-pwd-btn"
+                onClick={() => setIsChangePwdModalOpen(true)}
+                id="dashboard-change-pwd-btn"
+                title="Đổi mật khẩu"
+              >
+                <IconKey />
+                <span>Đổi mật khẩu</span>
+              </button>
               <button
                 type="button"
                 className="dashboard-logout-btn"
@@ -312,42 +580,6 @@ function DashboardPage() {
               <span>{actionNotice}</span>
             </div>
           )}
-
-          {/* Quick Role Switcher (Hiển thị xuyên suốt để hỗ trợ kiểm thử role nhanh) */}
-          <div className="global-role-switcher-banner">
-            <div className="role-switcher-inner">
-              <div className="role-switcher-title">
-                <span className="badge-tag">S1-06</span>
-                <strong>Kiểm thử chuyển vai trò (Role Switcher):</strong>
-              </div>
-              <div className="role-buttons-group">
-                <button
-                  type="button"
-                  className={`role-btn ${user?.role === ROLES.ADMIN ? 'active' : ''}`}
-                  onClick={() => handleRoleSwitch(ROLES.ADMIN, 'ALL')}
-                  id="test-switch-admin"
-                >
-                  ADMIN (Toàn quyền)
-                </button>
-                <button
-                  type="button"
-                  className={`role-btn ${user?.role === ROLES.MANAGER ? 'active' : ''}`}
-                  onClick={() => handleRoleSwitch(ROLES.MANAGER, 'TEAM')}
-                  id="test-switch-manager"
-                >
-                  MANAGER (Quản lý)
-                </button>
-                <button
-                  type="button"
-                  className={`role-btn ${user?.role === ROLES.USER ? 'active' : ''}`}
-                  onClick={() => handleRoleSwitch(ROLES.USER, 'MY')}
-                  id="test-switch-user"
-                >
-                  USER (Nhân viên)
-                </button>
-              </div>
-            </div>
-          </div>
 
           {/* ─────────────────────────────────────────────────────────────
               VIEW 1: TỔNG QUAN (DASHBOARD)
@@ -382,116 +614,6 @@ function DashboardPage() {
                 </div>
               </div>
 
-              {/* BẢNG ĐỐI CHIẾU MENU THEO QUYỀN (S1-06) */}
-              <section className="dashboard-section menu-rbac-section">
-                <div className="section-header">
-                  <div>
-                    <h2 className="section-title">Hệ thống Menu phân quyền theo Role (S1-06)</h2>
-                    <p className="section-desc">
-                      Bảng đối chiếu danh mục menu/chức năng được phép hiển thị trên thanh điều hướng Sidebar
-                      theo vai trò <strong>{user?.role}</strong> hiện tại.
-                    </p>
-                  </div>
-                  <div className="menu-count-badge">
-                    Hiển thị <strong>{allowedMenuItems.length}</strong> / {allSystemMenuItems.length} menu item
-                  </div>
-                </div>
-
-                <div className="menu-rbac-table-container">
-                  <table className="menu-rbac-table">
-                    <thead>
-                      <tr>
-                        <th>Tên Menu / Chức năng</th>
-                        <th>Đường dẫn</th>
-                        <th>Vai trò cho phép</th>
-                        <th>Quyền chi tiết</th>
-                        <th style={{ textAlign: 'center' }}>Trạng thái hiển thị</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allSystemMenuItems.map((item) => {
-                        const isGranted = canAccessMenuId(item.id)
-                        const allowedRolesStr = item.roles ? item.roles.join(', ') : 'Tất cả'
-                        const permStr = item.permissions ? item.permissions.join(', ') : '—'
-
-                        return (
-                          <tr
-                            key={item.id}
-                            className={`menu-row ${isGranted ? 'row-granted' : 'row-hidden'}`}
-                            id={`rbac-row-${item.id}`}
-                          >
-                            <td>
-                              <div className="menu-row-info">
-                                <span className="menu-row-title">{item.title}</span>
-                                {item.badge && (
-                                  <span className={`menu-row-tag badge-${item.badgeVariant ?? 'primary'}`}>
-                                    {item.badge}
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                            <td>
-                              <code className="path-code">{item.path}</code>
-                            </td>
-                            <td>
-                              <span className="roles-pill-list">{allowedRolesStr}</span>
-                            </td>
-                            <td>
-                              <span className="perm-code-text">{permStr}</span>
-                            </td>
-                            <td style={{ textAlign: 'center' }}>
-                              {isGranted ? (
-                                <span className="status-badge status-visible" title="Hiển thị trên Sidebar">
-                                  <IconCheckCircle />
-                                  <span>Hiển thị trên Menu</span>
-                                </span>
-                              ) : (
-                                <span className="status-badge status-hidden" title="Không có quyền - Bị ẩn hoàn toàn">
-                                  <IconEyeOff />
-                                  <span>Bị ẩn (Không có quyền)</span>
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-
-              {/* Ma trận quyền hạn S1-05 */}
-              <section className="dashboard-section permission-section">
-                <div className="section-header">
-                  <div>
-                    <h2 className="section-title">Ma trận quyền hạn chi tiết (S1-05)</h2>
-                    <p className="section-desc">
-                      Danh sách các quyền hành động chi tiết áp dụng cho vai trò <strong>{user?.role}</strong>.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="permissions-matrix-grid">
-                  {allSystemPermissions.map((perm) => {
-                    const granted = hasPermission(perm)
-                    return (
-                      <div
-                        key={perm}
-                        className={`permission-chip ${granted ? 'granted' : 'denied'}`}
-                        title={granted ? 'Quyền đã được cấp' : 'Không có quyền này'}
-                      >
-                        <span className="chip-icon">
-                          {granted ? <IconCheckCircle /> : <IconLock />}
-                        </span>
-                        <div className="chip-content">
-                          <span className="chip-code">{perm}</span>
-                          <span className="chip-desc">{PERMISSION_LABELS[perm]}</span>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </section>
             </>
           )}
 
@@ -503,10 +625,6 @@ function DashboardPage() {
               <div className="section-header">
                 <div>
                   <h2 className="section-title">Danh sách khách hàng theo phạm vi dữ liệu</h2>
-                  <p className="section-desc">
-                    Lọc dữ liệu khách hàng theo phạm vi: <strong>MY</strong> (bản thân),{' '}
-                    <strong>TEAM</strong> (đội nhóm), <strong>ALL</strong> (toàn hệ thống).
-                  </p>
                 </div>
 
                 <div className="scope-actions-group">
@@ -517,7 +635,7 @@ function DashboardPage() {
                     <button
                       type="button"
                       className="btn btn-secondary"
-                      onClick={() => showNotice('Đã xuất báo cáo khách hàng thành công!')}
+                      onClick={() => setIsExportModalOpen(true)}
                       id="btn-export-customers"
                     >
                       <IconDownload />
@@ -532,7 +650,7 @@ function DashboardPage() {
                     <button
                       type="button"
                       className="btn btn-primary"
-                      onClick={() => showNotice('Mở hộp thoại tạo khách hàng mới')}
+                      onClick={handleOpenCreateModal}
                       id="btn-create-customer"
                     >
                       <IconPlus />
@@ -540,19 +658,6 @@ function DashboardPage() {
                     </button>
                   </PermissionGate>
                 </div>
-              </div>
-
-              {/* Status strip */}
-              <div className="scope-status-strip">
-                <span className="scope-status-text">
-                  Phạm vi hiện tại: <strong className="scope-tag">{scope}</strong> — Hiển thị{' '}
-                  <strong>{scopedCustomers.length}</strong> / {rawCustomers.length} khách hàng
-                </span>
-                <span className="scope-note">
-                  {scope === 'MY' && 'Chỉ hiển thị các khách hàng do chính bạn phụ trách.'}
-                  {scope === 'TEAM' && 'Hiển thị khách hàng của bạn và đồng nghiệp trong Đội Kinh Doanh 1.'}
-                  {scope === 'ALL' && 'Hiển thị toàn bộ khách hàng từ tất cả phòng ban/đội nhóm.'}
-                </span>
               </div>
 
               {/* Customer table */}
@@ -577,7 +682,7 @@ function DashboardPage() {
                         </td>
                       </tr>
                     ) : (
-                      scopedCustomers.map((cust) => (
+                      pagedCustomers.map((cust) => (
                         <tr key={cust.id}>
                           <td className="code-cell">{cust.code}</td>
                           <td className="name-cell">{cust.name}</td>
@@ -605,7 +710,7 @@ function DashboardPage() {
                                 type="button"
                                 className="action-icon-btn edit-btn"
                                 title="Chỉnh sửa"
-                                onClick={() => showNotice(`Chỉnh sửa khách hàng ${cust.code}`)}
+                                onClick={() => handleOpenEditModal(cust)}
                               >
                                 <IconEdit />
                               </button>
@@ -619,7 +724,7 @@ function DashboardPage() {
                                 type="button"
                                 className="action-icon-btn delete-btn"
                                 title="Xóa khách hàng"
-                                onClick={() => showNotice(`Xóa khách hàng ${cust.code}`)}
+                                onClick={() => handleOpenDeleteModal(cust)}
                               >
                                 <IconTrash />
                               </button>
@@ -630,74 +735,79 @@ function DashboardPage() {
                     )}
                   </tbody>
                 </table>
+
+                {scopedCustomers.length > 0 && (
+                  <div className="customer-pagination">
+                    <div className="customer-pagination-info">
+                      <span>
+                        Hiển thị <strong>{Math.min((customerPage - 1) * customerPageSize + 1, scopedCustomers.length)}</strong> - <strong>{Math.min(customerPage * customerPageSize, scopedCustomers.length)}</strong> trên tổng số <strong>{scopedCustomers.length}</strong> khách hàng
+                      </span>
+                      <div className="customer-pagination-size">
+                        <label htmlFor="customer-page-size-select">Hiển thị:</label>
+                        <select
+                          id="customer-page-size-select"
+                          value={customerPageSize}
+                          onChange={(e) => setCustomerPageSize(Number(e.target.value))}
+                          className="customer-pagination-select"
+                        >
+                          <option value={5}>5 khách hàng / trang</option>
+                          <option value={10}>10 khách hàng / trang</option>
+                          <option value={20}>20 khách hàng / trang</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="customer-pagination-controls">
+                      <button
+                        type="button"
+                        disabled={customerPage === 1}
+                        onClick={() => setCustomerPage((p) => Math.max(p - 1, 1))}
+                        className="customer-page-btn nav-btn"
+                        title="Trang trước"
+                      >
+                        Trước
+                      </button>
+
+                      <div className="customer-page-numbers">
+                        {Array.from({ length: totalCustomerPages }, (_, i) => i + 1).map((pageNum) => (
+                          <button
+                            key={pageNum}
+                            type="button"
+                            className={`customer-page-btn number-btn ${
+                              pageNum === customerPage ? 'active' : ''
+                            }`}
+                            onClick={() => setCustomerPage(pageNum)}
+                          >
+                            {pageNum}
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={customerPage >= totalCustomerPages}
+                        onClick={() => setCustomerPage((p) => Math.min(p + 1, totalCustomerPages))}
+                        className="customer-page-btn nav-btn"
+                        title="Trang sau"
+                      >
+                        Sau
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
           )}
 
           {/* ─────────────────────────────────────────────────────────────
-              VIEW 3: BÁO CÁO & THỐNG KÊ (REPORTS - ADMIN & MANAGER ONLY)
+              VIEW: SẢN PHẨM & BẢNG GIÁ NIÊM YẾT (S2-05)
               ───────────────────────────────────────────────────────────── */}
-          {isReportView && (
-            <PermissionGate
-              permission={PERMISSIONS.REPORT_VIEW}
-              fallback={
-                <div className="access-denied-card">
-                  <IconLock />
-                  <h3>Không có quyền truy cập Báo cáo & Thống kê</h3>
-                  <p>Menu này chỉ dành cho vai trò Quản lý (MANAGER) hoặc Quản trị viên (ADMIN).</p>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => setActiveMenuId('menu-dashboard')}
-                  >
-                    Quay về Bảng điều khiển
-                  </button>
-                </div>
-              }
-            >
-              <section className="dashboard-section reports-section">
-                <div className="section-header">
-                  <div>
-                    <h2 className="section-title">Báo cáo & Thống kê kinh doanh</h2>
-                    <p className="section-desc">
-                      Phân tích số liệu khách hàng, tỷ lệ chuyển đổi và doanh số định kỳ.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => showNotice('Đang tạo file xuất thống kê PDF/Excel...')}
-                  >
-                    <IconDownload />
-                    <span>Xuất báo cáo tổng hợp</span>
-                  </button>
-                </div>
-
-                <div className="kpi-cards-grid">
-                  <div className="kpi-card">
-                    <span className="kpi-label">Tổng khách hàng mới</span>
-                    <span className="kpi-value">128</span>
-                    <span className="kpi-trend positive">+18.5% so với tháng trước</span>
-                  </div>
-                  <div className="kpi-card">
-                    <span className="kpi-label">Hợp đồng hoàn tất</span>
-                    <span className="kpi-value">46</span>
-                    <span className="kpi-trend positive">+12.0%</span>
-                  </div>
-                  <div className="kpi-card">
-                    <span className="kpi-label">Tỷ lệ tương tác thành công</span>
-                    <span className="kpi-value">72.4%</span>
-                    <span className="kpi-trend positive">+5.1%</span>
-                  </div>
-                  <div className="kpi-card">
-                    <span className="kpi-label">Doanh số ghi nhận</span>
-                    <span className="kpi-value">2.48 tỷ</span>
-                    <span className="kpi-trend positive">+24.8%</span>
-                  </div>
-                </div>
-              </section>
-            </PermissionGate>
+          {isProductView && (
+            <section className="dashboard-section products-section">
+              <ProductsPage />
+            </section>
           )}
+
 
           {/* ─────────────────────────────────────────────────────────────
               VIEW 4: QUẢN LÝ ĐỘI NHÓM (TEAMS - ADMIN & MANAGER ONLY)
@@ -706,86 +816,143 @@ function DashboardPage() {
             <PermissionGate
               role={[ROLES.ADMIN, ROLES.MANAGER]}
               fallback={
-                <div className="access-denied-card">
+                <div className="access-denied-card" id="forbidden-teams-card">
                   <IconLock />
-                  <h3>Không có quyền truy cập Quản lý Đội nhóm</h3>
+                  <h3>Không có quyền truy cập Quản lý Đội nhóm (Mã lỗi 403)</h3>
                   <p>Chức năng này chỉ hiển thị và cho phép với vai trò MANAGER hoặc ADMIN.</p>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => setActiveMenuId('menu-dashboard')}
-                  >
-                    Quay về Bảng điều khiển
-                  </button>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/teams' } })}
+                    >
+                      Mở trang lỗi 403
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setActiveMenuId('menu-dashboard')
+                        navigate('/dashboard')
+                      }}
+                    >
+                      Về trang chủ
+                    </button>
+                  </div>
                 </div>
               }
             >
               <section className="dashboard-section teams-section">
-                <div className="section-header">
-                  <div>
-                    <h2 className="section-title">Danh sách phòng ban & Đội nhóm kinh doanh</h2>
-                    <p className="section-desc">
-                      Quản lý cơ cấu nhân sự, phân bổ khách hàng mục tiêu cho từng thành viên.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="teams-grid">
-                  <div className="team-card">
-                    <div className="team-card-header">
-                      <h3>Đội Kinh Doanh 1</h3>
-                      <span className="team-status-tag">Đang hoạt động</span>
-                    </div>
-                    <p className="team-desc">Phụ trách thị trường miền Bắc và khách hàng doanh nghiệp</p>
-                    <ul className="team-meta-list">
-                      <li>Trưởng nhóm: <strong>Nguyễn Văn Tuấn</strong></li>
-                      <li>Quy mô: <strong>5 nhân viên</strong></li>
-                      <li>Phạm vi dữ liệu: <strong>TEAM</strong></li>
-                    </ul>
-                  </div>
-
-                  <div className="team-card">
-                    <div className="team-card-header">
-                      <h3>Đội Kinh Doanh 2</h3>
-                      <span className="team-status-tag">Đang hoạt động</span>
-                    </div>
-                    <p className="team-desc">Phụ trách thị trường miền Nam và khách hàng bán lẻ</p>
-                    <ul className="team-meta-list">
-                      <li>Trưởng nhóm: <strong>Trần Thị Mai</strong></li>
-                      <li>Quy mô: <strong>4 nhân viên</strong></li>
-                      <li>Phạm vi dữ liệu: <strong>TEAM</strong></li>
-                    </ul>
-                  </div>
-                </div>
+                <OrganizationPage />
               </section>
             </PermissionGate>
           )}
 
           {/* ─────────────────────────────────────────────────────────────
-              VIEW 5: CẤU HÌNH HỆ THỐNG (SETTINGS - ADMIN ONLY)
+              VIEW: GIAI ĐOẠN PIPELINE & XÁC SUẤT THẮNG (S2-09)
+              ───────────────────────────────────────────────────────────── */}
+          {isPipelineView && (
+            <section className="dashboard-section pipeline-section">
+              <PipelineStagesPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: DANH MỤC BÁN HÀNG DÙNG CHUNG (S2-07)
+              ───────────────────────────────────────────────────────────── */}
+          {isCategoryView && (
+            <section className="dashboard-section categories-section">
+              <CategoriesPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: LÝ DO THẮNG / THUA & ĐỐI THỦ (S2-10)
+              ───────────────────────────────────────────────────────────── */}
+          {isWinLossView && (
+            <section className="dashboard-section win-loss-section">
+              <WinLossCompetitorsPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: TRƯỜNG TUỲ CHỈNH - CUSTOM FIELDS (S2-08)
+              ───────────────────────────────────────────────────────────── */}
+          {isCustomFieldView && (
+            <PermissionGate
+              role={[ROLES.ADMIN]}
+              permission={PERMISSIONS.SYSTEM_SETTINGS}
+              fallback={
+                <div className="access-denied-card" id="forbidden-cf-card">
+                  <IconLock />
+                  <h3>Không có quyền truy cập Trường tuỳ chỉnh (Mã lỗi 403)</h3>
+                  <p>Cấu hình trường tuỳ chỉnh dành riêng cho Quản trị viên (ADMIN).</p>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/custom-fields' } })}
+                    >
+                      Mở trang lỗi 403
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setActiveMenuId('menu-dashboard')
+                        navigate('/dashboard')
+                      }}
+                    >
+                      Về trang chủ
+                    </button>
+                  </div>
+                </div>
+              }
+            >
+              <section className="dashboard-section custom-fields-section">
+                <CustomFieldsPage />
+              </section>
+            </PermissionGate>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW 5: CẤU HÌNH HỆ THỐNG & AUDIT LOGS (ADMIN ONLY)
               ───────────────────────────────────────────────────────────── */}
           {isSettingView && (
             <PermissionGate
+              role={[ROLES.ADMIN]}
               permission={PERMISSIONS.SYSTEM_SETTINGS}
               fallback={
-                <div className="access-denied-card">
+                <div className="access-denied-card" id="forbidden-settings-card">
                   <IconLock />
-                  <h3>Không có quyền truy cập Cấu hình hệ thống</h3>
-                  <p>Menu này chỉ dành riêng cho Quản trị viên cao nhất (ADMIN).</p>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => setActiveMenuId('menu-dashboard')}
-                  >
-                    Quay về Bảng điều khiển
-                  </button>
+                  <h3>Không có quyền truy cập Cấu hình hệ thống (Mã lỗi 403)</h3>
+                  <p>Khu vực này chỉ dành riêng cho Quản trị viên cao nhất (ADMIN).</p>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/settings' } })}
+                    >
+                      Mở trang lỗi 403
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setActiveMenuId('menu-dashboard')
+                        navigate('/dashboard')
+                      }}
+                    >
+                      Về trang chủ
+                    </button>
+                  </div>
                 </div>
               }
             >
               <section className="dashboard-section settings-section">
                 <div className="section-header">
                   <div>
-                    <h2 className="section-title">Cấu hình hệ thống & Quản trị phân quyền (ADMIN)</h2>
+                    <h2 className="section-title">Nhật ký & Cấu hình hệ thống (ADMIN)</h2>
                     <p className="section-desc">
                       Quản trị người dùng, phân bổ vai trò và theo dõi nhật ký hoạt động toàn hệ thống.
                     </p>
@@ -794,34 +961,12 @@ function DashboardPage() {
 
                 <div className="settings-cards-grid">
                   <div className="setting-card">
-                    <h4>Phân quyền & Vai trò (RBAC)</h4>
-                    <p>Thiết lập danh sách quyền hạn cho từng nhóm ADMIN, MANAGER, USER.</p>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => showNotice('Mở cấu hình ma trận phân quyền')}
-                    >
-                      Cấu hình vai trò
-                    </button>
-                  </div>
-                  <div className="setting-card">
-                    <h4>Chính sách bảo mật & Session</h4>
-                    <p>Thời hạn token JWT, giới hạn phiên đăng nhập và xác thực hai bước (2FA).</p>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => showNotice('Mở cài đặt chính sách an ninh')}
-                    >
-                      Thiết lập bảo mật
-                    </button>
-                  </div>
-                  <div className="setting-card">
                     <h4>Nhật ký hoạt động hệ thống (Audit Logs)</h4>
                     <p>Ghi lại lịch sử đăng nhập, thay đổi dữ liệu khách hàng và truy cập API.</p>
                     <button
                       type="button"
                       className="btn btn-secondary"
-                      onClick={() => showNotice('Mở danh sách nhật ký kiểm toán')}
+                      onClick={() => navigate('/admin/audit-logs')}
                     >
                       Xem Audit Log
                     </button>
@@ -830,8 +975,285 @@ function DashboardPage() {
               </section>
             </PermissionGate>
           )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW 6: QUẢN LÝ TÀI KHOẢN (USER MANAGEMENT - ADMIN ONLY)
+              ───────────────────────────────────────────────────────────── */}
+          {isUserView && (
+            <PermissionGate
+              role={[ROLES.ADMIN]}
+              permission={PERMISSIONS.SYSTEM_SETTINGS}
+              fallback={
+                <div className="access-denied-card" id="forbidden-users-card">
+                  <IconLock />
+                  <h3>Không có quyền truy cập Quản lý tài khoản (Mã lỗi 403)</h3>
+                  <p>Chức năng này chỉ dành riêng cho Quản trị viên cao nhất (ADMIN).</p>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/users' } })}
+                    >
+                      Mở trang lỗi 403
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setActiveMenuId('menu-dashboard')
+                        navigate('/dashboard')
+                      }}
+                    >
+                      Về trang chủ
+                    </button>
+                  </div>
+                </div>
+              }
+            >
+              <section className="dashboard-section user-management-section">
+                <UserManagementPage embedded={true} />
+              </section>
+            </PermissionGate>
+          )}
         </main>
       </div>
+
+      {/* ── MODAL 1: THÊM KHÁCH HÀNG MỚI ── */}
+      {isCreateModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsCreateModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>
+                <IconPlus /> Thêm khách hàng mới
+              </h3>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setIsCreateModalOpen(false)}
+                title="Đóng"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleCreateCustomerSubmit}>
+              <div className="modal-body">
+                <div className="modal-form-group">
+                  <label htmlFor="create-cust-name">Tên khách hàng / Tổ chức *</label>
+                  <input
+                    id="create-cust-name"
+                    type="text"
+                    required
+                    placeholder="VD: Công ty TNHH Giải pháp Đổi mới"
+                    value={createForm.name}
+                    onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                    autoFocus
+                  />
+                </div>
+                <div className="modal-form-group">
+                  <label htmlFor="create-cust-company">Tên thương hiệu / Công ty viết tắt</label>
+                  <input
+                    id="create-cust-company"
+                    type="text"
+                    placeholder="VD: Innovate Solutions"
+                    value={createForm.company}
+                    onChange={(e) => setCreateForm({ ...createForm, company: e.target.value })}
+                  />
+                </div>
+                <div className="modal-form-group">
+                  <label htmlFor="create-cust-phone">Số điện thoại liên hệ</label>
+                  <input
+                    id="create-cust-phone"
+                    type="tel"
+                    placeholder="VD: 0987 654 321"
+                    value={createForm.phone}
+                    onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setIsCreateModalOpen(false)}
+                >
+                  Hủy bỏ
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Lưu khách hàng
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL 2: CHỈNH SỬA KHÁCH HÀNG ── */}
+      {editingCustomer && (
+        <div className="modal-overlay" onClick={() => setEditingCustomer(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>
+                <IconEdit /> Chỉnh sửa khách hàng ({editingCustomer.code})
+              </h3>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setEditingCustomer(null)}
+                title="Đóng"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleEditCustomerSubmit}>
+              <div className="modal-body">
+                <div className="modal-form-group">
+                  <label htmlFor="edit-cust-name">Tên khách hàng / Tổ chức *</label>
+                  <input
+                    id="edit-cust-name"
+                    type="text"
+                    required
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    autoFocus
+                  />
+                </div>
+                <div className="modal-form-group">
+                  <label htmlFor="edit-cust-company">Tên thương hiệu / Công ty viết tắt</label>
+                  <input
+                    id="edit-cust-company"
+                    type="text"
+                    value={editForm.company}
+                    onChange={(e) => setEditForm({ ...editForm, company: e.target.value })}
+                  />
+                </div>
+                <div className="modal-form-group">
+                  <label htmlFor="edit-cust-phone">Số điện thoại liên hệ</label>
+                  <input
+                    id="edit-cust-phone"
+                    type="tel"
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setEditingCustomer(null)}
+                >
+                  Hủy bỏ
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Cập nhật thay đổi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL 3: XÁC NHẬN XÓA KHÁCH HÀNG ── */}
+      {deletingCustomer && (
+        <div className="modal-overlay" onClick={() => setDeletingCustomer(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{ color: '#dc2626' }}>
+                <IconTrash /> Xác nhận xóa khách hàng
+              </h3>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setDeletingCustomer(null)}
+                title="Đóng"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal-body">
+              <p className="modal-delete-warning">
+                Bạn có chắc chắn muốn xóa hồ sơ khách hàng này khỏi danh sách? Thao tác này không thể hoàn tác.
+              </p>
+              <div className="modal-delete-target">
+                <div><strong>Mã:</strong> {deletingCustomer.code}</div>
+                <div><strong>Tên:</strong> {deletingCustomer.name}</div>
+                <div><strong>Công ty:</strong> {deletingCustomer.company}</div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setDeletingCustomer(null)}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleConfirmDelete}
+              >
+                Xác nhận xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL 4: XUẤT DỮ LIỆU EXCEL / CSV ── */}
+      {isExportModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsExportModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>
+                <IconDownload /> Xuất dữ liệu khách hàng
+              </h3>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setIsExportModalOpen(false)}
+                title="Đóng"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal-body">
+              <p style={{ color: '#475569', fontSize: '14px', lineHeight: 1.5, margin: 0 }}>
+                Hệ thống sẽ tổng hợp danh sách khách hàng đang được lọc theo phạm vi <strong>{scope}</strong> (gồm <strong>{scopedCustomers.length}</strong> khách hàng) và tải xuống trực tiếp về thiết bị của bạn.
+              </p>
+              <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px' }}>
+                <div>• Định dạng: CSV hỗ trợ UTF-8 (mở bằng Excel không lỗi font)</div>
+                <div>• Quyền phân phạm vi: {scope} ({scopedCustomers.length} dòng dữ liệu)</div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setIsExportModalOpen(false)}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => handleExecuteExport('csv')}
+              >
+                <IconDownload /> Tải xuống file CSV/Excel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL 5: ĐỔI MẬT KHẨU (POP-UP TRỰC TIẾP TRÊN TRANG CHỦ) ── */}
+      <ChangePasswordModal
+        isOpen={isChangePwdModalOpen}
+        onClose={() => setIsChangePwdModalOpen(false)}
+        onSuccess={() => {
+          showNotice('Đổi mật khẩu thành công! Tài khoản của bạn đã được cập nhật.')
+        }}
+      />
     </div>
   )
 }
