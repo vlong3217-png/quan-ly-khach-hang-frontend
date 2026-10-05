@@ -17,6 +17,7 @@ import type {
   UpdateUserRequest,
   HandoverItem,
 } from '../../types/user.ts'
+import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal.tsx'
 import './UserManagementPage.css'
 
 /* ──────────── Inline SVG Icons ──────────── */
@@ -109,8 +110,13 @@ const IconUserX = () => (
 )
 
 const IconShield = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="7" r="3.2" />
+    <path d="M6.5 19.5c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5" />
+    <circle cx="4.5" cy="9.5" r="2.2" />
+    <path d="M2 18.5c0-2 1.5-3.5 3.5-3.5" />
+    <circle cx="19.5" cy="9.5" r="2.2" />
+    <path d="M22 18.5c0-2-1.5-3.5-3.5-3.5" />
   </svg>
 )
 
@@ -216,7 +222,11 @@ interface Toast {
 }
 
 /* ──────────── Component ──────────── */
-function UserManagementPage() {
+export interface UserManagementPageProps {
+  embedded?: boolean
+}
+
+function UserManagementPage({ embedded = false }: UserManagementPageProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -232,6 +242,17 @@ function UserManagementPage() {
   const [filterStatus, setFilterStatus] = useState<UserStatus | ''>('')
   const [filterTeam, setFilterTeam] = useState('')
   const [teams, setTeams] = useState<string[]>([])
+
+  // Pagination (Phân trang tài khoản phía Frontend)
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(20)
+
+  // Reset trang về 1 khi số lượng bản ghi hoặc bộ lọc thay đổi
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [users.length, search, filterRole, filterStatus, filterTeam])
+
+  const totalUserPages = Math.max(1, Math.ceil(users.length / pageSize))
 
   // Modal create/edit
   const [modalOpen, setModalOpen] = useState(false)
@@ -511,62 +532,67 @@ function UserManagementPage() {
     navigate('/login', { replace: true })
   }
 
+  const [isChangePwdModalOpen, setIsChangePwdModalOpen] = useState(false)
+
   /* ──────────── Render ──────────── */
   return (
-    <div className="user-mgmt-page">
-      {/* ── Header (reuse dashboard header style) ── */}
-      <header className="dashboard-header">
-        <div className="dashboard-header-inner">
-          <div className="dashboard-brand">
-            <div className="dashboard-brand-icon" aria-hidden="true">
-              <IconShield />
+    <div className={`user-mgmt-page ${embedded ? 'user-mgmt-page--embedded' : ''}`}>
+      {/* ── Header (only render when accessed standalone) ── */}
+      {!embedded && (
+        <header className="dashboard-header">
+          <div className="dashboard-header-inner">
+            <div className="dashboard-brand">
+              <div className="dashboard-brand-icon" aria-hidden="true">
+                <IconShield />
+              </div>
+              <span className="dashboard-brand-text">Quản lý khách hàng</span>
             </div>
-            <span className="dashboard-brand-text">Quản lý khách hàng</span>
-          </div>
 
-          <div className="dashboard-user-area">
-            <div className="dashboard-user-info">
-              <div className="dashboard-user-avatar">
-                <IconUser />
+            <div className="dashboard-user-area">
+              <div className="dashboard-user-info">
+                <div className="dashboard-user-avatar">
+                  <IconUser />
+                </div>
+                <div className="dashboard-user-details">
+                  <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
+                </div>
               </div>
-              <div className="dashboard-user-details">
-                <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
-                <span className="dashboard-user-role">{user?.role ?? ''}</span>
-              </div>
+              <button
+                type="button"
+                className="dashboard-change-pwd-btn"
+                onClick={() => setIsChangePwdModalOpen(true)}
+                title="Đổi mật khẩu"
+              >
+                <IconKey />
+                <span>Đổi mật khẩu</span>
+              </button>
+              <button
+                type="button"
+                className="dashboard-logout-btn"
+                onClick={handleLogout}
+                title="Đăng xuất"
+              >
+                <IconLogout />
+                <span>Đăng xuất</span>
+              </button>
             </div>
-            <button
-              type="button"
-              className="dashboard-change-pwd-btn"
-              onClick={() => navigate('/change-password')}
-              title="Đổi mật khẩu"
-            >
-              <IconKey />
-              <span>Đổi mật khẩu</span>
-            </button>
-            <button
-              type="button"
-              className="dashboard-logout-btn"
-              onClick={handleLogout}
-              title="Đăng xuất"
-            >
-              <IconLogout />
-              <span>Đăng xuất</span>
-            </button>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* ── Main ── */}
-      <main className="user-mgmt-main">
-        {/* Back link */}
-        <button
-          className="user-mgmt-back-link"
-          onClick={() => navigate('/dashboard')}
-          type="button"
-        >
-          <IconArrowLeft />
-          Quay lại Dashboard
-        </button>
+      <main className={`user-mgmt-main ${embedded ? 'user-mgmt-main--embedded' : ''}`}>
+        {/* Back link (only in standalone mode) */}
+        {!embedded && (
+          <button
+            className="user-mgmt-back-link"
+            onClick={() => navigate('/dashboard')}
+            type="button"
+          >
+            <IconArrowLeft />
+            Quay lại Dashboard
+          </button>
+        )}
 
         {/* Title bar */}
         <div className="user-mgmt-title-bar">
@@ -575,15 +601,61 @@ function UserManagementPage() {
             Quản lý tài khoản
             <span className="user-mgmt-title-count">{total}</span>
           </h1>
-          <button
-            type="button"
-            className="user-mgmt-add-btn"
-            onClick={openCreateModal}
-            id="user-mgmt-add-btn"
-          >
-            <IconPlus />
-            Thêm tài khoản
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              type="button"
+              className="user-mgmt-add-btn"
+              onClick={() => navigate('/import-users')}
+              id="user-mgmt-import-btn"
+              style={{
+                background: '#f1f5f9',
+                color: '#334155',
+                border: '1px solid #cbd5e1',
+                boxShadow: 'none',
+              }}
+              title="Nhập danh sách người dùng từ file Excel"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                <path d="M8 13h2" />
+                <path d="M14 13h2" />
+                <path d="M8 17h2" />
+                <path d="M14 17h2" />
+              </svg>
+              Nhập từ Excel
+            </button>
+            <button
+              type="button"
+              className="user-mgmt-add-btn"
+              onClick={() => navigate('/admin/audit-logs')}
+              id="user-mgmt-audit-btn"
+              style={{
+                background: '#e0e7ff',
+                color: '#4338ca',
+                border: '1px solid #c7d2fe',
+                boxShadow: 'none',
+              }}
+              title="Xem nhật ký thay đổi dữ liệu nhạy cảm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                <path d="M9 12h6" />
+                <path d="M9 16h6" />
+              </svg>
+              Nhật ký thay đổi
+            </button>
+            <button
+              type="button"
+              className="user-mgmt-add-btn"
+              onClick={openCreateModal}
+              id="user-mgmt-add-btn"
+            >
+              <IconPlus />
+              Thêm tài khoản
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -608,7 +680,7 @@ function UserManagementPage() {
             <option value="">Tất cả vai trò</option>
             <option value="ADMIN">Admin</option>
             <option value="MANAGER">Manager</option>
-            <option value="STAFF">Nhân viên</option>
+            <option value="USER">Nhân viên</option>
           </select>
           <select
             className="user-mgmt-filter-select"
@@ -682,89 +754,156 @@ function UserManagementPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u) => (
-                    <tr key={u.id}>
-                      <td>
-                        <div className="user-mgmt-name-cell">
-                          <div
-                            className={`user-mgmt-avatar avatar-${u.role.toLowerCase()}`}
-                          >
-                            {getInitials(u.full_name)}
+                  {users
+                    .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                    .map((u) => (
+                      <tr key={u.id}>
+                        <td>
+                          <div className="user-mgmt-name-cell">
+                            <div
+                              className={`user-mgmt-avatar avatar-${u.role.toLowerCase()}`}
+                            >
+                              {getInitials(u.full_name)}
+                            </div>
+                            <span className="user-mgmt-name-text">{u.full_name}</span>
                           </div>
-                          <span className="user-mgmt-name-text">{u.full_name}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="user-mgmt-email">{u.email}</span>
-                      </td>
-                      <td>
-                        <span className="user-mgmt-phone">{u.phone || '—'}</span>
-                      </td>
-                      <td>
-                        <span
-                          className={`user-mgmt-role-badge role-${u.role.toLowerCase()}`}
-                        >
-                          {ROLE_LABELS[u.role] || u.role}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="user-mgmt-team">{u.team || '—'}</span>
-                      </td>
-                      <td>
-                        <span
-                          className={`user-mgmt-status-badge status-${u.status}`}
-                        >
-                          <span className="user-mgmt-status-dot" />
-                          {STATUS_LABELS[u.status] || u.status}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="user-mgmt-actions">
-                          {/* S1-10: Nút Khóa / Mở khóa tài khoản */}
-                          {u.status === 'locked' ? (
-                            <button
-                              type="button"
-                              className="user-mgmt-action-btn btn-unlock"
-                              onClick={() => openUnlockModal(u)}
-                              title="Mở khóa tài khoản này"
-                              id={`user-mgmt-unlock-${u.id}`}
-                            >
-                              <IconUnlock />
-                              <span>Mở khóa</span>
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className={`user-mgmt-action-btn btn-lock ${user?.id === u.id ? 'btn-disabled' : ''}`}
-                              onClick={() => openLockModal(u)}
-                              disabled={user?.id === u.id}
-                              title={
-                                user?.id === u.id
-                                  ? 'Không thể tự khóa tài khoản của chính mình'
-                                  : 'Khóa tài khoản này'
-                              }
-                              id={`user-mgmt-lock-${u.id}`}
-                            >
-                              <IconLock />
-                              <span>Khóa</span>
-                            </button>
-                          )}
-
-                          <button
-                            type="button"
-                            className="user-mgmt-edit-btn"
-                            onClick={() => openEditModal(u)}
-                            title="Chỉnh sửa tài khoản"
-                            id={`user-mgmt-edit-${u.id}`}
+                        </td>
+                        <td>
+                          <span className="user-mgmt-email">{u.email}</span>
+                        </td>
+                        <td>
+                          <span className="user-mgmt-phone">{u.phone || '—'}</span>
+                        </td>
+                        <td>
+                          <span
+                            className={`user-mgmt-role-badge role-${u.role.toLowerCase()}`}
                           >
-                            <IconEdit />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {ROLE_LABELS[u.role] || u.role}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="user-mgmt-team">{u.team || '—'}</span>
+                        </td>
+                        <td>
+                          <span
+                            className={`user-mgmt-status-badge status-${u.status}`}
+                          >
+                            <span className="user-mgmt-status-dot" />
+                            {STATUS_LABELS[u.status] || u.status}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="user-mgmt-actions">
+                            {/* S1-10: Nút Khóa / Mở khóa tài khoản */}
+                            {u.status === 'locked' ? (
+                              <button
+                                type="button"
+                                className="user-mgmt-action-btn btn-unlock"
+                                onClick={() => openUnlockModal(u)}
+                                title="Mở khóa tài khoản này"
+                                id={`user-mgmt-unlock-${u.id}`}
+                              >
+                                <IconUnlock />
+                                <span>Mở khóa</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className={`user-mgmt-action-btn btn-lock ${user?.id === u.id ? 'btn-disabled' : ''}`}
+                                onClick={() => openLockModal(u)}
+                                disabled={user?.id === u.id}
+                                title={
+                                  user?.id === u.id
+                                    ? 'Không thể tự khóa tài khoản của chính mình'
+                                    : 'Khóa tài khoản này'
+                                }
+                                id={`user-mgmt-lock-${u.id}`}
+                              >
+                                <IconLock />
+                                <span>Khóa</span>
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              className="user-mgmt-edit-btn"
+                              onClick={() => openEditModal(u)}
+                              title="Chỉnh sửa tài khoản"
+                              id={`user-mgmt-edit-${u.id}`}
+                            >
+                              <IconEdit />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
+
+              {/* Thanh phân trang Pagination */}
+              {users.length > 0 && (
+                <div className="user-mgmt-pagination">
+                  <div className="user-mgmt-pagination-info">
+                    <span>
+                      Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, users.length)}</strong> - <strong>{Math.min(currentPage * pageSize, users.length)}</strong> trên tổng số <strong>{users.length}</strong> tài khoản
+                    </span>
+                    <div className="user-mgmt-pagination-size">
+                      <label htmlFor="user-page-size-select">Hiển thị:</label>
+                      <select
+                        id="user-page-size-select"
+                        value={pageSize}
+                        onChange={(e) => {
+                          setPageSize(Number(e.target.value))
+                          setCurrentPage(1)
+                        }}
+                        className="user-mgmt-pagination-select"
+                      >
+                        <option value={5}>5 tài khoản / trang</option>
+                        <option value={10}>10 tài khoản / trang</option>
+                        <option value={20}>20 tài khoản / trang</option>
+                        <option value={50}>50 tài khoản / trang</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="user-mgmt-pagination-controls">
+                    <button
+                      type="button"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                      className="user-mgmt-page-btn nav-btn"
+                      title="Trang trước"
+                    >
+                      Trước
+                    </button>
+
+                    <div className="user-mgmt-page-numbers">
+                      {Array.from({ length: totalUserPages }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          className={`user-mgmt-page-btn number-btn ${
+                            pageNum === currentPage ? 'active' : ''
+                          }`}
+                          onClick={() => setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={currentPage >= totalUserPages}
+                      onClick={() => setCurrentPage((p) => Math.min(p + 1, totalUserPages))}
+                      className="user-mgmt-page-btn nav-btn"
+                      title="Trang sau"
+                    >
+                      Sau
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -868,7 +1007,7 @@ function UserManagementPage() {
                     <option value="">-- Chọn vai trò --</option>
                     <option value="ADMIN">Admin</option>
                     <option value="MANAGER">Manager</option>
-                    <option value="STAFF">Nhân viên</option>
+                    <option value="USER">Nhân viên</option>
                   </select>
                   {formErrors.role && (
                     <span className="user-mgmt-form-error">{formErrors.role}</span>
@@ -1240,6 +1379,15 @@ function UserManagementPage() {
           {toast.message}
         </div>
       )}
+
+      {/* ── Change Password Modal ── */}
+      <ChangePasswordModal
+        isOpen={isChangePwdModalOpen}
+        onClose={() => setIsChangePwdModalOpen(false)}
+        onSuccess={() => {
+          showToast('Đổi mật khẩu thành công!', 'success')
+        }}
+      />
     </div>
   )
 }
