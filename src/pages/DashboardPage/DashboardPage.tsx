@@ -12,6 +12,7 @@ import CategoriesPage from '../CategoriesPage/CategoriesPage.tsx'
 import CustomFieldsPage from '../CustomFieldsPage/CustomFieldsPage.tsx'
 import PipelineStagesPage from '../PipelineStagesPage/PipelineStagesPage.tsx'
 import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
+import CustomerManagementPage from '../CustomerManagementPage/CustomerManagementPage.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -611,9 +612,18 @@ function DashboardPage() {
           )}
 
           {/* ─────────────────────────────────────────────────────────────
-              VIEW 2: QUẢN LÝ KHÁCH HÀNG (CUSTOMERS)
+              VIEW: QUẢN LÝ KHÁCH HÀNG DOANH NGHIỆP (S3-01)
               ───────────────────────────────────────────────────────────── */}
-          {(isCustomerView || isDashboardView) && (
+          {isCustomerView && (
+            <section className="dashboard-section customers-section">
+              <CustomerManagementPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW 2: QUẢN LÝ KHÁCH HÀNG (DASHBOARD SCOPE DEMO)
+              ───────────────────────────────────────────────────────────── */}
+          {isDashboardView && (
             <section className="dashboard-section data-scope-section">
               <div className="section-header">
                 <div>
