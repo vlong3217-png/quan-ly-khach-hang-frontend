@@ -105,30 +105,6 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
     description: 'Báo cáo thống kê số liệu và quản lý tổ chức',
     items: [
       {
-        id: 'menu-reports',
-        title: 'Báo cáo & Thống kê',
-        path: '/dashboard/reports',
-        roles: [ROLES.ADMIN, ROLES.MANAGER],
-        permissions: [PERMISSIONS.REPORT_VIEW],
-        description: 'Xem báo cáo doanh số, chuyển đổi và thống kê dữ liệu',
-        children: [
-          {
-            id: 'menu-reports-sales',
-            title: 'Báo cáo doanh số',
-            path: '/dashboard/reports/sales',
-            roles: [ROLES.ADMIN, ROLES.MANAGER],
-            permissions: [PERMISSIONS.REPORT_VIEW],
-          },
-          {
-            id: 'menu-reports-performance',
-            title: 'Hiệu suất đội ngũ',
-            path: '/dashboard/reports/performance',
-            roles: [ROLES.ADMIN, ROLES.MANAGER],
-            permissions: [PERMISSIONS.REPORT_VIEW],
-          },
-        ],
-      },
-      {
         id: 'menu-teams',
         title: 'Quản lý Đội nhóm',
         path: '/dashboard/teams',
