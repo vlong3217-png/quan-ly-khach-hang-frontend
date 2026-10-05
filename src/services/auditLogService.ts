@@ -3,6 +3,8 @@ import type {
   AuditLogEntry,
   AuditLogFilterParams,
   AuditLogResponse,
+  AuditEntityType,
+  AuditAction,
 } from '../types/auditLog.ts'
 import { API_BASE_URL } from './authService.ts'
 
@@ -240,13 +242,30 @@ export async function getAuditLogs(
         : Array.isArray(json?.results)
         ? json.results
         : []
+
+      const sanitizedLogs: AuditLogEntry[] = rawList.map((item: any, index: number) => ({
+        id: item.id ?? index + 1,
+        performer_id: item.performer_id ?? item.user_id ?? 0,
+        performer_name: String(item.performer_name || item.user_name || item.username || item.full_name || 'Người dùng'),
+        performer_email: item.performer_email || item.email,
+        performer_role: String(item.performer_role || item.role || 'ADMIN'),
+        timestamp: String(item.timestamp || item.created_at || new Date().toISOString()),
+        entity_type: (item.entity_type || 'DISCOUNT') as AuditEntityType,
+        entity_id: String(item.entity_id || item.target_id || `ID-${index + 1}`),
+        entity_name: item.entity_name || item.target_name,
+        action: (item.action || 'UPDATE') as AuditAction,
+        old_value: String(item.old_value ?? '—'),
+        new_value: String(item.new_value ?? '—'),
+        reason: item.reason || item.note || '',
+      }))
+
       return {
         success: true,
-        data: rawList,
-        total: json.total ?? rawList.length,
+        data: sanitizedLogs,
+        total: json.total ?? sanitizedLogs.length,
         page: json.page ?? page,
         pageSize: json.pageSize ?? pageSize,
-        totalPages: json.totalPages ?? Math.max(1, Math.ceil((json.total ?? rawList.length) / pageSize)),
+        totalPages: json.totalPages ?? Math.max(1, Math.ceil((json.total ?? sanitizedLogs.length) / pageSize)),
       }
     }
   } catch {
