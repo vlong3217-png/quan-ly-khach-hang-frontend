@@ -477,9 +477,6 @@ function DashboardPage() {
   const isCustomFieldView =
     activeMenuId === 'menu-custom-fields' ||
     activeMenuId.startsWith('menu-custom-fields-')
-  const isReportView =
-    activeMenuId === 'menu-reports' ||
-    activeMenuId.startsWith('menu-reports-')
   const isTeamView =
     activeMenuId === 'menu-teams' ||
     activeMenuId.startsWith('menu-teams-')
@@ -848,82 +845,6 @@ function DashboardPage() {
             </section>
           )}
 
-          {/* ─────────────────────────────────────────────────────────────
-              VIEW 3: BÁO CÁO & THỐNG KÊ (REPORTS - ADMIN & MANAGER ONLY)
-              ───────────────────────────────────────────────────────────── */}
-          {isReportView && (
-            <PermissionGate
-              permission={PERMISSIONS.REPORT_VIEW}
-              fallback={
-                <div className="access-denied-card" id="forbidden-reports-card">
-                  <IconLock />
-                  <h3>Không có quyền truy cập Báo cáo & Thống kê (Mã lỗi 403)</h3>
-                  <p>Menu này chỉ dành cho vai trò Quản lý (MANAGER) hoặc Quản trị viên (ADMIN).</p>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/reports' } })}
-                    >
-                      Mở trang lỗi 403
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      onClick={() => {
-                        setActiveMenuId('menu-dashboard')
-                        navigate('/dashboard')
-                      }}
-                    >
-                      Về trang chủ
-                    </button>
-                  </div>
-                </div>
-              }
-            >
-              <section className="dashboard-section reports-section">
-                <div className="section-header">
-                  <div>
-                    <h2 className="section-title">Báo cáo & Thống kê kinh doanh</h2>
-                    <p className="section-desc">
-                      Phân tích số liệu khách hàng, tỷ lệ chuyển đổi và doanh số định kỳ.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => showNotice('Đang tạo file xuất thống kê PDF/Excel...')}
-                  >
-                    <IconDownload />
-                    <span>Xuất báo cáo tổng hợp</span>
-                  </button>
-                </div>
-
-                <div className="kpi-cards-grid">
-                  <div className="kpi-card">
-                    <span className="kpi-label">Tổng khách hàng mới</span>
-                    <span className="kpi-value">128</span>
-                    <span className="kpi-trend positive">+18.5% so với tháng trước</span>
-                  </div>
-                  <div className="kpi-card">
-                    <span className="kpi-label">Hợp đồng hoàn tất</span>
-                    <span className="kpi-value">46</span>
-                    <span className="kpi-trend positive">+12.0%</span>
-                  </div>
-                  <div className="kpi-card">
-                    <span className="kpi-label">Tỷ lệ tương tác thành công</span>
-                    <span className="kpi-value">72.4%</span>
-                    <span className="kpi-trend positive">+5.1%</span>
-                  </div>
-                  <div className="kpi-card">
-                    <span className="kpi-label">Doanh số ghi nhận</span>
-                    <span className="kpi-value">2.48 tỷ</span>
-                    <span className="kpi-trend positive">+24.8%</span>
-                  </div>
-                </div>
-              </section>
-            </PermissionGate>
-          )}
 
           {/* ─────────────────────────────────────────────────────────────
               VIEW 4: QUẢN LÝ ĐỘI NHÓM (TEAMS - ADMIN & MANAGER ONLY)
