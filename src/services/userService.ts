@@ -645,3 +645,13 @@ export function getAvailableTeams(): string[] {
   })
   return Array.from(teams).sort()
 }
+
+export const userService = {
+  getUsers,
+  createUser,
+  updateUser,
+  updateUserStatus,
+  getUserAssignedData,
+  handoverUserData,
+  getAvailableTeams,
+}
