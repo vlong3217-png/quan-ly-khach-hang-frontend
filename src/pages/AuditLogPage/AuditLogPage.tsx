@@ -122,12 +122,13 @@ const IconLogout = () => (
   </svg>
 )
 
-function getInitials(name: string): string {
+function getInitials(name?: string | null): string {
+  if (!name || typeof name !== 'string') return 'AD'
   const parts = name.trim().split(/\s+/)
-  if (parts.length >= 2) {
+  if (parts.length >= 2 && parts[0] && parts[parts.length - 1]) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
   }
-  return name.substring(0, 2).toUpperCase()
+  return name.trim().substring(0, 2).toUpperCase() || 'AD'
 }
 
 export function AuditLogPage() {
