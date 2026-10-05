@@ -229,13 +229,24 @@ export async function getAuditLogs(
 
     if (response.ok) {
       const json = await response.json()
+      const rawList = Array.isArray(json)
+        ? json
+        : Array.isArray(json?.data)
+        ? json.data
+        : Array.isArray(json?.logs)
+        ? json.logs
+        : Array.isArray(json?.items)
+        ? json.items
+        : Array.isArray(json?.results)
+        ? json.results
+        : []
       return {
         success: true,
-        data: json.data || json.logs || json,
-        total: json.total ?? (json.data ? json.data.length : 0),
+        data: rawList,
+        total: json.total ?? rawList.length,
         page: json.page ?? page,
         pageSize: json.pageSize ?? pageSize,
-        totalPages: json.totalPages ?? Math.ceil((json.total || 1) / pageSize),
+        totalPages: json.totalPages ?? Math.max(1, Math.ceil((json.total ?? rawList.length) / pageSize)),
       }
     }
   } catch {
