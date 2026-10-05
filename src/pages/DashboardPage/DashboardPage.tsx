@@ -607,40 +607,6 @@ function DashboardPage() {
                 </div>
               </div>
 
-              {/* Thống kê nhanh chỉ số hoạt động kinh doanh */}
-              <section className="dashboard-section kpi-overview-section">
-                <div className="section-header">
-                  <div>
-                    <h2 className="section-title">Chỉ số hoạt động kinh doanh</h2>
-                    <p className="section-desc">
-                      Tổng hợp hiệu suất làm việc và tiến độ khách hàng trong kỳ hiện tại.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="kpi-cards-grid">
-                  <div className="kpi-card">
-                    <span className="kpi-label">Khách hàng được giao</span>
-                    <span className="kpi-value">{scopedCustomers.length}</span>
-                    <span className="kpi-trend positive">Trong phạm vi {scope}</span>
-                  </div>
-                  <div className="kpi-card">
-                    <span className="kpi-label">Hợp đồng hoàn tất</span>
-                    <span className="kpi-value">46</span>
-                    <span className="kpi-trend positive">+12.0% so với tháng trước</span>
-                  </div>
-                  <div className="kpi-card">
-                    <span className="kpi-label">Tỷ lệ tương tác thành công</span>
-                    <span className="kpi-value">72.4%</span>
-                    <span className="kpi-trend positive">+5.1% so với mục tiêu</span>
-                  </div>
-                  <div className="kpi-card">
-                    <span className="kpi-label">Doanh số ghi nhận</span>
-                    <span className="kpi-value">2.48 tỷ</span>
-                    <span className="kpi-trend positive">+24.8% tăng trưởng</span>
-                  </div>
-                </div>
-              </section>
             </>
           )}
 
