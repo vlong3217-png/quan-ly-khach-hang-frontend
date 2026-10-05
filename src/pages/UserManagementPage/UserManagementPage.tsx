@@ -240,7 +240,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
 
   // Pagination (Phân trang tài khoản phía Frontend)
   const [currentPage, setCurrentPage] = useState<number>(1)
-  const [pageSize, setPageSize] = useState<number>(5)
+  const [pageSize, setPageSize] = useState<number>(20)
 
   // Reset trang về 1 khi số lượng bản ghi hoặc bộ lọc thay đổi
   useEffect(() => {
@@ -856,6 +856,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
                         <option value={5}>5 tài khoản / trang</option>
                         <option value={10}>10 tài khoản / trang</option>
                         <option value={20}>20 tài khoản / trang</option>
+                        <option value={50}>50 tài khoản / trang</option>
                       </select>
                     </div>
                   </div>
