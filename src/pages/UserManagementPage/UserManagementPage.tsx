@@ -675,7 +675,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
             <option value="">Tất cả vai trò</option>
             <option value="ADMIN">Admin</option>
             <option value="MANAGER">Manager</option>
-            <option value="STAFF">Nhân viên</option>
+            <option value="USER">Nhân viên</option>
           </select>
           <select
             className="user-mgmt-filter-select"
@@ -1002,7 +1002,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
                     <option value="">-- Chọn vai trò --</option>
                     <option value="ADMIN">Admin</option>
                     <option value="MANAGER">Manager</option>
-                    <option value="STAFF">Nhân viên</option>
+                    <option value="USER">Nhân viên</option>
                   </select>
                   {formErrors.role && (
                     <span className="user-mgmt-form-error">{formErrors.role}</span>
