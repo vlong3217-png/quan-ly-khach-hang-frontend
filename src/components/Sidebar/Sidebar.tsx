@@ -45,11 +45,6 @@ const IconSettings = () => (
   </svg>
 )
 
-const IconChevronDown = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
-)
 
 const IconShieldLogo = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -148,8 +143,6 @@ export interface SidebarProps {
   onSelectMenu: (item: MenuItem) => void
   /** Trạng thái thu gọn sidebar trên màn hình nhỏ */
   isCollapsed?: boolean
-  /** Callback bật/tắt thu gọn */
-  onToggleCollapse?: () => void
 }
 
 /**
@@ -159,7 +152,7 @@ export interface SidebarProps {
  * 1. Nhận thông tin Role (ADMIN, MANAGER, USER) từ AuthContext (session).
  * 2. Lọc bỏ hoàn toàn các menu không thuộc quyền hạn của user:
  *    - USER: Chỉ thấy Bảng điều khiển và Quản lý khách hàng.
- *    - MANAGER: Thấy thêm Báo cáo & Thống kê, Quản lý Đội nhóm.
+ *    - MANAGER: Thấy thêm Quản lý Đội nhóm, Pipeline, v.v.
  *    - ADMIN: Thấy toàn bộ, bao gồm menu Cấu hình hệ thống.
  * 3. Hỗ trợ nhóm menu (MenuGroup) và menu phân cấp (Submenu đa tầng).
  * 4. Xử lý an toàn khi chưa đăng nhập hoặc không có role.
@@ -168,7 +161,6 @@ export function Sidebar({
   activeMenuId,
   onSelectMenu,
   isCollapsed = false,
-  onToggleCollapse,
 }: SidebarProps) {
   const { user, role, isAuthenticated, menuGroups } = useRoleMenu()
 
@@ -199,53 +191,9 @@ export function Sidebar({
             <span className="sidebar-brand-name">Quản lý khách hàng</span>
           </div>
         </div>
-        {onToggleCollapse && (
-          <button
-            type="button"
-            className="sidebar-collapse-btn"
-            onClick={onToggleCollapse}
-            title={isCollapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            aria-label="Thu gọn hoặc mở rộng menu"
-          >
-            <IconChevronDown />
-          </button>
-        )}
       </div>
 
-      {/* ── 2. User Info & Role/Team (S1-06 Acceptance Criteria) ── */}
-      <div className="sidebar-role-indicator">
-        <div className="sidebar-user-row">
-          <div className="sidebar-user-avatar" aria-hidden="true" style={{ overflow: 'hidden' }}>
-            {user.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.full_name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            ) : user.full_name ? (
-              user.full_name.charAt(0).toUpperCase()
-            ) : (
-              'U'
-            )}
-          </div>
-          <div className="sidebar-user-meta">
-            <div className="role-user-name" title={user.email}>
-              {user.full_name}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-              <span className="role-indicator-badge" data-role={user.role || 'USER'}>
-                <span className="role-dot" />
-                {user.role === 'ADMIN' ? 'Admin' : user.role === 'MANAGER' ? 'Quản lý' : 'Nhân viên'}
-              </span>
-              <span className="role-user-team" title={user.team_name || 'Đội kinh doanh'}>
-                • {user.team_name || 'Kinh doanh'}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 3. Navigation Menu Groups ── */}
+      {/* ── 2. Navigation Menu Groups ── */}
       <nav className="sidebar-nav" role="navigation">
         {menuGroups.map((group) => (
           <div key={group.id} className="menu-group" id={`menu-group-${group.id}`}>
