@@ -14,16 +14,6 @@ import { ROLE_LABELS } from '../../constants/permissions.ts'
 import type { UserProfile, ProfileFormErrors } from '../../types/profile.ts'
 import './ProfilePage.css'
 
-const IconShield = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="7" r="3.2" />
-    <path d="M6.5 19.5c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5" />
-    <circle cx="4.5" cy="9.5" r="2.2" />
-    <path d="M2 18.5c0-2 1.5-3.5 3.5-3.5" />
-    <circle cx="19.5" cy="9.5" r="2.2" />
-    <path d="M22 18.5c0-2-1.5-3.5-3.5-3.5" />
-  </svg>
-)
 
 const IconCamera = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -416,34 +406,18 @@ export function ProfilePage() {
       {/* ── Header Navbar chung ── */}
       <header className="profile-header">
         <div className="profile-header-inner">
-          <div className="profile-brand" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
-            <div className="profile-brand-icon" aria-hidden="true">
-              <IconShield />
-            </div>
-            <span className="profile-brand-text">Quản lý khách hàng</span>
-          </div>
+          <button
+            className="profile-header-back-btn"
+            onClick={() => navigate('/dashboard')}
+            type="button"
+            id="profile-header-back-btn"
+            title="Quay lại Dashboard"
+          >
+            <IconArrowLeft />
+            <span>Quay lại Dashboard</span>
+          </button>
 
           <div className="profile-header-user-area">
-            <div className="profile-header-user-info">
-              <div className="profile-header-avatar" id="profile-header-avatar-display">
-                {profile?.avatar || user?.avatar ? (
-                  <img
-                    src={profile?.avatar || user?.avatar}
-                    alt={user?.full_name || 'Ảnh đại diện'}
-                    className="profile-header-avatar-img"
-                  />
-                ) : (
-                  getInitials(user?.full_name || 'Người dùng')
-                )}
-              </div>
-              <div className="profile-header-details">
-                <span className="profile-header-name">{user?.full_name ?? 'Người dùng'}</span>
-                <span className="profile-header-role">
-                  {user?.role ? ROLE_LABELS[user.role] ?? user.role : ''}
-                </span>
-              </div>
-            </div>
-
             <button
               type="button"
               className="dashboard-change-pwd-btn"
@@ -471,16 +445,6 @@ export function ProfilePage() {
 
       {/* ── Main Content Container ── */}
       <main className="profile-main-container">
-        {/* Nút quay lại Dashboard */}
-        <button
-          className="profile-back-link"
-          onClick={() => navigate('/dashboard')}
-          type="button"
-          id="profile-back-dashboard-btn"
-        >
-          <IconArrowLeft />
-          <span>Quay lại Dashboard</span>
-        </button>
 
         {/* Tiêu đề trang */}
         <div className="profile-title-bar">
