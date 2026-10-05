@@ -494,7 +494,6 @@ function DashboardPage() {
         activeMenuId={activeMenuId}
         onSelectMenu={handleSelectMenu}
         isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
 
       {/* ── 2. WORKSPACE CONTENT AREA ── */}
