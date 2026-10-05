@@ -945,7 +945,7 @@ function DashboardPage() {
               <section className="dashboard-section settings-section">
                 <div className="section-header">
                   <div>
-                    <h2 className="section-title">Nhật ký & Cấu hình hệ thống (ADMIN)</h2>
+                    <h2 className="section-title">Nhật ký & Cấu hình hệ thống</h2>
                     <p className="section-desc">
                       Quản trị người dùng, phân bổ vai trò và theo dõi nhật ký hoạt động toàn hệ thống.
                     </p>
@@ -954,14 +954,14 @@ function DashboardPage() {
 
                 <div className="settings-cards-grid">
                   <div className="setting-card">
-                    <h4>Nhật ký hoạt động hệ thống (Audit Logs)</h4>
+                    <h4>Nhật ký hoạt động hệ thống</h4>
                     <p>Ghi lại lịch sử đăng nhập, thay đổi dữ liệu khách hàng và truy cập API.</p>
                     <button
                       type="button"
                       className="btn btn-secondary"
                       onClick={() => navigate('/admin/audit-logs')}
                     >
-                      Xem Audit Log
+                      Xem nhật ký
                     </button>
                   </div>
                 </div>
