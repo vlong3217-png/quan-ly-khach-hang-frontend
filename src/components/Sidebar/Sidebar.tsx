@@ -212,7 +212,38 @@ export function Sidebar({
         )}
       </div>
 
-
+      {/* ── 2. User Info & Role/Team (S1-06 Acceptance Criteria) ── */}
+      <div className="sidebar-role-indicator">
+        <div className="sidebar-user-row">
+          <div className="sidebar-user-avatar" aria-hidden="true" style={{ overflow: 'hidden' }}>
+            {user.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user.full_name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : user.full_name ? (
+              user.full_name.charAt(0).toUpperCase()
+            ) : (
+              'U'
+            )}
+          </div>
+          <div className="sidebar-user-meta">
+            <div className="role-user-name" title={user.email}>
+              {user.full_name}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <span className="role-indicator-badge" data-role={user.role || 'USER'}>
+                <span className="role-dot" />
+                {user.role === 'ADMIN' ? 'Admin' : user.role === 'MANAGER' ? 'Quản lý' : 'Nhân viên'}
+              </span>
+              <span className="role-user-team" title={user.team_name || 'Đội kinh doanh'}>
+                • {user.team_name || 'Kinh doanh'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* ── 3. Navigation Menu Groups ── */}
       <nav className="sidebar-nav" role="navigation">
