@@ -603,7 +603,7 @@ export default function CustomerManagementPage() {
         <div className="customer-header-info">
           <h2>
             <IconBuilding />
-            Quản lý Khách hàng Doanh nghiệp & 360° (Sprint 3)
+            Quản lý Khách hàng Doanh nghiệp & 360°
           </h2>
           <p>
             Hệ thống quản lý khách hàng chuẩn tập trung — Phân quyền theo mô hình dữ liệu sở hữu ({scope}).
@@ -618,10 +618,10 @@ export default function CustomerManagementPage() {
             type="button"
             className="btn btn-secondary"
             onClick={() => fileInputRef.current?.click()}
-            title="S3-06: Nhập danh sách khách hàng hàng loạt từ Excel"
+            title="Nhập danh sách khách hàng hàng loạt từ Excel"
           >
             <IconUpload />
-            <span>Nhập Excel (S3-06)</span>
+            <span>Nhập Excel</span>
           </button>
           <input
             type="file"
@@ -651,14 +651,14 @@ export default function CustomerManagementPage() {
         </div>
       </div>
 
-      {/* ── Tabs chuyển đổi tính năng Sprint 3 ── */}
+      {/* ── Tabs chuyển đổi tính năng ── */}
       <div className="customer-nav-tabs">
         <button
           type="button"
           className={`customer-tab-btn ${activeTab === 'CUSTOMERS' ? 'active' : ''}`}
           onClick={() => setActiveTab('CUSTOMERS')}
         >
-          🏢 Hồ sơ Doanh nghiệp (S3-01)
+          🏢 Hồ sơ Doanh nghiệp
           <span className="tab-badge">{scopedCustomers.length}</span>
         </button>
 
@@ -667,7 +667,7 @@ export default function CustomerManagementPage() {
           className={`customer-tab-btn ${activeTab === 'CONTACTS' ? 'active' : ''}`}
           onClick={() => setActiveTab('CONTACTS')}
         >
-          👤 Người liên hệ & Quyết định mua (S3-02)
+          👤 Người liên hệ & Quyết định mua
           <span className="tab-badge">{contacts.length}</span>
         </button>
 
@@ -676,7 +676,7 @@ export default function CustomerManagementPage() {
           className={`customer-tab-btn ${activeTab === 'MERGE' ? 'active' : ''}`}
           onClick={() => setActiveTab('MERGE')}
         >
-          ⚡ Cảnh báo & Gộp trùng (S3-04)
+          ⚡ Cảnh báo & Gộp trùng
           {duplicateGroups.length > 0 && <span className="tab-badge warning">{duplicateGroups.length}</span>}
         </button>
 
@@ -685,7 +685,7 @@ export default function CustomerManagementPage() {
           className={`customer-tab-btn ${activeTab === 'SUPPORT' ? 'active' : ''}`}
           onClick={() => setActiveTab('SUPPORT')}
         >
-          🎯 CSKH & Cờ Rời bỏ (S3-08)
+          🎯 CSKH & Cờ Rời bỏ
           {stats.atRiskCount > 0 && <span className="tab-badge warning">{stats.atRiskCount} nguy cơ</span>}
         </button>
 
@@ -694,7 +694,7 @@ export default function CustomerManagementPage() {
           className={`customer-tab-btn ${activeTab === 'PERIODIC' ? 'active' : ''}`}
           onClick={() => setActiveTab('PERIODIC')}
         >
-          📅 Chăm sóc định kỳ (S3-09)
+          📅 Chăm sóc định kỳ
           <span className="tab-badge">{periodicCareList.length}</span>
         </button>
       </div>
@@ -746,7 +746,7 @@ export default function CustomerManagementPage() {
             <div className="customer-stat-icon risk">⚠️</div>
             <div className="customer-stat-content">
               <span className="customer-stat-value" style={{ color: '#dc2626' }}>{stats.atRiskCount}</span>
-              <span className="customer-stat-label" style={{ color: '#b91c1c' }}>Cờ rủi ro rời bỏ (S3-08)</span>
+              <span className="customer-stat-label" style={{ color: '#b91c1c' }}>Cờ rủi ro rời bỏ</span>
             </div>
           </div>
         )}
@@ -863,7 +863,7 @@ export default function CustomerManagementPage() {
                               className="cust-company-name"
                               style={{ cursor: 'pointer', color: '#1d4ed8' }}
                               onClick={() => setSelected360Customer(cust)}
-                              title="Xem Trang 360 độ khách hàng (S3-03)"
+                              title="Xem Trang 360 độ khách hàng"
                             >
                               {cust.name}
                             </strong>
@@ -919,7 +919,7 @@ export default function CustomerManagementPage() {
                                 type="button"
                                 className="cust-btn-icon view"
                                 onClick={() => setSelected360Customer(cust)}
-                                title="Mở trang 360 độ (S3-03)"
+                                title="Mở trang 360 độ"
                               >
                                 <IconEye />
                               </button>
@@ -927,7 +927,7 @@ export default function CustomerManagementPage() {
                                 type="button"
                                 className="cust-btn-icon"
                                 onClick={() => setParentModalCustomer(cust)}
-                                title="Gắn công ty mẹ (S3-05)"
+                                title="Gắn công ty mẹ"
                               >
                                 🔗
                               </button>
@@ -1007,7 +1007,7 @@ export default function CustomerManagementPage() {
               onClick={() => handleOpenContactModal()}
             >
               <IconPlus />
-              <span>Thêm người liên hệ (S3-02)</span>
+              <span>Thêm người liên hệ</span>
             </button>
           </div>
 
@@ -1085,7 +1085,7 @@ export default function CustomerManagementPage() {
                                 setTransferTargetCustId('')
                                 setTransferReason('')
                               }}
-                              title="Chuyển sang công ty khác (S3-02 AC)"
+                              title="Chuyển sang công ty khác"
                             >
                               Chuyển Cty
                             </button>
@@ -1139,7 +1139,7 @@ export default function CustomerManagementPage() {
         <div className="customer-table-card" style={{ padding: '24px' }}>
           <div style={{ marginBottom: '16px' }}>
             <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', color: '#0f172a' }}>
-              Phát hiện trùng lặp & Hợp nhất khách hàng (S3-04)
+              Phát hiện trùng lặp & Hợp nhất khách hàng
             </h3>
             <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
               Hệ thống tự động quét trùng theo Mã số thuế, tên công ty và website. Trưởng nhóm có thể so sánh cạnh nhau và gộp giữ nguyên toàn bộ lịch sử.
@@ -1192,13 +1192,13 @@ export default function CustomerManagementPage() {
         </div>
       )}
 
-      {/* ── TAB 4: CSKH & CỜ RỦI RO RỜI BỎ (S3-08) ── */}
+      {/* ── TAB 4: CSKH & CỜ RỦI RO RỜI BỎ ── */}
       {activeTab === 'SUPPORT' && (
         <div className="customer-table-card">
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '16px', color: '#0f172a' }}>
-                Yêu cầu hỗ trợ sau bán & Cờ rủi ro rời bỏ (S3-08)
+                Yêu cầu hỗ trợ sau bán & Cờ rủi ro rời bỏ
               </h3>
               <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748b' }}>
                 Khách hàng có từ 2 yêu cầu hỗ trợ chưa xử lý sẽ được gắn cờ rủi ro tự động cảnh báo cho Sales.
@@ -1306,13 +1306,13 @@ export default function CustomerManagementPage() {
         </div>
       )}
 
-      {/* ── TAB 5: CHĂM SÓC ĐỊNH KỲ (S3-09) ── */}
+      {/* ── TAB 5: CHĂM SÓC ĐỊNH KỲ ── */}
       {activeTab === 'PERIODIC' && (
         <div className="customer-table-card">
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '16px', color: '#0f172a' }}>
-                Danh sách khách hàng cần chăm sóc định kỳ (S3-09)
+                Danh sách khách hàng cần chăm sóc định kỳ
               </h3>
               <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748b' }}>
                 Liệt kê các khách chưa tương tác trong N ngày, sắp xếp theo giá trị hợp đồng giảm dần.
@@ -1402,7 +1402,7 @@ export default function CustomerManagementPage() {
         </div>
       )}
 
-      {/* ── MODAL TRANG 360 ĐỘ KHÁCH HÀNG (S3-03) ── */}
+      {/* ── MODAL TRANG 360 ĐỘ KHÁCH HÀNG ── */}
       {selected360Customer && (
         <div className="cust-modal-backdrop" onClick={() => setSelected360Customer(null)}>
           <div className="c360-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -1779,7 +1779,7 @@ export default function CustomerManagementPage() {
 
                 <div className="cust-form-row">
                   <div className="cust-form-group">
-                    <label>Vai trò trong quyết định mua (S3-02 AC)</label>
+                    <label>Vai trò trong quyết định mua</label>
                     <select
                       className="cust-form-select"
                       value={contactForm.buying_role}
@@ -1814,12 +1814,12 @@ export default function CustomerManagementPage() {
         </div>
       )}
 
-      {/* ── MODAL CHUYỂN NGƯỜI LIÊN HỆ SANG CÔNG TY KHÁC (S3-02 AC) ── */}
+      {/* ── MODAL CHUYỂN NGƯỜI LIÊN HỆ SANG CÔNG TY KHÁC ── */}
       {transferingContact && (
         <div className="cust-modal-backdrop" onClick={() => setTransferingContact(null)}>
           <div className="cust-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="cust-modal-header">
-              <h3>Chuyển Người liên hệ sang Khách hàng mới (S3-02)</h3>
+              <h3>Chuyển Người liên hệ sang Khách hàng mới</h3>
               <button type="button" className="cust-modal-close-btn" onClick={() => setTransferingContact(null)}>&times;</button>
             </div>
             <div className="cust-modal-body">
@@ -1864,12 +1864,12 @@ export default function CustomerManagementPage() {
         </div>
       )}
 
-      {/* ── MODAL SO SÁNH & GỘP TRÙNG (S3-04 AC) ── */}
+      {/* ── MODAL SO SÁNH & GỘP TRÙNG ── */}
       {selectedMergeGroup && (
         <div className="cust-modal-backdrop" onClick={() => setSelectedMergeGroup(null)}>
           <div className="c360-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="cust-modal-header">
-              <h3>So sánh & Gộp Khách hàng Trùng lặp (S3-04)</h3>
+              <h3>So sánh & Gộp Khách hàng Trùng lặp</h3>
               <button type="button" className="cust-modal-close-btn" onClick={() => setSelectedMergeGroup(null)}>&times;</button>
             </div>
             <div className="cust-modal-body">
@@ -1914,12 +1914,12 @@ export default function CustomerManagementPage() {
         </div>
       )}
 
-      {/* ── MODAL GẮN CÔNG TY MẸ (S3-05 AC) ── */}
+      {/* ── MODAL GẮN CÔNG TY MẸ ── */}
       {parentModalCustomer && (
         <div className="cust-modal-backdrop" onClick={() => setParentModalCustomer(null)}>
           <div className="cust-modal-content" style={{ maxWidth: '480px' }} onClick={(e) => e.stopPropagation()}>
             <div className="cust-modal-header">
-              <h3>Khai báo Công ty Mẹ - Con (S3-05)</h3>
+              <h3>Khai báo Công ty Mẹ - Con</h3>
               <button type="button" className="cust-modal-close-btn" onClick={() => setParentModalCustomer(null)}>&times;</button>
             </div>
             <div className="cust-modal-body">
@@ -1953,12 +1953,12 @@ export default function CustomerManagementPage() {
         </div>
       )}
 
-      {/* ── MODAL XEM TRƯỚC NHẬP EXCEL (S3-06 AC) ── */}
+      {/* ── MODAL XEM TRƯỚC NHẬP EXCEL ── */}
       {importPreview && (
         <div className="cust-modal-backdrop" onClick={() => setImportPreview(null)}>
           <div className="c360-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="cust-modal-header">
-              <h3>Xem trước & Báo lỗi Nhập file Excel (S3-06)</h3>
+              <h3>Xem trước & Báo lỗi Nhập file Excel</h3>
               <button type="button" className="cust-modal-close-btn" onClick={() => setImportPreview(null)}>&times;</button>
             </div>
             <div className="cust-modal-body">
@@ -2007,12 +2007,12 @@ export default function CustomerManagementPage() {
         </div>
       )}
 
-      {/* ── MODAL YÊU CẦU CSKH (S3-08) ── */}
+      {/* ── MODAL YÊU CẦU CSKH ── */}
       {isTicketModalOpen && (
         <div className="cust-modal-backdrop" onClick={() => setIsTicketModalOpen(false)}>
           <div className="cust-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="cust-modal-header">
-              <h3>Ghi nhận Yêu cầu Hỗ trợ Sau bán (S3-08)</h3>
+              <h3>Ghi nhận Yêu cầu Hỗ trợ Sau bán</h3>
               <button type="button" className="cust-modal-close-btn" onClick={() => setIsTicketModalOpen(false)}>&times;</button>
             </div>
             <form onSubmit={handleCreateTicket}>
