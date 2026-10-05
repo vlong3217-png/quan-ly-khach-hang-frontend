@@ -465,6 +465,18 @@ function DashboardPage() {
   const isProductView =
     activeMenuId === 'menu-products' ||
     activeMenuId.startsWith('menu-products-')
+  const isPipelineView =
+    activeMenuId === 'menu-pipeline' ||
+    activeMenuId.startsWith('menu-pipeline-')
+  const isCategoryView =
+    activeMenuId === 'menu-categories' ||
+    activeMenuId.startsWith('menu-categories-')
+  const isWinLossView =
+    activeMenuId === 'menu-win-loss' ||
+    activeMenuId.startsWith('menu-win-loss-')
+  const isCustomFieldView =
+    activeMenuId === 'menu-custom-fields' ||
+    activeMenuId.startsWith('menu-custom-fields-')
   const isReportView =
     activeMenuId === 'menu-reports' ||
     activeMenuId.startsWith('menu-reports-')
@@ -953,16 +965,84 @@ function DashboardPage() {
           )}
 
           {/* ─────────────────────────────────────────────────────────────
-              VIEW 5: CẤU HÌNH HỆ THỐNG (SETTINGS - ADMIN ONLY)
+              VIEW: GIAI ĐOẠN PIPELINE & XÁC SUẤT THẮNG (S2-09)
+              ───────────────────────────────────────────────────────────── */}
+          {isPipelineView && (
+            <section className="dashboard-section pipeline-section">
+              <PipelineStagesPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: DANH MỤC BÁN HÀNG DÙNG CHUNG (S2-07)
+              ───────────────────────────────────────────────────────────── */}
+          {isCategoryView && (
+            <section className="dashboard-section categories-section">
+              <CategoriesPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: LÝ DO THẮNG / THUA & ĐỐI THỦ (S2-10)
+              ───────────────────────────────────────────────────────────── */}
+          {isWinLossView && (
+            <section className="dashboard-section win-loss-section">
+              <WinLossCompetitorsPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: TRƯỜNG TUỲ CHỈNH - CUSTOM FIELDS (S2-08)
+              ───────────────────────────────────────────────────────────── */}
+          {isCustomFieldView && (
+            <PermissionGate
+              role={[ROLES.ADMIN]}
+              permission={PERMISSIONS.SYSTEM_SETTINGS}
+              fallback={
+                <div className="access-denied-card" id="forbidden-cf-card">
+                  <IconLock />
+                  <h3>Không có quyền truy cập Trường tuỳ chỉnh (Mã lỗi 403)</h3>
+                  <p>Cấu hình trường tuỳ chỉnh dành riêng cho Quản trị viên (ADMIN).</p>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/custom-fields' } })}
+                    >
+                      Mở trang lỗi 403
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setActiveMenuId('menu-dashboard')
+                        navigate('/dashboard')
+                      }}
+                    >
+                      Về trang chủ
+                    </button>
+                  </div>
+                </div>
+              }
+            >
+              <section className="dashboard-section custom-fields-section">
+                <CustomFieldsPage />
+              </section>
+            </PermissionGate>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW 5: CẤU HÌNH HỆ THỐNG & AUDIT LOGS (ADMIN ONLY)
               ───────────────────────────────────────────────────────────── */}
           {isSettingView && (
             <PermissionGate
+              role={[ROLES.ADMIN]}
               permission={PERMISSIONS.SYSTEM_SETTINGS}
               fallback={
                 <div className="access-denied-card" id="forbidden-settings-card">
                   <IconLock />
                   <h3>Không có quyền truy cập Cấu hình hệ thống (Mã lỗi 403)</h3>
-                  <p>Menu này chỉ dành riêng cho Quản trị viên cao nhất (ADMIN).</p>
+                  <p>Khu vực này chỉ dành riêng cho Quản trị viên cao nhất (ADMIN).</p>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button
                       type="button"
@@ -988,7 +1068,7 @@ function DashboardPage() {
               <section className="dashboard-section settings-section">
                 <div className="section-header">
                   <div>
-                    <h2 className="section-title">Cấu hình hệ thống & Quản trị phân quyền (ADMIN)</h2>
+                    <h2 className="section-title">Nhật ký & Cấu hình hệ thống (ADMIN)</h2>
                     <p className="section-desc">
                       Quản trị người dùng, phân bổ vai trò và theo dõi nhật ký hoạt động toàn hệ thống.
                     </p>
@@ -1007,22 +1087,6 @@ function DashboardPage() {
                       Xem Audit Log
                     </button>
                   </div>
-                </div>
-
-                <div style={{ marginTop: '28px' }}>
-                  <CategoriesPage />
-                </div>
-
-                <div style={{ marginTop: '28px' }}>
-                  <CustomFieldsPage />
-                </div>
-
-                <div style={{ marginTop: '28px' }}>
-                  <PipelineStagesPage />
-                </div>
-
-                <div style={{ marginTop: '28px' }}>
-                  <WinLossCompetitorsPage />
                 </div>
               </section>
             </PermissionGate>
