@@ -46,9 +46,17 @@ const IconSettings = () => (
 )
 
 
-const IconShieldLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+const IconCrmLogo = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+    {/* Người dùng trung tâm */}
+    <circle cx="12" cy="7" r="3.2" />
+    <path d="M6.5 19.5c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5" />
+    {/* Khách hàng / thành viên kết nối bên trái */}
+    <circle cx="4.5" cy="9.5" r="2.2" />
+    <path d="M2 18.5c0-2 1.5-3.5 3.5-3.5" />
+    {/* Khách hàng / thành viên kết nối bên phải */}
+    <circle cx="19.5" cy="9.5" r="2.2" />
+    <path d="M22 18.5c0-2-1.5-3.5-3.5-3.5" />
   </svg>
 )
 
@@ -185,7 +193,7 @@ export function Sidebar({
       <div className="sidebar-header">
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon" aria-hidden="true">
-            <IconShieldLogo />
+            <IconCrmLogo />
           </div>
           <div className="sidebar-brand-info">
             <span className="sidebar-brand-name">Quản lý khách hàng</span>
