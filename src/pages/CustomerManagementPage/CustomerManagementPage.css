@@ -1,6 +1,7 @@
 /* ==========================================================================
-   Customer Management Page Styles - User Story S3-01
-   Quản lý hồ sơ khách hàng doanh nghiệp & Phân quyền dữ liệu sở hữu
+   Customer Management Page Styles - User Story S3-01 to S3-09
+   Quản lý khách hàng doanh nghiệp, Người liên hệ, Trang 360,
+   Gộp trùng, Công ty Mẹ-Con, Nhập Excel, Yêu cầu CSKH & Chăm sóc định kỳ
    ========================================================================== */
 
 .customer-page {
@@ -38,24 +39,82 @@
 .customer-header-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
+}
+
+/* ── Navigation Tabs ── */
+.customer-nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 12px;
+  overflow-x: auto;
+  width: fit-content;
+}
+
+.customer-tab-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.customer-tab-btn:hover {
+  color: #0f172a;
+}
+
+.customer-tab-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.tab-badge {
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.customer-tab-btn.active .tab-badge {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.tab-badge.warning {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 /* ── 2. Stat summary cards ── */
 .customer-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
 }
 
 .customer-stat-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 16px 20px;
+  padding: 14px 18px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -66,8 +125,8 @@
 }
 
 .customer-stat-icon {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -76,30 +135,12 @@
   flex-shrink: 0;
 }
 
-.customer-stat-icon.total {
-  background: #eff6ff;
-  color: #2563eb;
-}
-
-.customer-stat-icon.potential {
-  background: #f0fdf4;
-  color: #16a34a;
-}
-
-.customer-stat-icon.transaction {
-  background: #fffbeb;
-  color: #d97706;
-}
-
-.customer-stat-icon.active {
-  background: #ecfdf5;
-  color: #059669;
-}
-
-.customer-stat-icon.stopped {
-  background: #f1f5f9;
-  color: #64748b;
-}
+.customer-stat-icon.total { background: #eff6ff; color: #2563eb; }
+.customer-stat-icon.potential { background: #f0fdf4; color: #16a34a; }
+.customer-stat-icon.transaction { background: #fffbeb; color: #d97706; }
+.customer-stat-icon.active { background: #ecfdf5; color: #059669; }
+.customer-stat-icon.stopped { background: #f1f5f9; color: #64748b; }
+.customer-stat-icon.risk { background: #fef2f2; color: #dc2626; }
 
 .customer-stat-content {
   display: flex;
@@ -107,14 +148,14 @@
 }
 
 .customer-stat-value {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: #0f172a;
   line-height: 1.2;
 }
 
 .customer-stat-label {
-  font-size: 12.5px;
+  font-size: 12px;
   color: #64748b;
   margin-top: 2px;
 }
@@ -124,17 +165,17 @@
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 16px 20px;
+  padding: 14px 18px;
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 12px;
   align-items: center;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .customer-search-box {
   flex: 1;
-  min-width: 260px;
+  min-width: 240px;
   position: relative;
   display: flex;
   align-items: center;
@@ -149,11 +190,11 @@
 
 .customer-search-input {
   width: 100%;
-  height: 40px;
+  height: 38px;
   padding: 0 12px 0 38px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  font-size: 13.5px;
+  font-size: 13px;
   color: #1e293b;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -165,7 +206,7 @@
 }
 
 .customer-filter-select {
-  height: 40px;
+  height: 38px;
   padding: 0 12px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -174,14 +215,8 @@
   background: #ffffff;
   outline: none;
   cursor: pointer;
-  transition: border-color 0.15s;
 }
 
-.customer-filter-select:focus {
-  border-color: #2563eb;
-}
-
-/* Scope badge pill */
 .scope-indicator-pill {
   display: inline-flex;
   align-items: center;
@@ -195,7 +230,7 @@
   border: 1px solid #bfdbfe;
 }
 
-/* ── 4. Customer Table ── */
+/* ── 4. Tables ── */
 .customer-table-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -213,30 +248,26 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 13.5px;
+  font-size: 13px;
 }
 
 .enterprise-customer-table th {
   background: #f8fafc;
   color: #475569;
   font-weight: 600;
-  font-size: 12.5px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  padding: 12px 16px;
+  padding: 12px 14px;
   border-bottom: 1px solid #e2e8f0;
   white-space: nowrap;
 }
 
 .enterprise-customer-table td {
-  padding: 14px 16px;
+  padding: 13px 14px;
   border-bottom: 1px solid #f1f5f9;
   color: #334155;
   vertical-align: middle;
-}
-
-.enterprise-customer-table tbody tr {
-  transition: background-color 0.15s ease;
 }
 
 .enterprise-customer-table tbody tr:hover {
@@ -248,9 +279,9 @@
   font-weight: 700;
   color: #2563eb;
   background: #eff6ff;
-  padding: 3px 8px;
+  padding: 3px 7px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
 .cust-company-name {
@@ -261,26 +292,20 @@
 }
 
 .cust-tax-code {
-  font-size: 12px;
+  font-size: 11.5px;
   color: #64748b;
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.cust-tax-code span {
-  font-family: monospace;
-  color: #334155;
-  font-weight: 500;
-}
-
 .cust-status-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 10px;
+  padding: 3px 8px;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -292,11 +317,25 @@
   background: currentColor;
 }
 
+.cust-risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
 .cust-owner-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 500;
   color: #1e293b;
 }
@@ -307,7 +346,7 @@
 }
 
 .cust-team-text {
-  font-size: 11.5px;
+  font-size: 11px;
   color: #64748b;
   display: block;
 }
@@ -337,7 +376,12 @@
 .cust-btn-icon:hover {
   background: #f1f5f9;
   color: #0f172a;
-  border-color: #cbd5e1;
+}
+
+.cust-btn-icon.view:hover {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
 }
 
 .cust-btn-icon.edit:hover {
@@ -352,38 +396,174 @@
   border-color: #fecaca;
 }
 
-/* Empty state */
-.cust-empty-state {
-  text-align: center;
-  padding: 48px 20px;
-  color: #64748b;
+/* ── 5. Customer 360 View Modal (S3-03) ── */
+.c360-modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
 }
 
-.cust-empty-state svg {
-  margin-bottom: 12px;
+.c360-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.c360-header-info h3 {
+  margin: 0 0 6px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.c360-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
   color: #cbd5e1;
 }
 
-/* ── 5. Modal Styling ── */
+.c360-kpi-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.c360-kpi-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.c360-kpi-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.c360-kpi-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 2px;
+}
+
+.c360-kpi-val.highlight {
+  color: #2563eb;
+}
+
+.c360-kpi-val.risk {
+  color: #dc2626;
+}
+
+.c360-tabs {
+  display: flex;
+  padding: 0 24px;
+  border-bottom: 1px solid #e2e8f0;
+  gap: 20px;
+}
+
+.c360-tab-link {
+  padding: 12px 0;
+  border: none;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  position: relative;
+}
+
+.c360-tab-link.active {
+  color: #2563eb;
+}
+
+.c360-tab-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #2563eb;
+}
+
+.c360-body {
+  padding: 24px;
+  min-height: 280px;
+}
+
+/* Timeline Activity */
+.c360-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  padding-left: 20px;
+  border-left: 2px solid #e2e8f0;
+}
+
+.c360-timeline-item {
+  position: relative;
+}
+
+.c360-timeline-dot {
+  position: absolute;
+  left: -27px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 2px solid #ffffff;
+}
+
+.c360-timeline-content {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.c360-timeline-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.c360-timeline-time {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-left: 8px;
+}
+
+/* Modals general */
 .cust-modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(15, 23, 42, 0.5);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 16px;
-  animation: modalFadeIn 0.2s ease;
-}
-
-@keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 .cust-modal-content {
@@ -393,7 +573,7 @@
   max-width: 640px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
 }
@@ -420,15 +600,6 @@
   color: #94a3b8;
   cursor: pointer;
   padding: 4px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.cust-modal-close-btn:hover {
-  background: #f1f5f9;
-  color: #334155;
 }
 
 .cust-modal-body {
@@ -442,12 +613,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-}
-
-@media (max-width: 600px) {
-  .cust-form-row {
-    grid-template-columns: 1fr;
-  }
 }
 
 .cust-form-group {
@@ -478,7 +643,6 @@
   color: #1e293b;
   outline: none;
   box-sizing: border-box;
-  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .cust-form-input:focus,
@@ -488,20 +652,14 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-.cust-form-input.has-error {
-  border-color: #ef4444;
-}
-
 .cust-form-error {
   font-size: 12px;
   color: #dc2626;
-  margin-top: 2px;
 }
 
 .cust-form-hint {
   font-size: 11.5px;
   color: #64748b;
-  margin-top: 2px;
 }
 
 .cust-modal-footer {
@@ -515,7 +673,7 @@
   border-bottom-right-radius: 16px;
 }
 
-/* Alert notice toast */
+/* Toast */
 .cust-toast {
   position: fixed;
   bottom: 24px;
@@ -530,20 +688,28 @@
   gap: 10px;
   z-index: 2000;
   font-size: 13.5px;
-  animation: toastSlideUp 0.25s ease;
 }
 
 .cust-toast.error {
   background: #dc2626;
 }
 
-@keyframes toastSlideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+/* Duplicate comparison cards */
+.dup-compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.dup-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+  background: #f8fafc;
+}
+
+.dup-card.primary {
+  border-color: #2563eb;
+  background: #eff6ff;
 }
