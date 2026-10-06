@@ -36,21 +36,6 @@ const IconPlus = () => (
   </svg>
 )
 
-const IconBuilding = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
-    <line x1="9" y1="22" x2="9" y2="22.01" />
-    <line x1="15" y1="22" x2="15" y2="22.01" />
-    <line x1="9" y1="18" x2="9" y2="18.01" />
-    <line x1="15" y1="18" x2="15" y2="18.01" />
-    <line x1="9" y1="14" x2="9" y2="14.01" />
-    <line x1="15" y1="14" x2="15" y2="14.01" />
-    <line x1="9" y1="10" x2="9" y2="10.01" />
-    <line x1="15" y1="10" x2="15" y2="10.01" />
-    <line x1="9" y1="6" x2="9" y2="6.01" />
-    <line x1="15" y1="6" x2="15" y2="6.01" />
-  </svg>
-)
 
 const IconEdit = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -602,7 +587,6 @@ export default function CustomerManagementPage() {
       <div className="customer-header-bar">
         <div className="customer-header-info">
           <h2>
-            <IconBuilding />
             Quản lý Khách hàng Doanh nghiệp & 360°
           </h2>
           <p>
@@ -658,7 +642,7 @@ export default function CustomerManagementPage() {
           className={`customer-tab-btn ${activeTab === 'CUSTOMERS' ? 'active' : ''}`}
           onClick={() => setActiveTab('CUSTOMERS')}
         >
-          🏢 Hồ sơ Doanh nghiệp
+          Hồ sơ Doanh nghiệp
           <span className="tab-badge">{scopedCustomers.length}</span>
         </button>
 
@@ -667,7 +651,7 @@ export default function CustomerManagementPage() {
           className={`customer-tab-btn ${activeTab === 'CONTACTS' ? 'active' : ''}`}
           onClick={() => setActiveTab('CONTACTS')}
         >
-          👤 Người liên hệ & Quyết định mua
+          Người liên hệ & Quyết định mua
           <span className="tab-badge">{contacts.length}</span>
         </button>
 
@@ -676,7 +660,7 @@ export default function CustomerManagementPage() {
           className={`customer-tab-btn ${activeTab === 'MERGE' ? 'active' : ''}`}
           onClick={() => setActiveTab('MERGE')}
         >
-          ⚡ Cảnh báo & Gộp trùng
+          Cảnh báo & Gộp trùng
           {duplicateGroups.length > 0 && <span className="tab-badge warning">{duplicateGroups.length}</span>}
         </button>
 
@@ -685,7 +669,7 @@ export default function CustomerManagementPage() {
           className={`customer-tab-btn ${activeTab === 'SUPPORT' ? 'active' : ''}`}
           onClick={() => setActiveTab('SUPPORT')}
         >
-          🎯 CSKH & Cờ Rời bỏ
+          CSKH & Cờ Rời bỏ
           {stats.atRiskCount > 0 && <span className="tab-badge warning">{stats.atRiskCount} nguy cơ</span>}
         </button>
 
@@ -694,7 +678,7 @@ export default function CustomerManagementPage() {
           className={`customer-tab-btn ${activeTab === 'PERIODIC' ? 'active' : ''}`}
           onClick={() => setActiveTab('PERIODIC')}
         >
-          📅 Chăm sóc định kỳ
+          Chăm sóc định kỳ
           <span className="tab-badge">{periodicCareList.length}</span>
         </button>
       </div>
@@ -702,7 +686,6 @@ export default function CustomerManagementPage() {
       {/* ── 2. Stat summary cards ── */}
       <div className="customer-stats-grid">
         <div className="customer-stat-card">
-          <div className="customer-stat-icon total">📊</div>
           <div className="customer-stat-content">
             <span className="customer-stat-value">{stats.total}</span>
             <span className="customer-stat-label">Tổng khách hàng ({scope})</span>
@@ -710,7 +693,6 @@ export default function CustomerManagementPage() {
         </div>
 
         <div className="customer-stat-card">
-          <div className="customer-stat-icon potential">🌱</div>
           <div className="customer-stat-content">
             <span className="customer-stat-value">{stats.potential}</span>
             <span className="customer-stat-label">Tiềm năng</span>
@@ -718,7 +700,6 @@ export default function CustomerManagementPage() {
         </div>
 
         <div className="customer-stat-card">
-          <div className="customer-stat-icon transaction">⏳</div>
           <div className="customer-stat-content">
             <span className="customer-stat-value">{stats.inTransaction}</span>
             <span className="customer-stat-label">Đang giao dịch</span>
@@ -726,7 +707,6 @@ export default function CustomerManagementPage() {
         </div>
 
         <div className="customer-stat-card">
-          <div className="customer-stat-icon active">⭐</div>
           <div className="customer-stat-content">
             <span className="customer-stat-value">{stats.active}</span>
             <span className="customer-stat-label">Khách hàng chính thức</span>
@@ -734,7 +714,6 @@ export default function CustomerManagementPage() {
         </div>
 
         <div className="customer-stat-card">
-          <div className="customer-stat-icon stopped">🛑</div>
           <div className="customer-stat-content">
             <span className="customer-stat-value">{stats.stopped}</span>
             <span className="customer-stat-label">Ngừng hợp tác</span>
@@ -743,7 +722,6 @@ export default function CustomerManagementPage() {
 
         {stats.atRiskCount > 0 && (
           <div className="customer-stat-card" style={{ borderColor: '#fca5a5', background: '#fff5f5' }}>
-            <div className="customer-stat-icon risk">⚠️</div>
             <div className="customer-stat-content">
               <span className="customer-stat-value" style={{ color: '#dc2626' }}>{stats.atRiskCount}</span>
               <span className="customer-stat-label" style={{ color: '#b91c1c' }}>Cờ rủi ro rời bỏ</span>
