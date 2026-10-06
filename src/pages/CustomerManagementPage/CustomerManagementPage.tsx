@@ -102,6 +102,7 @@ export default function CustomerManagementPage() {
   const [filterStatus, setFilterStatus] = useState<CustomerStatus | ''>('')
   const [filterIndustry, setFilterIndustry] = useState('')
   const [filterCompanySize, setFilterCompanySize] = useState('')
+  const [filterCorporateStructure, setFilterCorporateStructure] = useState<'' | 'PARENT' | 'CHILD' | 'INDEPENDENT'>('')
 
   // Toast thông báo
   const [toast, setToast] = useState<{ message: string; isError?: boolean } | null>(null)
@@ -138,7 +139,7 @@ export default function CustomerManagementPage() {
 
   // S3-03 360 View state
   const [selected360Customer, setSelected360Customer] = useState<CustomerEnterprise | null>(null)
-  const [c360ActiveTab, setC360ActiveTab] = useState<'OVERVIEW' | 'CONTACTS' | 'DEALS' | 'ACTIVITIES' | 'ATTACHMENTS'>('OVERVIEW')
+  const [c360ActiveTab, setC360ActiveTab] = useState<'OVERVIEW' | 'CONTACTS' | 'DEALS' | 'ACTIVITIES' | 'ATTACHMENTS' | 'GROUP'>('OVERVIEW')
 
   // S3-04 Duplicates state
   const [duplicateGroups, setDuplicateGroups] = useState<DuplicateCustomerGroup[]>([])
@@ -187,6 +188,7 @@ export default function CustomerManagementPage() {
     owner_id: user?.id ?? 1,
     status: 'POTENTIAL' as CustomerStatus,
     description: '',
+    parent_id: '',
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
@@ -238,6 +240,7 @@ export default function CustomerManagementPage() {
       status: filterStatus,
       industry: filterIndustry,
       company_size: filterCompanySize,
+      corporate_structure: filterCorporateStructure || undefined,
     })
     setAllCustomers(list)
     setContacts(customerService.getContacts(undefined, contactSearch))
@@ -249,7 +252,7 @@ export default function CustomerManagementPage() {
   useEffect(() => {
     loadCustomers()
     setCurrentPage(1)
-  }, [search, filterStatus, filterIndustry, filterCompanySize, contactSearch, periodicCareDays])
+  }, [search, filterStatus, filterIndustry, filterCompanySize, filterCorporateStructure, contactSearch, periodicCareDays])
 
   // Lọc theo phạm vi dữ liệu sở hữu
   const scopedCustomers = useMemo(() => {
@@ -292,6 +295,7 @@ export default function CustomerManagementPage() {
       owner_id: user?.id ?? 1,
       status: 'POTENTIAL',
       description: '',
+      parent_id: '',
     })
     setFormErrors({})
     setIsModalOpen(true)
@@ -300,6 +304,7 @@ export default function CustomerManagementPage() {
   // Mở modal sửa khách hàng
   const handleOpenEditModal = (cust: CustomerEnterprise) => {
     setEditingCustomer(cust)
+    const pRel = customerService.getParentRelation(cust.id)
     setFormData({
       name: cust.name,
       tax_code: cust.tax_code || '',
@@ -312,6 +317,7 @@ export default function CustomerManagementPage() {
       owner_id: cust.owner_id,
       status: cust.status,
       description: cust.description || '',
+      parent_id: pRel ? pRel.parent_id : '',
     })
     setFormErrors({})
     setIsModalOpen(true)
@@ -365,6 +371,7 @@ export default function CustomerManagementPage() {
           team_name: teamName,
           status: formData.status,
           description: formData.description.trim() || undefined,
+          parent_id: formData.parent_id,
         })
         showToast(`Đã cập nhật hồ sơ khách hàng "${formData.name.trim()}" thành công!`)
       } else {
@@ -383,6 +390,7 @@ export default function CustomerManagementPage() {
           team_name: teamName,
           status: formData.status,
           description: formData.description.trim() || undefined,
+          parent_id: formData.parent_id || undefined,
         })
         showToast(`Đã thêm thành công khách hàng "${formData.name.trim()}"!`)
       }
@@ -523,6 +531,12 @@ export default function CustomerManagementPage() {
   }
 
   // ── S3-05 Parent Company Action ──
+  const handleOpenParentModal = (cust: CustomerEnterprise) => {
+    setParentModalCustomer(cust)
+    const rel = customerService.getParentRelation(cust.id)
+    setSelectedParentId(rel ? rel.parent_id : '')
+  }
+
   const handleSaveParentCompany = () => {
     if (!parentModalCustomer || !selectedParentId) return
     try {
@@ -532,6 +546,18 @@ export default function CustomerManagementPage() {
       loadCustomers()
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Lỗi khi gắn công ty mẹ', true)
+    }
+  }
+
+  const handleRemoveParentCompany = () => {
+    if (!parentModalCustomer) return
+    try {
+      customerService.removeParentCompany(parentModalCustomer.id)
+      showToast(`Đã gỡ liên kết công ty mẹ cho "${parentModalCustomer.name}"!`)
+      setParentModalCustomer(null)
+      loadCustomers()
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Lỗi khi gỡ công ty mẹ', true)
     }
   }
 
@@ -802,6 +828,17 @@ export default function CustomerManagementPage() {
               ))}
             </select>
 
+            <select
+              className="customer-filter-select"
+              value={filterCorporateStructure}
+              onChange={(e) => setFilterCorporateStructure(e.target.value as any)}
+            >
+              <option value="">Tất cả cơ cấu</option>
+              <option value="PARENT">🏢 Tập đoàn / Cty mẹ</option>
+              <option value="CHILD">↳ Công ty con</option>
+              <option value="INDEPENDENT">Công ty độc lập</option>
+            </select>
+
             {/* S3-07 Bộ lọc hay dùng */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ fontSize: '12px', color: '#64748b' }}>Bộ lọc lưu:</span>
@@ -852,6 +889,7 @@ export default function CustomerManagementPage() {
                       const statusColor = CUSTOMER_STATUS_COLORS[cust.status]
                       const isAtRisk = customerService.isCustomerAtRisk(cust.id)
                       const groupSummary = customerService.getGroupContractTotal(cust.id)
+                      const parentRel = customerService.getParentRelation(cust.id)
 
                       return (
                         <tr key={cust.id} id={`customer-row-${cust.id}`}>
@@ -876,6 +914,12 @@ export default function CustomerManagementPage() {
                             {groupSummary.childrenCount > 0 && (
                               <div style={{ fontSize: '11px', color: '#047857', marginTop: '2px', fontWeight: 600 }}>
                                 🏢 Tập đoàn ({groupSummary.childrenCount} cty con): {groupSummary.totalValue.toLocaleString('vi-VN')} đ
+                              </div>
+                            )}
+                            {/* AC S3-05: Hiển thị nếu là công ty con trực thuộc */}
+                            {parentRel && (
+                              <div style={{ fontSize: '11px', color: '#1d4ed8', marginTop: '2px', fontWeight: 500 }}>
+                                ↳ Thuộc tập đoàn: <strong>{parentRel.parent_name}</strong>
                               </div>
                             )}
                           </td>
@@ -926,8 +970,8 @@ export default function CustomerManagementPage() {
                               <button
                                 type="button"
                                 className="cust-btn-icon"
-                                onClick={() => setParentModalCustomer(cust)}
-                                title="Gắn công ty mẹ"
+                                onClick={() => handleOpenParentModal(cust)}
+                                title={parentRel ? `Đang thuộc: ${parentRel.parent_name} (Nhấn để sửa/gỡ)` : 'Khai báo công ty mẹ'}
                               >
                                 🔗
                               </button>
@@ -1429,6 +1473,8 @@ export default function CustomerManagementPage() {
             {/* KPI Bar */}
             {(() => {
               const summary = customerService.getCustomer360Summary(selected360Customer.id)
+              const groupSummary = customerService.getGroupContractTotal(selected360Customer.id)
+              const parentRel = customerService.getParentRelation(selected360Customer.id)
               return (
                 <div className="c360-kpi-bar">
                   <div className="c360-kpi-item">
@@ -1439,10 +1485,34 @@ export default function CustomerManagementPage() {
                     <span className="c360-kpi-label">Cơ hội đang mở (Pipeline)</span>
                     <span className="c360-kpi-val">{summary.openValue.toLocaleString('vi-VN')} đ</span>
                   </div>
-                  <div className="c360-kpi-item">
-                    <span className="c360-kpi-label">Người liên hệ</span>
-                    <span className="c360-kpi-val">{summary.contactsCount}</span>
-                  </div>
+                  {groupSummary.childrenCount > 0 ? (
+                    <div className="c360-kpi-item" style={{ background: '#ecfdf5', borderColor: '#a7f3d0' }}>
+                      <span className="c360-kpi-label" style={{ color: '#047857', fontWeight: 600 }}>Tổng HĐ Tập đoàn ({groupSummary.childrenCount} cty con)</span>
+                      <span className="c360-kpi-val highlight" style={{ color: '#047857' }}>
+                        {groupSummary.totalValue.toLocaleString('vi-VN')} đ
+                      </span>
+                    </div>
+                  ) : parentRel ? (
+                    <div className="c360-kpi-item" style={{ background: '#eff6ff', borderColor: '#bfdbfe' }}>
+                      <span className="c360-kpi-label" style={{ color: '#1d4ed8', fontWeight: 600 }}>Thuộc Tập đoàn</span>
+                      <span
+                        className="c360-kpi-val"
+                        style={{ fontSize: '13px', color: '#1d4ed8', cursor: 'pointer', textDecoration: 'underline' }}
+                        title="Xem trang 360 của công ty mẹ"
+                        onClick={() => {
+                          const pCust = customerService.getCustomerById(parentRel.parent_id)
+                          if (pCust) setSelected360Customer(pCust)
+                        }}
+                      >
+                        🏢 {parentRel.parent_name}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="c360-kpi-item">
+                      <span className="c360-kpi-label">Người liên hệ</span>
+                      <span className="c360-kpi-val">{summary.contactsCount}</span>
+                    </div>
+                  )}
                   <div className="c360-kpi-item">
                     <span className="c360-kpi-label">Tình trạng</span>
                     <span className={`c360-kpi-val ${summary.isAtRisk ? 'risk' : ''}`}>
@@ -1461,6 +1531,17 @@ export default function CustomerManagementPage() {
                 onClick={() => setC360ActiveTab('OVERVIEW')}
               >
                 Tổng quan & Cơ hội
+              </button>
+              <button
+                type="button"
+                className={`c360-tab-link ${c360ActiveTab === 'GROUP' ? 'active' : ''}`}
+                onClick={() => setC360ActiveTab('GROUP')}
+              >
+                🏢 Cơ cấu Tập đoàn ({(() => {
+                  const g = customerService.getGroupContractTotal(selected360Customer.id)
+                  const p = customerService.getParentRelation(selected360Customer.id)
+                  return g.childrenCount > 0 ? `${g.childrenCount} cty con` : p ? 'Cty con' : 'Độc lập'
+                })()})
               </button>
               <button
                 type="button"
@@ -1487,6 +1568,168 @@ export default function CustomerManagementPage() {
 
             {/* Body */}
             <div className="c360-body">
+              {c360ActiveTab === 'GROUP' && (() => {
+                const groupSummary = customerService.getGroupContractTotal(selected360Customer.id)
+                const parentRel = customerService.getParentRelation(selected360Customer.id)
+                return (
+                  <div>
+                    {groupSummary.childrenCount > 0 ? (
+                      <div>
+                        <div style={{ padding: '14px 16px', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '8px', marginBottom: '16px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <h4 style={{ margin: 0, color: '#065f46', fontSize: '15px' }}>
+                                🏢 Cơ cấu Tập đoàn: {selected360Customer.name}
+                              </h4>
+                              <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#047857' }}>
+                                Đang quản lý <strong>{groupSummary.childrenCount}</strong> công ty thành viên trực thuộc
+                              </p>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: '12px', color: '#047857' }}>Tổng giá trị HĐ toàn tập đoàn</div>
+                              <div style={{ fontSize: '18px', fontWeight: 700, color: '#047857' }}>
+                                {groupSummary.totalValue.toLocaleString('vi-VN')} đ
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                          <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Hợp đồng riêng công ty mẹ</div>
+                            <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
+                              {groupSummary.parentWonValue.toLocaleString('vi-VN')} đ
+                            </div>
+                          </div>
+                          <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Đóng góp từ các cty con</div>
+                            <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
+                              {(groupSummary.totalValue - groupSummary.parentWonValue).toLocaleString('vi-VN')} đ
+                            </div>
+                          </div>
+                          <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Số pháp nhân trực thuộc</div>
+                            <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
+                              {groupSummary.childrenCount} công ty con
+                            </div>
+                          </div>
+                        </div>
+
+                        <h5 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#334155' }}>
+                          Danh sách công ty con trực thuộc:
+                        </h5>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {groupSummary.childrenBreakdown.map((item) => (
+                            <div
+                              key={item.customer.id}
+                              style={{
+                                padding: '12px 14px',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                background: '#ffffff',
+                              }}
+                            >
+                              <div>
+                                <div style={{ fontWeight: 600, color: '#1e293b' }}>
+                                  {item.customer.name}
+                                  <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '6px' }}>({item.customer.code})</span>
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                                  MST: {item.customer.tax_code || 'Chưa cập nhật'} | Ngành: {item.customer.industry} | Phụ trách: {item.customer.owner_name}
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                <div style={{ textAlign: 'right' }}>
+                                  <div style={{ fontSize: '11px', color: '#64748b' }}>HĐ đã ký ({item.dealsCount})</div>
+                                  <div style={{ fontWeight: 700, color: '#059669', fontSize: '13.5px' }}>
+                                    {item.wonValue.toLocaleString('vi-VN')} đ
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="btn btn-secondary"
+                                  style={{ padding: '5px 10px', fontSize: '12px' }}
+                                  onClick={() => setSelected360Customer(item.customer)}
+                                >
+                                  Xem 360
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-secondary"
+                                  style={{ padding: '5px 10px', fontSize: '12px', color: '#dc2626', borderColor: '#fca5a5' }}
+                                  title="Gỡ công ty con khỏi tập đoàn"
+                                  onClick={() => {
+                                    if (confirm(`Bạn có chắc muốn gỡ "${item.customer.name}" khỏi tập đoàn?`)) {
+                                      customerService.removeParentCompany(item.customer.id)
+                                      showToast(`Đã gỡ "${item.customer.name}" khỏi tập đoàn!`)
+                                      loadCustomers()
+                                    }
+                                  }}
+                                >
+                                  Gỡ
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : parentRel ? (
+                      <div style={{ padding: '20px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px' }}>
+                        <h4 style={{ margin: '0 0 8px 0', color: '#1e40af', fontSize: '15px' }}>
+                          ↳ Công ty thành viên trực thuộc Tập đoàn
+                        </h4>
+                        <p style={{ margin: '0 0 16px 0', fontSize: '13.5px', color: '#1e3a8a' }}>
+                          Doanh nghiệp này là công ty con trực thuộc: <strong>{parentRel.parent_name}</strong>
+                        </p>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() => {
+                              const pCust = customerService.getCustomerById(parentRel.parent_id)
+                              if (pCust) setSelected360Customer(pCust)
+                            }}
+                          >
+                            🏢 Mở xem Trang 360 của Công ty mẹ
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            style={{ color: '#dc2626', borderColor: '#fca5a5' }}
+                            onClick={() => {
+                              if (confirm(`Bạn có chắc muốn gỡ liên kết công ty mẹ của "${selected360Customer.name}"?`)) {
+                                customerService.removeParentCompany(selected360Customer.id)
+                                showToast('Đã gỡ liên kết công ty mẹ!')
+                                loadCustomers()
+                              }
+                            }}
+                          >
+                            Gỡ khỏi tập đoàn
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ padding: '28px 20px', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '32px', marginBottom: '8px' }}>🏢</div>
+                        <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: '#334155' }}>Doanh nghiệp độc lập</h4>
+                        <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#64748b' }}>
+                          Khách hàng này hiện chưa liên kết với công ty mẹ hoặc tập đoàn nào.
+                        </p>
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          onClick={() => handleOpenParentModal(selected360Customer)}
+                        >
+                          🔗 Khai báo Công ty mẹ / Gắn vào Tập đoàn
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
               {c360ActiveTab === 'OVERVIEW' && (
                 <div>
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '15px' }}>Danh sách Cơ hội bán hàng</h4>
@@ -1687,6 +1930,25 @@ export default function CustomerManagementPage() {
                         <option value={user?.id ?? 1}>{user?.full_name ?? 'Tôi'}</option>
                       )}
                     </select>
+                  </div>
+                </div>
+
+                <div className="cust-form-row">
+                  <div className="cust-form-group" style={{ gridColumn: 'span 2' }}>
+                    <label>🏢 Thuộc công ty mẹ / Tập đoàn (nếu là cty con)</label>
+                    <select
+                      className="cust-form-select"
+                      value={formData.parent_id || ''}
+                      onChange={(e) => setFormData({ ...formData, parent_id: e.target.value })}
+                    >
+                      <option value="">-- Doanh nghiệp độc lập (Không có công ty mẹ) --</option>
+                      {customerService.getAvailableParentCompanies(editingCustomer?.id).map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} ({c.code} - {c.industry})
+                        </option>
+                      ))}
+                    </select>
+                    <span className="cust-form-hint">Khai báo quan hệ công ty mẹ để gộp doanh số vào tập đoàn (S3-05)</span>
                   </div>
                 </div>
               </div>
@@ -1915,43 +2177,82 @@ export default function CustomerManagementPage() {
       )}
 
       {/* ── MODAL GẮN CÔNG TY MẸ ── */}
-      {parentModalCustomer && (
-        <div className="cust-modal-backdrop" onClick={() => setParentModalCustomer(null)}>
-          <div className="cust-modal-content" style={{ maxWidth: '480px' }} onClick={(e) => e.stopPropagation()}>
-            <div className="cust-modal-header">
-              <h3>Khai báo Công ty Mẹ - Con</h3>
-              <button type="button" className="cust-modal-close-btn" onClick={() => setParentModalCustomer(null)}>&times;</button>
-            </div>
-            <div className="cust-modal-body">
-              <p style={{ margin: 0, fontSize: '13px', color: '#334155' }}>
-                Gắn <strong>{parentModalCustomer.name}</strong> làm công ty con của tập đoàn nào?
-              </p>
+      {parentModalCustomer && (() => {
+        const currentRel = customerService.getParentRelation(parentModalCustomer.id)
+        const availableParents = customerService.getAvailableParentCompanies(parentModalCustomer.id)
+        return (
+          <div className="cust-modal-backdrop" onClick={() => setParentModalCustomer(null)}>
+            <div className="cust-modal-content" style={{ maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
+              <div className="cust-modal-header">
+                <h3>Khai báo Công ty Mẹ - Con</h3>
+                <button type="button" className="cust-modal-close-btn" onClick={() => setParentModalCustomer(null)}>&times;</button>
+              </div>
+              <div className="cust-modal-body">
+                <p style={{ margin: 0, fontSize: '13.5px', color: '#334155' }}>
+                  Doanh nghiệp: <strong>{parentModalCustomer.name}</strong> ({parentModalCustomer.code})
+                </p>
 
-              <div className="cust-form-group">
-                <label>Chọn công ty mẹ</label>
-                <select
-                  className="cust-form-select"
-                  value={selectedParentId}
-                  onChange={(e) => setSelectedParentId(e.target.value)}
-                >
-                  <option value="">-- Chọn công ty mẹ --</option>
-                  {allCustomers
-                    .filter((c) => c.id !== parentModalCustomer.id)
-                    .map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                {currentRel ? (
+                  <div style={{ marginTop: '12px', padding: '12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '13px', color: '#166534', fontWeight: 600 }}>
+                      🏢 Đang là công ty con của: {currentRel.parent_name}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#15803d', marginTop: '4px' }}>
+                      Thiết lập từ: {new Date(currentRel.established_at).toLocaleDateString('vi-VN')}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ marginTop: '12px', padding: '10px 12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '12.5px', color: '#64748b' }}>
+                    Hiện là doanh nghiệp độc lập (chưa trực thuộc công ty mẹ nào).
+                  </div>
+                )}
+
+                <div className="cust-form-group" style={{ marginTop: '16px' }}>
+                  <label style={{ fontWeight: 600 }}>Chọn công ty mẹ / Tập đoàn quản lý</label>
+                  <select
+                    className="cust-form-select"
+                    value={selectedParentId}
+                    onChange={(e) => setSelectedParentId(e.target.value)}
+                  >
+                    <option value="">-- Chọn công ty mẹ --</option>
+                    {availableParents.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.code} - {c.industry})
+                      </option>
                     ))}
-                </select>
+                  </select>
+                  <span className="cust-form-hint">Hệ thống tự động loại trừ các công ty con thuộc nhánh để chống lặp vòng phân cấp</span>
+                </div>
+              </div>
+              <div className="cust-modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  {currentRel && (
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      style={{ color: '#dc2626', borderColor: '#fca5a5', background: '#fff5f5' }}
+                      onClick={handleRemoveParentCompany}
+                    >
+                      Gỡ khỏi tập đoàn
+                    </button>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button type="button" className="btn btn-secondary" onClick={() => setParentModalCustomer(null)}>Hủy</button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleSaveParentCompany}
+                    disabled={!selectedParentId || selectedParentId === currentRel?.parent_id}
+                  >
+                    {currentRel ? 'Đổi công ty mẹ' : 'Lưu liên kết'}
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="cust-modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={() => setParentModalCustomer(null)}>Hủy</button>
-              <button type="button" className="btn btn-primary" onClick={handleSaveParentCompany} disabled={!selectedParentId}>
-                Lưu liên kết
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* ── MODAL XEM TRƯỚC NHẬP EXCEL ── */}
       {importPreview && (
