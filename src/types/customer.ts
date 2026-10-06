@@ -47,6 +47,7 @@ export interface CustomerEnterprise {
 
   // Metadata
   description?: string // Ghi chú bối cảnh công ty
+  parent_id?: string // ID công ty mẹ nếu là công ty con (S3-05)
   created_at: string
   updated_at: string
 }
@@ -57,6 +58,7 @@ export interface CustomerFilterParams {
   industry?: string
   company_size?: string
   owner_id?: number | ''
+  corporate_structure?: 'ALL' | 'PARENT' | 'CHILD' | 'INDEPENDENT' | '' // Lọc theo cơ cấu công ty mẹ / con (S3-05)
 }
 
 /* ──────────── User Story S3-02: Quản lý người liên hệ & vai trò quyết định mua ──────────── */
