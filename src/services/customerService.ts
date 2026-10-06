@@ -494,6 +494,20 @@ export const customerService = {
       list = list.filter((c) => c.owner_id === Number(owner_id))
     }
 
+    if (params.corporate_structure && params.corporate_structure !== 'ALL') {
+      const relations = getStoredRelations()
+      const parentIds = new Set(relations.map((r) => r.parent_id))
+      const childIds = new Set(relations.map((r) => r.child_id))
+
+      if (params.corporate_structure === 'PARENT') {
+        list = list.filter((c) => parentIds.has(c.id))
+      } else if (params.corporate_structure === 'CHILD') {
+        list = list.filter((c) => childIds.has(c.id))
+      } else if (params.corporate_structure === 'INDEPENDENT') {
+        list = list.filter((c) => !parentIds.has(c.id) && !childIds.has(c.id))
+      }
+    }
+
     return list
   },
 
@@ -549,6 +563,15 @@ export const customerService = {
 
     const updated = [newCustomer, ...list]
     saveStoredCustomers(updated)
+
+    if (data.parent_id) {
+      try {
+        this.setParentCompany(newCustomer.id, data.parent_id)
+      } catch (err) {
+        console.warn('Lỗi gán công ty mẹ khi tạo mới:', err)
+      }
+    }
+
     return newCustomer
   },
 
@@ -575,6 +598,19 @@ export const customerService = {
 
     list[index] = updatedCustomer
     saveStoredCustomers(list)
+
+    if (data.parent_id !== undefined) {
+      if (data.parent_id) {
+        try {
+          this.setParentCompany(id, data.parent_id)
+        } catch (err) {
+          console.warn('Lỗi gán công ty mẹ khi cập nhật:', err)
+        }
+      } else {
+        this.removeParentCompany(id)
+      }
+    }
+
     return updatedCustomer
   },
 
@@ -927,12 +963,52 @@ export const customerService = {
     return getStoredRelations()
   },
 
+  /**
+   * Lấy quan hệ công ty mẹ của một công ty con (nếu có)
+   */
+  getParentRelation(childId: string): ParentChildRelation | undefined {
+    return getStoredRelations().find((r) => r.child_id === childId)
+  },
+
+  /**
+   * Kiểm tra xem potentialAncestorId có nằm trong nhánh tổ tiên của targetId hay không (tránh lặp vòng)
+   */
+  isDescendant(targetId: string, potentialAncestorId: string): boolean {
+    const relations = getStoredRelations()
+    const queue = relations.filter((r) => r.parent_id === potentialAncestorId).map((r) => r.child_id)
+    const visited = new Set<string>()
+    while (queue.length > 0) {
+      const current = queue.shift()!
+      if (current === targetId) return true
+      if (!visited.has(current)) {
+        visited.add(current)
+        const nextChildren = relations.filter((r) => r.parent_id === current).map((r) => r.child_id)
+        queue.push(...nextChildren)
+      }
+    }
+    return false
+  },
+
+  /**
+   * Danh sách công ty có thể làm mẹ cho customerId (loại trừ chính nó và các cty con thuộc nhánh)
+   */
+  getAvailableParentCompanies(currentCustomerId?: string): CustomerEnterprise[] {
+    const all = getStoredCustomers()
+    if (!currentCustomerId) return all
+    return all.filter((c) => c.id !== currentCustomerId && !this.isDescendant(c.id, currentCustomerId))
+  },
+
   setParentCompany(childId: string, parentId: string): ParentChildRelation {
     if (childId === parentId) throw new Error('Một công ty không thể tự làm công ty mẹ của chính nó!')
     const customers = getStoredCustomers()
     const parent = customers.find((c) => c.id === parentId)
     const child = customers.find((c) => c.id === childId)
     if (!parent || !child) throw new Error('Không tìm thấy thông tin công ty mẹ hoặc con!')
+
+    // Chống lặp vòng phân cấp cha con
+    if (this.isDescendant(parentId, childId)) {
+      throw new Error(`Không thể chọn "${parent.name}" làm công ty mẹ vì công ty này đang trực thuộc nhánh của "${child.name}"!`)
+    }
 
     const relations = getStoredRelations().filter((r) => r.child_id !== childId)
     const newRel: ParentChildRelation = {
@@ -944,31 +1020,70 @@ export const customerService = {
     }
     relations.push(newRel)
     saveStoredRelations(relations)
+
+    // Cập nhật trường parent_id trong customer
+    const cIndex = customers.findIndex((c) => c.id === childId)
+    if (cIndex !== -1) {
+      customers[cIndex].parent_id = parentId
+      saveStoredCustomers(customers)
+    }
+
     return newRel
   },
 
   removeParentCompany(childId: string): void {
     const relations = getStoredRelations().filter((r) => r.child_id !== childId)
     saveStoredRelations(relations)
+
+    const customers = getStoredCustomers()
+    const cIndex = customers.findIndex((c) => c.id === childId)
+    if (cIndex !== -1) {
+      delete customers[cIndex].parent_id
+      saveStoredCustomers(customers)
+    }
   },
 
   /**
    * AC S3-05: Trang công ty mẹ hiển thị tổng giá trị hợp đồng của cả nhóm công ty (mẹ + các cty con)
    */
-  getGroupContractTotal(parentId: string): { totalValue: number; childrenCount: number; children: CustomerEnterprise[] } {
+  getGroupContractTotal(parentId: string): {
+    totalValue: number
+    parentWonValue: number
+    childrenCount: number
+    children: CustomerEnterprise[]
+    childrenBreakdown: Array<{
+      customer: CustomerEnterprise
+      wonValue: number
+      dealsCount: number
+    }>
+  } {
     const relations = getStoredRelations()
     const childIds = relations.filter((r) => r.parent_id === parentId).map((r) => r.child_id)
     const customers = getStoredCustomers()
     const children = customers.filter((c) => childIds.includes(c.id))
+    const deals = getStoredDeals()
 
-    const allGroupCustomerIds = [parentId, ...childIds]
-    const deals = getStoredDeals().filter((d) => allGroupCustomerIds.includes(d.customer_id) && d.status === 'CLOSED_WON')
-    const totalValue = deals.reduce((sum, d) => sum + d.value, 0)
+    const parentDeals = deals.filter((d) => d.customer_id === parentId && d.status === 'CLOSED_WON')
+    const parentWonValue = parentDeals.reduce((sum, d) => sum + d.value, 0)
+
+    const childrenBreakdown = children.map((c) => {
+      const cDeals = deals.filter((d) => d.customer_id === c.id && d.status === 'CLOSED_WON')
+      return {
+        customer: c,
+        wonValue: cDeals.reduce((sum, d) => sum + d.value, 0),
+        dealsCount: cDeals.length,
+      }
+    })
+
+    const childrenTotalWon = childrenBreakdown.reduce((sum, item) => sum + item.wonValue, 0)
+    const totalValue = parentWonValue + childrenTotalWon
 
     return {
       totalValue,
+      parentWonValue,
       childrenCount: children.length,
       children,
+      childrenBreakdown,
     }
   },
 
