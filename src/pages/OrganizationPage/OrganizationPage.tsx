@@ -103,13 +103,12 @@ export default function OrganizationPage() {
                 <div className="node-badge-code">{node.code}</div>
                 <div className="node-content">
                   <div className="node-title">
-                    <span className="node-icon">🏢</span>
                     <strong>{node.name}</strong>
                   </div>
                   <div className="node-meta">
-                    <span>👑 Trưởng nhóm: <strong>{node.leader_name}</strong></span>
-                    <span className="region-tag">📍 {node.region_name}</span>
-                    <span className="member-count-tag">👥 {node.members?.length || 0} nhân sự</span>
+                    <span>Trưởng nhóm: <strong>{node.leader_name}</strong></span>
+                    <span className="region-tag">{node.region_name}</span>
+                    <span className="member-count-tag">{node.members?.length || 0} nhân sự</span>
                   </div>
                 </div>
                 <button
@@ -143,14 +142,14 @@ export default function OrganizationPage() {
 
       <div className="org-header">
         <div>
-          <h2>🌳 Cơ cấu Tổ chức Kinh doanh & Khu vực địa lý (S2-06)</h2>
+          <h2>Cơ cấu Tổ chức Kinh doanh & Khu vực địa lý (S2-06)</h2>
           <p className="org-subtitle">
             Mô hình cấu trúc cây phân quyền dữ liệu cho Trưởng nhóm và nhân viên. Mỗi nhân viên thuộc duy nhất một nhóm.
           </p>
         </div>
         <div className="org-header-actions">
           <button type="button" className="btn btn-secondary" onClick={() => setIsRegionModalOpen(true)}>
-            📍 Khai báo Khu vực
+            Khai báo Khu vực
           </button>
           <button type="button" className="btn btn-primary" onClick={() => handleOpenAddDept(null)}>
             + Thêm Khối / Phòng ban gốc
@@ -181,11 +180,11 @@ export default function OrganizationPage() {
               <div className="detail-props-grid">
                 <div className="prop-item">
                   <span className="prop-label">Khu vực địa lý:</span>
-                  <span className="prop-value">📍 {selectedNode.region_name}</span>
+                  <span className="prop-value">{selectedNode.region_name}</span>
                 </div>
                 <div className="prop-item">
                   <span className="prop-label">Trưởng nhóm phụ trách:</span>
-                  <span className="prop-value">👑 {selectedNode.leader_name}</span>
+                  <span className="prop-value">{selectedNode.leader_name}</span>
                 </div>
                 <div className="prop-item">
                   <span className="prop-label">Phạm vi dữ liệu:</span>
@@ -216,13 +215,12 @@ export default function OrganizationPage() {
                   </table>
                 </div>
                 <p className="ac-rule-note">
-                  ℹ️ *Theo tiêu chí chấp nhận S2-06: Mỗi nhân viên thuộc đúng một nhóm tại một thời điểm. Dữ liệu báo cáo của Trưởng nhóm sẽ tổng hợp toàn bộ các nhánh con bên dưới.*
+                  *Theo tiêu chí chấp nhận S2-06: Mỗi nhân viên thuộc đúng một nhóm tại một thời điểm. Dữ liệu báo cáo của Trưởng nhóm sẽ tổng hợp toàn bộ các nhánh con bên dưới.*
                 </p>
               </div>
             </div>
           ) : (
             <div className="no-selection-placeholder">
-              <div className="placeholder-icon">👈</div>
               <h4>Chọn một phòng ban hoặc đội nhóm trên sơ đồ</h4>
               <p>Xem thông tin chi tiết khu vực địa lý, người phụ trách và danh sách thành viên trực thuộc.</p>
             </div>
@@ -311,7 +309,7 @@ export default function OrganizationPage() {
         <div className="modal-overlay" onClick={() => setIsRegionModalOpen(false)}>
           <div className="modal-content org-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📍 Khai báo Khu vực địa lý mới</h3>
+              <h3>Khai báo Khu vực địa lý mới</h3>
               <button type="button" className="modal-close-btn" onClick={() => setIsRegionModalOpen(false)}>
                 ✕
               </button>
