@@ -122,12 +122,13 @@ const IconLogout = () => (
   </svg>
 )
 
-function getInitials(name: string): string {
+function getInitials(name?: string | null): string {
+  if (!name || typeof name !== 'string') return 'AD'
   const parts = name.trim().split(/\s+/)
-  if (parts.length >= 2) {
+  if (parts.length >= 2 && parts[0] && parts[parts.length - 1]) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
   }
-  return name.substring(0, 2).toUpperCase()
+  return name.trim().substring(0, 2).toUpperCase() || 'AD'
 }
 
 export function AuditLogPage() {
@@ -161,12 +162,14 @@ export function AuditLogPage() {
     let targets = 0
     let ownerships = 0
     let roles = 0
-    logs.forEach((log) => {
-      if (log.entity_type === 'DISCOUNT') discounts++
-      else if (log.entity_type === 'TARGET') targets++
-      else if (log.entity_type === 'OWNERSHIP') ownerships++
-      else if (log.entity_type === 'USER_ROLE') roles++
-    })
+    if (Array.isArray(logs)) {
+      logs.forEach((log) => {
+        if (log.entity_type === 'DISCOUNT') discounts++
+        else if (log.entity_type === 'TARGET') targets++
+        else if (log.entity_type === 'OWNERSHIP') ownerships++
+        else if (log.entity_type === 'USER_ROLE') roles++
+      })
+    }
     return { discounts, targets, ownerships, roles, total: totalRecords }
   }, [logs, totalRecords])
 
@@ -186,9 +189,9 @@ export function AuditLogPage() {
       })
 
       if (response.success) {
-        setLogs(response.data)
-        setTotalRecords(response.total)
-        setTotalPages(response.totalPages)
+        setLogs(Array.isArray(response.data) ? response.data : [])
+        setTotalRecords(response.total ?? 0)
+        setTotalPages(response.totalPages ?? 1)
       } else {
         throw new Error(response.message || 'Không thể tải nhật ký thay đổi.')
       }
