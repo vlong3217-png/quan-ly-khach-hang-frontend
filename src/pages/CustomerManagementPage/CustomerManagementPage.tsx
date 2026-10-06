@@ -364,7 +364,6 @@ export default function CustomerManagementPage() {
       <div className="customer-header-bar">
         <div className="customer-header-info">
           <h2>
-            <IconBuilding />
             Quản lý Hồ sơ Khách hàng Doanh nghiệp
           </h2>
           <p>
@@ -400,7 +399,6 @@ export default function CustomerManagementPage() {
       {/* ── 2. Stat summary cards ── */}
       <div className="customer-stats-grid">
         <div className="customer-stat-card">
-          <div className="customer-stat-icon total">📊</div>
           <div className="customer-stat-content">
             <span className="customer-stat-value">{stats.total}</span>
             <span className="customer-stat-label">Tổng khách hàng ({scope})</span>
@@ -408,7 +406,6 @@ export default function CustomerManagementPage() {
         </div>
 
         <div className="customer-stat-card">
-          <div className="customer-stat-icon potential">🌱</div>
           <div className="customer-stat-content">
             <span className="customer-stat-value">{stats.potential}</span>
             <span className="customer-stat-label">Tiềm năng</span>
@@ -416,7 +413,6 @@ export default function CustomerManagementPage() {
         </div>
 
         <div className="customer-stat-card">
-          <div className="customer-stat-icon transaction">⏳</div>
           <div className="customer-stat-content">
             <span className="customer-stat-value">{stats.inTransaction}</span>
             <span className="customer-stat-label">Đang giao dịch</span>
@@ -424,7 +420,6 @@ export default function CustomerManagementPage() {
         </div>
 
         <div className="customer-stat-card">
-          <div className="customer-stat-icon active">⭐</div>
           <div className="customer-stat-content">
             <span className="customer-stat-value">{stats.active}</span>
             <span className="customer-stat-label">Khách hàng chính thức</span>
@@ -432,7 +427,6 @@ export default function CustomerManagementPage() {
         </div>
 
         <div className="customer-stat-card">
-          <div className="customer-stat-icon stopped">🛑</div>
           <div className="customer-stat-content">
             <span className="customer-stat-value">{stats.stopped}</span>
             <span className="customer-stat-label">Ngừng hợp tác</span>
