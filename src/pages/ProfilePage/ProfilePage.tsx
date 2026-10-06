@@ -189,10 +189,10 @@ export function ProfilePage() {
       setProfile((prev) =>
         prev
           ? {
-              ...prev,
-              avatar: croppedDataUrl,
-              thumbnail: thumbnailDataUrl,
-            }
+            ...prev,
+            avatar: croppedDataUrl,
+            thumbnail: thumbnailDataUrl,
+          }
           : null
       )
 
@@ -221,10 +221,10 @@ export function ProfilePage() {
     setProfile((prev) =>
       prev
         ? {
-            ...prev,
-            avatar: undefined,
-            thumbnail: undefined,
-          }
+          ...prev,
+          avatar: undefined,
+          thumbnail: undefined,
+        }
         : null
     )
 
@@ -349,11 +349,11 @@ export function ProfilePage() {
         setProfile((prev) =>
           prev
             ? {
-                ...prev,
-                full_name: fullName.trim(),
-                phone: phone.trim() || undefined,
-                email_signature: signature,
-              }
+              ...prev,
+              full_name: fullName.trim(),
+              phone: phone.trim() || undefined,
+              email_signature: signature,
+            }
             : null
         )
       }
@@ -684,9 +684,7 @@ export function ProfilePage() {
                         disabled={isSaving}
                         autoComplete="tel"
                       />
-                      <span className="profile-field-hint">
-                        Định dạng số điện thoại Việt Nam (ví dụ: 0901234567, 0381234567 hoặc +84901234567). Bỏ trống nếu không sử dụng.
-                      </span>
+
                       {errors.phone && (
                         <span className="profile-field-error" id="profile-phone-error">
                           {errors.phone}
