@@ -74,6 +74,14 @@ const IconEye = () => (
   </svg>
 )
 
+const IconLink = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+  </svg>
+)
+
+
 export default function CustomerManagementPage() {
   const { user } = useAuth()
   const { scope, filterScopedData } = usePermission()
@@ -812,8 +820,8 @@ export default function CustomerManagementPage() {
               onChange={(e) => setFilterCorporateStructure(e.target.value as any)}
             >
               <option value="">Tất cả cơ cấu</option>
-              <option value="PARENT">🏢 Tập đoàn / Cty mẹ</option>
-              <option value="CHILD">↳ Công ty con</option>
+              <option value="PARENT">Tập đoàn / Cty mẹ</option>
+              <option value="CHILD">Công ty con</option>
               <option value="INDEPENDENT">Công ty độc lập</option>
             </select>
 
@@ -890,29 +898,33 @@ export default function CustomerManagementPage() {
                             )}
                             {/* AC S3-05: Hiển thị tổng giá trị hợp đồng nếu là công ty mẹ */}
                             {groupSummary.childrenCount > 0 && (
-                              <div style={{ fontSize: '11px', color: '#047857', marginTop: '2px', fontWeight: 600 }}>
-                                🏢 Tập đoàn ({groupSummary.childrenCount} cty con): {groupSummary.totalValue.toLocaleString('vi-VN')} đ
+                              <div className="cust-group-parent-tag">
+                                Tập đoàn ({groupSummary.childrenCount} cty con): {groupSummary.totalValue.toLocaleString('vi-VN')} đ
                               </div>
                             )}
                             {/* AC S3-05: Hiển thị nếu là công ty con trực thuộc */}
                             {parentRel && (
-                              <div style={{ fontSize: '11px', color: '#1d4ed8', marginTop: '2px', fontWeight: 500 }}>
-                                ↳ Thuộc tập đoàn: <strong>{parentRel.parent_name}</strong>
+                              <div className="cust-group-child-tag">
+                                Thuộc tập đoàn: <strong>{parentRel.parent_name}</strong>
                               </div>
                             )}
                           </td>
                           <td>
-                            <div>{cust.industry}</div>
-                            <div style={{ fontSize: '11.5px', color: '#64748b' }}>{cust.company_size}</div>
+                            <div className="cust-industry-text">{cust.industry}</div>
+                            <div className="cust-size-text">{cust.company_size}</div>
                           </td>
                           <td>
-                            {cust.phone && <div>📞 {cust.phone}</div>}
-                            {cust.email && <div style={{ fontSize: '11.5px', color: '#64748b' }}>✉️ {cust.email}</div>}
+                            {cust.phone ? (
+                              <div className="cust-contact-phone">{cust.phone}</div>
+                            ) : (
+                              <div className="cust-contact-empty">—</div>
+                            )}
+                            {cust.email && <div className="cust-contact-email">{cust.email}</div>}
                           </td>
                           <td>
                             <div className={`cust-owner-badge ${isMine ? 'is-mine' : ''}`}>
                               {cust.owner_name}
-                              {isMine && <span style={{ fontSize: '11px' }}>(Tôi)</span>}
+                              {isMine && <span className="cust-mine-label">(Tôi)</span>}
                             </div>
                             <span className="cust-team-text">{cust.team_name}</span>
                           </td>
@@ -931,7 +943,7 @@ export default function CustomerManagementPage() {
                             {/* AC S3-08: Cờ rủi ro rời bỏ tự động */}
                             {isAtRisk && (
                               <div>
-                                <span className="cust-risk-badge">⚠️ Rủi ro rời bỏ</span>
+                                <span className="cust-risk-badge">Rủi ro rời bỏ</span>
                               </div>
                             )}
                           </td>
@@ -947,11 +959,11 @@ export default function CustomerManagementPage() {
                               </button>
                               <button
                                 type="button"
-                                className="cust-btn-icon"
+                                className="cust-btn-icon link"
                                 onClick={() => handleOpenParentModal(cust)}
                                 title={parentRel ? `Đang thuộc: ${parentRel.parent_name} (Nhấn để sửa/gỡ)` : 'Khai báo công ty mẹ'}
                               >
-                                🔗
+                                <IconLink />
                               </button>
                               <button
                                 type="button"
@@ -1062,7 +1074,7 @@ export default function CustomerManagementPage() {
                           <strong>{ct.full_name}</strong>
                           {ct.history && ct.history.length > 0 && (
                             <div style={{ fontSize: '11px', color: '#2563eb' }}>
-                              🔄 Đã chuyển từ {ct.history[0].from_customer_name}
+                              Đã chuyển từ {ct.history[0].from_customer_name}
                             </div>
                           )}
                         </td>
@@ -1087,14 +1099,14 @@ export default function CustomerManagementPage() {
                         </td>
                         <td>
                           {ct.is_primary ? (
-                            <span style={{ color: '#059669', fontWeight: 700, fontSize: '12px' }}>★ Đầu mối chính</span>
+                            <span style={{ color: '#059669', fontWeight: 700, fontSize: '12px' }}>Đầu mối chính</span>
                           ) : (
                             <span style={{ color: '#94a3b8', fontSize: '12px' }}>—</span>
                           )}
                         </td>
                         <td>
-                          <div>📞 {ct.phone}</div>
-                          <div style={{ fontSize: '11.5px', color: '#64748b' }}>✉️ {ct.email}</div>
+                          {ct.phone && <div>{ct.phone}</div>}
+                          {ct.email && <div style={{ fontSize: '11.5px', color: '#64748b' }}>{ct.email}</div>}
                         </td>
                         <td>
                           <div className="cust-action-group">
@@ -1170,8 +1182,7 @@ export default function CustomerManagementPage() {
 
           {duplicateGroups.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
-              <span style={{ fontSize: '32px' }}>✅</span>
-              <p style={{ margin: '8px 0 0 0', fontWeight: 600, color: '#334155' }}>
+              <p style={{ margin: 0, fontWeight: 600, color: '#059669', fontSize: '15px' }}>
                 Tuyệt vời! Không phát hiện bản ghi khách hàng nào bị trùng lặp trên hệ thống.
               </p>
             </div>
@@ -1181,7 +1192,7 @@ export default function CustomerManagementPage() {
                 <div key={grp.id} style={{ border: '1px solid #fed7aa', background: '#fffbeb', borderRadius: '12px', padding: '18px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <strong style={{ color: '#b45309', fontSize: '14px' }}>
-                      ⚠️ Phát hiện {grp.customers.length} bản ghi nghi vấn trùng ({grp.match_field_value})
+                      Phát hiện {grp.customers.length} bản ghi nghi vấn trùng ({grp.match_field_value})
                     </strong>
                     <button
                       type="button"
@@ -1369,8 +1380,8 @@ export default function CustomerManagementPage() {
               <tbody>
                 {periodicCareList.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#059669' }}>
-                      🎉 Rất tốt! Không có khách hàng nào bị bỏ quên quá {periodicCareDays} ngày.
+                    <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#059669', fontWeight: 600 }}>
+                      Rất tốt! Không có khách hàng nào bị bỏ quên quá {periodicCareDays} ngày.
                     </td>
                   </tr>
                 ) : (
@@ -1391,7 +1402,7 @@ export default function CustomerManagementPage() {
                       <td>
                         <div className="cust-action-group">
                           {item.is_contacted_today ? (
-                            <span style={{ color: '#059669', fontSize: '12px', fontWeight: 600 }}>✓ Đã liên hệ hôm nay</span>
+                            <span style={{ color: '#059669', fontSize: '12px', fontWeight: 600 }}>Đã liên hệ hôm nay</span>
                           ) : (
                             <button
                               type="button"
@@ -1482,7 +1493,7 @@ export default function CustomerManagementPage() {
                           if (pCust) setSelected360Customer(pCust)
                         }}
                       >
-                        🏢 {parentRel.parent_name}
+                        {parentRel.parent_name}
                       </span>
                     </div>
                   ) : (
@@ -1494,7 +1505,7 @@ export default function CustomerManagementPage() {
                   <div className="c360-kpi-item">
                     <span className="c360-kpi-label">Tình trạng</span>
                     <span className={`c360-kpi-val ${summary.isAtRisk ? 'risk' : ''}`}>
-                      {summary.isAtRisk ? '⚠️ Nguy cơ rời bỏ' : 'Ổn định'}
+                      {summary.isAtRisk ? 'Nguy cơ rời bỏ' : 'Ổn định'}
                     </span>
                   </div>
                 </div>
@@ -1515,7 +1526,7 @@ export default function CustomerManagementPage() {
                 className={`c360-tab-link ${c360ActiveTab === 'GROUP' ? 'active' : ''}`}
                 onClick={() => setC360ActiveTab('GROUP')}
               >
-                🏢 Cơ cấu Tập đoàn ({(() => {
+                Cơ cấu Tập đoàn ({(() => {
                   const g = customerService.getGroupContractTotal(selected360Customer.id)
                   const p = customerService.getParentRelation(selected360Customer.id)
                   return g.childrenCount > 0 ? `${g.childrenCount} cty con` : p ? 'Cty con' : 'Độc lập'
@@ -1557,7 +1568,7 @@ export default function CustomerManagementPage() {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                               <h4 style={{ margin: 0, color: '#065f46', fontSize: '15px' }}>
-                                🏢 Cơ cấu Tập đoàn: {selected360Customer.name}
+                                Cơ cấu Tập đoàn: {selected360Customer.name}
                               </h4>
                               <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#047857' }}>
                                 Đang quản lý <strong>{groupSummary.childrenCount}</strong> công ty thành viên trực thuộc
@@ -1657,7 +1668,7 @@ export default function CustomerManagementPage() {
                     ) : parentRel ? (
                       <div style={{ padding: '20px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px' }}>
                         <h4 style={{ margin: '0 0 8px 0', color: '#1e40af', fontSize: '15px' }}>
-                          ↳ Công ty thành viên trực thuộc Tập đoàn
+                          Công ty thành viên trực thuộc Tập đoàn
                         </h4>
                         <p style={{ margin: '0 0 16px 0', fontSize: '13.5px', color: '#1e3a8a' }}>
                           Doanh nghiệp này là công ty con trực thuộc: <strong>{parentRel.parent_name}</strong>
@@ -1671,7 +1682,7 @@ export default function CustomerManagementPage() {
                               if (pCust) setSelected360Customer(pCust)
                             }}
                           >
-                            🏢 Mở xem Trang 360 của Công ty mẹ
+                            Mở xem Trang 360 của Công ty mẹ
                           </button>
                           <button
                             type="button"
@@ -1691,7 +1702,6 @@ export default function CustomerManagementPage() {
                       </div>
                     ) : (
                       <div style={{ padding: '28px 20px', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '32px', marginBottom: '8px' }}>🏢</div>
                         <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: '#334155' }}>Doanh nghiệp độc lập</h4>
                         <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#64748b' }}>
                           Khách hàng này hiện chưa liên kết với công ty mẹ hoặc tập đoàn nào.
@@ -1701,7 +1711,7 @@ export default function CustomerManagementPage() {
                           className="btn btn-primary"
                           onClick={() => handleOpenParentModal(selected360Customer)}
                         >
-                          🔗 Khai báo Công ty mẹ / Gắn vào Tập đoàn
+                          Khai báo Công ty mẹ / Gắn vào Tập đoàn
                         </button>
                       </div>
                     )}
@@ -1734,7 +1744,7 @@ export default function CustomerManagementPage() {
                     <div key={ct.id} style={{ padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
                       <div>
                         <strong>{ct.full_name}</strong> - <span>{ct.title}</span>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>📞 {ct.phone} | ✉️ {ct.email}</div>
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>{ct.phone} | {ct.email}</div>
                       </div>
                       <span style={{ fontSize: '12px', fontWeight: 600 }}>{BUYING_ROLE_LABELS[ct.buying_role]}</span>
                     </div>
@@ -1764,7 +1774,7 @@ export default function CustomerManagementPage() {
                 <div>
                   {customerService.getAttachments(selected360Customer.id).map((att) => (
                     <div key={att.id} style={{ padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                      <div>📄 {att.file_name} ({att.file_size})</div>
+                      <div>{att.file_name} ({att.file_size})</div>
                       <div style={{ fontSize: '12px', color: '#64748b' }}>Tải lên bởi: {att.uploaded_by}</div>
                     </div>
                   ))}
@@ -1913,7 +1923,7 @@ export default function CustomerManagementPage() {
 
                 <div className="cust-form-row">
                   <div className="cust-form-group" style={{ gridColumn: 'span 2' }}>
-                    <label>🏢 Thuộc công ty mẹ / Tập đoàn (nếu là cty con)</label>
+                    <label>Thuộc công ty mẹ / Tập đoàn (nếu là cty con)</label>
                     <select
                       className="cust-form-select"
                       value={formData.parent_id || ''}
@@ -2173,7 +2183,7 @@ export default function CustomerManagementPage() {
                 {currentRel ? (
                   <div style={{ marginTop: '12px', padding: '12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px' }}>
                     <div style={{ fontSize: '13px', color: '#166534', fontWeight: 600 }}>
-                      🏢 Đang là công ty con của: {currentRel.parent_name}
+                      Đang là công ty con của: {currentRel.parent_name}
                     </div>
                     <div style={{ fontSize: '12px', color: '#15803d', marginTop: '4px' }}>
                       Thiết lập từ: {new Date(currentRel.established_at).toLocaleDateString('vi-VN')}
@@ -2265,9 +2275,9 @@ export default function CustomerManagementPage() {
                         <td>{item.industry}</td>
                         <td>
                           {item.isDuplicate ? (
-                            <span style={{ color: '#dc2626', fontWeight: 600 }}>⚠️ Bị trùng MST (Sẽ bỏ qua)</span>
+                            <span style={{ color: '#dc2626', fontWeight: 600 }}>Bị trùng MST (Sẽ bỏ qua)</span>
                           ) : (
-                            <span style={{ color: '#059669', fontWeight: 600 }}>✓ Hợp lệ (Sẵn sàng tạo)</span>
+                            <span style={{ color: '#059669', fontWeight: 600 }}>Hợp lệ (Sẵn sàng tạo)</span>
                           )}
                         </td>
                       </tr>
