@@ -3,6 +3,14 @@
   background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
+  font-family: var(--sans, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+}
+
+.products-page-container input,
+.products-page-container select,
+.products-page-container button,
+.products-page-container textarea {
+  font-family: inherit;
 }
 
 .products-header {
@@ -116,7 +124,7 @@
 }
 
 .code-badge {
-  font-family: monospace;
+  font-family: inherit;
   font-weight: 700;
   color: #2563eb;
 }
@@ -164,7 +172,6 @@
 .cost-price-text {
   font-weight: 600;
   color: #475569;
-  font-family: monospace;
 }
 
 .status-pill {
