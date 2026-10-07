@@ -425,15 +425,15 @@
 .cust-risk-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 7px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
   background: #fef2f2;
   color: #dc2626;
   border: 1px solid #fecaca;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 600;
   margin-top: 4px;
-  line-height: 1.3;
+  white-space: nowrap;
 }
 
 /* Action buttons */
