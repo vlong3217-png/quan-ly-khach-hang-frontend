@@ -14,12 +14,6 @@ import {
 } from '../../types/auditLog.ts'
 import './AuditLogPage.css'
 
-/* ──────────── Inline SVG Icons ──────────── */
-const IconShield = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-  </svg>
-)
 
 const IconClipboardList = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -236,16 +230,16 @@ export function AuditLogPage() {
       {/* ── Header Navbar ── */}
       <header className="audit-log-header">
         <div className="audit-log-header-inner">
-          <div
-            className="audit-log-brand"
+          <button
+            type="button"
+            className="audit-log-back-header-btn"
             onClick={() => navigate('/dashboard')}
-            title="Quay về Dashboard"
+            title="Quay lại Dashboard"
+            id="audit-back-dashboard-btn"
           >
-            <div className="audit-log-brand-icon" aria-hidden="true">
-              <IconShield />
-            </div>
-            <span className="audit-log-brand-text">Quản lý khách hàng</span>
-          </div>
+            <IconArrowLeft />
+            <span>Quay lại Dashboard</span>
+          </button>
 
           <div className="audit-log-header-user-area">
             <div className="audit-log-header-user-info">
@@ -299,18 +293,7 @@ export function AuditLogPage() {
 
       {/* ── Main Container ── */}
       <main className="audit-log-main">
-        {/* Nút quay lại Dashboard */}
-        <button
-          className="audit-log-back-link"
-          onClick={() => navigate('/dashboard')}
-          type="button"
-          id="audit-back-dashboard-btn"
-        >
-          <IconArrowLeft />
-          <span>Quay lại Dashboard</span>
-        </button>
-
-        {/* Tiêu đề trang & Huy hiệu Admin */}
+        {/* Tiêu đề trang */}
         <div className="audit-log-title-bar">
           <div className="audit-log-title-left">
             <div className="audit-log-title-icon" aria-hidden="true">
