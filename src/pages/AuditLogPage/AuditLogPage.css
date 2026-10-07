@@ -28,37 +28,33 @@
   justify-content: space-between;
 }
 
-.audit-log-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  user-select: none;
-}
-
-.audit-log-brand-icon {
-  width: 36px;
-  height: 36px;
+.audit-log-back-header-btn {
+  background: none;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #ffffff;
-  display: flex;
+  padding: 0.5rem 0.85rem;
+  color: #1e293b;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+  gap: 0.5rem;
+  transition: all 0.15s ease;
+  background-color: #ffffff;
 }
 
-.audit-log-brand-icon svg {
-  width: 20px;
-  height: 20px;
+.audit-log-back-header-btn:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #2563eb;
 }
 
-.audit-log-brand-text {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.01em;
+.audit-log-back-header-btn svg {
+  width: 16px;
+  height: 16px;
 }
+
 
 .audit-log-header-user-area {
   display: flex;
