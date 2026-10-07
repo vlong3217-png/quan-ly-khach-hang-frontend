@@ -552,7 +552,6 @@ export default function CustomerManagementPage() {
                       <td>
                         <div className={`cust-owner-badge ${isMine ? 'is-mine' : ''}`}>
                           {cust.owner_name}
-                          {isMine && <span style={{ fontSize: '11px' }}>(Tôi)</span>}
                         </div>
                         <span className="cust-team-text">{cust.team_name}</span>
                       </td>
