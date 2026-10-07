@@ -253,13 +253,13 @@ function DashboardPage() {
                     </span>
                   </div>
                   <div className="dashboard-info-item">
-                    <span className="dashboard-info-label">Phạm vi dữ liệu (Scope)</span>
+                    <span className="dashboard-info-label">Phạm vi dữ liệu</span>
                     <span className="dashboard-info-value scope-badge" data-scope={scope}>
-                      {scope} — {SCOPE_LABELS[scope]?.split('(')[0]?.trim()}
+                      {SCOPE_LABELS[scope]?.split('(')[0]?.trim() || 'Toàn hệ thống'}
                     </span>
                   </div>
                   <div className="dashboard-info-item">
-                    <span className="dashboard-info-label">Đội nhóm (Team)</span>
+                    <span className="dashboard-info-label">Đội nhóm</span>
                     <span className="dashboard-info-value">{user?.team_name ?? 'Chưa phân nhóm'}</span>
                   </div>
                 </div>
