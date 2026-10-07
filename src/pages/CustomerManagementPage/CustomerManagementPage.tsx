@@ -893,7 +893,7 @@ export default function CustomerManagementPage() {
                             </strong>
                             {cust.tax_code && (
                               <div className="cust-tax-code">
-                                MST: <span>{cust.tax_code}</span>
+                                Mã số thuế: <span>{cust.tax_code}</span>
                               </div>
                             )}
                             {/* AC S3-05: Hiển thị tổng giá trị hợp đồng nếu là công ty mẹ */}
@@ -1212,7 +1212,7 @@ export default function CustomerManagementPage() {
                         <div style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a', marginBottom: '4px' }}>
                           {c.name} ({c.code})
                         </div>
-                        <div style={{ fontSize: '12px', color: '#475569' }}>MST: {c.tax_code || 'Chưa có'}</div>
+                        <div style={{ fontSize: '12px', color: '#475569' }}>Mã số thuế: {c.tax_code || 'Chưa có'}</div>
                         <div style={{ fontSize: '12px', color: '#475569' }}>Website: {c.website || 'Chưa có'}</div>
                         <div style={{ fontSize: '12px', color: '#475569' }}>Người phụ trách: {c.owner_name} ({c.team_name})</div>
                       </div>
@@ -1444,7 +1444,7 @@ export default function CustomerManagementPage() {
                 <h3>{selected360Customer.name}</h3>
                 <div className="c360-header-meta">
                   <span>Mã: {selected360Customer.code}</span>
-                  <span>MST: {selected360Customer.tax_code || 'Chưa cập nhật'}</span>
+                  <span>Mã số thuế: {selected360Customer.tax_code || 'Chưa cập nhật'}</span>
                   <span>Ngành: {selected360Customer.industry}</span>
                   <span>Người phụ trách: {selected360Customer.owner_name}</span>
                 </div>
@@ -1627,7 +1627,7 @@ export default function CustomerManagementPage() {
                                   <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '6px' }}>({item.customer.code})</span>
                                 </div>
                                 <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                                  MST: {item.customer.tax_code || 'Chưa cập nhật'} | Ngành: {item.customer.industry} | Phụ trách: {item.customer.owner_name}
+                                  Mã số thuế: {item.customer.tax_code || 'Chưa cập nhật'} | Ngành: {item.customer.industry} | Phụ trách: {item.customer.owner_name}
                                 </div>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -1817,7 +1817,7 @@ export default function CustomerManagementPage() {
                   </div>
 
                   <div className="cust-form-group">
-                    <label>Mã số thuế (MST)</label>
+                    <label>Mã số thuế</label>
                     <input
                       type="text"
                       className={`cust-form-input ${formErrors.tax_code ? 'has-error' : ''}`}
@@ -2147,7 +2147,7 @@ export default function CustomerManagementPage() {
                       </strong>
                     </label>
                     <div style={{ fontSize: '12px', color: '#475569' }}>Mã: {c.code}</div>
-                    <div style={{ fontSize: '12px', color: '#475569' }}>MST: {c.tax_code || '—'}</div>
+                    <div style={{ fontSize: '12px', color: '#475569' }}>Mã số thuế: {c.tax_code || '—'}</div>
                     <div style={{ fontSize: '12px', color: '#475569' }}>Website: {c.website || '—'}</div>
                     <div style={{ fontSize: '12px', color: '#475569' }}>Người phụ trách: {c.owner_name}</div>
                   </div>
@@ -2275,7 +2275,7 @@ export default function CustomerManagementPage() {
                         <td>{item.industry}</td>
                         <td>
                           {item.isDuplicate ? (
-                            <span style={{ color: '#dc2626', fontWeight: 600 }}>Bị trùng MST (Sẽ bỏ qua)</span>
+                            <span style={{ color: '#dc2626', fontWeight: 600 }}>Bị trùng mã số thuế (Sẽ bỏ qua)</span>
                           ) : (
                             <span style={{ color: '#059669', fontWeight: 600 }}>Hợp lệ (Sẵn sàng tạo)</span>
                           )}
