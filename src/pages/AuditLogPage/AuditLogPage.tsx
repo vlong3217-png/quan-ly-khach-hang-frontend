@@ -329,10 +329,6 @@ export function AuditLogPage() {
             </div>
           </div>
 
-          <div className="audit-log-header-badge" id="audit-admin-only-badge">
-            <IconShield />
-            <span>Phân quyền Quản trị viên (ADMIN)</span>
-          </div>
         </div>
 
         {/* ── Thống kê nhanh (Quick Stat Cards) ── */}
