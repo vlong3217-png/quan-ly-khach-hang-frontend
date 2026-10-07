@@ -526,7 +526,7 @@ export default function CustomerManagementPage() {
                         <strong className="cust-company-name">{cust.name}</strong>
                         {cust.tax_code && (
                           <div className="cust-tax-code" title="Mã số thuế doanh nghiệp">
-                            MST: <span>{cust.tax_code}</span>
+                            Mã số thuế: <span>{cust.tax_code}</span>
                           </div>
                         )}
                         {cust.website && (
@@ -663,7 +663,7 @@ export default function CustomerManagementPage() {
                   </div>
 
                   <div className="cust-form-group">
-                    <label>Mã số thuế (MST)</label>
+                    <label>Mã số thuế</label>
                     <input
                       type="text"
                       className={`cust-form-input ${formErrors.tax_code ? 'has-error' : ''}`}
