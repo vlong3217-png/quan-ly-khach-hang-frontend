@@ -195,7 +195,7 @@ function DashboardPage() {
                   )}
                 </div>
                 <div className="dashboard-user-details">
-                  <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
+                  <span className="dashboard-user-name">Hồ sơ</span>
                 </div>
               </div>
               <button
