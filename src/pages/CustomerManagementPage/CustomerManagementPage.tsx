@@ -621,7 +621,7 @@ export default function CustomerManagementPage() {
       <div className="customer-header-bar">
         <div className="customer-header-info">
           <h2>
-            Quản lý Khách hàng Doanh nghiệp & 360°
+            Quản lý Khách hàng Doanh nghiệp
           </h2>
           <p>
             Hệ thống quản lý khách hàng chuẩn tập trung — Phân quyền theo mô hình dữ liệu sở hữu ({scope}).
