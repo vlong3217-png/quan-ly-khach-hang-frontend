@@ -130,9 +130,6 @@ export default function PipelineStagesPage() {
       <div className="pipe-header">
         <div>
           <h2>Cấu hình Giai đoạn Pipeline & Xác suất Thắng</h2>
-          <p className="pipe-subtitle">
-            Thiết lập chuỗi giai đoạn bán hàng, xác suất thắng mặc định để tính dự báo doanh số chuẩn xác.
-          </p>
         </div>
         <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
           + Thêm giai đoạn mới
