@@ -826,3 +826,419 @@
     transform: translateY(0);
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   S4-02: STYLES FOR EXCEL LEAD IMPORT & MANAGEMENT
+   ───────────────────────────────────────────────────────────── */
+
+.tab-badge.info {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.lead-status-pill {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Import Excel Panel */
+.import-excel-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+}
+
+.import-header-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 22px;
+  flex-wrap: wrap;
+}
+
+.import-banner-info h3 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.import-banner-info p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+  max-width: 650px;
+  line-height: 1.5;
+}
+
+.btn-template-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font-weight: 600;
+  color: #0284c7;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-template-download:hover {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* Dropzone Upload */
+.import-dropzone-section {
+  width: 100%;
+}
+
+.import-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 36px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.import-dropzone:hover {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.import-dropzone.has-file {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.dropzone-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.import-dropzone.has-file .dropzone-icon {
+  color: #10b981;
+  border-color: #a7f3d0;
+}
+
+.dropzone-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dropzone-text strong {
+  font-size: 14.5px;
+  color: #1e293b;
+}
+
+.dropzone-text span {
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+/* Preview Section */
+.import-preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.preview-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.preview-stats-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge-stat {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-stat.total {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.badge-stat.valid {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-stat.invalid {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.preview-filter-buttons {
+  display: flex;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.btn-filter-pill {
+  border: none;
+  background: transparent;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-filter-pill.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.preview-table tbody tr.row-invalid {
+  background: #fff8f8;
+}
+
+.preview-table tbody tr.row-invalid:hover {
+  background: #fee2e2;
+}
+
+.row-num-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.valid-check-tag {
+  display: inline-block;
+  padding: 3px 8px;
+  background: #dcfce7;
+  color: #15803d;
+  border-radius: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.invalid-errors-box {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.error-pill {
+  display: inline-block;
+  padding: 2px 6px;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.preview-commit-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-commit-import {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+/* Result Summary Card */
+.import-result-summary-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: leadFadeIn 0.2s ease-out;
+}
+
+.import-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.summary-status-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.summary-status-icon.success {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.import-summary-header h4 {
+  margin: 0 0 4px 0;
+  font-size: 17px;
+  color: #0f172a;
+}
+
+.import-summary-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.import-summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.metric-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-box .metric-num {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.metric-box .metric-lbl {
+  font-size: 11.5px;
+  color: #64748b;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.metric-box.success .metric-num {
+  color: #16a34a;
+}
+
+.metric-box.errors .metric-num {
+  color: #dc2626;
+}
+
+.metric-box.duplicates .metric-num {
+  color: #d97706;
+}
+
+/* Error log table */
+.import-errors-log-table {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.import-errors-log-table h5 {
+  margin: 0;
+  font-size: 13px;
+  color: #991b1b;
+  font-weight: 700;
+}
+
+.error-list-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.error-row-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #7f1d1d;
+  flex-wrap: wrap;
+}
+
+.error-badge-row {
+  background: #ffffff;
+  border: 1px solid #fca5a5;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.error-lead-name {
+  color: #1e293b;
+}
+
+.error-detail-text {
+  color: #dc2626;
+}
+
+.import-summary-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
