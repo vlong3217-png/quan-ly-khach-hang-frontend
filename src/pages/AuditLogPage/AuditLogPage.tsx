@@ -5,10 +5,12 @@ import {
   getAuditLogs,
   getDistinctPerformers,
   formatAuditDate,
+  formatAuditEntity,
+  formatAuditAction,
+  formatAuditValue,
 } from '../../services/auditLogService.ts'
 import {
   ENTITY_TYPE_LABELS,
-  ACTION_LABELS,
   type AuditLogEntry,
   type AuditEntityType,
 } from '../../types/auditLog.ts'
@@ -604,7 +606,7 @@ export function AuditLogPage() {
                           {/* 4. Loại đối tượng */}
                           <td>
                             <span className={`badge-entity badge-entity-${log.entity_type.toLowerCase()}`}>
-                              {ENTITY_TYPE_LABELS[log.entity_type] || log.entity_type}
+                              {formatAuditEntity(log.entity_type)}
                             </span>
                           </td>
 
@@ -623,7 +625,7 @@ export function AuditLogPage() {
                           {/* 6. Hành động */}
                           <td>
                             <span className={`badge-action badge-action-${log.action.toLowerCase()}`}>
-                              {ACTION_LABELS[log.action] || log.action}
+                              {formatAuditAction(log.action)}
                             </span>
                           </td>
 
@@ -631,13 +633,13 @@ export function AuditLogPage() {
                           <td>
                             <div className="value-comparison-wrapper">
                               <span className="value-pill value-pill-old" title="Giá trị trước khi sửa">
-                                {log.old_value}
+                                {formatAuditValue(log.old_value)}
                               </span>
                               <span className="value-arrow" aria-hidden="true">
                                 <IconArrowRight />
                               </span>
                               <span className="value-pill value-pill-new" title="Giá trị sau khi sửa">
-                                {log.new_value}
+                                {formatAuditValue(log.new_value)}
                               </span>
                             </div>
                           </td>
