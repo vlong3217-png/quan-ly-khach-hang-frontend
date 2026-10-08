@@ -145,9 +145,6 @@ export default function CustomFieldsPage() {
       <div className="cf-header">
         <div>
           <h2>Khai báo Trường tuỳ chỉnh - Custom Fields</h2>
-          <p className="cf-subtitle">
-            Mở rộng cấu trúc dữ liệu cho Khách hàng và Cơ hội bán hàng mà không cần sửa code backend.
-          </p>
         </div>
         <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
           + Thêm trường tuỳ chỉnh
