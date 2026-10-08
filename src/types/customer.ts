@@ -47,6 +47,7 @@ export interface CustomerEnterprise {
 
   // Metadata
   description?: string // Ghi chú bối cảnh công ty
+  parent_id?: string // ID công ty mẹ nếu là công ty con (S3-05)
   created_at: string
   updated_at: string
 }
@@ -57,4 +58,136 @@ export interface CustomerFilterParams {
   industry?: string
   company_size?: string
   owner_id?: number | ''
+  corporate_structure?: 'ALL' | 'PARENT' | 'CHILD' | 'INDEPENDENT' | '' // Lọc theo cơ cấu công ty mẹ / con (S3-05)
+}
+
+/* ──────────── User Story S3-02: Quản lý người liên hệ & vai trò quyết định mua ──────────── */
+
+/**
+ * Vai trò trong quyết định mua (Buying Role):
+ * - DECISION_MAKER: Người quyết định (Ký duyệt ngân sách / quyết định cuối cùng)
+ * - INFLUENCER: Người ảnh hưởng (Đưa ra ý kiến chuyên môn / đề xuất)
+ * - END_USER: Người dùng cuối (Trực tiếp sử dụng giải pháp)
+ * - BLOCKER: Người cản trở (Có thể phản đối hoặc cản thương vụ)
+ */
+export type BuyingRole = 'DECISION_MAKER' | 'INFLUENCER' | 'END_USER' | 'BLOCKER'
+
+export const BUYING_ROLE_LABELS: Record<BuyingRole, string> = {
+  DECISION_MAKER: 'Người quyết định',
+  INFLUENCER: 'Người ảnh hưởng',
+  END_USER: 'Người dùng cuối',
+  BLOCKER: 'Người cản trở',
+}
+
+export const BUYING_ROLE_BADGES: Record<BuyingRole, { bg: string; color: string; border: string }> = {
+  DECISION_MAKER: { bg: '#fef3c7', color: '#b45309', border: '#fcd34d' }, // Vàng sang trọng
+  INFLUENCER: { bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' }, // Xanh dương
+  END_USER: { bg: '#ecfdf5', color: '#047857', border: '#a7f3d0' }, // Xanh lá
+  BLOCKER: { bg: '#fef2f2', color: '#b91c1c', border: '#fecaca' }, // Đỏ cảnh báo
+}
+
+export interface ContactHistoryEntry {
+  from_customer_id: string
+  from_customer_name: string
+  to_customer_id: string
+  to_customer_name: string
+  transferred_at: string
+  reason?: string
+}
+
+export interface CustomerContact {
+  id: string
+  customer_id: string // ID công ty khách hàng đang gắn
+  customer_name: string // Tên công ty khách hàng
+  full_name: string // Họ và tên người liên hệ
+  title: string // Chức danh (VD: Giám đốc CNTT, Kế toán trưởng)
+  email: string
+  phone: string
+  buying_role: BuyingRole // Vai trò quyết định mua
+  is_primary: boolean // Đầu mối chính (Mỗi khách hàng có 1 đầu mối chính)
+  notes?: string
+  history?: ContactHistoryEntry[] // Lịch sử chuyển công ty nếu có
+  created_at: string
+  updated_at: string
+}
+
+/* ──────────── User Story S3-03: Trang 360 độ khách hàng ──────────── */
+
+export interface CustomerDeal {
+  id: string
+  customer_id: string
+  title: string
+  value: number // Giá trị cơ hội (VND)
+  stage: 'PROSPECTING' | 'PROPOSAL' | 'NEGOTIATION' | 'WON' | 'LOST'
+  status: 'OPEN' | 'CLOSED_WON' | 'CLOSED_LOST'
+  expected_close_date: string
+  created_at: string
+}
+
+export interface CustomerActivity {
+  id: string
+  customer_id: string
+  type: 'CALL' | 'MEETING' | 'EMAIL' | 'DEMO' | 'NOTE'
+  title: string
+  description: string
+  performed_by_name: string
+  performed_at: string
+}
+
+export interface CustomerAttachment {
+  id: string
+  customer_id: string
+  file_name: string
+  file_size: string
+  uploaded_by: string
+  uploaded_at: string
+  file_type: string
+}
+
+/* ──────────── User Story S3-04: Cảnh báo & Gộp khách hàng trùng ──────────── */
+
+export interface DuplicateCustomerGroup {
+  id: string
+  match_reason: 'TAX_CODE' | 'NAME_SIMILAR' | 'WEBSITE'
+  match_field_value: string
+  customers: CustomerEnterprise[]
+}
+
+/* ──────────── User Story S3-05: Quan hệ công ty mẹ - con ──────────── */
+
+export interface ParentChildRelation {
+  parent_id: string
+  child_id: string
+  parent_name: string
+  child_name: string
+  established_at: string
+}
+
+/* ──────────── User Story S3-08: Yêu cầu hỗ trợ (Ticket) & Cờ rủi ro rời bỏ ──────────── */
+
+export type TicketPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+export type TicketStatus = 'NEW' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED'
+
+export interface SupportTicket {
+  id: string
+  customer_id: string
+  customer_name: string
+  title: string
+  priority: TicketPriority
+  status: TicketStatus
+  assignee_name: string
+  assignee_id: number
+  description: string
+  created_at: string
+  updated_at: string
+}
+
+/* ──────────── User Story S3-09: Khách hàng cần chăm sóc định kỳ ──────────── */
+
+export interface PeriodicCareCustomer {
+  customer: CustomerEnterprise
+  last_interaction_date: string // Ngày tương tác gần nhất
+  days_without_interaction: number // Số ngày chưa có tương tác
+  contract_value: number // Tổng giá trị hợp đồng
+  is_contacted_today?: boolean // Đánh dấu đã liên hệ hôm nay
 }
