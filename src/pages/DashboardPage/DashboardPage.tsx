@@ -13,6 +13,7 @@ import CustomFieldsPage from '../CustomFieldsPage/CustomFieldsPage.tsx'
 import PipelineStagesPage from '../PipelineStagesPage/PipelineStagesPage.tsx'
 import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
 import CustomerManagementPage from '../CustomerManagementPage/CustomerManagementPage.tsx'
+import LeadFormsPage from '../LeadFormsPage/LeadFormsPage.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -93,6 +94,8 @@ function DashboardPage() {
       setActiveMenuId('menu-reports')
     } else if (path.startsWith('/dashboard/teams')) {
       setActiveMenuId('menu-teams')
+    } else if (path.startsWith('/dashboard/lead-forms') || path.startsWith('/dashboard/leads')) {
+      setActiveMenuId('menu-lead-forms')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -129,6 +132,10 @@ function DashboardPage() {
   const isCustomerView =
     activeMenuId === 'menu-customers' ||
     activeMenuId.startsWith('menu-customers-')
+  const isLeadFormView =
+    activeMenuId === 'menu-lead-forms' ||
+    activeMenuId.startsWith('menu-lead-forms-') ||
+    activeMenuId === 'menu-leads'
   const isProductView =
     activeMenuId === 'menu-products' ||
     activeMenuId.startsWith('menu-products-')
@@ -282,7 +289,14 @@ function DashboardPage() {
             </section>
           )}
 
-
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: BIỂU MẪU & THU THẬP LEAD (S4-01)
+              ───────────────────────────────────────────────────────────── */}
+          {isLeadFormView && (
+            <section className="dashboard-section lead-forms-section">
+              <LeadFormsPage />
+            </section>
+          )}
 
           {/* ─────────────────────────────────────────────────────────────
               VIEW: SẢN PHẨM & BẢNG GIÁ NIÊM YẾT (S2-05)
