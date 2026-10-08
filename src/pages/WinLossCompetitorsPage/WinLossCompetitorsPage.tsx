@@ -162,7 +162,7 @@ export default function WinLossCompetitorsPage() {
 
       <div className="wl-header">
         <div>
-          <h2>🎯 Danh mục Lý do Thắng / Thua & Đối thủ cạnh tranh</h2>
+          <h2>Danh mục Lý do Thắng / Thua & Đối thủ cạnh tranh</h2>
           <p className="wl-subtitle">
             Khai báo danh mục nguyên nhân thắng thua và hồ sơ đối thủ, phục vụ phân tích rút kinh nghiệm khi đóng cơ hội (Sprint 5).
           </p>
@@ -187,21 +187,21 @@ export default function WinLossCompetitorsPage() {
           className={`wl-tab-btn ${activeTab === 'WIN' ? 'active' : ''}`}
           onClick={() => setActiveTab('WIN')}
         >
-          🏆 Lý do Thắng ({reasons.filter((r) => r.type === 'WIN_REASON').length})
+          Lý do Thắng ({reasons.filter((r) => r.type === 'WIN_REASON').length})
         </button>
         <button
           type="button"
           className={`wl-tab-btn ${activeTab === 'LOSS' ? 'active' : ''}`}
           onClick={() => setActiveTab('LOSS')}
         >
-          ❌ Lý do Thua ({reasons.filter((r) => r.type === 'LOSS_REASON').length})
+          Lý do Thua ({reasons.filter((r) => r.type === 'LOSS_REASON').length})
         </button>
         <button
           type="button"
           className={`wl-tab-btn ${activeTab === 'COMPETITOR' ? 'active' : ''}`}
           onClick={() => setActiveTab('COMPETITOR')}
         >
-          ⚔️ Đối thủ cạnh tranh ({competitors.length})
+          Đối thủ cạnh tranh ({competitors.length})
         </button>
       </div>
 
