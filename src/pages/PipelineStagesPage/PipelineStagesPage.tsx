@@ -129,7 +129,7 @@ export default function PipelineStagesPage() {
 
       <div className="pipe-header">
         <div>
-          <h2>📊 Cấu hình Giai đoạn Pipeline & Xác suất Thắng</h2>
+          <h2>Cấu hình Giai đoạn Pipeline & Xác suất Thắng</h2>
           <p className="pipe-subtitle">
             Thiết lập chuỗi giai đoạn bán hàng, xác suất thắng mặc định để tính dự báo doanh số chuẩn xác.
           </p>
@@ -150,7 +150,7 @@ export default function PipelineStagesPage() {
             </div>
             {stage.active_opportunities_count !== undefined && (
               <div className="step-count">
-                💼 {stage.active_opportunities_count} cơ hội
+                {stage.active_opportunities_count} cơ hội
               </div>
             )}
           </div>

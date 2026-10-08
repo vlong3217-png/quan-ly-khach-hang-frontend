@@ -124,13 +124,13 @@ export default function CustomFieldsPage() {
   const renderTypeBadge = (t: CustomFieldType) => {
     switch (t) {
       case 'TEXT':
-        return <span className="type-badge text-badge">📝 Văn bản (Text)</span>
+        return <span className="type-badge text-badge">Văn bản (Text)</span>
       case 'NUMBER':
-        return <span className="type-badge number-badge">🔢 Số (Number)</span>
+        return <span className="type-badge number-badge">Số (Number)</span>
       case 'DATE':
-        return <span className="type-badge date-badge">📅 Ngày tháng (Date)</span>
+        return <span className="type-badge date-badge">Ngày tháng (Date)</span>
       case 'SELECT':
-        return <span className="type-badge select-badge">🔽 Danh sách chọn (Dropdown)</span>
+        return <span className="type-badge select-badge">Danh sách chọn (Dropdown)</span>
     }
   }
 
@@ -144,7 +144,7 @@ export default function CustomFieldsPage() {
 
       <div className="cf-header">
         <div>
-          <h2>🧩 Khai báo Trường tuỳ chỉnh - Custom Fields</h2>
+          <h2>Khai báo Trường tuỳ chỉnh - Custom Fields</h2>
           <p className="cf-subtitle">
             Mở rộng cấu trúc dữ liệu cho Khách hàng và Cơ hội bán hàng mà không cần sửa code backend.
           </p>
@@ -161,14 +161,14 @@ export default function CustomFieldsPage() {
           className={`cf-tab ${activeTarget === 'CUSTOMER' ? 'active' : ''}`}
           onClick={() => setActiveTarget('CUSTOMER')}
         >
-          👤 Hồ sơ Khách hàng ({fields.filter((f) => f.target === 'CUSTOMER').length} trường)
+          Hồ sơ Khách hàng ({fields.filter((f) => f.target === 'CUSTOMER').length} trường)
         </button>
         <button
           type="button"
           className={`cf-tab ${activeTarget === 'OPPORTUNITY' ? 'active' : ''}`}
           onClick={() => setActiveTarget('OPPORTUNITY')}
         >
-          💼 Cơ hội bán hàng - Deals ({fields.filter((f) => f.target === 'OPPORTUNITY').length} trường)
+          Cơ hội bán hàng - Deals ({fields.filter((f) => f.target === 'OPPORTUNITY').length} trường)
         </button>
       </div>
 
@@ -217,8 +217,8 @@ export default function CustomFieldsPage() {
                       <span style={{ color: '#94a3b8' }}>—</span>
                     )}
                   </td>
-                  <td>{f.show_in_filter ? '✅ Có' : '❌ Không'}</td>
-                  <td>{f.show_in_export ? '✅ Có' : '❌ Không'}</td>
+                  <td>{f.show_in_filter ? 'Có' : 'Không'}</td>
+                  <td>{f.show_in_export ? 'Có' : 'Không'}</td>
                   <td className="actions-cell">
                     <button
                       type="button"
