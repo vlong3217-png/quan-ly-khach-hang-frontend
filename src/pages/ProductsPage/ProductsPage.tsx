@@ -181,10 +181,7 @@ export default function ProductsPage() {
 
       <div className="products-header">
         <div>
-          <h2>📦 Quản lý Sản phẩm / Dịch vụ & Bảng giá niêm yết</h2>
-          <p className="products-subtitle">
-            Khai báo bảng giá chuẩn, giá sàn kiểm soát chiết khấu và bảo mật giá vốn (Chỉ GĐKD/Admin xem).
-          </p>
+          <h2>Quản lý Sản phẩm / Dịch vụ & Bảng giá niêm yết</h2>
         </div>
         <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
           + Thêm sản phẩm / dịch vụ
@@ -248,12 +245,14 @@ export default function ProductsPage() {
                 <tr key={p.id}>
                   <td className="code-badge">{p.code}</td>
                   <td>
-                    <strong>{p.name}</strong>
-                    {p.has_quotes && (
-                      <span className="quote-tag" title="Sản phẩm đã nằm trong báo giá (Không thể xóa)">
-                        Đã có báo giá
-                      </span>
-                    )}
+                    <div className="product-name-cell">
+                      <strong className="product-name-title">{p.name}</strong>
+                      {p.has_quotes && (
+                        <span className="quote-tag" title="Sản phẩm đã nằm trong báo giá (Không thể xóa)">
+                          Đã có báo giá
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td>
                     <span className={`type-tag type-${p.type.toLowerCase()}`}>
@@ -469,7 +468,7 @@ export default function ProductsPage() {
 
                 {isSalesDirectorOrAdmin && (
                   <div className="modal-form-group privileged-field">
-                    <label>🔒 Giá vốn (Chỉ Giám đốc kinh doanh xem và sửa)</label>
+                    <label>Giá vốn (Chỉ Giám đốc kinh doanh xem và sửa)</label>
                     <input
                       type="number"
                       value={formData.cost_price}

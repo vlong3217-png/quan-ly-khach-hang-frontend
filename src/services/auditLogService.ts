@@ -367,3 +367,74 @@ export function formatAuditDate(dateString: string): string {
     return dateString
   }
 }
+
+/**
+ * Chuẩn hóa hiển thị Loại đối tượng sang Tiếng Việt
+ */
+export function formatAuditEntity(entityType: string): string {
+  if (!entityType) return '—'
+  const upper = entityType.trim().toUpperCase()
+  const map: Record<string, string> = {
+    USER: 'Người dùng',
+    USER_ROLE: 'Vai trò người dùng',
+    ROLE: 'Vai trò',
+    DISCOUNT: 'Chiết khấu',
+    TARGET: 'Chỉ tiêu',
+    OWNERSHIP: 'Quyền sở hữu dữ liệu',
+    DATA_OWNERSHIP: 'Quyền sở hữu dữ liệu',
+    CUSTOMER: 'Khách hàng',
+    CONTACT: 'Người liên hệ',
+    DEAL: 'Cơ hội bán hàng',
+    PRODUCT: 'Sản phẩm',
+    SYSTEM: 'Hệ thống',
+  }
+  return map[upper] || entityType
+}
+
+/**
+ * Chuẩn hóa hiển thị Hành động sang Tiếng Việt
+ */
+export function formatAuditAction(action: string): string {
+  if (!action) return '—'
+  const upper = action.trim().toUpperCase()
+  const map: Record<string, string> = {
+    UPDATE: 'Cập nhật',
+    UPDATE_USER: 'Cập nhật người dùng',
+    UPDATE_ROLE: 'Cập nhật vai trò',
+    ASSIGN_ROLE: 'Gán vai trò',
+    CHANGE: 'Thay đổi',
+    CREATE: 'Tạo mới',
+    CREATE_USER: 'Tạo người dùng',
+    DELETE: 'Xóa',
+    DELETE_USER: 'Xóa người dùng',
+    LOCK_USER: 'Khóa tài khoản',
+    UNLOCK_USER: 'Mở khóa tài khoản',
+    LOCK: 'Khóa',
+    UNLOCK: 'Mở khóa',
+    TRANSFER_OWNER: 'Chuyển quyền sở hữu',
+    UPDATE_DISCOUNT: 'Cập nhật chiết khấu',
+    UPDATE_TARGET: 'Cập nhật chỉ tiêu',
+  }
+  return map[upper] || action
+}
+
+/**
+ * Chuẩn hóa hiển thị Giá trị trước / sau sang Tiếng Việt
+ */
+export function formatAuditValue(val: string): string {
+  if (!val || val === '—' || val === '-') return '—'
+  const trimmed = val.trim()
+  const upper = trimmed.toUpperCase()
+  const map: Record<string, string> = {
+    USER: 'Nhân viên',
+    STAFF: 'Nhân viên',
+    MANAGER: 'Quản lý',
+    ADMIN: 'Quản trị viên',
+    ACTIVE: 'Đang hoạt động',
+    INACTIVE: 'Không hoạt động',
+    LOCKED: 'Đã khóa',
+    TRUE: 'Đúng',
+    FALSE: 'Sai',
+  }
+  return map[upper] || val
+}
