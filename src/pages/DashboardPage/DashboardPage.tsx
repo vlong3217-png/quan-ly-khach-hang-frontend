@@ -77,6 +77,11 @@ function DashboardPage() {
   const [activeMenuId, setActiveMenuId] = useState<string>('menu-dashboard')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false)
 
+  // Đặt tiêu đề tab trình duyệt
+  useEffect(() => {
+    document.title = 'Hệ thống quản lý khách hàng'
+  }, [])
+
   // Đồng bộ activeMenuId theo URL pathname khi truy cập trực tiếp hoặc chuyển route
   useEffect(() => {
     const path = location.pathname
