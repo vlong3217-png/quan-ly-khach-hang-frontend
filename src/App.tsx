@@ -8,6 +8,7 @@ import ForbiddenPage from './pages/ForbiddenPage/ForbiddenPage.tsx'
 import ImportUsersPage from './pages/ImportUsersPage/ImportUsersPage.tsx'
 import ProfilePage from './pages/ProfilePage/ProfilePage.tsx'
 import AuditLogPage from './pages/AuditLogPage/AuditLogPage.tsx'
+import PublicLeadFormPage from './pages/PublicLeadFormPage/PublicLeadFormPage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import AdminRoute from './components/AdminRoute.tsx'
 import { ROLES, PERMISSIONS } from './constants/permissions.ts'
@@ -15,6 +16,10 @@ import { ROLES, PERMISSIONS } from './constants/permissions.ts'
 function App() {
   return (
     <Routes>
+      {/* ── Public Web-to-Lead Form (S4-01) ── */}
+      <Route path="/lead-form/:formId" element={<PublicLeadFormPage />} />
+      <Route path="/forms/:formId" element={<PublicLeadFormPage />} />
+
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -87,6 +92,24 @@ function App() {
       {/* 4b. S2-05: Quản lý Sản phẩm / Dịch vụ & Bảng giá */}
       <Route
         path="/dashboard/products/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* 4c. S4-01: Quản lý Biểu mẫu & Thu thập Lead */}
+      <Route
+        path="/dashboard/lead-forms/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/leads/*"
         element={
           <ProtectedRoute>
             <DashboardPage />
