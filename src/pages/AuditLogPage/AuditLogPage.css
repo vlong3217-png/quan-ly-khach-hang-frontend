@@ -28,37 +28,33 @@
   justify-content: space-between;
 }
 
-.audit-log-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  user-select: none;
-}
-
-.audit-log-brand-icon {
-  width: 36px;
-  height: 36px;
+.audit-log-back-header-btn {
+  background: none;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  background: linear-gradient(135deg, #4f46e5, #3730a3);
-  color: #ffffff;
-  display: flex;
+  padding: 0.5rem 0.85rem;
+  color: #1e293b;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);
+  gap: 0.5rem;
+  transition: all 0.15s ease;
+  background-color: #ffffff;
 }
 
-.audit-log-brand-icon svg {
-  width: 20px;
-  height: 20px;
+.audit-log-back-header-btn:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #2563eb;
 }
 
-.audit-log-brand-text {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.01em;
+.audit-log-back-header-btn svg {
+  width: 16px;
+  height: 16px;
 }
+
 
 .audit-log-header-user-area {
   display: flex;
@@ -78,7 +74,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #4338ca);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -165,7 +161,7 @@
 .audit-log-back-link {
   background: none;
   border: none;
-  color: #4f46e5;
+  color: #2563eb;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -178,7 +174,7 @@
 }
 
 .audit-log-back-link:hover {
-  color: #3730a3;
+  color: #1d4ed8;
   text-decoration: underline;
 }
 
@@ -202,8 +198,9 @@
   width: 44px;
   height: 44px;
   border-radius: 10px;
-  background-color: #e0e7ff;
-  color: #4338ca;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -228,8 +225,9 @@
 .audit-log-count-pill {
   font-size: 0.825rem;
   font-weight: 600;
-  background-color: #e0e7ff;
-  color: #4338ca;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
   padding: 2px 10px;
   border-radius: 20px;
 }
@@ -283,8 +281,9 @@
 }
 
 .audit-stat-icon.stat-total {
-  background-color: #e0e7ff;
-  color: #4338ca;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
 }
 
 .audit-stat-icon.stat-discount {
@@ -384,8 +383,8 @@
 .audit-filter-input:focus,
 .audit-filter-select:focus {
   outline: none;
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .audit-filter-actions {
@@ -452,8 +451,9 @@
 }
 
 .audit-filter-chip {
-  background-color: #e0e7ff;
-  color: #3730a3;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
   padding: 2px 8px;
   border-radius: 4px;
   font-weight: 500;
@@ -524,7 +524,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: #ffffff;
   font-size: 0.75rem;
   font-weight: 700;
@@ -680,8 +680,8 @@
 .audit-spinner {
   width: 36px;
   height: 36px;
-  border: 3px solid #c7d2fe;
-  border-top-color: #4f46e5;
+  border: 3px solid #dbeafe;
+  border-top-color: #2563eb;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 1rem;
@@ -782,8 +782,8 @@
 }
 
 .audit-page-btn.active {
-  background-color: #4f46e5;
-  border-color: #4338ca;
+  background-color: #2563eb;
+  border-color: #1d4ed8;
   color: #ffffff;
   font-weight: 700;
 }
