@@ -1,0 +1,678 @@
+/* CampaignsPage.css - Sprint 4 S4-03 Campaign Lead Management */
+
+.campaigns-page-container {
+  padding: 24px;
+  background-color: #f8fafc;
+  min-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-family: inherit;
+  color: #1e293b;
+}
+
+/* ── 1. Page Header ── */
+.campaign-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.campaign-header-left h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.02em;
+}
+
+.campaign-header-left p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.campaign-header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* ── 2. Stat Summary Cards ── */
+.campaign-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.campaign-stat-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.campaign-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.campaign-stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.campaign-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.campaign-stat-label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* ── 3. Panel & Controls ── */
+.campaign-card-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.campaign-panel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.campaign-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 320px;
+  max-width: 100%;
+  transition: border-color 0.15s ease;
+}
+
+.campaign-search-box:focus-within {
+  border-color: #2563eb;
+  background: #ffffff;
+}
+
+.campaign-search-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 13.5px;
+  color: #1e293b;
+}
+
+.campaign-search-box svg {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.campaign-filters-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.campaign-select-filter {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13.5px;
+  color: #334155;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.campaign-select-filter:focus {
+  border-color: #2563eb;
+}
+
+/* ── 4. Table Styling ── */
+.campaign-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.campaign-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  text-align: left;
+}
+
+.campaign-data-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  padding: 12px 14px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.campaign-data-table td {
+  padding: 14px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.campaign-data-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.camp-code-tag {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.camp-info-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.camp-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.camp-channel-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+/* Budget & Progress */
+.camp-budget-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.budget-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 12.5px;
+}
+
+.cost-num {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.budget-target {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.camp-progress-track {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.camp-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.camp-date-cell {
+  font-size: 12.5px;
+  color: #475569;
+}
+
+.date-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-item svg {
+  color: #94a3b8;
+}
+
+/* Lead drilldown button in table */
+.camp-lead-count-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.camp-lead-count-btn:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+}
+
+.converted-sub {
+  font-size: 11.5px;
+  color: #2563eb;
+  font-weight: 500;
+}
+
+.camp-status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.camp-actions-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-action-icon:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.btn-action-icon.view-leads {
+  color: #2563eb;
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.btn-action-icon.view-leads:hover {
+  background: #dbeafe;
+}
+
+.btn-action-icon.edit:hover {
+  color: #2563eb;
+  border-color: #cbd5e1;
+}
+
+.btn-action-icon.delete:hover {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+/* ── 5. Empty & Loading State ── */
+.campaign-loading-box,
+.campaign-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  gap: 12px;
+  color: #64748b;
+  text-align: center;
+}
+
+.campaign-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.campaign-empty-icon {
+  font-size: 40px;
+  margin-bottom: 4px;
+}
+
+.campaign-empty-state h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.campaign-empty-state p {
+  font-size: 13.5px;
+  color: #64748b;
+  margin: 0;
+  max-width: 420px;
+}
+
+/* ── 6. Modals ── */
+.camp-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.camp-modal-content {
+  background: #ffffff;
+  border-radius: 14px;
+  width: 100%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.camp-modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+}
+
+.camp-modal-header h3 {
+  font-size: 16.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.camp-modal-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.camp-modal-close-btn:hover {
+  color: #0f172a;
+}
+
+.camp-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.camp-modal-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .camp-modal-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.camp-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.camp-modal-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.required-star {
+  color: #dc2626;
+}
+
+.camp-modal-input,
+.camp-modal-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #0f172a;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.camp-modal-input:focus,
+.camp-modal-textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.camp-modal-input.has-error {
+  border-color: #dc2626;
+}
+
+.camp-modal-field-error {
+  font-size: 12px;
+  color: #dc2626;
+}
+
+.camp-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Modal Lead Drilldown specific styling */
+.modal-lead-stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 10px 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.modal-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modal-metric .lbl {
+  font-size: 11.5px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.modal-metric .val {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.btn-export-modal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #1e293b;
+  transition: all 0.15s;
+}
+
+.btn-export-modal:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.modal-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modal-search-box input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13.5px;
+  color: #1e293b;
+}
+
+.lead-table-responsive {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.lead-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.lead-data-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.lead-data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.lead-data-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ── 7. Toast Notification ── */
+.camp-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+  animation: slideUp 0.2s ease-out;
+}
+
+.camp-toast.error {
+  background: #dc2626;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

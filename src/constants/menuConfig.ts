@@ -69,6 +69,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Quản lý biểu mẫu web-to-lead, nhúng iframe và thu thập khách hàng tiềm năng',
       },
       {
+        id: 'menu-campaigns',
+        title: 'Chiến dịch Marketing',
+        path: '/dashboard/campaigns',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Quản lý chiến dịch tiếp thị, ngân sách và theo dõi nguồn lead',
+      },
+      {
         id: 'menu-products',
         title: 'Sản phẩm & Bảng giá',
         path: '/dashboard/products',
