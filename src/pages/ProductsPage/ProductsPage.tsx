@@ -182,9 +182,6 @@ export default function ProductsPage() {
       <div className="products-header">
         <div>
           <h2>Quản lý Sản phẩm / Dịch vụ & Bảng giá niêm yết</h2>
-          <p className="products-subtitle">
-            Khai báo bảng giá chuẩn, giá sàn kiểm soát chiết khấu và bảo mật giá vốn (Chỉ GĐKD/Admin xem).
-          </p>
         </div>
         <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
           + Thêm sản phẩm / dịch vụ
