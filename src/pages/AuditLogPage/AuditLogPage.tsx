@@ -254,10 +254,7 @@ export function AuditLogPage() {
                   getInitials(user?.full_name || 'Admin')
                 )}
               </div>
-              <div className="audit-log-header-details">
-                <span className="audit-log-header-name">{user?.full_name ?? 'Quản trị viên'}</span>
-                <span className="audit-log-header-role">{user?.role ?? 'ADMIN'}</span>
-              </div>
+
             </div>
 
             <button
