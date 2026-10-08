@@ -14,6 +14,7 @@ import PipelineStagesPage from '../PipelineStagesPage/PipelineStagesPage.tsx'
 import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
 import CustomerManagementPage from '../CustomerManagementPage/CustomerManagementPage.tsx'
 import LeadFormsPage from '../LeadFormsPage/LeadFormsPage.tsx'
+import CampaignsPage from '../CampaignsPage/CampaignsPage.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -96,6 +97,8 @@ function DashboardPage() {
       setActiveMenuId('menu-teams')
     } else if (path.startsWith('/dashboard/lead-forms') || path.startsWith('/dashboard/leads')) {
       setActiveMenuId('menu-lead-forms')
+    } else if (path.startsWith('/dashboard/campaigns')) {
+      setActiveMenuId('menu-campaigns')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -136,6 +139,9 @@ function DashboardPage() {
     activeMenuId === 'menu-lead-forms' ||
     activeMenuId.startsWith('menu-lead-forms-') ||
     activeMenuId === 'menu-leads'
+  const isCampaignView =
+    activeMenuId === 'menu-campaigns' ||
+    activeMenuId.startsWith('menu-campaigns-')
   const isProductView =
     activeMenuId === 'menu-products' ||
     activeMenuId.startsWith('menu-products-')
@@ -295,6 +301,15 @@ function DashboardPage() {
           {isLeadFormView && (
             <section className="dashboard-section lead-forms-section">
               <LeadFormsPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: CHIẾN DỊCH MARKETING & THEO DÕI LEAD (S4-03)
+              ───────────────────────────────────────────────────────────── */}
+          {isCampaignView && (
+            <section className="dashboard-section campaigns-section">
+              <CampaignsPage />
             </section>
           )}
 
