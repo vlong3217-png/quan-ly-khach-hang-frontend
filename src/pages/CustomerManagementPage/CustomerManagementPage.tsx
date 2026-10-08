@@ -700,7 +700,7 @@ export default function CustomerManagementPage() {
           className={`customer-tab-btn ${activeTab === 'SUPPORT' ? 'active' : ''}`}
           onClick={() => setActiveTab('SUPPORT')}
         >
-          CSKH & Cờ Rời bỏ
+          Cảnh báo rủi ro
           {stats.atRiskCount > 0 && <span className="tab-badge warning">{stats.atRiskCount} nguy cơ</span>}
         </button>
 
@@ -1227,11 +1227,8 @@ export default function CustomerManagementPage() {
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '16px', color: '#0f172a' }}>
-                Yêu cầu hỗ trợ sau bán & Cờ rủi ro rời bỏ
+                Cảnh báo rủi ro
               </h3>
-              <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748b' }}>
-                Khách hàng có từ 2 yêu cầu hỗ trợ chưa xử lý sẽ được gắn cờ rủi ro tự động cảnh báo cho Sales.
-              </p>
             </div>
             <button
               type="button"
