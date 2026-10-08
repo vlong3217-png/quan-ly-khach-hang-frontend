@@ -275,12 +275,23 @@ export async function createUser(payload: CreateUserRequest): Promise<UserRespon
   const useReal = await shouldUseRealApi()
 
   if (useReal) {
+    const roleNormalized = payload.role === 'STAFF' ? 'USER' : (payload.role || 'USER')
+    const backendBody = {
+      email: payload.email.trim(),
+      full_name: payload.full_name.trim(),
+      password: payload.password,
+      role: roleNormalized,
+      username: payload.email.trim().split('@')[0],
+      is_active: true,
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/users`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
+        body: JSON.stringify(backendBody),
       })
+
       if (response.ok) {
         const u = await response.json()
         return {
@@ -288,26 +299,26 @@ export async function createUser(payload: CreateUserRequest): Promise<UserRespon
           message: 'Tạo tài khoản thành công.',
           user: {
             ...u,
+            phone: payload.phone,
+            team: payload.team,
             status: u.is_active ? 'active' : 'locked',
             created_at: u.created_at || new Date().toISOString(),
           },
         }
       }
-    } catch {
-      // Fallback
-    }
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/users`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
-      })
-      if (response.ok) {
-        return (await response.json()) as UserResponse
+      // Nếu backend trả về lỗi (400, 422, etc.), trích xuất thông báo chi tiết
+      const errData = await response.json().catch(() => null)
+      if (errData?.detail) {
+        const errorMsg = Array.isArray(errData.detail)
+          ? errData.detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ')
+          : String(errData.detail)
+        throw new Error(errorMsg)
       }
-    } catch {
-      // Fallback
+    } catch (err: any) {
+      if (err?.message && !err.message.includes('fetch')) {
+        throw err
+      }
     }
   }
 
@@ -346,11 +357,17 @@ export async function updateUser(
   const useReal = await shouldUseRealApi()
 
   if (useReal) {
+    const updateBody: any = {}
+    if (payload.full_name) updateBody.full_name = payload.full_name.trim()
+    if (payload.email) updateBody.email = payload.email.trim()
+    if (payload.role) updateBody.role = payload.role === 'STAFF' ? 'USER' : payload.role
+    if (payload.status) updateBody.is_active = payload.status === 'active'
+
     try {
       const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
+        body: JSON.stringify(updateBody),
       })
       if (response.ok) {
         const u = await response.json()
@@ -359,12 +376,24 @@ export async function updateUser(
           message: 'Cập nhật tài khoản thành công.',
           user: {
             ...u,
+            phone: payload.phone,
+            team: payload.team,
             status: u.status?.toLowerCase() === 'locked' ? 'locked' : (u.is_active ? 'active' : 'inactive'),
           },
         }
       }
-    } catch {
-      // Fallback
+
+      const errData = await response.json().catch(() => null)
+      if (errData?.detail) {
+        const errorMsg = Array.isArray(errData.detail)
+          ? errData.detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ')
+          : String(errData.detail)
+        throw new Error(errorMsg)
+      }
+    } catch (err: any) {
+      if (err?.message && !err.message.includes('fetch')) {
+        throw err
+      }
     }
   }
 
@@ -615,4 +644,14 @@ export function getAvailableTeams(): string[] {
     if (u.team) teams.add(u.team)
   })
   return Array.from(teams).sort()
+}
+
+export const userService = {
+  getUsers,
+  createUser,
+  updateUser,
+  updateUserStatus,
+  getUserAssignedData,
+  handoverUserData,
+  getAvailableTeams,
 }

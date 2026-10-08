@@ -14,12 +14,6 @@ import { ROLE_LABELS } from '../../constants/permissions.ts'
 import type { UserProfile, ProfileFormErrors } from '../../types/profile.ts'
 import './ProfilePage.css'
 
-/* ──────────── Inline SVG Icons ──────────── */
-const IconShield = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-  </svg>
-)
 
 const IconCamera = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -43,15 +37,6 @@ const IconTrashMini = () => (
   </svg>
 )
 
-const IconClipboardList = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-    <path d="M12 11h4" />
-    <path d="M12 16h4" />
-  </svg>
-)
-
 const IconUser = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
@@ -63,14 +48,6 @@ const IconArrowLeft = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="m12 19-7-7 7-7" />
     <path d="M19 12H5" />
-  </svg>
-)
-
-const IconDownload = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="7 10 12 15 17 10" />
-    <line x1="12" y1="15" x2="12" y2="3" />
   </svg>
 )
 
@@ -212,10 +189,10 @@ export function ProfilePage() {
       setProfile((prev) =>
         prev
           ? {
-              ...prev,
-              avatar: croppedDataUrl,
-              thumbnail: thumbnailDataUrl,
-            }
+            ...prev,
+            avatar: croppedDataUrl,
+            thumbnail: thumbnailDataUrl,
+          }
           : null
       )
 
@@ -244,10 +221,10 @@ export function ProfilePage() {
     setProfile((prev) =>
       prev
         ? {
-            ...prev,
-            avatar: undefined,
-            thumbnail: undefined,
-          }
+          ...prev,
+          avatar: undefined,
+          thumbnail: undefined,
+        }
         : null
     )
 
@@ -372,11 +349,11 @@ export function ProfilePage() {
         setProfile((prev) =>
           prev
             ? {
-                ...prev,
-                full_name: fullName.trim(),
-                phone: phone.trim() || undefined,
-                email_signature: signature,
-              }
+              ...prev,
+              full_name: fullName.trim(),
+              phone: phone.trim() || undefined,
+              email_signature: signature,
+            }
             : null
         )
       }
@@ -429,72 +406,21 @@ export function ProfilePage() {
       {/* ── Header Navbar chung ── */}
       <header className="profile-header">
         <div className="profile-header-inner">
-          <div className="profile-brand" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
-            <div className="profile-brand-icon" aria-hidden="true">
-              <IconShield />
-            </div>
-            <span className="profile-brand-text">Quản lý khách hàng</span>
-          </div>
+          <button
+            className="profile-header-back-btn"
+            onClick={() => navigate('/dashboard')}
+            type="button"
+            id="profile-header-back-btn"
+            title="Quay lại Dashboard"
+          >
+            <IconArrowLeft />
+            <span>Quay lại Dashboard</span>
+          </button>
 
           <div className="profile-header-user-area">
-            <div className="profile-header-user-info">
-              <div className="profile-header-avatar" id="profile-header-avatar-display">
-                {profile?.avatar || user?.avatar ? (
-                  <img
-                    src={profile?.avatar || user?.avatar}
-                    alt={user?.full_name || 'Ảnh đại diện'}
-                    className="profile-header-avatar-img"
-                  />
-                ) : (
-                  getInitials(user?.full_name || 'Người dùng')
-                )}
-              </div>
-              <div className="profile-header-details">
-                <span className="profile-header-name">{user?.full_name ?? 'Người dùng'}</span>
-                <span className="profile-header-role">
-                  {user?.role ? ROLE_LABELS[user.role] ?? user.role : ''}
-                </span>
-              </div>
-            </div>
-
-            {user?.role?.toUpperCase() === 'ADMIN' && (
-              <>
-                <button
-                  type="button"
-                  className="profile-nav-btn"
-                  onClick={() => navigate('/admin/audit-logs')}
-                  title="Xem nhật ký thay đổi dữ liệu nhạy cảm"
-                  id="header-audit-logs-btn"
-                >
-                  <IconClipboardList />
-                  <span>Nhật ký thay đổi</span>
-                </button>
-                <button
-                  type="button"
-                  className="profile-nav-btn"
-                  onClick={() => navigate('/admin/users')}
-                  title="Quản lý tài khoản"
-                  id="header-admin-users-btn"
-                >
-                  <IconUser />
-                  <span>Tài khoản</span>
-                </button>
-                <button
-                  type="button"
-                  className="profile-nav-btn"
-                  onClick={() => navigate('/import-users')}
-                  title="Nhập dữ liệu người dùng từ Excel"
-                  id="header-import-users-btn"
-                >
-                  <IconDownload />
-                  <span>Nhập Excel</span>
-                </button>
-              </>
-            )}
-
             <button
               type="button"
-              className="profile-nav-btn"
+              className="dashboard-change-pwd-btn"
               onClick={() => navigate('/change-password')}
               title="Đổi mật khẩu"
               id="header-change-password-btn"
@@ -505,7 +431,7 @@ export function ProfilePage() {
 
             <button
               type="button"
-              className="profile-logout-btn"
+              className="dashboard-logout-btn"
               onClick={handleLogout}
               title="Đăng xuất"
               id="header-logout-btn"
@@ -519,16 +445,6 @@ export function ProfilePage() {
 
       {/* ── Main Content Container ── */}
       <main className="profile-main-container">
-        {/* Nút quay lại Dashboard */}
-        <button
-          className="profile-back-link"
-          onClick={() => navigate('/dashboard')}
-          type="button"
-          id="profile-back-dashboard-btn"
-        >
-          <IconArrowLeft />
-          <span>Quay lại Dashboard</span>
-        </button>
 
         {/* Tiêu đề trang */}
         <div className="profile-title-bar">
@@ -768,9 +684,7 @@ export function ProfilePage() {
                         disabled={isSaving}
                         autoComplete="tel"
                       />
-                      <span className="profile-field-hint">
-                        Định dạng số điện thoại Việt Nam (ví dụ: 0901234567, 0381234567 hoặc +84901234567). Bỏ trống nếu không sử dụng.
-                      </span>
+
                       {errors.phone && (
                         <span className="profile-field-error" id="profile-phone-error">
                           {errors.phone}
