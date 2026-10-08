@@ -146,7 +146,7 @@ const IconKey = () => (
 /* ──────────── Helpers ──────────── */
 const ROLE_LABELS: Record<UserRole, string> = {
   ADMIN: 'Admin',
-  MANAGER: 'Manager',
+  MANAGER: 'Quản lý',
   STAFF: 'Nhân viên',
   USER: 'Nhân viên',
 }
@@ -679,7 +679,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
           >
             <option value="">Tất cả vai trò</option>
             <option value="ADMIN">Admin</option>
-            <option value="MANAGER">Manager</option>
+            <option value="MANAGER">Quản lý</option>
             <option value="USER">Nhân viên</option>
           </select>
           <select
@@ -1006,7 +1006,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
                   >
                     <option value="">-- Chọn vai trò --</option>
                     <option value="ADMIN">Admin</option>
-                    <option value="MANAGER">Manager</option>
+                    <option value="MANAGER">Quản lý</option>
                     <option value="USER">Nhân viên</option>
                   </select>
                   {formErrors.role && (
