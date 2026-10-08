@@ -1,0 +1,262 @@
+.winloss-container {
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.wl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.wl-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+.wl-subtitle {
+  font-size: 13.5px;
+  color: #64748b;
+  margin: 0;
+}
+
+.wl-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
+.wl-tab-btn {
+  padding: 8px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wl-tab-btn:hover {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #93c5fd;
+}
+
+.wl-tab-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.wl-table-wrapper {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.wl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.wl-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.wl-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.desc-cell {
+  color: #64748b;
+}
+
+.status-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-tag.active {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.status-tag.inactive {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.wl-action-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+.wl-action-btn.edit-btn:hover {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #93c5fd;
+}
+
+.wl-action-btn.delete-btn {
+  color: #dc2626;
+}
+
+.wl-action-btn.delete-btn:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+/* Competitors Grid */
+.competitors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.competitor-card {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.card-top h3 {
+  margin: 4px 0 0 0;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.comp-code {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.price-segment {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.segment-high { background: #fdf4ff; color: #9333ea; border: 1px solid #f0abfc; }
+.segment-medium { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.segment-low { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+
+.comp-website {
+  font-size: 12.5px;
+  color: #2563eb;
+  text-decoration: none;
+  margin-bottom: 12px;
+  display: inline-block;
+}
+
+.comp-website:hover {
+  text-decoration: underline;
+}
+
+.strengths-weaknesses {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sw-box {
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.sw-box p {
+  margin: 4px 0 0 0;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.sw-strengths {
+  background: #ecfdf5;
+  border: 1px solid #d1fae5;
+}
+
+.sw-strengths .sw-title {
+  color: #065f46;
+  font-weight: 700;
+}
+
+.sw-weaknesses {
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+}
+
+.sw-weaknesses .sw-title {
+  color: #92400e;
+  font-weight: 700;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 12px;
+}
+
+.wl-footer-note {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.wl-modal {
+  max-width: 520px !important;
+}
+
+.wl-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 9999;
+}

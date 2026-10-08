@@ -14,12 +14,6 @@ import {
 } from '../../types/auditLog.ts'
 import './AuditLogPage.css'
 
-/* ──────────── Inline SVG Icons ──────────── */
-const IconShield = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-  </svg>
-)
 
 const IconClipboardList = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -122,17 +116,22 @@ const IconLogout = () => (
   </svg>
 )
 
-function getInitials(name: string): string {
+function getInitials(name?: string | null): string {
+  if (!name || typeof name !== 'string') return 'AD'
   const parts = name.trim().split(/\s+/)
-  if (parts.length >= 2) {
+  if (parts.length >= 2 && parts[0] && parts[parts.length - 1]) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
   }
-  return name.substring(0, 2).toUpperCase()
+  return name.trim().substring(0, 2).toUpperCase() || 'AD'
 }
 
 export function AuditLogPage() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    document.title = 'Hệ thống quản lý khách hàng'
+  }, [])
 
   // Dữ liệu nhật ký
   const [logs, setLogs] = useState<AuditLogEntry[]>([])
@@ -161,12 +160,14 @@ export function AuditLogPage() {
     let targets = 0
     let ownerships = 0
     let roles = 0
-    logs.forEach((log) => {
-      if (log.entity_type === 'DISCOUNT') discounts++
-      else if (log.entity_type === 'TARGET') targets++
-      else if (log.entity_type === 'OWNERSHIP') ownerships++
-      else if (log.entity_type === 'USER_ROLE') roles++
-    })
+    if (Array.isArray(logs)) {
+      logs.forEach((log) => {
+        if (log.entity_type === 'DISCOUNT') discounts++
+        else if (log.entity_type === 'TARGET') targets++
+        else if (log.entity_type === 'OWNERSHIP') ownerships++
+        else if (log.entity_type === 'USER_ROLE') roles++
+      })
+    }
     return { discounts, targets, ownerships, roles, total: totalRecords }
   }, [logs, totalRecords])
 
@@ -186,9 +187,9 @@ export function AuditLogPage() {
       })
 
       if (response.success) {
-        setLogs(response.data)
-        setTotalRecords(response.total)
-        setTotalPages(response.totalPages)
+        setLogs(Array.isArray(response.data) ? response.data : [])
+        setTotalRecords(response.total ?? 0)
+        setTotalPages(response.totalPages ?? 1)
       } else {
         throw new Error(response.message || 'Không thể tải nhật ký thay đổi.')
       }
@@ -233,16 +234,16 @@ export function AuditLogPage() {
       {/* ── Header Navbar ── */}
       <header className="audit-log-header">
         <div className="audit-log-header-inner">
-          <div
-            className="audit-log-brand"
+          <button
+            type="button"
+            className="audit-log-back-header-btn"
             onClick={() => navigate('/dashboard')}
-            title="Quay về Dashboard"
+            title="Quay lại Dashboard"
+            id="audit-back-dashboard-btn"
           >
-            <div className="audit-log-brand-icon" aria-hidden="true">
-              <IconShield />
-            </div>
-            <span className="audit-log-brand-text">Quản lý khách hàng</span>
-          </div>
+            <IconArrowLeft />
+            <span>Quay lại Dashboard</span>
+          </button>
 
           <div className="audit-log-header-user-area">
             <div className="audit-log-header-user-info">
@@ -253,10 +254,7 @@ export function AuditLogPage() {
                   getInitials(user?.full_name || 'Admin')
                 )}
               </div>
-              <div className="audit-log-header-details">
-                <span className="audit-log-header-name">{user?.full_name ?? 'Quản trị viên'}</span>
-                <span className="audit-log-header-role">{user?.role ?? 'ADMIN'}</span>
-              </div>
+
             </div>
 
             <button
@@ -296,18 +294,7 @@ export function AuditLogPage() {
 
       {/* ── Main Container ── */}
       <main className="audit-log-main">
-        {/* Nút quay lại Dashboard */}
-        <button
-          className="audit-log-back-link"
-          onClick={() => navigate('/dashboard')}
-          type="button"
-          id="audit-back-dashboard-btn"
-        >
-          <IconArrowLeft />
-          <span>Quay lại Dashboard</span>
-        </button>
-
-        {/* Tiêu đề trang & Huy hiệu Admin */}
+        {/* Tiêu đề trang */}
         <div className="audit-log-title-bar">
           <div className="audit-log-title-left">
             <div className="audit-log-title-icon" aria-hidden="true">
@@ -326,10 +313,6 @@ export function AuditLogPage() {
             </div>
           </div>
 
-          <div className="audit-log-header-badge" id="audit-admin-only-badge">
-            <IconShield />
-            <span>Phân quyền Quản trị viên (ADMIN)</span>
-          </div>
         </div>
 
         {/* ── Thống kê nhanh (Quick Stat Cards) ── */}
