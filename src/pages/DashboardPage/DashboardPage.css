@@ -233,9 +233,8 @@
 .dashboard-main {
   flex: 1;
   padding: 24px 28px;
-  max-width: 1300px;
   width: 100%;
-  margin: 0 auto;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -588,6 +587,13 @@
   padding: 24px 28px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dashboard-section.products-section {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .section-header {

@@ -248,12 +248,14 @@ export default function ProductsPage() {
                 <tr key={p.id}>
                   <td className="code-badge">{p.code}</td>
                   <td>
-                    <strong>{p.name}</strong>
-                    {p.has_quotes && (
-                      <span className="quote-tag" title="Sản phẩm đã nằm trong báo giá (Không thể xóa)">
-                        Đã có báo giá
-                      </span>
-                    )}
+                    <div className="product-name-cell">
+                      <strong className="product-name-title">{p.name}</strong>
+                      {p.has_quotes && (
+                        <span className="quote-tag" title="Sản phẩm đã nằm trong báo giá (Không thể xóa)">
+                          Đã có báo giá
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td>
                     <span className={`type-tag type-${p.type.toLowerCase()}`}>
