@@ -129,6 +129,10 @@ export function AuditLogPage() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
+  useEffect(() => {
+    document.title = 'Hệ thống quản lý khách hàng'
+  }, [])
+
   // Dữ liệu nhật ký
   const [logs, setLogs] = useState<AuditLogEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
