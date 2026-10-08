@@ -701,7 +701,7 @@ export default function CustomerManagementPage() {
           onClick={() => setActiveTab('SUPPORT')}
         >
           Cảnh báo rủi ro
-          {stats.atRiskCount > 0 && <span className="tab-badge warning">{stats.atRiskCount} nguy cơ</span>}
+          {stats.atRiskCount > 0 && <span className="tab-badge warning">{stats.atRiskCount}</span>}
         </button>
 
         <button
