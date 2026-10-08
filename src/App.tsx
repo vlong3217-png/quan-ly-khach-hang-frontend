@@ -117,6 +117,16 @@ function App() {
         }
       />
 
+      {/* 4d. S4-03: Quản lý & Theo dõi Lead theo Chiến dịch */}
+      <Route
+        path="/dashboard/campaigns/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* 5. Quản lý tài khoản (S1-08 / S1-10) */}
       <Route
         path="/dashboard/users/*"
