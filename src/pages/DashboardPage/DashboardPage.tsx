@@ -304,7 +304,7 @@ function DashboardPage() {
                 <div className="access-denied-card" id="forbidden-teams-card">
                   <IconLock />
                   <h3>Không có quyền truy cập Quản lý Đội nhóm (Mã lỗi 403)</h3>
-                  <p>Chức năng này chỉ hiển thị và cho phép với vai trò MANAGER hoặc ADMIN.</p>
+                  <p>Chức năng này chỉ hiển thị và cho phép với vai trò Quản lý hoặc Quản trị viên.</p>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button
                       type="button"
