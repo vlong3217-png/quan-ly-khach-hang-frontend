@@ -163,9 +163,6 @@ export default function WinLossCompetitorsPage() {
       <div className="wl-header">
         <div>
           <h2>Danh mục Lý do Thắng / Thua & Đối thủ cạnh tranh</h2>
-          <p className="wl-subtitle">
-            Khai báo danh mục nguyên nhân thắng thua và hồ sơ đối thủ, phục vụ phân tích rút kinh nghiệm khi đóng cơ hội (Sprint 5).
-          </p>
         </div>
         <div>
           {activeTab === 'COMPETITOR' ? (

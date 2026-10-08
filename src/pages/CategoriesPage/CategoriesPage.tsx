@@ -124,9 +124,6 @@ export default function CategoriesPage() {
       <div className="cat-header">
         <div>
           <h2>Khai báo Danh mục Bán hàng dùng chung</h2>
-          <p className="cat-subtitle">
-            Chuẩn hóa danh mục toàn khối để số liệu đồng nhất: ngành nghề, quy mô, nguồn lead, hoạt động.
-          </p>
         </div>
         <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
           + Thêm mục mới
