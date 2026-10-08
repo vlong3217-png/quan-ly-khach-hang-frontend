@@ -3,11 +3,11 @@ import { categoryService } from '../../services/categoryService.ts'
 import type { SalesCategoryItem, SalesCategoryType } from '../../types/category.ts'
 import './CategoriesPage.css'
 
-const CATEGORY_TABS: Array<{ type: SalesCategoryType; label: string; icon: string }> = [
-  { type: 'INDUSTRY', label: 'Ngành nghề khách hàng', icon: '🏭' },
-  { type: 'COMPANY_SIZE', label: 'Quy mô doanh nghiệp', icon: '🏢' },
-  { type: 'LEAD_SOURCE', label: 'Nguồn Lead tiếp cận', icon: '🎯' },
-  { type: 'ACTIVITY_TYPE', label: 'Loại hoạt động bán hàng', icon: '📞' },
+const CATEGORY_TABS: Array<{ type: SalesCategoryType; label: string }> = [
+  { type: 'INDUSTRY', label: 'Ngành nghề khách hàng' },
+  { type: 'COMPANY_SIZE', label: 'Quy mô doanh nghiệp' },
+  { type: 'LEAD_SOURCE', label: 'Nguồn Lead tiếp cận' },
+  { type: 'ACTIVITY_TYPE', label: 'Loại hoạt động bán hàng' },
 ]
 
 export default function CategoriesPage() {
@@ -123,7 +123,7 @@ export default function CategoriesPage() {
 
       <div className="cat-header">
         <div>
-          <h2>📑 Khai báo Danh mục Bán hàng dùng chung</h2>
+          <h2>Khai báo Danh mục Bán hàng dùng chung</h2>
           <p className="cat-subtitle">
             Chuẩn hóa danh mục toàn khối để số liệu đồng nhất: ngành nghề, quy mô, nguồn lead, hoạt động.
           </p>
@@ -142,7 +142,6 @@ export default function CategoriesPage() {
             className={`cat-tab-btn ${activeTab === tab.type ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.type)}
           >
-            <span className="tab-icon">{tab.icon}</span>
             <span>{tab.label}</span>
           </button>
         ))}
