@@ -5,6 +5,7 @@ import { leadFormService } from '../../services/leadFormService.ts'
 import { leadService } from '../../services/leadService.ts'
 import { leadScoringService } from '../../services/leadScoringService.ts'
 import { leadConversionService } from '../../services/leadConversionService.ts'
+import { leadInteractionService } from '../../services/leadInteractionService.ts'
 import { customerService } from '../../services/customerService.ts'
 import { pipelineService } from '../../services/pipelineService.ts'
 import type {
@@ -20,6 +21,8 @@ import type {
   LeadSegment,
   LeadConversionPayload,
   LeadConversionResult,
+  LeadInteraction,
+  LeadInteractionType,
   CreateLeadPayload,
   ExcelLeadRow,
   ImportLeadResult,
@@ -125,6 +128,46 @@ const IconX = () => (
   </svg>
 )
 
+const IconHistory = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+    <path d="M3 3v5h5" />
+    <path d="M12 7v5l4 2" />
+  </svg>
+)
+
+const IconPhone = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+  </svg>
+)
+
+const IconMail = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="20" height="16" x="2" y="4" rx="2" />
+    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+  </svg>
+)
+
+const IconCalendar = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+)
+
+const IconFileText = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="16" y1="13" x2="8" y2="13" />
+    <line x1="16" y1="17" x2="8" y2="17" />
+    <line x1="10" y1="9" x2="8" y2="9" />
+  </svg>
+)
+
 /* ──────────── Cấu hình Trạng thái & Nguồn Lead ──────────── */
 const LEAD_STATUS_CONFIG: Record<
   LeadStatus,
@@ -212,7 +255,7 @@ export default function LeadFormsPage() {
   const { user } = useAuth()
   const canManageScoring = user?.role === 'ADMIN' || user?.role === 'MANAGER'
 
-  const [activeTab, setActiveTab] = useState<'LEADS_LIST' | 'LEAD_SCORING' | 'IMPORT_EXCEL' | 'FORMS' | 'SUBMISSIONS'>('LEADS_LIST')
+  const [activeTab, setActiveTab] = useState<'LEADS_LIST' | 'LEAD_SCORING' | 'LEAD_INTERACTIONS' | 'IMPORT_EXCEL' | 'FORMS' | 'SUBMISSIONS'>('LEADS_LIST')
 
   // Data states
   const [leads, setLeads] = useState<Lead[]>([])
@@ -283,6 +326,22 @@ export default function LeadFormsPage() {
   const [existingCustomers, setExistingCustomers] = useState<CustomerEnterprise[]>([])
   const [pipelineStages, setPipelineStages] = useState<PipelineStage[]>([])
 
+  // ── S4-06: State cho Lịch sử tương tác với Lead ──
+  const [selectedLeadForInteraction, setSelectedLeadForInteraction] = useState<Lead | null>(null)
+  const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false)
+  const [leadInteractions, setLeadInteractions] = useState<LeadInteraction[]>([])
+  const [allRecentInteractions, setAllRecentInteractions] = useState<LeadInteraction[]>([])
+  const [isLoadingInteractions, setIsLoadingInteractions] = useState(false)
+  const [interactionFilter, setInteractionFilter] = useState<'ALL' | LeadInteractionType>('ALL')
+  const [newInteractionType, setNewInteractionType] = useState<LeadInteractionType>('CALL')
+  const [newInteractionTitle, setNewInteractionTitle] = useState('')
+  const [newInteractionOutcome, setNewInteractionOutcome] = useState('Thành công - Quan tâm cao')
+  const [newInteractionContent, setNewInteractionContent] = useState('')
+  const [newInteractionNextAction, setNewInteractionNextAction] = useState('')
+  const [newInteractionNextActionDue, setNewInteractionNextActionDue] = useState('')
+  const [isSavingInteraction, setIsSavingInteraction] = useState(false)
+  const [timelineSearchQuery, setTimelineSearchQuery] = useState('')
+
   // ── S4-02: Modal Tạo Lead thủ công ──
   const [isCreateLeadModalOpen, setIsCreateLeadModalOpen] = useState(false)
   const [createLeadForm, setCreateLeadForm] = useState<CreateLeadPayload>({
@@ -346,14 +405,16 @@ export default function LeadFormsPage() {
   const loadData = async () => {
     try {
       setIsLoading(true)
-      const [fetchedLeads, fetchedForms, fetchedSubs] = await Promise.all([
+      const [fetchedLeads, fetchedForms, fetchedSubs, fetchedInteractions] = await Promise.all([
         leadService.getLeads(),
         leadFormService.getLeadForms(),
         leadFormService.getLeadSubmissions(),
+        leadInteractionService.getAllRecentInteractions(),
       ])
       setLeads(fetchedLeads)
       setForms(fetchedForms)
       setSubmissions(fetchedSubs)
+      setAllRecentInteractions(fetchedInteractions)
     } catch {
       showToast('Không thể tải danh sách dữ liệu Lead', true)
     } finally {
@@ -469,6 +530,19 @@ export default function LeadFormsPage() {
       })
       setLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)))
       setSelectedLeadForScore(updated)
+
+      // Ghi nhận tương tác đổi điểm (S4-06)
+      leadInteractionService
+        .recordScoreChange(
+          selectedLeadForScore.id,
+          selectedLeadForScore.score ?? 50,
+          Number(manualScoreInput),
+          manualNotesInput,
+          user?.full_name || 'Quản lý'
+        )
+        .then((act) => setAllRecentInteractions((prev) => [act, ...prev]))
+        .catch(() => {})
+
       showToast(`Đã lưu phân loại và điểm số mới cho "${updated.full_name}"!`)
       setIsScoreModalOpen(false)
     } catch {
@@ -606,6 +680,96 @@ export default function LeadFormsPage() {
     }
   }
 
+  // ── S4-06: Handlers cho Lịch sử tương tác với Lead ──
+  const handleOpenInteractionModal = async (lead: Lead) => {
+    setSelectedLeadForInteraction(lead)
+    setIsInteractionModalOpen(true)
+    setIsLoadingInteractions(true)
+    setNewInteractionTitle('')
+    setNewInteractionContent('')
+    setNewInteractionNextAction('')
+    setNewInteractionNextActionDue('')
+    setNewInteractionType('CALL')
+    setNewInteractionOutcome('Thành công - Quan tâm cao')
+    setInteractionFilter('ALL')
+
+    try {
+      const items = await leadInteractionService.getInteractionsByLead(lead.id)
+      setLeadInteractions(items)
+    } catch {
+      showToast('Lỗi khi tải lịch sử tương tác của Lead', true)
+    } finally {
+      setIsLoadingInteractions(false)
+    }
+  }
+
+  const handleCreateInteraction = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedLeadForInteraction) return
+    if (!newInteractionTitle.trim()) {
+      showToast('Vui lòng nhập tiêu đề tương tác', true)
+      return
+    }
+
+    try {
+      setIsSavingInteraction(true)
+      const created = await leadInteractionService.createInteraction({
+        lead_id: selectedLeadForInteraction.id,
+        type: newInteractionType,
+        title: newInteractionTitle,
+        outcome: newInteractionOutcome,
+        content: newInteractionContent,
+        next_action: newInteractionNextAction,
+        next_action_due: newInteractionNextActionDue,
+        performed_by_id: user?.id ? Number(user.id) : 1,
+        performed_by_name: user?.full_name || 'Nguyễn Văn An',
+      })
+
+      setLeadInteractions((prev) => [created, ...prev])
+      setAllRecentInteractions((prev) => [created, ...prev])
+      setNewInteractionTitle('')
+      setNewInteractionContent('')
+      setNewInteractionNextAction('')
+      setNewInteractionNextActionDue('')
+      showToast('Đã ghi nhận tương tác thành công!')
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Lỗi khi lưu tương tác', true)
+    } finally {
+      setIsSavingInteraction(false)
+    }
+  }
+
+  const handleDeleteInteraction = async (interactionId: string) => {
+    try {
+      await leadInteractionService.deleteInteraction(interactionId)
+      setLeadInteractions((prev) => prev.filter((item) => item.id !== interactionId))
+      setAllRecentInteractions((prev) => prev.filter((item) => item.id !== interactionId))
+      showToast('Đã xóa lịch sử tương tác')
+    } catch {
+      showToast('Không thể xóa tương tác này', true)
+    }
+  }
+
+  const filteredLeadInteractions = useMemo(() => {
+    return leadInteractions.filter((item) => {
+      if (interactionFilter === 'ALL') return true
+      return item.type === interactionFilter
+    })
+  }, [leadInteractions, interactionFilter])
+
+  const filteredTimelineInteractions = useMemo(() => {
+    return allRecentInteractions.filter((item) => {
+      const matchFilter = interactionFilter === 'ALL' || item.type === interactionFilter
+      const q = timelineSearchQuery.toLowerCase().trim()
+      const matchSearch =
+        !q ||
+        item.title.toLowerCase().includes(q) ||
+        (item.content && item.content.toLowerCase().includes(q)) ||
+        item.performed_by_name.toLowerCase().includes(q)
+      return matchFilter && matchSearch
+    })
+  }, [allRecentInteractions, interactionFilter, timelineSearchQuery])
+
   // Lọc danh sách Form (S4-01)
   const filteredForms = useMemo(() => {
     return forms.filter((f) => {
@@ -693,9 +857,18 @@ export default function LeadFormsPage() {
 
   // Cập nhật trạng thái Lead trực tiếp trong bảng
   const handleUpdateLeadStatus = async (leadId: string, status: LeadStatus) => {
+    const current = leads.find((l) => l.id === leadId)
+    const oldStatus = current?.status || 'NEW'
     try {
       const updated = await leadService.updateLead(leadId, { status })
       setLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)))
+
+      // Ghi nhận tương tác đổi trạng thái (S4-06)
+      leadInteractionService
+        .recordStatusChange(leadId, oldStatus, status, user?.full_name || 'Nhân viên kinh doanh')
+        .then((act) => setAllRecentInteractions((prev) => [act, ...prev]))
+        .catch(() => {})
+
       showToast(`Đã cập nhật trạng thái Lead: ${LEAD_STATUS_CONFIG[status].label}`)
     } catch {
       showToast('Lỗi khi cập nhật trạng thái Lead', true)
@@ -981,6 +1154,18 @@ export default function LeadFormsPage() {
             <span>Chấm điểm Lead</span>
           </button>
 
+          {/* Nút Dòng thời gian tương tác (S4-06) */}
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setActiveTab('LEAD_INTERACTIONS')}
+            id="btn-nav-lead-interactions"
+            title="Xem toàn bộ lịch sử tương tác và chăm sóc Lead"
+          >
+            <IconHistory />
+            <span>Dòng thời gian tương tác</span>
+          </button>
+
           {/* Nút Xuất Excel */}
           <button
             type="button"
@@ -1052,6 +1237,18 @@ export default function LeadFormsPage() {
           <span>Chấm điểm & Phân loại (S4-04)</span>
           <span className="tab-badge primary">
             {scoringStats.hotCount} 🔥 Nóng
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={`lead-tab-btn ${activeTab === 'LEAD_INTERACTIONS' ? 'active' : ''}`}
+          onClick={() => setActiveTab('LEAD_INTERACTIONS')}
+          id="tab-btn-lead-interactions"
+        >
+          <span>Dòng thời gian tương tác (S4-06)</span>
+          <span className="tab-badge" style={{ background: '#f0f9ff', color: '#0284c7', borderColor: '#bae6fd' }}>
+            {allRecentInteractions.length} hoạt động
           </span>
         </button>
 
@@ -1173,7 +1370,7 @@ export default function LeadFormsPage() {
                     <th style={{ width: '150px' }}>Người phụ trách</th>
                     <th style={{ width: '140px', textAlign: 'center' }}>Điểm & Phân loại</th>
                     <th style={{ width: '140px', textAlign: 'center' }}>Trạng thái</th>
-                    <th style={{ width: '125px', textAlign: 'center' }}>Thao tác</th>
+                    <th style={{ width: '155px', textAlign: 'center' }}>Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1290,6 +1487,18 @@ export default function LeadFormsPage() {
                                 <IconUserCheck />
                               </button>
                             )}
+
+                            {/* Nút Xem lịch sử tương tác (S4-06) */}
+                            <button
+                              type="button"
+                              className="btn-action-icon"
+                              style={{ color: '#0284c7', borderColor: '#bae6fd', background: '#f0f9ff' }}
+                              onClick={() => handleOpenInteractionModal(l)}
+                              title="Lịch sử tương tác & Chăm sóc Lead (S4-06)"
+                              id={`btn-interactions-lead-${l.id}`}
+                            >
+                              <IconHistory />
+                            </button>
 
                             {/* Nút Chấm điểm */}
                             <button
@@ -1463,7 +1672,7 @@ export default function LeadFormsPage() {
                     <th style={{ width: '120px', textAlign: 'center' }}>Phân hạng</th>
                     <th style={{ width: '140px', textAlign: 'center' }}>Phân nhóm</th>
                     <th style={{ width: '120px', textAlign: 'center' }}>Cách chấm</th>
-                    <th style={{ width: '160px', textAlign: 'center' }}>Thao tác</th>
+                    <th style={{ width: '195px', textAlign: 'center' }}>Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1550,6 +1759,18 @@ export default function LeadFormsPage() {
                               </button>
                             )}
 
+                            {/* Nút Xem lịch sử tương tác (S4-06) */}
+                            <button
+                              type="button"
+                              className="btn-action-icon"
+                              style={{ color: '#0284c7', borderColor: '#bae6fd', background: '#f0f9ff' }}
+                              onClick={() => handleOpenInteractionModal(l)}
+                              title="Lịch sử tương tác & Chăm sóc Lead (S4-06)"
+                              id={`btn-interactions-score-lead-${l.id}`}
+                            >
+                              <IconHistory />
+                            </button>
+
                             <button
                               type="button"
                               className="btn btn-secondary btn-sm"
@@ -1577,6 +1798,176 @@ export default function LeadFormsPage() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          TAB: DÒNG THỜI GIAN TƯƠNG TÁC TỔNG HỢP (USER STORY S4-06)
+          ───────────────────────────────────────────────────────────── */}
+      {activeTab === 'LEAD_INTERACTIONS' && (
+        <div className="lead-card-panel lead-interaction-panel">
+          <div className="lead-panel-controls">
+            <div className="lead-search-box">
+              <IconSearch />
+              <input
+                type="text"
+                placeholder="Tìm hoạt động theo tiêu đề, nội dung hoặc người thực hiện..."
+                value={timelineSearchQuery}
+                onChange={(e) => setTimelineSearchQuery(e.target.value)}
+                id="input-search-timeline"
+              />
+            </div>
+
+            <div className="interaction-filter-tabs">
+              <button
+                type="button"
+                className={`interaction-filter-tab ${interactionFilter === 'ALL' ? 'active' : ''}`}
+                onClick={() => setInteractionFilter('ALL')}
+              >
+                Tất cả ({allRecentInteractions.length})
+              </button>
+              <button
+                type="button"
+                className={`interaction-filter-tab ${interactionFilter === 'CALL' ? 'active' : ''}`}
+                onClick={() => setInteractionFilter('CALL')}
+              >
+                📞 Cuộc gọi
+              </button>
+              <button
+                type="button"
+                className={`interaction-filter-tab ${interactionFilter === 'EMAIL' ? 'active' : ''}`}
+                onClick={() => setInteractionFilter('EMAIL')}
+              >
+                ✉️ Email
+              </button>
+              <button
+                type="button"
+                className={`interaction-filter-tab ${interactionFilter === 'MEETING' ? 'active' : ''}`}
+                onClick={() => setInteractionFilter('MEETING')}
+              >
+                📅 Cuộc họp
+              </button>
+              <button
+                type="button"
+                className={`interaction-filter-tab ${interactionFilter === 'NOTE' ? 'active' : ''}`}
+                onClick={() => setInteractionFilter('NOTE')}
+              >
+                📝 Ghi chú
+              </button>
+              <button
+                type="button"
+                className={`interaction-filter-tab ${interactionFilter === 'STATUS_CHANGE' || interactionFilter === 'SYSTEM' ? 'active' : ''}`}
+                onClick={() => setInteractionFilter('STATUS_CHANGE')}
+              >
+                ⚙️ Hệ thống & Trạng thái
+              </button>
+            </div>
+          </div>
+
+          {filteredTimelineInteractions.length === 0 ? (
+            <div className="lead-empty-state">
+              <div className="lead-empty-icon">💬</div>
+              <h4>Không có hoạt động tương tác nào phù hợp</h4>
+              <p>Chưa có ghi nhận cuộc gọi, email hoặc cập nhật trạng thái nào theo điều kiện tìm kiếm.</p>
+            </div>
+          ) : (
+            <div className="interaction-timeline">
+              {filteredTimelineInteractions.map((act) => {
+                const leadFound = leads.find((l) => l.id === act.lead_id)
+                const getIconAndClass = () => {
+                  switch (act.type) {
+                    case 'CALL':
+                      return { icon: <IconPhone />, cls: 'call' }
+                    case 'EMAIL':
+                      return { icon: <IconMail />, cls: 'email' }
+                    case 'MEETING':
+                      return { icon: <IconCalendar />, cls: 'meeting' }
+                    case 'NOTE':
+                      return { icon: <IconFileText />, cls: 'note' }
+                    case 'STATUS_CHANGE':
+                      return { icon: '🔄', cls: 'status_change' }
+                    case 'SCORE_UPDATE':
+                      return { icon: '🎯', cls: 'score_update' }
+                    default:
+                      return { icon: '⚙️', cls: 'system' }
+                  }
+                }
+                const { icon, cls } = getIconAndClass()
+
+                return (
+                  <div key={act.id} className="interaction-timeline-item" id={`timeline-act-${act.id}`}>
+                    <div className={`interaction-icon-badge ${cls}`}>{icon}</div>
+
+                    <div className="interaction-card">
+                      <div className="interaction-card-header">
+                        <div className="interaction-card-title-group">
+                          <span className="interaction-card-title">{act.title}</span>
+                          <div className="interaction-card-meta">
+                            <span>👤 {act.performed_by_name}</span>
+                            <span>•</span>
+                            <span>
+                              🕒 {new Date(act.performed_at).toLocaleString('vi-VN', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                            {leadFound && (
+                              <>
+                                <span>•</span>
+                                <span
+                                  style={{ color: '#2563eb', cursor: 'pointer', fontWeight: 600 }}
+                                  onClick={() => handleOpenInteractionModal(leadFound)}
+                                  title="Xem toàn bộ tương tác của Lead này"
+                                >
+                                  🎯 {leadFound.full_name} ({leadFound.code})
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {act.outcome && (
+                            <span className={`interaction-outcome-tag ${act.outcome.includes('Thành công') ? 'success' : ''}`}>
+                              {act.outcome}
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            className="interaction-delete-btn"
+                            onClick={() => handleDeleteInteraction(act.id)}
+                            title="Xóa hoạt động này"
+                          >
+                            <IconTrash />
+                          </button>
+                        </div>
+                      </div>
+
+                      {act.content && (
+                        <div className="interaction-card-body">{act.content}</div>
+                      )}
+
+                      {act.next_action && (
+                        <div className="interaction-next-action">
+                          <span className="interaction-next-action-text">
+                            <span>📌 Việc tiếp theo:</span> {act.next_action}
+                          </span>
+                          {act.next_action_due && (
+                            <span className="interaction-next-action-due">
+                              Hạn: {new Date(act.next_action_due).toLocaleDateString('vi-VN')}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
@@ -3421,6 +3812,353 @@ export default function LeadFormsPage() {
                 id="btn-close-conversion-success"
               >
                 Hoàn tất
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL S4-06: LỊCH SỬ TƯƠNG TÁC CHI TIẾT CỦA LEAD
+          ───────────────────────────────────────────────────────────── */}
+      {isInteractionModalOpen && selectedLeadForInteraction && (
+        <div className="lead-modal-backdrop" onClick={() => setIsInteractionModalOpen(false)}>
+          <div
+            className="lead-modal-content"
+            style={{ maxWidth: '820px' }}
+            onClick={(e) => e.stopPropagation()}
+            id="modal-lead-interactions"
+          >
+            <div className="lead-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ color: '#0284c7' }}><IconHistory /></div>
+                <h3 className="lead-modal-title">
+                  Lịch sử tương tác: {selectedLeadForInteraction.full_name} ({selectedLeadForInteraction.code})
+                </h3>
+              </div>
+              <button
+                type="button"
+                className="lead-modal-close"
+                onClick={() => setIsInteractionModalOpen(false)}
+              >
+                <IconX />
+              </button>
+            </div>
+
+            <div className="interaction-modal-body">
+              {/* Thẻ Lead Info tóm tắt */}
+              <div className="convert-preview-card">
+                <div className="convert-preview-header">
+                  <div className="convert-preview-title">
+                    <span>{selectedLeadForInteraction.full_name}</span>
+                    <span className={`lead-status-badge ${selectedLeadForInteraction.status.toLowerCase()}`}>
+                      {LEAD_STATUS_CONFIG[selectedLeadForInteraction.status]?.label || selectedLeadForInteraction.status}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <span className={`lead-score-pill ${selectedLeadForInteraction.score_tier?.toLowerCase() || 'warm'}`}>
+                      {selectedLeadForInteraction.score ?? 50}đ
+                    </span>
+                    <span className="tab-badge info">
+                      {selectedLeadForInteraction.phone} • {selectedLeadForInteraction.email}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Ghi nhận tương tác mới */}
+              <form onSubmit={handleCreateInteraction} className="interaction-create-panel" id="form-create-interaction">
+                <div className="interaction-create-header">
+                  <h4 className="interaction-create-title">
+                    <IconPlus />
+                    <span>Ghi nhận tương tác mới</span>
+                  </h4>
+
+                  <div className="interaction-type-selector">
+                    <button
+                      type="button"
+                      className={`interaction-type-btn ${newInteractionType === 'CALL' ? 'active call' : ''}`}
+                      onClick={() => {
+                        setNewInteractionType('CALL')
+                        setNewInteractionOutcome('Thành công - Quan tâm cao')
+                        if (!newInteractionTitle) setNewInteractionTitle('Cuộc gọi trao đổi nhu cầu')
+                      }}
+                      id="btn-select-type-call"
+                    >
+                      <IconPhone />
+                      <span>Cuộc gọi</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`interaction-type-btn ${newInteractionType === 'EMAIL' ? 'active email' : ''}`}
+                      onClick={() => {
+                        setNewInteractionType('EMAIL')
+                        setNewInteractionOutcome('Đã gửi email')
+                        if (!newInteractionTitle) setNewInteractionTitle('Gửi email tài liệu & báo giá')
+                      }}
+                      id="btn-select-type-email"
+                    >
+                      <IconMail />
+                      <span>Email</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`interaction-type-btn ${newInteractionType === 'MEETING' ? 'active meeting' : ''}`}
+                      onClick={() => {
+                        setNewInteractionType('MEETING')
+                        setNewInteractionOutcome('Họp thành công')
+                        if (!newInteractionTitle) setNewInteractionTitle('Họp demo trực tuyến')
+                      }}
+                      id="btn-select-type-meeting"
+                    >
+                      <IconCalendar />
+                      <span>Cuộc họp</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`interaction-type-btn ${newInteractionType === 'NOTE' ? 'active note' : ''}`}
+                      onClick={() => {
+                        setNewInteractionType('NOTE')
+                        setNewInteractionOutcome('Ghi chú nội bộ')
+                        if (!newInteractionTitle) setNewInteractionTitle('Ghi chú tiến độ chăm sóc')
+                      }}
+                      id="btn-select-type-note"
+                    >
+                      <IconFileText />
+                      <span>Ghi chú</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="convert-form-grid">
+                  <div className="form-group">
+                    <label>Tiêu đề hoạt động *</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Ví dụ: Gọi điện trao đổi về yêu cầu tích hợp..."
+                      value={newInteractionTitle}
+                      onChange={(e) => setNewInteractionTitle(e.target.value)}
+                      id="input-interaction-title"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Kết quả tương tác</label>
+                    <select
+                      className="form-control"
+                      value={newInteractionOutcome}
+                      onChange={(e) => setNewInteractionOutcome(e.target.value)}
+                      id="select-interaction-outcome"
+                    >
+                      <option value="Thành công - Quan tâm cao">✅ Thành công - Khách quan tâm cao</option>
+                      <option value="Hẹn gọi lại sau">⏳ Khách bận - Hẹn gọi lại</option>
+                      <option value="Đã gửi thông tin / Báo giá">📨 Đã gửi brochure / báo giá</option>
+                      <option value="Đã chốt lịch Demo">🤝 Đã chốt lịch hẹn Demo</option>
+                      <option value="Không nghe máy">📵 Không nghe máy / Thuê bao</option>
+                      <option value="Chưa có nhu cầu lúc này">❌ Chưa có nhu cầu / Từ chối</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                    <label>Nội dung chi tiết trao đổi</label>
+                    <textarea
+                      rows={2}
+                      className="form-control"
+                      placeholder="Ghi lại các ý chính trao đổi, phản hồi của khách, thắc mắc tính năng..."
+                      value={newInteractionContent}
+                      onChange={(e) => setNewInteractionContent(e.target.value)}
+                      id="textarea-interaction-content"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Hành động tiếp theo (Next Action)</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Ví dụ: Gọi lại nhắc demo giải pháp..."
+                      value={newInteractionNextAction}
+                      onChange={(e) => setNewInteractionNextAction(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Hạn chót hành động</label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={newInteractionNextActionDue}
+                      onChange={(e) => setNewInteractionNextActionDue(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={isSavingInteraction}
+                    id="btn-submit-interaction"
+                  >
+                    <IconCheck />
+                    <span>{isSavingInteraction ? 'Đang lưu...' : 'Lưu tương tác'}</span>
+                  </button>
+                </div>
+              </form>
+
+              {/* Bộ lọc timeline tương tác */}
+              <div className="interaction-filter-bar">
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>
+                  <span>Dòng thời gian tương tác ({filteredLeadInteractions.length})</span>
+                </div>
+
+                <div className="interaction-filter-tabs">
+                  <button
+                    type="button"
+                    className={`interaction-filter-tab ${interactionFilter === 'ALL' ? 'active' : ''}`}
+                    onClick={() => setInteractionFilter('ALL')}
+                  >
+                    Tất cả
+                  </button>
+                  <button
+                    type="button"
+                    className={`interaction-filter-tab ${interactionFilter === 'CALL' ? 'active' : ''}`}
+                    onClick={() => setInteractionFilter('CALL')}
+                  >
+                    Cuộc gọi
+                  </button>
+                  <button
+                    type="button"
+                    className={`interaction-filter-tab ${interactionFilter === 'EMAIL' ? 'active' : ''}`}
+                    onClick={() => setInteractionFilter('EMAIL')}
+                  >
+                    Email
+                  </button>
+                  <button
+                    type="button"
+                    className={`interaction-filter-tab ${interactionFilter === 'MEETING' ? 'active' : ''}`}
+                    onClick={() => setInteractionFilter('MEETING')}
+                  >
+                    Họp
+                  </button>
+                  <button
+                    type="button"
+                    className={`interaction-filter-tab ${interactionFilter === 'NOTE' ? 'active' : ''}`}
+                    onClick={() => setInteractionFilter('NOTE')}
+                  >
+                    Ghi chú
+                  </button>
+                </div>
+              </div>
+
+              {/* Danh sách Timeline */}
+              {isLoadingInteractions ? (
+                <div className="lead-loading-box">
+                  <div className="lead-spinner" />
+                  <span>Đang tải dòng thời gian...</span>
+                </div>
+              ) : filteredLeadInteractions.length === 0 ? (
+                <div className="lead-empty-state" style={{ padding: '24px' }}>
+                  <div className="lead-empty-icon">📝</div>
+                  <h4>Chưa có tương tác nào với khách hàng này</h4>
+                  <p>Hãy sử dụng biểu mẫu phía trên để ghi lại cuộc gọi hoặc email đầu tiên.</p>
+                </div>
+              ) : (
+                <div className="interaction-timeline">
+                  {filteredLeadInteractions.map((act) => {
+                    const getIconAndClass = () => {
+                      switch (act.type) {
+                        case 'CALL':
+                          return { icon: <IconPhone />, cls: 'call' }
+                        case 'EMAIL':
+                          return { icon: <IconMail />, cls: 'email' }
+                        case 'MEETING':
+                          return { icon: <IconCalendar />, cls: 'meeting' }
+                        case 'NOTE':
+                          return { icon: <IconFileText />, cls: 'note' }
+                        case 'STATUS_CHANGE':
+                          return { icon: '🔄', cls: 'status_change' }
+                        case 'SCORE_UPDATE':
+                          return { icon: '🎯', cls: 'score_update' }
+                        default:
+                          return { icon: '⚙️', cls: 'system' }
+                      }
+                    }
+                    const { icon, cls } = getIconAndClass()
+
+                    return (
+                      <div key={act.id} className="interaction-timeline-item">
+                        <div className={`interaction-icon-badge ${cls}`}>{icon}</div>
+
+                        <div className="interaction-card">
+                          <div className="interaction-card-header">
+                            <div className="interaction-card-title-group">
+                              <span className="interaction-card-title">{act.title}</span>
+                              <div className="interaction-card-meta">
+                                <span>👤 {act.performed_by_name}</span>
+                                <span>•</span>
+                                <span>
+                                  🕒 {new Date(act.performed_at).toLocaleString('vi-VN', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {act.outcome && (
+                                <span className={`interaction-outcome-tag ${act.outcome.includes('Thành công') ? 'success' : ''}`}>
+                                  {act.outcome}
+                                </span>
+                              )}
+                              <button
+                                type="button"
+                                className="interaction-delete-btn"
+                                onClick={() => handleDeleteInteraction(act.id)}
+                                title="Xóa tương tác này"
+                              >
+                                <IconTrash />
+                              </button>
+                            </div>
+                          </div>
+
+                          {act.content && (
+                            <div className="interaction-card-body">{act.content}</div>
+                          )}
+
+                          {act.next_action && (
+                            <div className="interaction-next-action">
+                              <span className="interaction-next-action-text">
+                                <span>📌 Việc tiếp theo:</span> {act.next_action}
+                              </span>
+                              {act.next_action_due && (
+                                <span className="interaction-next-action-due">
+                                  Hạn: {new Date(act.next_action_due).toLocaleDateString('vi-VN')}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="lead-modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setIsInteractionModalOpen(false)}
+              >
+                Đóng
               </button>
             </div>
           </div>
