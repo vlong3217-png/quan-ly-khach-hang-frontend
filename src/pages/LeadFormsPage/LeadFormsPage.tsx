@@ -255,7 +255,7 @@ export default function LeadFormsPage() {
   const { user } = useAuth()
   const canManageScoring = user?.role === 'ADMIN' || user?.role === 'MANAGER'
 
-  const [activeTab, setActiveTab] = useState<'LEADS_LIST' | 'LEAD_SCORING' | 'LEAD_INTERACTIONS' | 'IMPORT_EXCEL' | 'FORMS' | 'SUBMISSIONS'>('LEADS_LIST')
+  const [activeTab, setActiveTab] = useState<'LEADS_LIST' | 'LEAD_SCORING' | 'LEAD_CONVERSION' | 'LEAD_INTERACTIONS' | 'IMPORT_EXCEL' | 'FORMS' | 'SUBMISSIONS'>('LEADS_LIST')
 
   // Data states
   const [leads, setLeads] = useState<Lead[]>([])
@@ -1154,6 +1154,19 @@ export default function LeadFormsPage() {
             <span>Chấm điểm Lead</span>
           </button>
 
+          {/* Nút Chuyển đổi Lead sang Khách hàng & Cơ hội (S4-05) */}
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setActiveTab('LEAD_CONVERSION')}
+            id="btn-nav-lead-conversion"
+            title="Chuyển đổi Lead thành Khách hàng và Cơ hội bán hàng"
+            style={{ color: '#1d4ed8', borderColor: '#93c5fd', background: '#eff6ff' }}
+          >
+            <IconUserCheck />
+            <span>Chuyển đổi Lead (S4-05)</span>
+          </button>
+
           {/* Nút Dòng thời gian tương tác (S4-06) */}
           <button
             type="button"
@@ -1237,6 +1250,18 @@ export default function LeadFormsPage() {
           <span>Chấm điểm & Phân loại (S4-04)</span>
           <span className="tab-badge primary">
             {scoringStats.hotCount} 🔥 Nóng
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={`lead-tab-btn ${activeTab === 'LEAD_CONVERSION' ? 'active' : ''}`}
+          onClick={() => setActiveTab('LEAD_CONVERSION')}
+          id="tab-btn-lead-conversion"
+        >
+          <span>Chuyển đổi Lead (S4-05)</span>
+          <span className="tab-badge" style={{ background: '#ecfdf5', color: '#059669', borderColor: '#a7f3d0' }}>
+            {stats.convertedLeads} đã chuyển
           </span>
         </button>
 
@@ -1800,6 +1825,175 @@ export default function LeadFormsPage() {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          TAB: CHUYỂN ĐỔI LEAD SANG KHÁCH HÀNG & CƠ HỘI (USER STORY S4-05)
+          ───────────────────────────────────────────────────────────── */}
+      {activeTab === 'LEAD_CONVERSION' && (
+        <div className="lead-card-panel lead-scoring-panel" id="panel-lead-conversion">
+          <div className="scoring-summary-cards">
+            <div className="scoring-stat-card">
+              <div className="scoring-stat-icon vip">🏆</div>
+              <div className="scoring-stat-info">
+                <span className="scoring-stat-value">{stats.convertedLeads}</span>
+                <span className="scoring-stat-label">Lead đã chuyển đổi thành công</span>
+              </div>
+            </div>
+            <div className="scoring-stat-card">
+              <div className="scoring-stat-icon hot">🔥</div>
+              <div className="scoring-stat-info">
+                <span className="scoring-stat-value">
+                  {leads.filter((l) => l.status === 'QUALIFIED' || l.score_tier === 'HOT').length}
+                </span>
+                <span className="scoring-stat-label">Lead đủ tiêu chuẩn (BANT / Hot)</span>
+              </div>
+            </div>
+            <div className="scoring-stat-card">
+              <div className="scoring-stat-icon avg">📊</div>
+              <div className="scoring-stat-info">
+                <span className="scoring-stat-value">
+                  {leads.length > 0 ? Math.round((stats.convertedLeads / leads.length) * 100) : 0}%
+                </span>
+                <span className="scoring-stat-label">Tỷ lệ chuyển đổi tổng thể</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '15px', color: '#0f172a' }}>
+                  🎯 Khách hàng tiềm năng sẵn sàng chuyển đổi
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748b' }}>
+                  Bấm "Chuyển đổi" để tạo hồ sơ Khách hàng doanh nghiệp trong danh bạ và tạo Cơ hội bán hàng (Opportunity) vào Pipeline.
+                </p>
+              </div>
+            </div>
+
+            <div className="lead-table-container">
+              <table className="lead-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '100px' }}>Mã Lead</th>
+                    <th style={{ width: '220px' }}>Khách hàng tiềm năng</th>
+                    <th style={{ width: '220px' }}>Doanh nghiệp / Nhu cầu</th>
+                    <th style={{ width: '130px', textAlign: 'center' }}>Điểm & Phân hạng</th>
+                    <th style={{ width: '130px', textAlign: 'center' }}>Trạng thái</th>
+                    <th style={{ width: '170px', textAlign: 'center' }}>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leads.filter((l) => l.status !== 'CONVERTED').map((l) => {
+                    const statusCfg = LEAD_STATUS_CONFIG[l.status]
+                    return (
+                      <tr key={l.id}>
+                        <td><span className="lead-code-tag">{l.code}</span></td>
+                        <td>
+                          <div className="lead-contact-info">
+                            <strong className="lead-contact-name">{l.full_name}</strong>
+                            <div className="lead-contact-detail">
+                              <span>📞 {l.phone}</span>
+                              <span>✉️ {l.email}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div>
+                            <span className="lead-company-text">{l.company || 'Cá nhân'}</span>
+                            <div style={{ fontSize: '11.5px', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '240px' }}>
+                              {l.requirement || 'Nhu cầu chung'}
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span className={`lead-score-pill ${l.score_tier?.toLowerCase() || 'warm'}`}>
+                            {l.score ?? 50}đ
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span
+                            className="tab-badge"
+                            style={{ backgroundColor: statusCfg?.bg || '#eff6ff', color: statusCfg?.color || '#1e40af', borderColor: statusCfg?.border || '#bfdbfe' }}
+                          >
+                            {statusCfg?.label || l.status}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            onClick={() => handleOpenConvertModal(l)}
+                            id={`btn-tab-convert-${l.id}`}
+                            style={{ padding: '5px 12px', fontSize: '12px' }}
+                          >
+                            <IconUserCheck />
+                            <span>Chuyển đổi ngay</span>
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Danh sách Lead đã chuyển đổi thành công */}
+            {leads.filter((l) => l.status === 'CONVERTED').length > 0 && (
+              <div style={{ marginTop: '20px' }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>✓ Lịch sử Lead đã chuyển đổi thành công ({leads.filter((l) => l.status === 'CONVERTED').length})</span>
+                </h4>
+                <div className="lead-table-container">
+                  <table className="lead-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '100px' }}>Mã Lead</th>
+                        <th style={{ width: '200px' }}>Lead nguồn</th>
+                        <th style={{ width: '220px' }}>Khách hàng CRM đã tạo</th>
+                        <th style={{ width: '220px' }}>Cơ hội bán hàng đã tạo</th>
+                        <th style={{ width: '150px' }}>Thời gian chuyển</th>
+                        <th style={{ width: '140px', textAlign: 'center' }}>Liên kết nhanh</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leads.filter((l) => l.status === 'CONVERTED').map((l) => (
+                        <tr key={l.id}>
+                          <td><span className="lead-code-tag">{l.code}</span></td>
+                          <td><strong>{l.full_name}</strong></td>
+                          <td>
+                            <span style={{ fontWeight: 600, color: '#1d4ed8' }}>
+                              🏢 {l.converted_customer_name || 'Khách hàng CRM'}
+                            </span>
+                          </td>
+                          <td>
+                            <span style={{ fontWeight: 600, color: '#7c3aed' }}>
+                              📈 {l.converted_opportunity_title || 'Cơ hội mới'}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: '12px', color: '#64748b' }}>
+                            {l.converted_at ? new Date(l.converted_at).toLocaleString('vi-VN') : 'Hôm nay'}
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => navigate('/dashboard/customers')}
+                              style={{ fontSize: '11px', padding: '3px 8px' }}
+                            >
+                              Xem CRM →
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
