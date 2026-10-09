@@ -111,3 +111,66 @@ export interface CreateOpportunityActivityPayload {
   next_action_due?: string
 }
 
+/**
+ * Kiểu dữ liệu cho S5-04: Quản lý công việc và lịch nhắc liên quan đến cơ hội
+ */
+export type OpportunityTaskStatus = 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+
+export type OpportunityTaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+
+export type OpportunityReminderType =
+  | 'NONE'
+  | 'ON_DUE'
+  | '15_MIN_BEFORE'
+  | '1_HOUR_BEFORE'
+  | '1_DAY_BEFORE'
+  | '3_DAYS_BEFORE'
+
+export interface OpportunityTask {
+  id: string
+  opportunity_id: string
+  opportunity_title?: string
+  title: string
+  description?: string
+  assigned_to_id?: number
+  assigned_to_name: string
+  due_date: string // YYYY-MM-DD
+  due_time?: string // HH:mm
+  status: OpportunityTaskStatus
+  priority: OpportunityTaskPriority
+  reminder_type: OpportunityReminderType
+  reminder_at?: string // ISO date hoặc thông báo
+  is_completed: boolean
+  completed_at?: string
+  created_at: string
+  updated_at?: string
+}
+
+export interface CreateOpportunityTaskPayload {
+  opportunity_id: string
+  title: string
+  description?: string
+  assigned_to_id?: number
+  assigned_to_name?: string
+  due_date: string
+  due_time?: string
+  priority?: OpportunityTaskPriority
+  reminder_type?: OpportunityReminderType
+  reminder_at?: string
+}
+
+export interface UpdateOpportunityTaskPayload {
+  title?: string
+  description?: string
+  assigned_to_id?: number
+  assigned_to_name?: string
+  due_date?: string
+  due_time?: string
+  status?: OpportunityTaskStatus
+  priority?: OpportunityTaskPriority
+  reminder_type?: OpportunityReminderType
+  reminder_at?: string
+  is_completed?: boolean
+}
+
+

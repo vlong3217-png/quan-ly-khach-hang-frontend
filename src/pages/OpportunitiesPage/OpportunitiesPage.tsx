@@ -32,6 +32,13 @@ const IconTrash = () => (
   </svg>
 )
 
+const IconCheckSquare = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 11 12 14 22 4" />
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+  </svg>
+)
+
 export default function OpportunitiesPage() {
   const { user } = useAuth()
 
@@ -50,6 +57,7 @@ export default function OpportunitiesPage() {
   // Modal Chi tiết Cơ hội
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false)
+  const [detailTab, setDetailTab] = useState<'ACTIVITIES' | 'DETAILS' | 'TASKS'>('ACTIVITIES')
 
   // Modal Tạo Cơ hội mới
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false)
@@ -109,8 +117,12 @@ export default function OpportunitiesPage() {
   }
 
   // Mở modal chi tiết
-  const handleOpenDetail = (opp: Opportunity) => {
+  const handleOpenDetail = (
+    opp: Opportunity,
+    tab: 'ACTIVITIES' | 'DETAILS' | 'TASKS' = 'ACTIVITIES'
+  ) => {
     setSelectedOpp(opp)
+    setDetailTab(tab)
     setIsDetailModalOpen(true)
   }
 
@@ -469,10 +481,19 @@ export default function OpportunitiesPage() {
                           type="button"
                           className="btn-action view-btn"
                           title="Xem chi tiết & Lịch sử hoạt động (S5-03)"
-                          onClick={() => handleOpenDetail(opp)}
+                          onClick={() => handleOpenDetail(opp, 'ACTIVITIES')}
                         >
                           <IconActivity />
                           <span>Hoạt động</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-action task-btn"
+                          title="Quản lý công việc & lịch nhắc (S5-04)"
+                          onClick={() => handleOpenDetail(opp, 'TASKS')}
+                        >
+                          <IconCheckSquare />
+                          <span>Công việc</span>
                         </button>
                         <button
                           type="button"
@@ -549,6 +570,7 @@ export default function OpportunitiesPage() {
         <OpportunityDetailModal
           opportunity={selectedOpp}
           isOpen={isDetailModalOpen}
+          initialTab={detailTab}
           onClose={() => setIsDetailModalOpen(false)}
           onOpportunityUpdated={handleOppUpdated}
         />

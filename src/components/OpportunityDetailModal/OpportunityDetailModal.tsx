@@ -1,16 +1,18 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Opportunity } from '../../types/opportunity.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
 import { pipelineService } from '../../services/pipelineService.ts'
 import { opportunityService } from '../../services/opportunityService.ts'
 import { opportunityActivityService } from '../../services/opportunityActivityService.ts'
 import OpportunityActivityTimeline from '../OpportunityActivityTimeline/OpportunityActivityTimeline.tsx'
+import OpportunityTaskManager from '../OpportunityTaskManager/OpportunityTaskManager.tsx'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import './OpportunityDetailModal.css'
 
 interface OpportunityDetailModalProps {
   opportunity: Opportunity
   isOpen: boolean
+  initialTab?: 'ACTIVITIES' | 'DETAILS' | 'TASKS'
   onClose: () => void
   onOpportunityUpdated: (updated: Opportunity) => void
 }
@@ -18,15 +20,24 @@ interface OpportunityDetailModalProps {
 export default function OpportunityDetailModal({
   opportunity,
   isOpen,
+  initialTab = 'ACTIVITIES',
   onClose,
   onOpportunityUpdated,
 }: OpportunityDetailModalProps) {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState<'ACTIVITIES' | 'DETAILS' | 'TASKS'>('ACTIVITIES')
+  const [activeTab, setActiveTab] = useState<'ACTIVITIES' | 'DETAILS' | 'TASKS'>(initialTab)
   const [stages] = useState<PipelineStage[]>(() => pipelineService.getStages())
   const [currentOpp, setCurrentOpp] = useState<Opportunity>(opportunity)
   const [isChangingStage, setIsChangingStage] = useState<boolean>(false)
   const [notice, setNotice] = useState<string | null>(null)
+
+  // Đồng bộ lại currentOpp và activeTab khi modal mở hoặc props đổi
+  useEffect(() => {
+    setCurrentOpp(opportunity)
+    if (initialTab) {
+      setActiveTab(initialTab)
+    }
+  }, [opportunity, initialTab, isOpen])
 
   if (!isOpen) return null
 
@@ -216,17 +227,10 @@ export default function OpportunityDetailModal({
 
           {/* TAB 2: Công việc & Lịch nhắc (S5-04) */}
           {activeTab === 'TASKS' && (
-            <div className="opp-tasks-tab-container" id="opp-tasks-tab-container">
-              <div className="tasks-placeholder-banner">
-                <h4>Quản lý công việc và lịch nhắc liên quan đến cơ hội (S5-04)</h4>
-                <p>
-                  Khu vực theo dõi và phân công các công việc cần thực hiện cho deal <strong>{currentOpp.title}</strong>.
-                </p>
-                <div className="s5-04-preview-card">
-                  <span>Sẽ triển khai đầy đủ với các chức năng tạo/sửa/xóa việc, hẹn giờ nhắc nhở, phân công người phụ trách và cảnh báo quá hạn.</span>
-                </div>
-              </div>
-            </div>
+            <OpportunityTaskManager
+              opportunityId={currentOpp.id}
+              opportunityTitle={currentOpp.title}
+            />
           )}
 
           {/* TAB 3: Thông tin chi tiết cơ hội */}
