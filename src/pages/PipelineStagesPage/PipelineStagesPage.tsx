@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { pipelineService } from '../../services/pipelineService.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
 import './PipelineStagesPage.css'
 
 export default function PipelineStagesPage() {
+  const navigate = useNavigate()
   const [stages, setStages] = useState<PipelineStage[]>(() => pipelineService.getStages())
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
@@ -131,9 +133,19 @@ export default function PipelineStagesPage() {
         <div>
           <h2>Cấu hình Giai đoạn Pipeline & Xác suất Thắng</h2>
         </div>
-        <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
-          + Thêm giai đoạn mới
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => navigate('/dashboard/opportunities')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            <span>💼 Quản lý Cơ hội bán hàng</span>
+          </button>
+          <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
+            + Thêm giai đoạn mới
+          </button>
+        </div>
       </div>
 
       {/* Sơ đồ trực quan chuỗi Pipeline */}

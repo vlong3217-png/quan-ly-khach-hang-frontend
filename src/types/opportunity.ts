@@ -67,3 +67,47 @@ export interface OpportunityFilterParams {
   close_date_from?: string
   close_date_to?: string
 }
+
+/**
+ * Kiểu dữ liệu cho S5-03: Ghi nhận hoạt động và lịch sử tương tác của cơ hội
+ */
+export type OpportunityActivityType =
+  | 'CALL'
+  | 'EMAIL'
+  | 'MEETING'
+  | 'NOTE'
+  | 'STAGE_CHANGE'
+  | 'TASK'
+  | 'SYSTEM'
+
+export interface OpportunityActivity {
+  id: string
+  opportunity_id: string
+  opportunity_title?: string
+  type: OpportunityActivityType
+  title: string
+  content: string
+  performed_by_id?: number
+  performed_by_name: string
+  outcome?: string // Kết quả tương tác (VD: Thành công, Hẹn gặp lại, Báo giá được chấp thuận...)
+  duration_minutes?: number // Thời lượng cuộc gọi / họp
+  attachment_url?: string
+  next_action?: string // Kế hoạch tiếp theo
+  next_action_due?: string // Thời hạn kế hoạch tiếp theo (ISO string hoặc YYYY-MM-DD)
+  created_at: string
+  updated_at?: string
+}
+
+export interface CreateOpportunityActivityPayload {
+  opportunity_id: string
+  type: OpportunityActivityType
+  title: string
+  content: string
+  performed_by_id?: number
+  performed_by_name?: string
+  outcome?: string
+  duration_minutes?: number
+  next_action?: string
+  next_action_due?: string
+}
+

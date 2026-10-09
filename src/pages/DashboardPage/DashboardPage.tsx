@@ -15,6 +15,7 @@ import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitors
 import CustomerManagementPage from '../CustomerManagementPage/CustomerManagementPage.tsx'
 import LeadFormsPage from '../LeadFormsPage/LeadFormsPage.tsx'
 import CampaignsPage from '../CampaignsPage/CampaignsPage.tsx'
+import OpportunitiesPage from '../OpportunitiesPage/OpportunitiesPage.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -99,6 +100,8 @@ function DashboardPage() {
       setActiveMenuId('menu-lead-forms')
     } else if (path.startsWith('/dashboard/campaigns')) {
       setActiveMenuId('menu-campaigns')
+    } else if (path.startsWith('/dashboard/opportunities')) {
+      setActiveMenuId('menu-opportunities')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -142,6 +145,9 @@ function DashboardPage() {
   const isCampaignView =
     activeMenuId === 'menu-campaigns' ||
     activeMenuId.startsWith('menu-campaigns-')
+  const isOpportunityView =
+    activeMenuId === 'menu-opportunities' ||
+    activeMenuId.startsWith('menu-opportunities-')
   const isProductView =
     activeMenuId === 'menu-products' ||
     activeMenuId.startsWith('menu-products-')
@@ -310,6 +316,15 @@ function DashboardPage() {
           {isCampaignView && (
             <section className="dashboard-section campaigns-section">
               <CampaignsPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: CƠ HỘI BÁN HÀNG & LỊCH SỬ HOẠT ĐỘNG (S5-03, S5-04)
+              ───────────────────────────────────────────────────────────── */}
+          {isOpportunityView && (
+            <section className="dashboard-section opportunities-section">
+              <OpportunitiesPage />
             </section>
           )}
 

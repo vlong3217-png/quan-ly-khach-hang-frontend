@@ -177,4 +177,66 @@ export const opportunityService = {
     saveStoredOpportunities(updated)
     return newOpp
   },
+
+  async getOpportunityById(id: string): Promise<Opportunity | null> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/opportunities/${id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        if (data && data.id) return data
+      }
+    } catch {}
+
+    const list = getStoredOpportunities()
+    return list.find((o) => o.id === id) || null
+  },
+
+  async updateOpportunity(id: string, patch: Partial<Opportunity>): Promise<Opportunity> {
+    const list = getStoredOpportunities()
+    const idx = list.findIndex((o) => o.id === id)
+    if (idx === -1) {
+      throw new Error('Không tìm thấy cơ hội bán hàng!')
+    }
+
+    const updatedOpp: Opportunity = {
+      ...list[idx],
+      ...patch,
+      updated_at: new Date().toISOString(),
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/opportunities/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updatedOpp),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        if (data && data.id) {
+          list[idx] = data
+          saveStoredOpportunities(list)
+          return data
+        }
+      }
+    } catch {}
+
+    list[idx] = updatedOpp
+    saveStoredOpportunities(list)
+    return updatedOpp
+  },
+
+  async deleteOpportunity(id: string): Promise<void> {
+    try {
+      await fetch(`${API_BASE_URL}/opportunities/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      })
+    } catch {}
+
+    const list = getStoredOpportunities().filter((o) => o.id !== id)
+    saveStoredOpportunities(list)
+  },
 }
