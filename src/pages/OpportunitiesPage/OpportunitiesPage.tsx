@@ -28,13 +28,13 @@ const IconSearch = () => (
 )
 
 const IconEdit = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
   </svg>
 )
 
 const IconTrash = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="3 6 5 6 21 6" />
     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
   </svg>
@@ -49,7 +49,7 @@ const IconDownload = () => (
 )
 
 const IconCalendar = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
     <line x1="16" x2="16" y1="2" y2="6" />
     <line x1="8" x2="8" y1="2" y2="6" />
@@ -65,8 +65,41 @@ const IconAlertCircle = () => (
   </svg>
 )
 
+const IconKanban = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="6" height="14" x="3" y="5" rx="1" />
+    <rect width="6" height="10" x="11" y="5" rx="1" />
+    <rect width="6" height="16" x="19" y="5" rx="1" />
+  </svg>
+)
+
+const IconTable = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="18" height="18" x="3" y="3" rx="2" />
+    <path d="M3 9h18" />
+    <path d="M3 15h18" />
+    <path d="M9 3v18" />
+    <path d="M15 3v18" />
+  </svg>
+)
+
+const IconArrowRight = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+)
+
+const IconArrowLeft = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+)
+
 export default function OpportunitiesPage() {
   const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), [])
+
+  // Chế độ xem: KANBAN (S5-02) hoặc TABLE (S5-01)
+  const [viewMode, setViewMode] = useState<'KANBAN' | 'TABLE'>('KANBAN')
 
   // Dữ liệu chính
   const [opportunities, setOpportunities] = useState<Opportunity[]>([])
@@ -81,11 +114,18 @@ export default function OpportunitiesPage() {
   const [errorMessage, setErrorMessage] = useState('')
   const [toast, setToast] = useState<{ message: string; isError?: boolean } | null>(null)
 
-  // Bộ lọc
+  // Bộ lọc nâng cao (AC S5-02: filter theo người sở hữu, nhóm, ngày chốt)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStage, setFilterStage] = useState('ALL')
   const [filterSource, setFilterSource] = useState('ALL')
   const [filterStatus, setFilterStatus] = useState('ALL')
+  const [filterOwner, setFilterOwner] = useState<string>('ALL')
+  const [filterTeam, setFilterTeam] = useState<string>('ALL')
+  const [filterDateRange, setFilterDateRange] = useState<string>('ALL')
+
+  // Drag and drop state
+  const [draggedOppId, setDraggedOppId] = useState<string | null>(null)
+  const [dragOverStageId, setDragOverStageId] = useState<string | null>(null)
 
   // Modal Tạo / Sửa
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -169,7 +209,6 @@ export default function OpportunitiesPage() {
     if (formData.customer_id) {
       const contacts = customerService.getContacts(formData.customer_id)
       setAvailableContacts(contacts)
-      // Nếu contact hiện tại không thuộc khách hàng mới, reset
       if (formData.contact_id && !contacts.some((c) => c.id === formData.contact_id)) {
         setFormData((prev) => ({ ...prev, contact_id: '', contact_name: '' }))
       }
@@ -178,10 +217,29 @@ export default function OpportunitiesPage() {
     }
   }, [formData.customer_id])
 
+  // Danh sách Người sở hữu và Đội nhóm (từ dữ liệu thực tế)
+  const ownerOptions = useMemo(() => {
+    const map = new Map<number, string>()
+    opportunities.forEach((o) => {
+      if (o.owner_id && o.owner_name) {
+        map.set(o.owner_id, o.owner_name)
+      }
+    })
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }))
+  }, [opportunities])
+
+  const teamOptions = useMemo(() => {
+    const set = new Set<string>()
+    opportunities.forEach((o) => {
+      if (o.team_name) set.add(o.team_name)
+    })
+    return Array.from(set)
+  }, [opportunities])
+
   // Mở modal tạo mới
-  const handleOpenCreateModal = () => {
+  const handleOpenCreateModal = (presetStageId?: string) => {
     setEditingOpp(null)
-    const defaultStage = stages[0]?.id || 'stage-1'
+    const defaultStage = presetStageId || stages[0]?.id || 'stage-1'
     const defaultCustomer = customers[0]?.id || ''
     const defaultCustomerName = customers[0]?.name || ''
 
@@ -245,7 +303,6 @@ export default function OpportunitiesPage() {
     if (!formData.expected_close_date) {
       errors.expected_close_date = 'Vui lòng chọn ngày dự kiến chốt'
     } else if (formData.expected_close_date < todayStr) {
-      // AC S5-01: Không cho chọn ngày chốt trong quá khứ
       errors.expected_close_date = 'Ngày dự kiến chốt không được là ngày trong quá khứ'
     }
 
@@ -253,7 +310,7 @@ export default function OpportunitiesPage() {
     return Object.keys(errors).length === 0
   }
 
-  // Lưu cơ hội (Tạo mới hoặc Cập nhật)
+  // Lưu cơ hội
   const handleSaveOpportunity = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateForm()) return
@@ -270,7 +327,6 @@ export default function OpportunitiesPage() {
       }
 
       setIsModalOpen(false)
-      // Tải lại dữ liệu
       const [oppList, sumData] = await Promise.all([
         opportunityService.getOpportunities(),
         opportunityService.getOpportunitySummary(),
@@ -304,10 +360,92 @@ export default function OpportunitiesPage() {
     }
   }
 
-  // Lọc danh sách hiển thị
+  // ── S5-02: Chuyển giai đoạn (Move Stage) ──
+  const handleMoveStage = async (oppId: string, targetStageId: string) => {
+    const opp = opportunities.find((o) => o.id === oppId)
+    const targetStage = stages.find((s) => s.id === targetStageId)
+    if (!opp || !targetStage || opp.stage_id === targetStageId) return
+
+    // Optimistic UI update
+    setOpportunities((prev) =>
+      prev.map((o) =>
+        o.id === oppId
+          ? {
+              ...o,
+              stage_id: targetStageId,
+              stage_name: targetStage.name,
+              stage_order: targetStage.order,
+              stage_color: targetStage.color,
+              win_probability: targetStage.win_probability,
+              status: targetStage.is_closed_stage
+                ? targetStage.code.includes('WON')
+                  ? 'WON'
+                  : 'LOST'
+                : 'OPEN',
+            }
+          : o
+      )
+    )
+
+    try {
+      await opportunityService.changeStage(oppId, targetStageId)
+      showToast(`Đã chuyển cơ hội "${opp.title}" sang "${targetStage.name}" (${targetStage.win_probability}%)`)
+      // Refresh summary
+      const sumData = await opportunityService.getOpportunitySummary()
+      setSummary(sumData)
+    } catch {
+      showToast('Lỗi khi chuyển giai đoạn cơ hội bán hàng', true)
+      // Rollback nếu lỗi
+      const freshList = await opportunityService.getOpportunities()
+      setOpportunities(freshList)
+    }
+  }
+
+  // Di chuyển bước trước / sau
+  const handleStepStage = (opp: Opportunity, direction: 'PREV' | 'NEXT') => {
+    const sortedStages = [...stages].sort((a, b) => a.order - b.order)
+    const curIdx = sortedStages.findIndex((s) => s.id === opp.stage_id)
+    if (curIdx === -1) return
+
+    const targetIdx = direction === 'PREV' ? curIdx - 1 : curIdx + 1
+    if (targetIdx >= 0 && targetIdx < sortedStages.length) {
+      handleMoveStage(opp.id, sortedStages[targetIdx].id)
+    }
+  }
+
+  // ── Drag & Drop Handlers ──
+  const handleDragStart = (e: React.DragEvent, oppId: string) => {
+    e.dataTransfer.setData('text/plain', oppId)
+    setDraggedOppId(oppId)
+  }
+
+  const handleDragOver = (e: React.DragEvent, stageId: string) => {
+    e.preventDefault()
+    if (dragOverStageId !== stageId) {
+      setDragOverStageId(stageId)
+    }
+  }
+
+  const handleDragLeave = (_e: React.DragEvent, stageId: string) => {
+    if (dragOverStageId === stageId) {
+      setDragOverStageId(null)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent, stageId: string) => {
+    e.preventDefault()
+    const oppId = e.dataTransfer.getData('text/plain') || draggedOppId
+    setDraggedOppId(null)
+    setDragOverStageId(null)
+    if (oppId) {
+      handleMoveStage(oppId, stageId)
+    }
+  }
+
+  // Lọc danh sách hiển thị kết hợp tất cả các bộ lọc (AC S5-02)
   const filteredOpportunities = useMemo(() => {
     return opportunities.filter((opp) => {
-      // Tìm kiếm text
+      // 1. Tìm kiếm text
       if (searchQuery.trim()) {
         const q = searchQuery.trim().toLowerCase()
         const matchTitle = opp.title.toLowerCase().includes(q)
@@ -316,16 +454,55 @@ export default function OpportunitiesPage() {
         const matchContact = opp.contact_name ? opp.contact_name.toLowerCase().includes(q) : false
         if (!matchTitle && !matchCode && !matchCust && !matchContact) return false
       }
-      // Giai đoạn
+      // 2. Giai đoạn
       if (filterStage !== 'ALL' && opp.stage_id !== filterStage) return false
-      // Nguồn
+      // 3. Nguồn
       if (filterSource !== 'ALL' && opp.source !== filterSource) return false
-      // Trạng thái
+      // 4. Trạng thái
       if (filterStatus !== 'ALL' && opp.status !== filterStatus) return false
+      // 5. Người sở hữu (Owner)
+      if (filterOwner !== 'ALL' && opp.owner_id !== Number(filterOwner)) return false
+      // 6. Đội nhóm (Team)
+      if (filterTeam !== 'ALL' && opp.team_name !== filterTeam) return false
+
+      // 7. Lọc theo khoảng ngày chốt (Close Date)
+      if (filterDateRange !== 'ALL') {
+        const oppDate = opp.expected_close_date
+        const isClosed = opp.status === 'WON' || opp.status === 'LOST'
+
+        if (filterDateRange === 'OVERDUE') {
+          // Quá hạn chốt mà chưa đóng
+          if (isClosed || oppDate >= todayStr) return false
+        } else if (filterDateRange === 'THIS_MONTH') {
+          const now = new Date()
+          const currentMonthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+          if (!oppDate.startsWith(currentMonthPrefix)) return false
+        } else if (filterDateRange === 'NEXT_MONTH') {
+          const now = new Date()
+          now.setMonth(now.getMonth() + 1)
+          const nextMonthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+          if (!oppDate.startsWith(nextMonthPrefix)) return false
+        }
+      }
 
       return true
     })
-  }, [opportunities, searchQuery, filterStage, filterSource, filterStatus])
+  }, [opportunities, searchQuery, filterStage, filterSource, filterStatus, filterOwner, filterTeam, filterDateRange, todayStr])
+
+  // Thống kê phân nhóm theo từng giai đoạn trên Kanban
+  const kanbanColumnsData = useMemo(() => {
+    const sortedStages = [...stages].sort((a, b) => a.order - b.order)
+    return sortedStages.map((stage) => {
+      const oppsInStage = filteredOpportunities.filter((o) => o.stage_id === stage.id)
+      const totalRevenueInStage = oppsInStage.reduce((sum, o) => sum + (o.expected_revenue || 0), 0)
+      return {
+        stage,
+        opportunities: oppsInStage,
+        count: oppsInStage.length,
+        totalRevenue: totalRevenueInStage,
+      }
+    })
+  }, [stages, filteredOpportunities])
 
   // Xuất file Excel
   const handleExportExcel = () => {
@@ -381,10 +558,35 @@ export default function OpportunitiesPage() {
       {/* ── 1. Page Header ── */}
       <div className="opp-page-header">
         <div className="opp-header-left">
-          <h2>Quản lý Cơ hội bán hàng (Opportunities)</h2>
-          <p>Tạo, theo dõi các thương vụ tiềm năng, dự báo doanh thu và quản lý tiến độ đàm phán</p>
+          <h2>Quản lý Cơ hội bán hàng & Pipeline Kanban</h2>
+          <p>Điều hành thương vụ, kéo thả chuyển giai đoạn, dự báo doanh số và theo dõi tỷ lệ thắng</p>
         </div>
+
         <div className="opp-header-actions">
+          {/* Switcher: Bảng Kanban <-> Bảng danh sách */}
+          <div className="view-mode-switcher" id="view-mode-toggle">
+            <button
+              type="button"
+              className={`btn-toggle-view ${viewMode === 'KANBAN' ? 'active' : ''}`}
+              onClick={() => setViewMode('KANBAN')}
+              title="Xem bảng Pipeline dạng Kanban (Kéo thả)"
+              id="btn-view-kanban"
+            >
+              <IconKanban />
+              <span>Bảng Kanban</span>
+            </button>
+            <button
+              type="button"
+              className={`btn-toggle-view ${viewMode === 'TABLE' ? 'active' : ''}`}
+              onClick={() => setViewMode('TABLE')}
+              title="Xem danh sách cơ hội dạng Bảng"
+              id="btn-view-table"
+            >
+              <IconTable />
+              <span>Dạng Bảng</span>
+            </button>
+          </div>
+
           <button
             type="button"
             className="btn btn-secondary"
@@ -399,7 +601,7 @@ export default function OpportunitiesPage() {
           <button
             type="button"
             className="btn btn-primary"
-            onClick={handleOpenCreateModal}
+            onClick={() => handleOpenCreateModal()}
             id="btn-create-opportunity"
           >
             <IconPlus />
@@ -451,7 +653,7 @@ export default function OpportunitiesPage() {
         </div>
       </div>
 
-      {/* ── 3. Panel & Search Filters ── */}
+      {/* ── 3. Panel & Search Filters (AC S5-02: Lọc theo người sở hữu, nhóm, ngày chốt) ── */}
       <div className="opp-card-panel">
         <div className="opp-panel-controls">
           <div className="opp-search-box">
@@ -466,20 +668,68 @@ export default function OpportunitiesPage() {
           </div>
 
           <div className="opp-filters-group">
-            {/* Lọc Giai đoạn */}
+            {/* Lọc Người sở hữu (Owner) */}
             <select
               className="opp-select-filter"
-              value={filterStage}
-              onChange={(e) => setFilterStage(e.target.value)}
-              id="select-filter-stage"
+              value={filterOwner}
+              onChange={(e) => setFilterOwner(e.target.value)}
+              id="select-filter-owner"
+              title="Lọc theo người phụ trách"
             >
-              <option value="ALL">Tất cả giai đoạn</option>
-              {stages.map((stg) => (
-                <option key={stg.id} value={stg.id}>
-                  {stg.name} ({stg.win_probability}%)
+              <option value="ALL">Tất cả người phụ trách</option>
+              {ownerOptions.map((o) => (
+                <option key={o.id} value={o.id}>
+                  👤 {o.name}
                 </option>
               ))}
             </select>
+
+            {/* Lọc Nhóm (Team) */}
+            <select
+              className="opp-select-filter"
+              value={filterTeam}
+              onChange={(e) => setFilterTeam(e.target.value)}
+              id="select-filter-team"
+              title="Lọc theo đội nhóm kinh doanh"
+            >
+              <option value="ALL">Tất cả đội nhóm</option>
+              {teamOptions.map((t) => (
+                <option key={t} value={t}>
+                  👥 {t}
+                </option>
+              ))}
+            </select>
+
+            {/* Lọc Ngày chốt (Close Date) */}
+            <select
+              className="opp-select-filter"
+              value={filterDateRange}
+              onChange={(e) => setFilterDateRange(e.target.value)}
+              id="select-filter-daterange"
+              title="Lọc theo hạn chốt"
+            >
+              <option value="ALL">Tất cả ngày chốt</option>
+              <option value="THIS_MONTH">Chốt trong tháng này</option>
+              <option value="NEXT_MONTH">Chốt trong tháng tới</option>
+              <option value="OVERDUE">Đã quá hạn chốt ⚠️</option>
+            </select>
+
+            {/* Lọc Giai đoạn (khi ở Table mode) */}
+            {viewMode === 'TABLE' && (
+              <select
+                className="opp-select-filter"
+                value={filterStage}
+                onChange={(e) => setFilterStage(e.target.value)}
+                id="select-filter-stage"
+              >
+                <option value="ALL">Tất cả giai đoạn</option>
+                {stages.map((stg) => (
+                  <option key={stg.id} value={stg.id}>
+                    {stg.name} ({stg.win_probability}%)
+                  </option>
+                ))}
+              </select>
+            )}
 
             {/* Lọc Nguồn */}
             <select
@@ -488,7 +738,7 @@ export default function OpportunitiesPage() {
               onChange={(e) => setFilterSource(e.target.value)}
               id="select-filter-source"
             >
-              <option value="ALL">Tất cả nguồn cơ hội</option>
+              <option value="ALL">Tất cả nguồn</option>
               {sources.map((src) => (
                 <option key={src} value={src}>
                   {src}
@@ -502,6 +752,7 @@ export default function OpportunitiesPage() {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               id="select-filter-status"
+              title="Lọc theo trạng thái"
             >
               <option value="ALL">Tất cả trạng thái</option>
               <option value="OPEN">Đang theo đuổi (Open)</option>
@@ -511,30 +762,205 @@ export default function OpportunitiesPage() {
           </div>
         </div>
 
-        {/* ── 4. Table Danh sách cơ hội ── */}
+        {/* ── 4. Main View Content ── */}
         {isLoading ? (
           <div className="opp-loading-box">
             <div className="opp-spinner" />
             <span>Đang tải danh sách cơ hội bán hàng...</span>
           </div>
-        ) : filteredOpportunities.length === 0 ? (
+        ) : filteredOpportunities.length === 0 && viewMode === 'TABLE' ? (
           <div className="opp-empty-state">
             <div className="opp-empty-icon">💼</div>
-            <h4>Không tìm thấy cơ hội bán hàng nào</h4>
+            <h4>Không tìm thấy cơ hội bán hàng nào phù hợp</h4>
             <p>
-              Hãy tạo mới cơ hội bán hàng đầu tiên để theo dõi tiến độ thương lượng và dự báo doanh số.
+              Hãy thử điều chỉnh bộ lọc hoặc tạo mới cơ hội bán hàng đầu tiên để theo dõi tiến độ thương lượng.
             </p>
             <button
               type="button"
               className="btn btn-primary"
-              onClick={handleOpenCreateModal}
+              onClick={() => handleOpenCreateModal()}
               style={{ marginTop: '14px' }}
             >
               <IconPlus />
               <span>Tạo cơ hội bán hàng</span>
             </button>
           </div>
+        ) : viewMode === 'KANBAN' ? (
+          /* ─────────────────────────────────────────────────────────────
+              VIEW CHẾ ĐỘ: BẢNG PIPELINE DẠNG KANBAN (S5-02)
+              ───────────────────────────────────────────────────────────── */
+          <div className="opp-kanban-board" id="pipeline-kanban-board">
+            {kanbanColumnsData.map(({ stage, opportunities: colOpps, count, totalRevenue }) => {
+              const stageColor = stage.color || '#2563eb'
+              const isDragTarget = dragOverStageId === stage.id
+
+              return (
+                <div
+                  key={stage.id}
+                  className={`opp-kanban-column ${isDragTarget ? 'drag-over' : ''}`}
+                  onDragOver={(e) => handleDragOver(e, stage.id)}
+                  onDragLeave={(e) => handleDragLeave(e, stage.id)}
+                  onDrop={(e) => handleDrop(e, stage.id)}
+                  id={`kanban-column-${stage.id}`}
+                >
+                  {/* Column Header: Tên giai đoạn, số lượng, tổng giá trị (AC S5-02) */}
+                  <div className="opp-column-header" style={{ borderTopColor: stageColor }}>
+                    <div className="opp-column-header-top">
+                      <h4 className="stage-title">{stage.name}</h4>
+                      <span
+                        className="stage-win-badge"
+                        style={{
+                          backgroundColor: `${stageColor}18`,
+                          color: stageColor,
+                          border: `1px solid ${stageColor}40`,
+                        }}
+                      >
+                        {stage.win_probability}%
+                      </span>
+                    </div>
+
+                    <div className="opp-column-header-meta">
+                      <span className="opp-count-badge">
+                        <strong>{count}</strong> cơ hội
+                      </span>
+                      <span className="opp-total-val" title="Tổng giá trị các cơ hội trong giai đoạn này">
+                        {totalRevenue.toLocaleString('vi-VN')} đ
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Danh sách thẻ trong cột */}
+                  <div className="opp-column-cards">
+                    {colOpps.length === 0 ? (
+                      <div className="kanban-empty-dropzone">
+                        <span>Kéo thẻ vào đây hoặc</span>
+                        <button
+                          type="button"
+                          className="btn-quick-add-col"
+                          onClick={() => handleOpenCreateModal(stage.id)}
+                        >
+                          + Thêm cơ hội
+                        </button>
+                      </div>
+                    ) : (
+                      colOpps.map((opp) => {
+                        const isClosed = opp.status === 'WON' || opp.status === 'LOST'
+                        const isPastDue = !isClosed && opp.expected_close_date < todayStr
+                        const isDragging = draggedOppId === opp.id
+
+                        return (
+                          <div
+                            key={opp.id}
+                            className={`opp-kanban-card ${isDragging ? 'is-dragging' : ''}`}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, opp.id)}
+                            id={`kanban-card-${opp.id}`}
+                          >
+                            {/* Card Header: Code & Source */}
+                            <div className="opp-card-top">
+                              <span className="card-code-tag">{opp.code}</span>
+                              <span className="card-source-tag">{opp.source}</span>
+                            </div>
+
+                            {/* Tên cơ hội */}
+                            <h5 className="card-title" title={opp.title}>
+                              {opp.title}
+                            </h5>
+
+                            {/* Khách hàng & Người liên hệ */}
+                            <div className="card-customer-row">
+                              <span className="cust-name" title={opp.customer_name}>
+                                🏢 {opp.customer_name}
+                              </span>
+                              {opp.contact_name && (
+                                <span className="contact-name" title={`Người liên hệ: ${opp.contact_name}`}>
+                                  👤 {opp.contact_name}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Giá trị dự kiến */}
+                            <div className="card-revenue-row">
+                              <span className="revenue-lbl">Giá trị:</span>
+                              <strong className="revenue-num">
+                                {opp.expected_revenue.toLocaleString('vi-VN')} đ
+                              </strong>
+                            </div>
+
+                            {/* Hạn chốt & Phụ trách */}
+                            <div className="card-footer-meta">
+                              <div
+                                className={`card-date-badge ${isPastDue ? 'overdue' : ''}`}
+                                title={isPastDue ? 'Cơ hội đã quá ngày dự kiến chốt!' : 'Ngày dự kiến chốt'}
+                              >
+                                <IconCalendar />
+                                <span>{new Date(opp.expected_close_date).toLocaleDateString('vi-VN')}</span>
+                                {isPastDue && <span className="text-danger-star">*</span>}
+                              </div>
+
+                              <div className="card-owner-tag" title={`Phụ trách: ${opp.owner_name} (${opp.team_name || ''})`}>
+                                <span className="owner-avatar">
+                                  {opp.owner_name?.slice(0, 1) || 'A'}
+                                </span>
+                                <span className="owner-name-short">
+                                  {opp.owner_name?.split(' ').pop()}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Thao tác chuyển giai đoạn & Sửa/Xóa (AC S5-02) */}
+                            <div className="card-quick-actions">
+                              <div className="stage-step-buttons">
+                                <button
+                                  type="button"
+                                  className="btn-card-step"
+                                  title="Lùi về giai đoạn trước"
+                                  onClick={() => handleStepStage(opp, 'PREV')}
+                                >
+                                  <IconArrowLeft />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn-card-step"
+                                  title="Chuyển sang giai đoạn kế tiếp"
+                                  onClick={() => handleStepStage(opp, 'NEXT')}
+                                >
+                                  <IconArrowRight />
+                                </button>
+                              </div>
+
+                              <div className="card-edit-cluster">
+                                <button
+                                  type="button"
+                                  className="btn-card-mini edit"
+                                  title="Chỉnh sửa thông tin cơ hội"
+                                  onClick={() => handleOpenEditModal(opp)}
+                                >
+                                  <IconEdit />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn-card-mini delete"
+                                  title="Xóa cơ hội"
+                                  onClick={() => setDeletingOpp(opp)}
+                                >
+                                  <IconTrash />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         ) : (
+          /* ─────────────────────────────────────────────────────────────
+              VIEW CHẾ ĐỘ: DANH SÁCH BẢNG (TABLE VIEW - S5-01)
+              ───────────────────────────────────────────────────────────── */
           <div className="opp-table-responsive">
             <table className="opp-data-table">
               <thead>
@@ -545,7 +971,7 @@ export default function OpportunitiesPage() {
                   <th style={{ width: '200px' }}>Giai đoạn & Xác suất</th>
                   <th style={{ width: '160px', textAlign: 'right' }}>Giá trị dự kiến</th>
                   <th style={{ width: '150px' }}>Ngày dự kiến chốt</th>
-                  <th style={{ width: '150px' }}>Nguồn</th>
+                  <th style={{ width: '150px' }}>Nguồn & Phụ trách</th>
                   <th style={{ width: '130px', textAlign: 'center' }}>Thao tác</th>
                 </tr>
               </thead>
@@ -554,8 +980,6 @@ export default function OpportunitiesPage() {
                   const stageObj = stages.find((s) => s.id === opp.stage_id)
                   const stageColor = stageObj?.color || opp.stage_color || '#2563eb'
                   const isClosed = opp.status === 'WON' || opp.status === 'LOST'
-
-                  // Kiểm tra hạn chốt
                   const isPastDue = !isClosed && opp.expected_close_date < todayStr
 
                   return (
@@ -601,7 +1025,6 @@ export default function OpportunitiesPage() {
                             </span>
                             <span className="win-prob-tag">{opp.win_probability}%</span>
                           </div>
-                          {/* Progress bar xác suất thắng */}
                           <div className="opp-prob-track">
                             <div
                               className="opp-prob-bar"
@@ -633,7 +1056,10 @@ export default function OpportunitiesPage() {
                       </td>
 
                       <td>
-                        <span className="opp-source-tag">{opp.source}</span>
+                        <div className="opp-source-owner-cell">
+                          <span className="opp-source-tag">{opp.source}</span>
+                          <span className="opp-owner-sub">👤 {opp.owner_name}</span>
+                        </div>
                       </td>
 
                       <td>
@@ -669,7 +1095,7 @@ export default function OpportunitiesPage() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          MODAL: TẠO MỚI / CHỈNH SỬA CƠ HỘI BÁN HÀNG (S5-01)
+          MODAL: TẠO MỚI / CHỈNH SỬA CƠ HỘI BÁN HÀNG (S5-01 & S5-02)
           ───────────────────────────────────────────────────────────── */}
       {isModalOpen && (
         <div className="opp-modal-backdrop" onClick={() => setIsModalOpen(false)}>

@@ -1,4 +1,4 @@
-/* OpportunitiesPage.css - Sprint 5 S5-01 Opportunity Management */
+/* OpportunitiesPage.css - Sprint 5 S5-01 & S5-02 Opportunity & Kanban Pipeline */
 
 .opportunities-page-container {
   padding: 24px;
@@ -36,7 +36,43 @@
 
 .opp-header-actions {
   display: flex;
+  align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* View Mode Switcher (Kanban vs Table) */
+.view-mode-switcher {
+  display: inline-flex;
+  background: #e2e8f0;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.btn-toggle-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-toggle-view:hover {
+  color: #0f172a;
+}
+
+.btn-toggle-view.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* ── 2. Stat Summary Cards ── */
@@ -88,7 +124,7 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .opp-panel-controls {
@@ -107,7 +143,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 8px 12px;
-  width: 320px;
+  width: 280px;
   max-width: 100%;
   transition: border-color 0.15s ease;
 }
@@ -134,7 +170,7 @@
 .opp-filters-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -142,8 +178,8 @@
   background: #ffffff;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 13.5px;
+  padding: 7px 10px;
+  font-size: 13px;
   color: #334155;
   outline: none;
   cursor: pointer;
@@ -154,7 +190,364 @@
   border-color: #2563eb;
 }
 
-/* ── 4. Table Styling ── */
+/* ── 4. S5-02: BẢNG PIPELINE DẠNG KANBAN ── */
+.opp-kanban-board {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  min-height: 520px;
+  scroll-behavior: smooth;
+}
+
+/* Tùy chỉnh thanh cuộn ngang */
+.opp-kanban-board::-webkit-scrollbar {
+  height: 8px;
+}
+.opp-kanban-board::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+.opp-kanban-board::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.opp-kanban-board::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.opp-kanban-column {
+  flex: 0 0 310px;
+  max-width: 310px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.opp-kanban-column.drag-over {
+  background: #eff6ff;
+  border: 2px dashed #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.opp-column-header {
+  padding: 14px 16px;
+  background: #ffffff;
+  border-top: 4px solid #2563eb;
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 11px 11px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.opp-column-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stage-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.stage-win-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.opp-column-header-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.opp-count-badge {
+  color: #64748b;
+}
+
+.opp-total-val {
+  font-weight: 700;
+  color: #0f172a;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Thẻ cơ hội trong cột */
+.opp-column-cards {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: calc(100vh - 360px);
+  min-height: 140px;
+}
+
+.opp-kanban-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  cursor: grab;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.opp-kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+  border-color: #cbd5e1;
+}
+
+.opp-kanban-card.is-dragging {
+  opacity: 0.45;
+  border: 2px dashed #2563eb;
+}
+
+.opp-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.card-code-tag {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.card-source-tag {
+  font-size: 11px;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-customer-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.cust-name {
+  color: #334155;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contact-name {
+  color: #64748b;
+  font-size: 11.5px;
+}
+
+.card-revenue-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px dashed #f1f5f9;
+}
+
+.revenue-lbl {
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.revenue-num {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.card-footer-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11.5px;
+}
+
+.card-date-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #64748b;
+}
+
+.card-date-badge.overdue {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.text-danger-star {
+  color: #dc2626;
+}
+
+.card-owner-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.owner-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.owner-name-short {
+  font-size: 11.5px;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* Thao tác nhanh trên thẻ (AC S5-02) */
+.card-quick-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.stage-step-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-card-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-card-step:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+  border-color: #93c5fd;
+}
+
+.card-edit-cluster {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-card-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-card-mini:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.btn-card-mini.delete:hover {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.kanban-empty-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 12px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 12px;
+  gap: 8px;
+}
+
+.btn-quick-add-col {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #2563eb;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-quick-add-col:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+/* ── 5. Table Styling (TABLE VIEW) ── */
 .opp-table-responsive {
   width: 100%;
   overflow-x: auto;
@@ -184,17 +577,6 @@
 
 .opp-data-table tbody tr:hover {
   background: #f8fafc;
-}
-
-.opp-code-tag {
-  font-family: monospace;
-  font-size: 12px;
-  font-weight: 600;
-  color: #475569;
-  background: #f1f5f9;
-  padding: 3px 6px;
-  border-radius: 4px;
-  border: 1px solid #e2e8f0;
 }
 
 .opp-info-cell {
@@ -314,14 +696,26 @@
   font-weight: 600;
 }
 
+.opp-source-owner-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .opp-source-tag {
   display: inline-block;
   background: #f1f5f9;
   color: #475569;
-  font-size: 12px;
-  padding: 3px 8px;
-  border-radius: 6px;
+  font-size: 11.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
   font-weight: 500;
+  width: fit-content;
+}
+
+.opp-owner-sub {
+  font-size: 11.5px;
+  color: #64748b;
 }
 
 .opp-actions-cluster {
@@ -360,7 +754,7 @@
   background: #fef2f2;
 }
 
-/* ── 5. Empty & Loading State ── */
+/* ── 6. Empty & Loading State ── */
 .opp-loading-box,
 .opp-empty-state,
 .opp-error-state {
@@ -411,7 +805,7 @@
   max-width: 440px;
 }
 
-/* ── 6. Modals ── */
+/* ── 7. Modals ── */
 .opp-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -554,7 +948,7 @@
   gap: 10px;
 }
 
-/* ── 7. Toast Notification ── */
+/* ── 8. Toast Notification ── */
 .opp-toast {
   position: fixed;
   bottom: 24px;
