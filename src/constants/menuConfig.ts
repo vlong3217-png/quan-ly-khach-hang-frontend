@@ -62,6 +62,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         ],
       },
       {
+        id: 'menu-opportunities',
+        title: 'Cơ hội bán hàng',
+        path: '/dashboard/opportunities',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Tạo, theo dõi các cơ hội thương mại, dự báo doanh thu và quản lý Pipeline',
+      },
+      {
         id: 'menu-lead-forms',
         title: 'Biểu mẫu & Thu thập Lead',
         path: '/dashboard/lead-forms',

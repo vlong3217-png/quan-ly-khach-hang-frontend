@@ -13,6 +13,7 @@ import CustomFieldsPage from '../CustomFieldsPage/CustomFieldsPage.tsx'
 import PipelineStagesPage from '../PipelineStagesPage/PipelineStagesPage.tsx'
 import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
 import CustomerManagementPage from '../CustomerManagementPage/CustomerManagementPage.tsx'
+import OpportunitiesPage from '../OpportunitiesPage/OpportunitiesPage.tsx'
 import LeadFormsPage from '../LeadFormsPage/LeadFormsPage.tsx'
 import {
   ROLES,
@@ -96,6 +97,8 @@ function DashboardPage() {
       setActiveMenuId('menu-teams')
     } else if (path.startsWith('/dashboard/lead-forms') || path.startsWith('/dashboard/leads')) {
       setActiveMenuId('menu-lead-forms')
+    } else if (path.startsWith('/dashboard/opportunities')) {
+      setActiveMenuId('menu-opportunities')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -132,6 +135,9 @@ function DashboardPage() {
   const isCustomerView =
     activeMenuId === 'menu-customers' ||
     activeMenuId.startsWith('menu-customers-')
+  const isOpportunityView =
+    activeMenuId === 'menu-opportunities' ||
+    activeMenuId.startsWith('menu-opportunities-')
   const isLeadFormView =
     activeMenuId === 'menu-lead-forms' ||
     activeMenuId.startsWith('menu-lead-forms-') ||
@@ -286,6 +292,15 @@ function DashboardPage() {
           {isCustomerView && (
             <section className="dashboard-section customers-section">
               <CustomerManagementPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: CƠ HỘI BÁN HÀNG - OPPORTUNITIES (S5-01)
+              ───────────────────────────────────────────────────────────── */}
+          {isOpportunityView && (
+            <section className="dashboard-section opportunities-section">
+              <OpportunitiesPage />
             </section>
           )}
 

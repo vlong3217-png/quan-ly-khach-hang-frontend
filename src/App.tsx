@@ -89,6 +89,16 @@ function App() {
         }
       />
 
+      {/* 4a. S5-01: Quản lý Cơ hội bán hàng (Opportunity) */}
+      <Route
+        path="/dashboard/opportunities/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* 4b. S2-05: Quản lý Sản phẩm / Dịch vụ & Bảng giá */}
       <Route
         path="/dashboard/products/*"
