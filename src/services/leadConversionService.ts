@@ -6,6 +6,7 @@ import type {
 import { customerService } from './customerService.ts'
 import { opportunityService } from './opportunityService.ts'
 import { pipelineService } from './pipelineService.ts'
+import { leadInteractionService } from './leadInteractionService.ts'
 import { API_BASE_URL } from './authService.ts'
 
 const STORAGE_KEY_LEADS = 'crm_leads_master_data'
@@ -59,6 +60,21 @@ export const leadConversionService = {
       win_probability: 20,
     }
 
+    // Đề xuất doanh thu kỳ vọng theo phân nhóm lead
+    let suggestedRevenue = 50000000
+    if (lead.score_tier === 'HOT' || lead.segment === 'ENTERPRISE_VIP') {
+      suggestedRevenue = 120000000
+    } else if (lead.score_tier === 'WARM' || lead.segment === 'HIGH_POTENTIAL') {
+      suggestedRevenue = 80000000
+    }
+
+    const defaultNotes = [
+      lead.requirement ? `Nhu cầu: ${lead.requirement}` : '',
+      lead.notes ? `Ghi chú: ${lead.notes}` : '',
+    ]
+      .filter(Boolean)
+      .join(' | ')
+
     return {
       lead_id: lead.id,
       lead_code: lead.code,
@@ -69,12 +85,17 @@ export const leadConversionService = {
       lead_industry: lead.industry || 'Công nghệ thông tin & Viễn thông',
       lead_requirement: lead.requirement || '',
       default_customer_name: lead.company ? lead.company : lead.full_name,
+      default_contact_name: lead.full_name,
+      default_contact_position: 'Người liên hệ đại diện',
+      default_contact_phone: lead.phone,
+      default_contact_email: lead.email,
       default_opportunity_title: `Cơ hội bán hàng - ${lead.company || lead.full_name}`,
-      default_expected_revenue: 50000000, // 50 triệu VNĐ mặc định
+      default_expected_revenue: suggestedRevenue,
       default_close_date: defaultCloseDate,
       default_stage_id: defaultStage.id,
       default_stage_name: defaultStage.name,
       default_win_probability: defaultStage.win_probability,
+      default_notes: defaultNotes,
     }
   },
 
@@ -115,12 +136,28 @@ export const leadConversionService = {
           currentLead.status = 'CONVERTED'
           currentLead.converted_customer_id = data.customer?.id
           currentLead.converted_customer_name = data.customer?.name
+          currentLead.converted_customer_code = data.customer?.code
           currentLead.converted_opportunity_id = data.opportunity?.id
           currentLead.converted_opportunity_title = data.opportunity?.title
+          currentLead.converted_opportunity_code = data.opportunity?.code
           currentLead.converted_at = new Date().toISOString()
           currentLead.updated_at = new Date().toISOString()
           leads[leadIndex] = currentLead
           saveStoredLeads(leads)
+
+          // Ghi nhận lịch sử tương tác
+          try {
+            await leadInteractionService.createInteraction({
+              lead_id: currentLead.id,
+              type: 'STATUS_CHANGE',
+              title: 'Chuyển đổi thành Khách hàng & Cơ hội',
+              outcome: 'Thành công - Đã chuyển đổi',
+              content: `Lead đã được chuyển đổi thành công sang Khách hàng "${data.customer?.name || ''}" (${data.customer?.code || ''})${data.opportunity ? ` và Cơ hội "${data.opportunity?.title || ''}" (${data.opportunity?.code || ''})` : ''}.`,
+              performed_by_id: payload.owner_id || currentLead.owner_id || 1,
+              performed_by_name: payload.owner_name || currentLead.owner_name || 'Nguyễn Văn An',
+            })
+          } catch {}
+
           return data
         }
       }
@@ -160,6 +197,23 @@ export const leadConversionService = {
         description: `Chuyển đổi từ khách hàng tiềm năng [${currentLead.code}] ${currentLead.full_name}. Nhu cầu ban đầu: ${currentLead.requirement || 'Chưa có ghi chú'}.`,
       })
 
+      // Tự động tạo người liên hệ đại diện (CustomerContact) từ thông tin Lead
+      try {
+        customerService.createContact({
+          customer_id: newCustomer.id,
+          customer_name: newCustomer.name,
+          full_name: payload.contact_name?.trim() || currentLead.full_name,
+          title: payload.contact_position?.trim() || 'Người liên hệ đại diện (từ Lead)',
+          phone: payload.contact_phone?.trim() || payload.phone?.trim() || currentLead.phone,
+          email: payload.contact_email?.trim() || payload.email?.trim() || currentLead.email,
+          buying_role: 'DECISION_MAKER',
+          is_primary: true,
+          notes: `Được chuyển đổi tự động từ Lead [${currentLead.code}]`,
+        })
+      } catch (err) {
+        console.warn('Lỗi tự động tạo liên hệ khi chuyển đổi lead:', err)
+      }
+
       finalCustomer = {
         id: newCustomer.id,
         code: newCustomer.code,
@@ -178,6 +232,21 @@ export const leadConversionService = {
           phone: found.phone,
           email: found.email,
         }
+
+        // Nếu liên kết vào KH có sẵn, bổ sung liên hệ nếu cần
+        try {
+          customerService.createContact({
+            customer_id: found.id,
+            customer_name: found.name,
+            full_name: payload.contact_name?.trim() || currentLead.full_name,
+            title: payload.contact_position?.trim() || 'Liên hệ từ Lead tiềm năng',
+            phone: payload.contact_phone?.trim() || currentLead.phone,
+            email: payload.contact_email?.trim() || currentLead.email,
+            buying_role: 'INFLUENCER',
+            is_primary: false,
+            notes: `Liên kết từ chuyển đổi Lead [${currentLead.code}]`,
+          })
+        } catch {}
       } else {
         throw new Error('Không tìm thấy thông tin khách hàng đã chọn để liên kết.')
       }
@@ -197,6 +266,8 @@ export const leadConversionService = {
           title: string
           expected_revenue: number
           stage_name: string
+          stage_id?: string
+          expected_close_date?: string
         }
       | undefined
 
@@ -213,9 +284,9 @@ export const leadConversionService = {
         title: oppTitle,
         customer_id: finalCustomer.id,
         customer_name: finalCustomer.name,
-        contact_name: currentLead.full_name,
-        contact_phone: currentLead.phone,
-        contact_email: currentLead.email,
+        contact_name: payload.contact_name?.trim() || currentLead.full_name,
+        contact_phone: payload.contact_phone?.trim() || currentLead.phone,
+        contact_email: payload.contact_email?.trim() || currentLead.email,
         stage_id: stage?.id || 'stage-1',
         stage_name: stage?.name || 'Tiếp cận & Đánh giá',
         win_probability: stage?.win_probability ?? payload.win_probability ?? 20,
@@ -234,6 +305,8 @@ export const leadConversionService = {
         title: newOpp.title,
         expected_revenue: newOpp.expected_revenue,
         stage_name: newOpp.stage_name,
+        stage_id: newOpp.stage_id,
+        expected_close_date: newOpp.expected_close_date,
       }
     }
 
@@ -244,14 +317,38 @@ export const leadConversionService = {
       status: 'CONVERTED',
       converted_customer_id: finalCustomer.id,
       converted_customer_name: finalCustomer.name,
+      converted_customer_code: finalCustomer.code,
       converted_opportunity_id: finalOpportunity?.id,
       converted_opportunity_title: finalOpportunity?.title,
+      converted_opportunity_code: finalOpportunity?.code,
       converted_at: convertedAt,
       updated_at: convertedAt,
     }
 
     leads[leadIndex] = updatedLead
     saveStoredLeads(leads)
+
+    // 5. Ghi nhận lịch sử tương tác tự động vào Lead Timeline
+    try {
+      const revenueFormatted = finalOpportunity
+        ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(finalOpportunity.expected_revenue)
+        : ''
+      await leadInteractionService.createInteraction({
+        lead_id: currentLead.id,
+        type: 'STATUS_CHANGE',
+        title: 'Chuyển đổi thành Khách hàng & Cơ hội',
+        outcome: 'Thành công - Đã chuyển đổi',
+        content: `Lead đã được chuyển đổi thành công sang Khách hàng "${finalCustomer.name}" (${finalCustomer.code})${
+          finalOpportunity
+            ? ` và Cơ hội bán hàng "${finalOpportunity.title}" (${finalOpportunity.code}) với doanh thu kỳ vọng ${revenueFormatted}`
+            : ''
+        }. Không phải nhập lại thông tin khách hàng.`,
+        performed_by_id: payload.owner_id || currentLead.owner_id || 1,
+        performed_by_name: payload.owner_name || currentLead.owner_name || 'Nguyễn Văn An',
+      })
+    } catch (err) {
+      console.warn('Lỗi ghi nhận lịch sử tương tác chuyển đổi:', err)
+    }
 
     return {
       success: true,
@@ -262,3 +359,4 @@ export const leadConversionService = {
     }
   },
 }
+
