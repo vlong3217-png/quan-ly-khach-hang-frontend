@@ -1844,4 +1844,345 @@
   color: #475569;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   S4-06: LEAD INTERACTION HISTORY & TIMELINE STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.interaction-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px 24px;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+/* New Interaction Form Panel */
+.interaction-create-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.interaction-create-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.interaction-create-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.interaction-type-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.interaction-type-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.interaction-type-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.interaction-type-btn.active.call {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+
+.interaction-type-btn.active.email {
+  background: #f5f3ff;
+  border-color: #8b5cf6;
+  color: #6d28d9;
+}
+
+.interaction-type-btn.active.meeting {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #047857;
+}
+
+.interaction-type-btn.active.note {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #b45309;
+}
+
+/* Timeline Filter Tabs */
+.interaction-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.interaction-filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+}
+
+.interaction-filter-tab {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.interaction-filter-tab:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.interaction-filter-tab.active {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+
+/* Timeline List Container */
+.interaction-timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-left: 20px;
+}
+
+.interaction-timeline::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 17px;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.interaction-timeline-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.interaction-icon-badge {
+  position: relative;
+  z-index: 1;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.interaction-icon-badge.call {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.interaction-icon-badge.email {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.interaction-icon-badge.meeting {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.interaction-icon-badge.note {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.interaction-icon-badge.status_change {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.interaction-icon-badge.score_update {
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
+.interaction-icon-badge.system {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Timeline Content Card */
+.interaction-card {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.interaction-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.interaction-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.interaction-card-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.interaction-card-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.interaction-card-meta {
+  font-size: 11.5px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.interaction-outcome-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.interaction-outcome-tag.success {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.interaction-outcome-tag.warning {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.interaction-card-body {
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+/* Next Action Box */
+.interaction-next-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border-left: 3px solid #3b82f6;
+  border-radius: 0 6px 6px 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.interaction-next-action-text {
+  color: #1e293b;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.interaction-next-action-due {
+  color: #dc2626;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.interaction-delete-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.interaction-delete-btn:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+/* System-wide Interactions Tab Container */
+.lead-interaction-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 
