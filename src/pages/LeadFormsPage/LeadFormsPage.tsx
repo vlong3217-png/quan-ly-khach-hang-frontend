@@ -807,7 +807,7 @@ export default function LeadFormsPage() {
                     <th>Họ và tên & Liên hệ</th>
                     <th>Doanh nghiệp & Ngành nghề</th>
                     <th>Nguồn Lead</th>
-                    <th style={{ width: '220px' }}>Nhu cầu tư vấn</th>
+                    <th style={{ minWidth: '360px', width: '400px' }}>Nhu cầu tư vấn</th>
                     <th style={{ width: '150px' }}>Người phụ trách</th>
                     <th style={{ width: '150px', textAlign: 'center' }}>Trạng thái</th>
                     <th style={{ width: '70px', textAlign: 'center' }}>Xóa</th>
@@ -826,8 +826,8 @@ export default function LeadFormsPage() {
                           <div className="lead-contact-info">
                             <strong className="lead-contact-name">{l.full_name}</strong>
                             <div className="lead-contact-detail">
-                              <span>📞 {l.phone}</span>
-                              <span>✉️ {l.email}</span>
+                              <span>{l.phone}</span>
+                              <span>{l.email}</span>
                             </div>
                           </div>
                         </td>
@@ -1378,7 +1378,7 @@ export default function LeadFormsPage() {
                   <tr>
                     <th>Thông tin người liên hệ</th>
                     <th>Doanh nghiệp / Công ty</th>
-                    <th style={{ width: '280px' }}>Nhu cầu tư vấn & Ghi chú</th>
+                    <th style={{ minWidth: '360px', width: '400px' }}>Nhu cầu tư vấn & Ghi chú</th>
                     <th>Nguồn biểu mẫu</th>
                     <th style={{ width: '130px' }}>Thời gian gửi</th>
                     <th style={{ width: '160px', textAlign: 'center' }}>Trạng thái xử lý</th>
@@ -1393,8 +1393,8 @@ export default function LeadFormsPage() {
                           <div className="lead-contact-info">
                             <strong className="lead-contact-name">{sub.full_name}</strong>
                             <div className="lead-contact-detail">
-                              <span>📞 {sub.phone}</span>
-                              <span>✉️ {sub.email}</span>
+                              <span>{sub.phone}</span>
+                              <span>{sub.email}</span>
                             </div>
                           </div>
                         </td>
