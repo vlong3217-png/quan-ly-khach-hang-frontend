@@ -127,6 +127,16 @@ function App() {
         }
       />
 
+      {/* 4e. S5-03 & S5-04: Quản lý Cơ hội bán hàng, Hoạt động & Công việc */}
+      <Route
+        path="/dashboard/opportunities/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* 5. Quản lý tài khoản (S1-08 / S1-10) */}
       <Route
         path="/dashboard/users/*"
