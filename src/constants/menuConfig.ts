@@ -104,13 +104,6 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Khai báo ngành nghề, quy mô, nguồn lead và loại hoạt động',
       },
       {
-        id: 'menu-win-loss',
-        title: 'Lý do Thắng / Thua',
-        path: '/dashboard/win-loss',
-        roles: [ROLES.ADMIN, ROLES.MANAGER],
-        description: 'Khai báo danh mục lý do thắng thua và đối thủ cạnh tranh',
-      },
-      {
         id: 'menu-custom-fields',
         title: 'Trường tuỳ chỉnh',
         path: '/dashboard/custom-fields',
