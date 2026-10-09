@@ -7,6 +7,7 @@ import type { PipelineStage } from '../../types/pipeline.ts'
 import { opportunityService } from '../../services/opportunityService.ts'
 import { pipelineService } from '../../services/pipelineService.ts'
 import OpportunityDetailModal from '../../components/OpportunityDetailModal/OpportunityDetailModal.tsx'
+import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import './OpportunitiesPage.css'
 
@@ -53,6 +54,9 @@ export default function OpportunitiesPage() {
   const [selectedStageId, setSelectedStageId] = useState<string>('ALL')
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL')
   const [viewMode, setViewMode] = useState<'TABLE' | 'KANBAN'>('TABLE')
+
+  // Main Nav Tab (Danh sách Cơ hội vs Lý do Thắng/Thua & Đối thủ)
+  const [mainNavTab, setMainNavTab] = useState<'PIPELINE' | 'WIN_LOSS'>('PIPELINE')
 
   // Modal Chi tiết Cơ hội
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null)
@@ -272,24 +276,54 @@ export default function OpportunitiesPage() {
         <div>
           <h2>Cơ hội bán hàng & Pipeline (Opportunities)</h2>
           <p>
-            Quản lý phễu cơ hội bán hàng, theo dõi lịch sử hoạt động (S5-03) và công việc liên quan (S5-04).
+            Quản lý phễu cơ hội bán hàng, theo dõi lịch sử hoạt động (S5-03), công việc (S5-04) và lý do thắng/thua, đối thủ (S2-10).
           </p>
         </div>
 
-        <div className="header-actions">
-          <button
-            type="button"
-            className="btn btn-primary"
-            id="create-opp-btn"
-            onClick={handleOpenCreateModal}
-          >
-            <IconPlus />
-            <span>Thêm cơ hội mới</span>
-          </button>
-        </div>
+        {mainNavTab === 'PIPELINE' && (
+          <div className="header-actions">
+            <button
+              type="button"
+              className="btn btn-primary"
+              id="create-opp-btn"
+              onClick={handleOpenCreateModal}
+            >
+              <IconPlus />
+              <span>Thêm cơ hội mới</span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* ── KPI Stat Cards ── */}
+      {/* ── Main Sub-tabs: Cơ hội bán hàng vs Lý do Thắng / Thua & Đối thủ ── */}
+      <div className="opp-main-tabs" id="opp-main-tabs">
+        <button
+          type="button"
+          className={`opp-main-tab-btn ${mainNavTab === 'PIPELINE' ? 'active' : ''}`}
+          id="tab-btn-opp-pipeline"
+          onClick={() => setMainNavTab('PIPELINE')}
+        >
+          <span className="tab-title">Danh sách Cơ hội & Pipeline</span>
+          <span className="tab-count-badge">{totalCount}</span>
+        </button>
+        <button
+          type="button"
+          className={`opp-main-tab-btn ${mainNavTab === 'WIN_LOSS' ? 'active' : ''}`}
+          id="tab-btn-opp-winloss"
+          onClick={() => setMainNavTab('WIN_LOSS')}
+        >
+          <span className="tab-title">Lý do Thắng / Thua & Đối thủ cạnh tranh</span>
+          <span className="tab-tag-badge">Sprint 5</span>
+        </button>
+      </div>
+
+      {mainNavTab === 'WIN_LOSS' ? (
+        <div className="opp-winloss-container">
+          <WinLossCompetitorsPage />
+        </div>
+      ) : (
+        <>
+          {/* ── KPI Stat Cards ── */}
       <div className="opp-kpi-grid">
         <div className="opp-kpi-card">
           <span className="kpi-title">Tổng số cơ hội</span>
@@ -563,6 +597,8 @@ export default function OpportunitiesPage() {
             )
           })}
         </div>
+      )}
+        </>
       )}
 
       {/* ── MODAL CHI TIẾT CƠ HỘI & LỊCH SỬ HOẠT ĐỘNG (S5-03) ── */}
