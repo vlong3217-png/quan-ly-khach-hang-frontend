@@ -79,13 +79,6 @@ const IconUpload = () => (
   </svg>
 )
 
-const IconDownload = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="7 10 12 15 17 10" />
-    <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
-)
 
 const IconFileSpreadsheet = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -617,7 +610,6 @@ export default function LeadFormsPage() {
             onClick={() => setIsCreateLeadModalOpen(true)}
             id="btn-create-lead-manual"
           >
-            <IconPlus />
             <span>Tạo Lead thủ công</span>
           </button>
 
@@ -628,7 +620,6 @@ export default function LeadFormsPage() {
             onClick={() => setActiveTab('IMPORT_EXCEL')}
             id="btn-nav-import-excel"
           >
-            <IconUpload />
             <span>Nhập từ Excel</span>
           </button>
 
@@ -639,7 +630,6 @@ export default function LeadFormsPage() {
             onClick={() => leadService.exportLeadsToExcel(leads)}
             title="Xuất danh sách Lead ra file Excel"
           >
-            <IconDownload />
             <span>Xuất Excel</span>
           </button>
         </div>
@@ -776,7 +766,6 @@ export default function LeadFormsPage() {
             </div>
           ) : filteredLeads.length === 0 ? (
             <div className="lead-empty-state">
-              <div className="lead-empty-icon">👥</div>
               <h4>Không tìm thấy khách hàng tiềm năng nào</h4>
               <p>Bạn có thể tạo lead thủ công hoặc tải file Excel lên để nhập hàng loạt vào hệ thống.</p>
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '12px' }}>
@@ -785,7 +774,6 @@ export default function LeadFormsPage() {
                   className="btn btn-primary"
                   onClick={() => setIsCreateLeadModalOpen(true)}
                 >
-                  <IconPlus />
                   <span>Tạo Lead thủ công</span>
                 </button>
                 <button
@@ -793,7 +781,6 @@ export default function LeadFormsPage() {
                   className="btn btn-secondary"
                   onClick={() => setActiveTab('IMPORT_EXCEL')}
                 >
-                  <IconUpload />
                   <span>Nhập từ Excel</span>
                 </button>
               </div>
@@ -1110,7 +1097,7 @@ export default function LeadFormsPage() {
                             <div className="invalid-errors-box">
                               {row.errors.map((e, idx) => (
                                 <span key={idx} className="error-pill">
-                                  ⚠️ {e}
+                                  {e}
                                 </span>
                               ))}
                             </div>
@@ -1198,7 +1185,6 @@ export default function LeadFormsPage() {
 
           {filteredForms.length === 0 ? (
             <div className="lead-empty-state">
-              <div className="lead-empty-icon">📝</div>
               <h4>Không tìm thấy biểu mẫu nào</h4>
               <p>Hãy tạo biểu mẫu mới để lấy mã nhúng iFrame hoặc liên kết thu thập thông tin khách hàng.</p>
               <button
@@ -1207,7 +1193,6 @@ export default function LeadFormsPage() {
                 onClick={handleOpenCreateModal}
                 style={{ marginTop: '12px' }}
               >
-                <IconPlus />
                 <span>Tạo biểu mẫu đầu tiên</span>
               </button>
             </div>
@@ -1367,7 +1352,6 @@ export default function LeadFormsPage() {
 
           {filteredSubmissions.length === 0 ? (
             <div className="lead-empty-state">
-              <div className="lead-empty-icon">📬</div>
               <h4>Chưa có Lead nào gửi từ biểu mẫu</h4>
               <p>Khi khách truy cập điền và gửi biểu mẫu trên website, dữ liệu sẽ ngay lập tức xuất hiện tại đây.</p>
             </div>
@@ -1866,17 +1850,17 @@ export default function LeadFormsPage() {
               <div className="embed-guide-box">
                 {embedType === 'IFRAME' && (
                   <p>
-                    💡 <strong>Cách dùng:</strong> Sao chép đoạn mã iFrame bên dưới và dán vào vị trí bạn muốn hiển thị trên website WordPress, Webflow, Landing Page hoặc trang HTML tĩnh. Form sẽ tự động co giãn và thu thập dữ liệu về CRM.
+                    <strong>Cách dùng:</strong> Sao chép đoạn mã iFrame bên dưới và dán vào vị trí bạn muốn hiển thị trên website WordPress, Webflow, Landing Page hoặc trang HTML tĩnh. Form sẽ tự động co giãn và thu thập dữ liệu về CRM.
                   </p>
                 )}
                 {embedType === 'HTML' && (
                   <p>
-                    💡 <strong>Cách dùng:</strong> Dành cho Lập trình viên muốn tùy biến hoàn toàn mã HTML và giao diện CSS theo phong cách riêng của website.
+                    <strong>Cách dùng:</strong> Dành cho Lập trình viên muốn tùy biến hoàn toàn mã HTML và giao diện CSS theo phong cách riêng của website.
                   </p>
                 )}
                 {embedType === 'LINK' && (
                   <p>
-                    💡 <strong>Cách dùng:</strong> Sử dụng đường link độc lập này để gửi trực tiếp cho khách qua Zalo, Messenger, Email hoặc chèn vào nút kêu gọi hành động (CTA).
+                    <strong>Cách dùng:</strong> Sử dụng đường link độc lập này để gửi trực tiếp cho khách qua Zalo, Messenger, Email hoặc chèn vào nút kêu gọi hành động (CTA).
                   </p>
                 )}
               </div>
