@@ -7,6 +7,11 @@ import type {
   ImportLeadResult,
 } from '../types/lead.ts'
 import { API_BASE_URL } from './authService.ts'
+import {
+  calculateLeadScore,
+  determineScoreTier,
+  determineLeadSegment,
+} from './leadScoringService.ts'
 
 const STORAGE_KEY_LEADS = 'crm_leads_master_data'
 
@@ -130,10 +135,51 @@ const INITIAL_LEADS: Lead[] = [
 function getStoredLeads(): Lead[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_LEADS)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const parsed: Lead[] = JSON.parse(raw)
+      // Tự động bổ sung điểm số và phân nhóm nếu lead chưa được chấm
+      let hasChanges = false
+      const enriched = parsed.map((lead) => {
+        if (typeof lead.score !== 'number' || !lead.score_tier) {
+          hasChanges = true
+          const breakdown = calculateLeadScore(lead)
+          const score = breakdown.total_score
+          const score_tier = determineScoreTier(score)
+          const segment = lead.segment || determineLeadSegment(lead, score)
+          return {
+            ...lead,
+            score,
+            score_tier,
+            segment,
+            score_breakdown: breakdown,
+            last_scored_at: lead.last_scored_at || new Date().toISOString(),
+          }
+        }
+        return lead
+      })
+      if (hasChanges) {
+        saveStoredLeads(enriched)
+      }
+      return enriched
+    }
   } catch {}
-  localStorage.setItem(STORAGE_KEY_LEADS, JSON.stringify(INITIAL_LEADS))
-  return INITIAL_LEADS
+
+  const initialEnriched = INITIAL_LEADS.map((lead) => {
+    const breakdown = calculateLeadScore(lead)
+    const score = breakdown.total_score
+    const score_tier = determineScoreTier(score)
+    const segment = lead.segment || determineLeadSegment(lead, score)
+    return {
+      ...lead,
+      score,
+      score_tier,
+      segment,
+      score_breakdown: breakdown,
+      last_scored_at: new Date().toISOString(),
+    }
+  })
+  localStorage.setItem(STORAGE_KEY_LEADS, JSON.stringify(initialEnriched))
+  return initialEnriched
 }
 
 function saveStoredLeads(leads: Lead[]): void {
@@ -170,6 +216,24 @@ export const leadService = {
     const nextCodeNumber = leads.length + 1
     const newCode = `LEAD-${String(nextCodeNumber).padStart(3, '0')}`
 
+    const breakdown = calculateLeadScore({
+      full_name: payload.full_name,
+      company: payload.company,
+      email: payload.email,
+      phone: payload.phone,
+      industry: payload.industry,
+      requirement: payload.requirement,
+      campaign_id: payload.campaign_id,
+      source: payload.source || 'MANUAL',
+      status: payload.status || 'NEW',
+    })
+    const score = breakdown.total_score
+    const score_tier = determineScoreTier(score)
+    const segment = determineLeadSegment(
+      { company: payload.company, status: payload.status || 'NEW' },
+      score
+    )
+
     const newLead: Lead = {
       id: `lead-${Date.now()}`,
       code: newCode,
@@ -186,6 +250,11 @@ export const leadService = {
       owner_name: payload.owner_id === 2 ? 'Trần Thị Bình' : payload.owner_id === 3 ? 'Lê Hoàng Cường' : 'Nguyễn Văn An',
       requirement: payload.requirement?.trim() || '',
       notes: payload.notes?.trim() || '',
+      score,
+      score_tier,
+      segment,
+      score_breakdown: breakdown,
+      last_scored_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
@@ -494,6 +563,20 @@ export const leadService = {
 
     const newLeads: Lead[] = validRows.map((r) => {
       currentCount++
+      const breakdown = calculateLeadScore({
+        full_name: r.full_name,
+        email: r.email,
+        phone: r.phone,
+        company: r.company,
+        industry: r.industry,
+        source: 'EXCEL_IMPORT',
+        requirement: r.requirement,
+        status: 'NEW',
+      })
+      const score = breakdown.total_score
+      const score_tier = determineScoreTier(score)
+      const segment = determineLeadSegment({ company: r.company, status: 'NEW' }, score)
+
       return {
         id: `lead-import-${Date.now()}-${currentCount}`,
         code: `LEAD-${String(currentCount).padStart(3, '0')}`,
@@ -509,6 +592,11 @@ export const leadService = {
         owner_name: 'Nguyễn Văn An',
         requirement: r.requirement,
         notes: `Import ngày ${new Date().toLocaleDateString('vi-VN')}`,
+        score,
+        score_tier,
+        segment,
+        score_breakdown: breakdown,
+        last_scored_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }

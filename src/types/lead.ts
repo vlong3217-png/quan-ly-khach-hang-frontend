@@ -16,6 +16,46 @@ export type LeadSource =
   | 'REFERRAL'
   | 'OTHER'
 
+export type LeadScoreTier = 'HOT' | 'WARM' | 'COLD'
+
+export type LeadSegment =
+  | 'ENTERPRISE_VIP'
+  | 'HIGH_POTENTIAL'
+  | 'NURTURE'
+  | 'UNQUALIFIED'
+  | 'UNCLASSIFIED'
+
+export interface ScoreReasonItem {
+  criterion: string
+  points: number
+  type: 'ADD' | 'DEDUCT'
+  description: string
+}
+
+export interface LeadScoreBreakdown {
+  demographic_score: number
+  engagement_score: number
+  source_score: number
+  total_score: number
+  reasons: ScoreReasonItem[]
+}
+
+export interface LeadScoringRule {
+  id: string
+  name: string
+  category: 'DEMOGRAPHIC' | 'ENGAGEMENT' | 'SOURCE'
+  condition_label: string
+  points: number
+  is_active: boolean
+}
+
+export interface UpdateLeadScorePayload {
+  score: number
+  segment?: LeadSegment
+  scoring_notes?: string
+  is_manually_scored?: boolean
+}
+
 export interface Lead {
   id: string
   code: string
@@ -33,6 +73,13 @@ export interface Lead {
   owner_name?: string
   requirement?: string
   notes?: string
+  score?: number
+  score_tier?: LeadScoreTier
+  segment?: LeadSegment
+  score_breakdown?: LeadScoreBreakdown
+  is_manually_scored?: boolean
+  scoring_notes?: string
+  last_scored_at?: string
   created_at: string
   updated_at: string
 }
