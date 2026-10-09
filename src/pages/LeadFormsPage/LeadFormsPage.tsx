@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
+import { useAuth } from '../../contexts/AuthContext.tsx'
 import { leadFormService } from '../../services/leadFormService.ts'
 import { leadService } from '../../services/leadService.ts'
+import { leadScoringService } from '../../services/leadScoringService.ts'
 import type {
   LeadForm,
   LeadSubmission,
@@ -10,6 +12,8 @@ import type {
   Lead,
   LeadStatus,
   LeadSource,
+  LeadScoreTier,
+  LeadSegment,
   CreateLeadPayload,
   ExcelLeadRow,
   ImportLeadResult,
@@ -130,8 +134,55 @@ const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
   OTHER: 'Khác',
 }
 
+const IconTarget = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
+  </svg>
+)
+
+const IconRefreshCw = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10" />
+    <polyline points="1 20 1 14 7 14" />
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+  </svg>
+)
+
+const IconSliders = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="4" y1="21" x2="4" y2="14" />
+    <line x1="4" y1="10" x2="4" y2="3" />
+    <line x1="12" y1="21" x2="12" y2="12" />
+    <line x1="12" y1="8" x2="12" y2="3" />
+    <line x1="20" y1="21" x2="20" y2="16" />
+    <line x1="20" y1="12" x2="20" y2="3" />
+    <line x1="1" y1="14" x2="7" y2="14" />
+    <line x1="9" y1="8" x2="15" y2="8" />
+    <line x1="17" y1="16" x2="23" y2="16" />
+  </svg>
+)
+
+const LEAD_TIER_CONFIG: Record<LeadScoreTier, { label: string; emoji: string; className: string }> = {
+  HOT: { label: 'Nóng (Hot)', emoji: '🔥', className: 'hot' },
+  WARM: { label: 'Ấm (Warm)', emoji: '⚡', className: 'warm' },
+  COLD: { label: 'Lạnh (Cold)', emoji: '❄️', className: 'cold' },
+}
+
+const LEAD_SEGMENT_CONFIG: Record<LeadSegment, { label: string; className: string; icon: string }> = {
+  ENTERPRISE_VIP: { label: 'Doanh nghiệp VIP', className: 'vip', icon: '👑' },
+  HIGH_POTENTIAL: { label: 'Tiềm năng cao', className: 'potential', icon: '⭐' },
+  NURTURE: { label: 'Cần nuôi dưỡng', className: 'nurture', icon: '🌱' },
+  UNQUALIFIED: { label: 'Không phù hợp', className: 'unqualified', icon: '⚠️' },
+  UNCLASSIFIED: { label: 'Chưa phân nhóm', className: 'unqualified', icon: '🏷️' },
+}
+
 export default function LeadFormsPage() {
-  const [activeTab, setActiveTab] = useState<'LEADS_LIST' | 'IMPORT_EXCEL' | 'FORMS' | 'SUBMISSIONS'>('LEADS_LIST')
+  const { user } = useAuth()
+  const canManageScoring = user?.role === 'ADMIN' || user?.role === 'MANAGER'
+
+  const [activeTab, setActiveTab] = useState<'LEADS_LIST' | 'LEAD_SCORING' | 'IMPORT_EXCEL' | 'FORMS' | 'SUBMISSIONS'>('LEADS_LIST')
 
   // Data states
   const [leads, setLeads] = useState<Lead[]>([])
@@ -153,6 +204,21 @@ export default function LeadFormsPage() {
   const [subSearchQuery, setSubSearchQuery] = useState('')
   const [subFormFilter, setSubFormFilter] = useState<string>('ALL')
   const [subStatusFilter, setSubStatusFilter] = useState<string>('ALL')
+
+  // ── S4-04: State cho Phân loại & Chấm điểm Lead ──
+  const [scoreSearchQuery, setScoreSearchQuery] = useState('')
+  const [scoreTierFilter, setScoreTierFilter] = useState<string>('ALL')
+  const [scoreSegmentFilter, setScoreSegmentFilter] = useState<string>('ALL')
+
+  // Modal Chi tiết Chấm điểm & Điều chỉnh Lead (S4-04)
+  const [selectedLeadForScore, setSelectedLeadForScore] = useState<Lead | null>(null)
+  const [isScoreModalOpen, setIsScoreModalOpen] = useState(false)
+  const [manualScoreInput, setManualScoreInput] = useState<number>(0)
+  const [manualSegmentInput, setManualSegmentInput] = useState<LeadSegment>('HIGH_POTENTIAL')
+  const [manualNotesInput, setManualNotesInput] = useState<string>('')
+  const [isManualOverrideActive, setIsManualOverrideActive] = useState(false)
+  const [isScoringActionLoading, setIsScoringActionLoading] = useState(false)
+  const [isRecalculatingAll, setIsRecalculatingAll] = useState(false)
 
   // ── S4-02: Modal Tạo Lead thủ công ──
   const [isCreateLeadModalOpen, setIsCreateLeadModalOpen] = useState(false)
@@ -268,6 +334,105 @@ export default function LeadFormsPage() {
       return matchSearch && matchStatus && matchSource
     })
   }, [leads, leadSearchQuery, leadStatusFilter, leadSourceFilter])
+
+  // ── S4-04: Thống kê & Lọc Chấm điểm Lead ──
+  const scoringStats = useMemo(() => {
+    return leadScoringService.getScoringStats(leads)
+  }, [leads])
+
+  const filteredScoredLeads = useMemo(() => {
+    return leads.filter((l) => {
+      const q = scoreSearchQuery.toLowerCase().trim()
+      const matchSearch =
+        !q ||
+        l.full_name.toLowerCase().includes(q) ||
+        l.email.toLowerCase().includes(q) ||
+        l.company.toLowerCase().includes(q) ||
+        l.code.toLowerCase().includes(q) ||
+        l.phone.includes(q)
+
+      const matchTier = scoreTierFilter === 'ALL' || l.score_tier === scoreTierFilter
+      const matchSegment = scoreSegmentFilter === 'ALL' || l.segment === scoreSegmentFilter
+      return matchSearch && matchTier && matchSegment
+    })
+  }, [leads, scoreSearchQuery, scoreTierFilter, scoreSegmentFilter])
+
+  // Mở modal xem chi tiết điểm số Lead (S4-04)
+  const handleOpenScoreModal = (lead: Lead) => {
+    setSelectedLeadForScore(lead)
+    setManualScoreInput(lead.score ?? 50)
+    setManualSegmentInput(lead.segment || 'HIGH_POTENTIAL')
+    setManualNotesInput(lead.scoring_notes || '')
+    setIsManualOverrideActive(Boolean(lead.is_manually_scored))
+    setIsScoreModalOpen(true)
+  }
+
+  // Chấm điểm lại cho 1 lead cụ thể (S4-04)
+  const handleRecalculateSingleLead = async (leadId: string) => {
+    try {
+      setIsScoringActionLoading(true)
+      const updated = await leadScoringService.recalculateLeadScore(leadId)
+      setLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)))
+      if (selectedLeadForScore?.id === leadId) {
+        setSelectedLeadForScore(updated)
+        setManualScoreInput(updated.score ?? 50)
+        setManualSegmentInput(updated.segment || 'HIGH_POTENTIAL')
+        setManualNotesInput(updated.scoring_notes || '')
+        setIsManualOverrideActive(false)
+      }
+      showToast(`Đã tính lại điểm cho "${updated.full_name}": ${updated.score} điểm (${LEAD_TIER_CONFIG[updated.score_tier || 'WARM'].label})`)
+    } catch {
+      showToast('Không thể chấm lại điểm khách hàng tiềm năng', true)
+    } finally {
+      setIsScoringActionLoading(false)
+    }
+  }
+
+  // Lưu điểm điều chỉnh thủ công (S4-04: Admin & Manager)
+  const handleSaveManualScore = async () => {
+    if (!selectedLeadForScore) return
+    if (!canManageScoring) {
+      showToast('Bạn không có quyền điều chỉnh điểm số hoặc phân loại lead', true)
+      return
+    }
+
+    try {
+      setIsScoringActionLoading(true)
+      const updated = await leadScoringService.updateManualScore(selectedLeadForScore.id, {
+        score: Number(manualScoreInput),
+        segment: manualSegmentInput,
+        scoring_notes: manualNotesInput,
+        is_manually_scored: isManualOverrideActive,
+      })
+      setLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)))
+      setSelectedLeadForScore(updated)
+      showToast(`Đã lưu phân loại và điểm số mới cho "${updated.full_name}"!`)
+      setIsScoreModalOpen(false)
+    } catch {
+      showToast('Lỗi khi lưu điểm điều chỉnh', true)
+    } finally {
+      setIsScoringActionLoading(false)
+    }
+  }
+
+  // Chấm điểm lại toàn bộ danh sách lead (S4-04)
+  const handleRecalculateAll = async () => {
+    if (!canManageScoring) {
+      showToast('Chỉ Quản trị viên và Quản lý mới có quyền chấm lại điểm toàn bộ hệ thống', true)
+      return
+    }
+
+    try {
+      setIsRecalculatingAll(true)
+      const updatedList = await leadScoringService.recalculateAllLeads()
+      setLeads(updatedList)
+      showToast(`Đã chấm điểm lại thành công cho tất cả ${updatedList.length} khách hàng tiềm năng!`)
+    } catch {
+      showToast('Lỗi khi chấm điểm lại toàn bộ danh sách', true)
+    } finally {
+      setIsRecalculatingAll(false)
+    }
+  }
 
   // Lọc danh sách Form (S4-01)
   const filteredForms = useMemo(() => {
@@ -632,6 +797,18 @@ export default function LeadFormsPage() {
             <span>Nhập từ Excel</span>
           </button>
 
+          {/* Nút Xem chấm điểm & phân loại (S4-04) */}
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setActiveTab('LEAD_SCORING')}
+            id="btn-nav-lead-scoring"
+            title="Xem bảng xếp hạng điểm và phân loại Lead"
+          >
+            <IconTarget />
+            <span>Chấm điểm Lead</span>
+          </button>
+
           {/* Nút Xuất Excel */}
           <button
             type="button"
@@ -688,9 +865,22 @@ export default function LeadFormsPage() {
           type="button"
           className={`lead-tab-btn ${activeTab === 'LEADS_LIST' ? 'active' : ''}`}
           onClick={() => setActiveTab('LEADS_LIST')}
+          id="tab-btn-leads-list"
         >
           <span>Danh sách Lead tổng hợp</span>
           <span className="tab-badge">{leads.length}</span>
+        </button>
+
+        <button
+          type="button"
+          className={`lead-tab-btn ${activeTab === 'LEAD_SCORING' ? 'active' : ''}`}
+          onClick={() => setActiveTab('LEAD_SCORING')}
+          id="tab-btn-lead-scoring"
+        >
+          <span>Chấm điểm & Phân loại (S4-04)</span>
+          <span className="tab-badge primary">
+            {scoringStats.hotCount} 🔥 Nóng
+          </span>
         </button>
 
         <button
@@ -809,13 +999,18 @@ export default function LeadFormsPage() {
                     <th>Nguồn Lead</th>
                     <th style={{ width: '220px' }}>Nhu cầu tư vấn</th>
                     <th style={{ width: '150px' }}>Người phụ trách</th>
-                    <th style={{ width: '150px', textAlign: 'center' }}>Trạng thái</th>
-                    <th style={{ width: '70px', textAlign: 'center' }}>Xóa</th>
+                    <th style={{ width: '140px', textAlign: 'center' }}>Điểm & Phân loại</th>
+                    <th style={{ width: '140px', textAlign: 'center' }}>Trạng thái</th>
+                    <th style={{ width: '90px', textAlign: 'center' }}>Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredLeads.map((l) => {
                     const statusCfg = LEAD_STATUS_CONFIG[l.status]
+                    const tier = l.score_tier || 'WARM'
+                    const tierCfg = LEAD_TIER_CONFIG[tier]
+                    const seg = l.segment || 'HIGH_POTENTIAL'
+                    const segCfg = LEAD_SEGMENT_CONFIG[seg]
                     return (
                       <tr key={l.id} id={`lead-row-${l.id}`}>
                         <td>
@@ -860,6 +1055,27 @@ export default function LeadFormsPage() {
                         </td>
 
                         <td style={{ textAlign: 'center' }}>
+                          <button
+                            type="button"
+                            className="lead-score-btn-cell"
+                            onClick={() => handleOpenScoreModal(l)}
+                            title="Xem chi tiết phân tích điểm & tiêu chí"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          >
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                              <span className={`lead-score-pill ${tier.toLowerCase()}`}>
+                                {tierCfg.emoji} {l.score ?? 50}đ
+                              </span>
+                              {l.segment && (
+                                <span className={`lead-segment-badge ${segCfg?.className || 'unqualified'}`}>
+                                  {segCfg?.icon} {segCfg?.label}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        </td>
+
+                        <td style={{ textAlign: 'center' }}>
                           <select
                             className="lead-status-dropdown"
                             style={{
@@ -880,14 +1096,263 @@ export default function LeadFormsPage() {
                         </td>
 
                         <td style={{ textAlign: 'center' }}>
-                          <button
-                            type="button"
-                            className="btn-action-icon delete"
-                            onClick={() => setDeletingLead(l)}
-                            title="Xóa Lead này"
-                          >
-                            <IconTrash />
-                          </button>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                            <button
+                              type="button"
+                              className="btn-action-icon edit"
+                              onClick={() => handleOpenScoreModal(l)}
+                              title="Xem chi tiết & Điều chỉnh điểm số"
+                              id={`btn-score-lead-${l.id}`}
+                            >
+                              <IconTarget />
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-action-icon delete"
+                              onClick={() => setDeletingLead(l)}
+                              title="Xóa Lead này"
+                              id={`btn-delete-lead-${l.id}`}
+                            >
+                              <IconTrash />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          TAB 2: PHÂN LOẠI & CHẤM ĐIỂM LEAD (USER STORY S4-04)
+          ───────────────────────────────────────────────────────────── */}
+      {activeTab === 'LEAD_SCORING' && (
+        <div className="lead-card-panel lead-scoring-panel" id="lead-scoring-panel">
+          {/* Header Panel */}
+          <div className="lead-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>Phân loại & Chấm điểm Khách hàng Tiềm năng (S4-04)</h3>
+              <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '13px' }}>
+                Hệ thống đánh giá chất lượng Lead tự động theo 3 trụ cột (Hồ sơ Doanh nghiệp, Nhu cầu tư vấn, Kênh tiếp cận) và hỗ trợ Quản lý điều chỉnh điểm thủ công.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              {canManageScoring && (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleRecalculateAll}
+                  disabled={isRecalculatingAll}
+                  id="btn-recalculate-all-scores"
+                  title="Chấm điểm lại tất cả khách hàng dựa trên dữ liệu mới nhất"
+                >
+                  <IconRefreshCw />
+                  <span>{isRecalculatingAll ? 'Đang chấm lại toàn bộ...' : 'Chấm lại tất cả'}</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* KPI Dashboard Cards */}
+          <div className="scoring-summary-cards">
+            <div className="scoring-stat-card">
+              <div className="scoring-stat-icon avg">🎯</div>
+              <div className="scoring-stat-info">
+                <span className="scoring-stat-value">{scoringStats.averageScore} / 100</span>
+                <span className="scoring-stat-label">Điểm trung bình hệ thống</span>
+              </div>
+            </div>
+
+            <div className="scoring-stat-card">
+              <div className="scoring-stat-icon hot">🔥</div>
+              <div className="scoring-stat-info">
+                <span className="scoring-stat-value" style={{ color: '#dc2626' }}>{scoringStats.hotCount}</span>
+                <span className="scoring-stat-label">Khách Nóng (Hot &ge; 70đ)</span>
+              </div>
+            </div>
+
+            <div className="scoring-stat-card">
+              <div className="scoring-stat-icon warm">⚡</div>
+              <div className="scoring-stat-info">
+                <span className="scoring-stat-value" style={{ color: '#d97706' }}>{scoringStats.warmCount}</span>
+                <span className="scoring-stat-label">Khách Ấm (Warm 40-69đ)</span>
+              </div>
+            </div>
+
+            <div className="scoring-stat-card">
+              <div className="scoring-stat-icon cold">❄️</div>
+              <div className="scoring-stat-info">
+                <span className="scoring-stat-value" style={{ color: '#64748b' }}>{scoringStats.coldCount}</span>
+                <span className="scoring-stat-label">Khách Lạnh (Cold &lt; 40đ)</span>
+              </div>
+            </div>
+
+            <div className="scoring-stat-card">
+              <div className="scoring-stat-icon vip">👑</div>
+              <div className="scoring-stat-info">
+                <span className="scoring-stat-value" style={{ color: '#7e22ce' }}>{scoringStats.vipCount}</span>
+                <span className="scoring-stat-label">Doanh nghiệp VIP</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Toolbar / Filters */}
+          <div className="lead-table-toolbar">
+            <div className="lead-search-box">
+              <IconSearch />
+              <input
+                type="text"
+                placeholder="Tìm theo tên, email, công ty, mã lead..."
+                value={scoreSearchQuery}
+                onChange={(e) => setScoreSearchQuery(e.target.value)}
+                id="input-score-search"
+              />
+            </div>
+
+            <div className="lead-filters-group">
+              <select
+                className="lead-select-filter"
+                value={scoreTierFilter}
+                onChange={(e) => setScoreTierFilter(e.target.value)}
+                id="select-filter-score-tier"
+              >
+                <option value="ALL">Tất cả phân hạng điểm</option>
+                <option value="HOT">🔥 Khách Nóng (Hot &ge; 70đ)</option>
+                <option value="WARM">⚡ Khách Ấm (Warm 40-69đ)</option>
+                <option value="COLD">❄️ Khách Lạnh (Cold &lt; 40đ)</option>
+              </select>
+
+              <select
+                className="lead-select-filter"
+                value={scoreSegmentFilter}
+                onChange={(e) => setScoreSegmentFilter(e.target.value)}
+                id="select-filter-score-segment"
+              >
+                <option value="ALL">Tất cả nhóm phân loại</option>
+                <option value="ENTERPRISE_VIP">👑 Doanh nghiệp VIP</option>
+                <option value="HIGH_POTENTIAL">⭐ Tiềm năng cao</option>
+                <option value="NURTURE">🌱 Cần nuôi dưỡng</option>
+                <option value="UNQUALIFIED">⚠️ Không phù hợp</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Table */}
+          {isLoading ? (
+            <div className="lead-loading-box">
+              <div className="lead-spinner" />
+              <span>Đang tính toán ma trận điểm khách hàng tiềm năng...</span>
+            </div>
+          ) : filteredScoredLeads.length === 0 ? (
+            <div className="lead-empty-state">
+              <div className="lead-empty-icon">🎯</div>
+              <h4>Không tìm thấy khách hàng tiềm năng nào phù hợp bộ lọc</h4>
+              <p>Thử điều chỉnh từ khóa tìm kiếm hoặc bỏ chọn các bộ lọc phân hạng/nhóm.</p>
+            </div>
+          ) : (
+            <div className="lead-table-responsive">
+              <table className="lead-data-table" id="table-lead-scoring">
+                <thead>
+                  <tr>
+                    <th style={{ width: '90px' }}>Mã Lead</th>
+                    <th>Họ và tên & Liên hệ</th>
+                    <th>Công ty & Ngành</th>
+                    <th style={{ width: '130px' }}>Nguồn Lead</th>
+                    <th style={{ width: '160px' }}>Điểm số & Mức độ</th>
+                    <th style={{ width: '120px', textAlign: 'center' }}>Phân hạng</th>
+                    <th style={{ width: '140px', textAlign: 'center' }}>Phân nhóm</th>
+                    <th style={{ width: '120px', textAlign: 'center' }}>Cách chấm</th>
+                    <th style={{ width: '130px', textAlign: 'center' }}>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredScoredLeads.map((l) => {
+                    const tier = l.score_tier || 'WARM'
+                    const tierCfg = LEAD_TIER_CONFIG[tier]
+                    const seg = l.segment || 'HIGH_POTENTIAL'
+                    const segCfg = LEAD_SEGMENT_CONFIG[seg]
+                    const score = l.score ?? 50
+                    return (
+                      <tr key={l.id} id={`score-row-${l.id}`}>
+                        <td>
+                          <span className="lead-code-tag">{l.code}</span>
+                        </td>
+                        <td>
+                          <div className="lead-contact-info">
+                            <strong className="lead-contact-name">{l.full_name}</strong>
+                            <div className="lead-contact-detail">
+                              <span>📞 {l.phone}</span>
+                              <span>✉️ {l.email}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span className="lead-company-text">{l.company || <span style={{ color: '#94a3b8' }}>—</span>}</span>
+                            {l.industry && <span style={{ fontSize: '11.5px', color: '#64748b' }}>{l.industry}</span>}
+                          </div>
+                        </td>
+                        <td>
+                          <span className="lead-source-tag">{LEAD_SOURCE_LABELS[l.source] || l.source}</span>
+                        </td>
+                        <td>
+                          <div className="score-cell-wrapper">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <strong style={{ fontSize: '13px', color: '#0f172a' }}>{score}/100</strong>
+                              <span style={{ fontSize: '11px', color: '#64748b' }}>
+                                {tier === 'HOT' ? 'Ưu tiên gọi' : tier === 'WARM' ? 'Theo dõi' : 'Lưu trữ'}
+                              </span>
+                            </div>
+                            <div className="score-progress-bar-bg">
+                              <div
+                                className={`score-progress-bar-fill ${tier.toLowerCase()}`}
+                                style={{ width: `${Math.min(100, Math.max(5, score))}%` }}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span className={`lead-score-pill ${tier.toLowerCase()}`}>
+                            {tierCfg.emoji} {tierCfg.label}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span className={`lead-segment-badge ${segCfg?.className || 'unqualified'}`}>
+                            {segCfg?.icon} {segCfg?.label}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span style={{ fontSize: '11.5px', color: l.is_manually_scored ? '#7e22ce' : '#0369a1', fontWeight: 600 }}>
+                            {l.is_manually_scored ? '✍️ Thủ công' : '🤖 AI / Quy tắc'}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => handleOpenScoreModal(l)}
+                              title="Xem chi tiết các tiêu chí và điều chỉnh điểm"
+                              id={`btn-open-score-modal-${l.id}`}
+                              style={{ padding: '4px 8px', fontSize: '12px' }}
+                            >
+                              <IconSliders />
+                              <span>Chi tiết</span>
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-action-icon edit"
+                              onClick={() => handleRecalculateSingleLead(l.id)}
+                              title="Chấm lại điểm theo quy tắc"
+                              id={`btn-recalc-score-${l.id}`}
+                            >
+                              <IconRefreshCw />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     )
@@ -2035,6 +2500,264 @@ export default function LeadFormsPage() {
               >
                 Xóa vĩnh viễn
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── S4-04: Modal Chi tiết Chấm điểm & Điều chỉnh Lead ── */}
+      {isScoreModalOpen && selectedLeadForScore && (
+        <div className="lead-modal-backdrop" onClick={() => setIsScoreModalOpen(false)}>
+          <div
+            className="lead-modal-content"
+            style={{ maxWidth: '680px', width: '95%' }}
+            onClick={(e) => e.stopPropagation()}
+            id="modal-score-detail"
+          >
+            <div className="lead-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <IconTarget />
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px' }}>
+                    Chi tiết Chấm điểm & Phân loại Lead
+                  </h3>
+                  <span style={{ fontSize: '12px', color: '#64748b' }}>
+                    {selectedLeadForScore.full_name} — {selectedLeadForScore.code}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="lead-modal-close-btn"
+                onClick={() => setIsScoreModalOpen(false)}
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="score-modal-body">
+              {/* Banner Overview */}
+              <div className="score-overview-banner">
+                <div className="score-gauge-box">
+                  <div className={`score-big-circle ${(selectedLeadForScore.score_tier || 'WARM').toLowerCase()}`}>
+                    <span>{selectedLeadForScore.score ?? 50}</span>
+                    <span className="score-circle-sub">/ 100đ</span>
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className={`lead-score-pill ${(selectedLeadForScore.score_tier || 'WARM').toLowerCase()}`}>
+                        {LEAD_TIER_CONFIG[selectedLeadForScore.score_tier || 'WARM']?.emoji}{' '}
+                        {LEAD_TIER_CONFIG[selectedLeadForScore.score_tier || 'WARM']?.label}
+                      </span>
+                      {selectedLeadForScore.segment && (
+                        <span className={`lead-segment-badge ${(LEAD_SEGMENT_CONFIG[selectedLeadForScore.segment]?.className || 'unqualified')}`}>
+                          {LEAD_SEGMENT_CONFIG[selectedLeadForScore.segment]?.icon}{' '}
+                          {LEAD_SEGMENT_CONFIG[selectedLeadForScore.segment]?.label}
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ margin: '6px 0 0 0', fontSize: '12.5px', color: '#475569' }}>
+                      {selectedLeadForScore.is_manually_scored
+                        ? '✍️ Điểm số và phân nhóm được điều chỉnh thủ công bởi quản trị viên.'
+                        : '🤖 Điểm số được hệ thống tự động tính toán dựa trên dữ liệu BANT và hành vi.'}
+                    </p>
+                    {selectedLeadForScore.last_scored_at && (
+                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                        Lần chấm gần nhất: {new Date(selectedLeadForScore.last_scored_at).toLocaleString('vi-VN')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => handleRecalculateSingleLead(selectedLeadForScore.id)}
+                  disabled={isScoringActionLoading}
+                  title="Tính lại điểm số tự động theo quy tắc hệ thống"
+                >
+                  <IconRefreshCw />
+                  <span>{isScoringActionLoading ? 'Đang tính...' : 'Chấm lại'}</span>
+                </button>
+              </div>
+
+              {/* 3 Pillars Score Breakdown */}
+              <div className="score-pillars-grid">
+                <div className="score-pillar-card">
+                  <span className="score-pillar-title">1. Hồ sơ Doanh nghiệp</span>
+                  <span className="score-pillar-pts">
+                    {selectedLeadForScore.score_breakdown?.demographic_score ?? 15}{' '}
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>/ 35đ</span>
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>
+                    {selectedLeadForScore.company ? `🏢 ${selectedLeadForScore.company}` : 'Cá nhân (Chưa có cty)'}
+                  </span>
+                </div>
+
+                <div className="score-pillar-card">
+                  <span className="score-pillar-title">2. Nhu cầu & Tương tác</span>
+                  <span className="score-pillar-pts">
+                    {selectedLeadForScore.score_breakdown?.engagement_score ?? 20}{' '}
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>/ 40đ</span>
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>
+                    {selectedLeadForScore.requirement ? 'Đã có mô tả nhu cầu' : 'Chưa có nhu cầu cụ thể'}
+                  </span>
+                </div>
+
+                <div className="score-pillar-card">
+                  <span className="score-pillar-title">3. Kênh tiếp cận</span>
+                  <span className="score-pillar-pts">
+                    {selectedLeadForScore.score_breakdown?.source_score ?? 15}{' '}
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>/ 25đ</span>
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>
+                    {LEAD_SOURCE_LABELS[selectedLeadForScore.source] || selectedLeadForScore.source}
+                  </span>
+                </div>
+              </div>
+
+              {/* Score Reasons List */}
+              <div className="score-reasons-container">
+                <h4 className="score-reasons-title">
+                  <span>Tiêu chí đánh giá & Cộng/Trừ điểm chi tiết</span>
+                </h4>
+                {selectedLeadForScore.score_breakdown?.reasons && selectedLeadForScore.score_breakdown.reasons.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {selectedLeadForScore.score_breakdown.reasons.map((r, idx) => (
+                      <div key={idx} className={`score-reason-item ${r.type.toLowerCase()}`}>
+                        <div>
+                          <strong style={{ color: '#0f172a' }}>{r.criterion}</strong>
+                          <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#475569' }}>
+                            {r.description}
+                          </p>
+                        </div>
+                        <span className={`score-pts-badge ${r.type.toLowerCase()}`}>
+                          {r.points > 0 ? `+${r.points}đ` : `${r.points}đ`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: '12.5px', color: '#64748b', fontStyle: 'italic', margin: 0 }}>
+                    Chưa có lịch sử các tiêu chí chi tiết. Hãy bấm "Chấm lại" để hệ thống phân tích.
+                  </p>
+                )}
+              </div>
+
+              {/* Manual Override Section (Quản lý & Quản trị viên) */}
+              <div className="manual-override-panel">
+                <div className="manual-override-header">
+                  <h4 className="manual-override-title">
+                    <IconSliders />
+                    <span>Điều chỉnh điểm & Phân nhóm thủ công (Dành cho Quản lý)</span>
+                  </h4>
+                  {canManageScoring && (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', cursor: 'pointer', color: '#6b21a8', fontWeight: 600 }}>
+                      <input
+                        type="checkbox"
+                        checked={isManualOverrideActive}
+                        onChange={(e) => setIsManualOverrideActive(e.target.checked)}
+                        id="checkbox-enable-manual-scoring"
+                      />
+                      <span>Bật can thiệp thủ công</span>
+                    </label>
+                  )}
+                </div>
+
+                {isManualOverrideActive ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="manual-override-inputs">
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>
+                          Điểm số tùy chỉnh (0 - 100): <strong>{manualScoreInput}đ</strong>
+                        </label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={manualScoreInput}
+                            onChange={(e) => setManualScoreInput(Number(e.target.value))}
+                            style={{ flex: 1 }}
+                            id="input-range-manual-score"
+                          />
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={manualScoreInput}
+                            onChange={(e) => setManualScoreInput(Math.min(100, Math.max(0, Number(e.target.value))))}
+                            style={{ width: '70px', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                            id="input-number-manual-score"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>
+                          Nhóm phân loại mục tiêu:
+                        </label>
+                        <select
+                          className="form-control"
+                          value={manualSegmentInput}
+                          onChange={(e) => setManualSegmentInput(e.target.value as LeadSegment)}
+                          style={{ padding: '7px 10px', fontSize: '13px' }}
+                          id="select-manual-segment"
+                        >
+                          <option value="ENTERPRISE_VIP">👑 Doanh nghiệp VIP</option>
+                          <option value="HIGH_POTENTIAL">⭐ Tiềm năng cao</option>
+                          <option value="NURTURE">🌱 Cần nuôi dưỡng</option>
+                          <option value="UNQUALIFIED">⚠️ Không phù hợp</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>
+                        Ghi chú lý do điều chỉnh:
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Ví dụ: Khách vừa gọi xác nhận ngân sách lớn, nâng lên nhóm VIP..."
+                        value={manualNotesInput}
+                        onChange={(e) => setManualNotesInput(e.target.value)}
+                        style={{ fontSize: '13px', padding: '8px 12px' }}
+                        id="input-manual-scoring-notes"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <p style={{ margin: 0, fontSize: '12px', color: '#6b21a8' }}>
+                    {canManageScoring
+                      ? 'Tích chọn "Bật can thiệp thủ công" nếu bạn muốn ghi đè điểm số hoặc thay đổi nhóm phân loại cho lead này.'
+                      : 'Chỉ Quản lý (Manager) và Quản trị viên (Admin) mới có quyền can thiệp điểm số và phân nhóm.'}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="lead-modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setIsScoreModalOpen(false)}
+              >
+                Đóng
+              </button>
+              {canManageScoring && isManualOverrideActive && (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleSaveManualScore}
+                  disabled={isScoringActionLoading}
+                  id="btn-save-manual-score"
+                >
+                  <IconCheck />
+                  <span>{isScoringActionLoading ? 'Đang lưu...' : 'Lưu điểm & Phân loại'}</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
