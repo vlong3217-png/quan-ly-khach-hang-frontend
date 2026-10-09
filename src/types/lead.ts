@@ -56,6 +56,54 @@ export interface UpdateLeadScorePayload {
   is_manually_scored?: boolean
 }
 
+export interface LeadConversionPayload {
+  lead_id: string
+  // Tùy chọn Khách hàng
+  create_new_customer: boolean
+  customer_id?: string
+  customer_name?: string
+  tax_code?: string
+  industry?: string
+  company_size?: string
+  address?: string
+  website?: string
+  phone?: string
+  email?: string
+
+  // Tùy chọn Cơ hội
+  create_opportunity: boolean
+  opportunity_title?: string
+  stage_id?: string
+  stage_name?: string
+  expected_revenue?: number
+  expected_close_date?: string
+  win_probability?: number
+  owner_id?: number
+  owner_name?: string
+  notes?: string
+}
+
+export interface LeadConversionResult {
+  success: boolean
+  lead_id: string
+  customer?: {
+    id: string
+    code: string
+    name: string
+    phone?: string
+    email?: string
+  }
+  opportunity?: {
+    id: string
+    code: string
+    title: string
+    expected_revenue: number
+    stage_name?: string
+    stage_id?: string
+  }
+  message: string
+}
+
 export interface Lead {
   id: string
   code: string
@@ -80,6 +128,11 @@ export interface Lead {
   is_manually_scored?: boolean
   scoring_notes?: string
   last_scored_at?: string
+  converted_customer_id?: string
+  converted_customer_name?: string
+  converted_opportunity_id?: string
+  converted_opportunity_title?: string
+  converted_at?: string
   created_at: string
   updated_at: string
 }
