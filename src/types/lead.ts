@@ -189,3 +189,43 @@ export interface ImportLeadResult {
   imported_leads: Lead[]
   errors: { row: number; name: string; error: string }[]
 }
+
+/* ──────────── User Story S4-06: Lịch sử tương tác với Lead ──────────── */
+export type LeadInteractionType =
+  | 'CALL'
+  | 'EMAIL'
+  | 'MEETING'
+  | 'NOTE'
+  | 'STATUS_CHANGE'
+  | 'SCORE_UPDATE'
+  | 'SYSTEM'
+
+export interface LeadInteraction {
+  id: string
+  lead_id: string
+  type: LeadInteractionType
+  title: string
+  content?: string
+  outcome?: string
+  performed_by_id?: number
+  performed_by_name: string
+  performed_at: string
+  next_action?: string
+  next_action_due?: string
+  metadata?: Record<string, unknown>
+  created_at: string
+}
+
+export interface CreateLeadInteractionPayload {
+  lead_id: string
+  type: LeadInteractionType
+  title: string
+  content?: string
+  outcome?: string
+  performed_by_id?: number
+  performed_by_name?: string
+  performed_at?: string
+  next_action?: string
+  next_action_due?: string
+}
+
