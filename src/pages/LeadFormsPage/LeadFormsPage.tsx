@@ -94,13 +94,6 @@ const IconUpload = () => (
   </svg>
 )
 
-const IconDownload = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="7 10 12 15 17 10" />
-    <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
-)
 
 const IconFileSpreadsheet = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -238,17 +231,17 @@ const IconTrendingUp = () => (
 )
 
 const LEAD_TIER_CONFIG: Record<LeadScoreTier, { label: string; emoji: string; className: string }> = {
-  HOT: { label: 'Nóng (Hot)', emoji: '🔥', className: 'hot' },
-  WARM: { label: 'Ấm (Warm)', emoji: '⚡', className: 'warm' },
-  COLD: { label: 'Lạnh (Cold)', emoji: '❄️', className: 'cold' },
+  HOT: { label: 'Nóng (Hot)', emoji: '', className: 'hot' },
+  WARM: { label: 'Ấm (Warm)', emoji: '', className: 'warm' },
+  COLD: { label: 'Lạnh (Cold)', emoji: '', className: 'cold' },
 }
 
 const LEAD_SEGMENT_CONFIG: Record<LeadSegment, { label: string; className: string; icon: string }> = {
-  ENTERPRISE_VIP: { label: 'Doanh nghiệp VIP', className: 'vip', icon: '👑' },
-  HIGH_POTENTIAL: { label: 'Tiềm năng cao', className: 'potential', icon: '⭐' },
-  NURTURE: { label: 'Cần nuôi dưỡng', className: 'nurture', icon: '🌱' },
-  UNQUALIFIED: { label: 'Không phù hợp', className: 'unqualified', icon: '⚠️' },
-  UNCLASSIFIED: { label: 'Chưa phân nhóm', className: 'unqualified', icon: '🏷️' },
+  ENTERPRISE_VIP: { label: 'Doanh nghiệp VIP', className: 'vip', icon: '' },
+  HIGH_POTENTIAL: { label: 'Tiềm năng cao', className: 'potential', icon: '' },
+  NURTURE: { label: 'Cần nuôi dưỡng', className: 'nurture', icon: '' },
+  UNQUALIFIED: { label: 'Không phù hợp', className: 'unqualified', icon: '' },
+  UNCLASSIFIED: { label: 'Chưa phân nhóm', className: 'unqualified', icon: '' },
 }
 
 export default function LeadFormsPage() {
@@ -1127,7 +1120,6 @@ export default function LeadFormsPage() {
             onClick={() => setIsCreateLeadModalOpen(true)}
             id="btn-create-lead-manual"
           >
-            <IconPlus />
             <span>Tạo Lead thủ công</span>
           </button>
 
@@ -1138,7 +1130,6 @@ export default function LeadFormsPage() {
             onClick={() => setActiveTab('IMPORT_EXCEL')}
             id="btn-nav-import-excel"
           >
-            <IconUpload />
             <span>Nhập từ Excel</span>
           </button>
 
@@ -1150,7 +1141,6 @@ export default function LeadFormsPage() {
             id="btn-nav-lead-scoring"
             title="Xem bảng xếp hạng điểm và phân loại Lead"
           >
-            <IconTarget />
             <span>Chấm điểm Lead</span>
           </button>
 
@@ -1163,7 +1153,6 @@ export default function LeadFormsPage() {
             title="Chuyển đổi Lead thành Khách hàng và Cơ hội bán hàng"
             style={{ color: '#1d4ed8', borderColor: '#93c5fd', background: '#eff6ff' }}
           >
-            <IconUserCheck />
             <span>Chuyển đổi Lead (S4-05)</span>
           </button>
 
@@ -1175,7 +1164,6 @@ export default function LeadFormsPage() {
             id="btn-nav-lead-interactions"
             title="Xem toàn bộ lịch sử tương tác và chăm sóc Lead"
           >
-            <IconHistory />
             <span>Dòng thời gian tương tác</span>
           </button>
 
@@ -1186,7 +1174,6 @@ export default function LeadFormsPage() {
             onClick={() => leadService.exportLeadsToExcel(leads)}
             title="Xuất danh sách Lead ra file Excel"
           >
-            <IconDownload />
             <span>Xuất Excel</span>
           </button>
         </div>
@@ -1249,7 +1236,7 @@ export default function LeadFormsPage() {
         >
           <span>Chấm điểm & Phân loại (S4-04)</span>
           <span className="tab-badge primary">
-            {scoringStats.hotCount} 🔥 Nóng
+            {scoringStats.hotCount} Nóng
           </span>
         </button>
 
@@ -1360,7 +1347,6 @@ export default function LeadFormsPage() {
             </div>
           ) : filteredLeads.length === 0 ? (
             <div className="lead-empty-state">
-              <div className="lead-empty-icon">👥</div>
               <h4>Không tìm thấy khách hàng tiềm năng nào</h4>
               <p>Bạn có thể tạo lead thủ công hoặc tải file Excel lên để nhập hàng loạt vào hệ thống.</p>
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '12px' }}>
@@ -1369,7 +1355,6 @@ export default function LeadFormsPage() {
                   className="btn btn-primary"
                   onClick={() => setIsCreateLeadModalOpen(true)}
                 >
-                  <IconPlus />
                   <span>Tạo Lead thủ công</span>
                 </button>
                 <button
@@ -1377,7 +1362,6 @@ export default function LeadFormsPage() {
                   className="btn btn-secondary"
                   onClick={() => setActiveTab('IMPORT_EXCEL')}
                 >
-                  <IconUpload />
                   <span>Nhập từ Excel</span>
                 </button>
               </div>
@@ -1391,7 +1375,7 @@ export default function LeadFormsPage() {
                     <th>Họ và tên & Liên hệ</th>
                     <th>Doanh nghiệp & Ngành nghề</th>
                     <th>Nguồn Lead</th>
-                    <th style={{ width: '220px' }}>Nhu cầu tư vấn</th>
+                    <th style={{ minWidth: '360px', width: '400px' }}>Nhu cầu tư vấn</th>
                     <th style={{ width: '150px' }}>Người phụ trách</th>
                     <th style={{ width: '140px', textAlign: 'center' }}>Điểm & Phân loại</th>
                     <th style={{ width: '140px', textAlign: 'center' }}>Trạng thái</th>
@@ -1402,7 +1386,6 @@ export default function LeadFormsPage() {
                   {filteredLeads.map((l) => {
                     const statusCfg = LEAD_STATUS_CONFIG[l.status]
                     const tier = l.score_tier || 'WARM'
-                    const tierCfg = LEAD_TIER_CONFIG[tier]
                     const seg = l.segment || 'HIGH_POTENTIAL'
                     const segCfg = LEAD_SEGMENT_CONFIG[seg]
                     return (
@@ -1415,8 +1398,8 @@ export default function LeadFormsPage() {
                           <div className="lead-contact-info">
                             <strong className="lead-contact-name">{l.full_name}</strong>
                             <div className="lead-contact-detail">
-                              <span>📞 {l.phone}</span>
-                              <span>✉️ {l.email}</span>
+                              <span>{l.phone}</span>
+                              <span>{l.email}</span>
                             </div>
                           </div>
                         </td>
@@ -1458,11 +1441,11 @@ export default function LeadFormsPage() {
                           >
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
                               <span className={`lead-score-pill ${tier.toLowerCase()}`}>
-                                {tierCfg.emoji} {l.score ?? 50}đ
+                                {l.score ?? 50}đ
                               </span>
                               {l.segment && (
                                 <span className={`lead-segment-badge ${segCfg?.className || 'unqualified'}`}>
-                                  {segCfg?.icon} {segCfg?.label}
+                                  {segCfg?.label}
                                 </span>
                               )}
                             </div>
@@ -1591,7 +1574,6 @@ export default function LeadFormsPage() {
           {/* KPI Dashboard Cards */}
           <div className="scoring-summary-cards">
             <div className="scoring-stat-card">
-              <div className="scoring-stat-icon avg">🎯</div>
               <div className="scoring-stat-info">
                 <span className="scoring-stat-value">{scoringStats.averageScore} / 100</span>
                 <span className="scoring-stat-label">Điểm trung bình hệ thống</span>
@@ -1599,7 +1581,6 @@ export default function LeadFormsPage() {
             </div>
 
             <div className="scoring-stat-card">
-              <div className="scoring-stat-icon hot">🔥</div>
               <div className="scoring-stat-info">
                 <span className="scoring-stat-value" style={{ color: '#dc2626' }}>{scoringStats.hotCount}</span>
                 <span className="scoring-stat-label">Khách Nóng (Hot &ge; 70đ)</span>
@@ -1607,7 +1588,6 @@ export default function LeadFormsPage() {
             </div>
 
             <div className="scoring-stat-card">
-              <div className="scoring-stat-icon warm">⚡</div>
               <div className="scoring-stat-info">
                 <span className="scoring-stat-value" style={{ color: '#d97706' }}>{scoringStats.warmCount}</span>
                 <span className="scoring-stat-label">Khách Ấm (Warm 40-69đ)</span>
@@ -1615,7 +1595,6 @@ export default function LeadFormsPage() {
             </div>
 
             <div className="scoring-stat-card">
-              <div className="scoring-stat-icon cold">❄️</div>
               <div className="scoring-stat-info">
                 <span className="scoring-stat-value" style={{ color: '#64748b' }}>{scoringStats.coldCount}</span>
                 <span className="scoring-stat-label">Khách Lạnh (Cold &lt; 40đ)</span>
@@ -1623,7 +1602,6 @@ export default function LeadFormsPage() {
             </div>
 
             <div className="scoring-stat-card">
-              <div className="scoring-stat-icon vip">👑</div>
               <div className="scoring-stat-info">
                 <span className="scoring-stat-value" style={{ color: '#7e22ce' }}>{scoringStats.vipCount}</span>
                 <span className="scoring-stat-label">Doanh nghiệp VIP</span>
@@ -1652,9 +1630,9 @@ export default function LeadFormsPage() {
                 id="select-filter-score-tier"
               >
                 <option value="ALL">Tất cả phân hạng điểm</option>
-                <option value="HOT">🔥 Khách Nóng (Hot &ge; 70đ)</option>
-                <option value="WARM">⚡ Khách Ấm (Warm 40-69đ)</option>
-                <option value="COLD">❄️ Khách Lạnh (Cold &lt; 40đ)</option>
+                <option value="HOT">Khách Nóng (Hot &ge; 70đ)</option>
+                <option value="WARM">Khách Ấm (Warm 40-69đ)</option>
+                <option value="COLD">Khách Lạnh (Cold &lt; 40đ)</option>
               </select>
 
               <select
@@ -1664,10 +1642,10 @@ export default function LeadFormsPage() {
                 id="select-filter-score-segment"
               >
                 <option value="ALL">Tất cả nhóm phân loại</option>
-                <option value="ENTERPRISE_VIP">👑 Doanh nghiệp VIP</option>
-                <option value="HIGH_POTENTIAL">⭐ Tiềm năng cao</option>
-                <option value="NURTURE">🌱 Cần nuôi dưỡng</option>
-                <option value="UNQUALIFIED">⚠️ Không phù hợp</option>
+                <option value="ENTERPRISE_VIP">Doanh nghiệp VIP</option>
+                <option value="HIGH_POTENTIAL">Tiềm năng cao</option>
+                <option value="NURTURE">Cần nuôi dưỡng</option>
+                <option value="UNQUALIFIED">Không phù hợp</option>
               </select>
             </div>
           </div>
@@ -1680,7 +1658,6 @@ export default function LeadFormsPage() {
             </div>
           ) : filteredScoredLeads.length === 0 ? (
             <div className="lead-empty-state">
-              <div className="lead-empty-icon">🎯</div>
               <h4>Không tìm thấy khách hàng tiềm năng nào phù hợp bộ lọc</h4>
               <p>Thử điều chỉnh từ khóa tìm kiếm hoặc bỏ chọn các bộ lọc phân hạng/nhóm.</p>
             </div>
@@ -1716,8 +1693,8 @@ export default function LeadFormsPage() {
                           <div className="lead-contact-info">
                             <strong className="lead-contact-name">{l.full_name}</strong>
                             <div className="lead-contact-detail">
-                              <span>📞 {l.phone}</span>
-                              <span>✉️ {l.email}</span>
+                              <span>{l.phone}</span>
+                              <span>{l.email}</span>
                             </div>
                           </div>
                         </td>
@@ -1748,17 +1725,17 @@ export default function LeadFormsPage() {
                         </td>
                         <td style={{ textAlign: 'center' }}>
                           <span className={`lead-score-pill ${tier.toLowerCase()}`}>
-                            {tierCfg.emoji} {tierCfg.label}
+                            {tierCfg.label}
                           </span>
                         </td>
                         <td style={{ textAlign: 'center' }}>
                           <span className={`lead-segment-badge ${segCfg?.className || 'unqualified'}`}>
-                            {segCfg?.icon} {segCfg?.label}
+                            {segCfg?.label}
                           </span>
                         </td>
                         <td style={{ textAlign: 'center' }}>
                           <span style={{ fontSize: '11.5px', color: l.is_manually_scored ? '#7e22ce' : '#0369a1', fontWeight: 600 }}>
-                            {l.is_manually_scored ? '✍️ Thủ công' : '🤖 AI / Quy tắc'}
+                            {l.is_manually_scored ? 'Thủ công' : 'AI / Quy tắc'}
                           </span>
                         </td>
                         <td style={{ textAlign: 'center' }}>
@@ -1835,14 +1812,12 @@ export default function LeadFormsPage() {
         <div className="lead-card-panel lead-scoring-panel" id="panel-lead-conversion">
           <div className="scoring-summary-cards">
             <div className="scoring-stat-card">
-              <div className="scoring-stat-icon vip">🏆</div>
               <div className="scoring-stat-info">
                 <span className="scoring-stat-value">{stats.convertedLeads}</span>
                 <span className="scoring-stat-label">Lead đã chuyển đổi thành công</span>
               </div>
             </div>
             <div className="scoring-stat-card">
-              <div className="scoring-stat-icon hot">🔥</div>
               <div className="scoring-stat-info">
                 <span className="scoring-stat-value">
                   {leads.filter((l) => l.status === 'QUALIFIED' || l.score_tier === 'HOT').length}
@@ -1851,7 +1826,6 @@ export default function LeadFormsPage() {
               </div>
             </div>
             <div className="scoring-stat-card">
-              <div className="scoring-stat-icon avg">📊</div>
               <div className="scoring-stat-info">
                 <span className="scoring-stat-value">
                   {leads.length > 0 ? Math.round((stats.convertedLeads / leads.length) * 100) : 0}%
@@ -1865,7 +1839,7 @@ export default function LeadFormsPage() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '15px', color: '#0f172a' }}>
-                  🎯 Khách hàng tiềm năng sẵn sàng chuyển đổi
+                  Khách hàng tiềm năng sẵn sàng chuyển đổi
                 </h3>
                 <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748b' }}>
                   Bấm "Chuyển đổi" để tạo hồ sơ Khách hàng doanh nghiệp trong danh bạ và tạo Cơ hội bán hàng (Opportunity) vào Pipeline.
@@ -1895,8 +1869,8 @@ export default function LeadFormsPage() {
                           <div className="lead-contact-info">
                             <strong className="lead-contact-name">{l.full_name}</strong>
                             <div className="lead-contact-detail">
-                              <span>📞 {l.phone}</span>
-                              <span>✉️ {l.email}</span>
+                              <span>{l.phone}</span>
+                              <span>{l.email}</span>
                             </div>
                           </div>
                         </td>
@@ -1944,7 +1918,7 @@ export default function LeadFormsPage() {
             {leads.filter((l) => l.status === 'CONVERTED').length > 0 && (
               <div style={{ marginTop: '20px' }}>
                 <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>✓ Lịch sử Lead đã chuyển đổi thành công ({leads.filter((l) => l.status === 'CONVERTED').length})</span>
+                  <span>Lịch sử Lead đã chuyển đổi thành công ({leads.filter((l) => l.status === 'CONVERTED').length})</span>
                 </h4>
                 <div className="lead-table-container">
                   <table className="lead-table">
@@ -1965,12 +1939,12 @@ export default function LeadFormsPage() {
                           <td><strong>{l.full_name}</strong></td>
                           <td>
                             <span style={{ fontWeight: 600, color: '#1d4ed8' }}>
-                              🏢 {l.converted_customer_name || 'Khách hàng CRM'}
+                              {l.converted_customer_name || 'Khách hàng CRM'}
                             </span>
                           </td>
                           <td>
                             <span style={{ fontWeight: 600, color: '#7c3aed' }}>
-                              📈 {l.converted_opportunity_title || 'Cơ hội mới'}
+                              {l.converted_opportunity_title || 'Cơ hội mới'}
                             </span>
                           </td>
                           <td style={{ fontSize: '12px', color: '#64748b' }}>
@@ -2027,42 +2001,41 @@ export default function LeadFormsPage() {
                 className={`interaction-filter-tab ${interactionFilter === 'CALL' ? 'active' : ''}`}
                 onClick={() => setInteractionFilter('CALL')}
               >
-                📞 Cuộc gọi
+                Cuộc gọi
               </button>
               <button
                 type="button"
                 className={`interaction-filter-tab ${interactionFilter === 'EMAIL' ? 'active' : ''}`}
                 onClick={() => setInteractionFilter('EMAIL')}
               >
-                ✉️ Email
+                Email
               </button>
               <button
                 type="button"
                 className={`interaction-filter-tab ${interactionFilter === 'MEETING' ? 'active' : ''}`}
                 onClick={() => setInteractionFilter('MEETING')}
               >
-                📅 Cuộc họp
+                Cuộc họp
               </button>
               <button
                 type="button"
                 className={`interaction-filter-tab ${interactionFilter === 'NOTE' ? 'active' : ''}`}
                 onClick={() => setInteractionFilter('NOTE')}
               >
-                📝 Ghi chú
+                Ghi chú
               </button>
               <button
                 type="button"
                 className={`interaction-filter-tab ${interactionFilter === 'STATUS_CHANGE' || interactionFilter === 'SYSTEM' ? 'active' : ''}`}
                 onClick={() => setInteractionFilter('STATUS_CHANGE')}
               >
-                ⚙️ Hệ thống & Trạng thái
+                Hệ thống & Trạng thái
               </button>
             </div>
           </div>
 
           {filteredTimelineInteractions.length === 0 ? (
             <div className="lead-empty-state">
-              <div className="lead-empty-icon">💬</div>
               <h4>Không có hoạt động tương tác nào phù hợp</h4>
               <p>Chưa có ghi nhận cuộc gọi, email hoặc cập nhật trạng thái nào theo điều kiện tìm kiếm.</p>
             </div>
@@ -2081,11 +2054,11 @@ export default function LeadFormsPage() {
                     case 'NOTE':
                       return { icon: <IconFileText />, cls: 'note' }
                     case 'STATUS_CHANGE':
-                      return { icon: '🔄', cls: 'status_change' }
+                      return { icon: '', cls: 'status_change' }
                     case 'SCORE_UPDATE':
-                      return { icon: '🎯', cls: 'score_update' }
+                      return { icon: '', cls: 'score_update' }
                     default:
-                      return { icon: '⚙️', cls: 'system' }
+                      return { icon: '', cls: 'system' }
                   }
                 }
                 const { icon, cls } = getIconAndClass()
@@ -2099,10 +2072,10 @@ export default function LeadFormsPage() {
                         <div className="interaction-card-title-group">
                           <span className="interaction-card-title">{act.title}</span>
                           <div className="interaction-card-meta">
-                            <span>👤 {act.performed_by_name}</span>
+                            <span>{act.performed_by_name}</span>
                             <span>•</span>
                             <span>
-                              🕒 {new Date(act.performed_at).toLocaleString('vi-VN', {
+                              {new Date(act.performed_at).toLocaleString('vi-VN', {
                                 day: '2-digit',
                                 month: '2-digit',
                                 year: 'numeric',
@@ -2118,7 +2091,7 @@ export default function LeadFormsPage() {
                                   onClick={() => handleOpenInteractionModal(leadFound)}
                                   title="Xem toàn bộ tương tác của Lead này"
                                 >
-                                  🎯 {leadFound.full_name} ({leadFound.code})
+                                  {leadFound.full_name} ({leadFound.code})
                                 </span>
                               </>
                             )}
@@ -2149,7 +2122,7 @@ export default function LeadFormsPage() {
                       {act.next_action && (
                         <div className="interaction-next-action">
                           <span className="interaction-next-action-text">
-                            <span>📌 Việc tiếp theo:</span> {act.next_action}
+                            <span>Việc tiếp theo:</span> {act.next_action}
                           </span>
                           {act.next_action_due && (
                             <span className="interaction-next-action-due">
@@ -2378,7 +2351,7 @@ export default function LeadFormsPage() {
                             <div className="invalid-errors-box">
                               {row.errors.map((e, idx) => (
                                 <span key={idx} className="error-pill">
-                                  ⚠️ {e}
+                                  {e}
                                 </span>
                               ))}
                             </div>
@@ -2466,7 +2439,6 @@ export default function LeadFormsPage() {
 
           {filteredForms.length === 0 ? (
             <div className="lead-empty-state">
-              <div className="lead-empty-icon">📝</div>
               <h4>Không tìm thấy biểu mẫu nào</h4>
               <p>Hãy tạo biểu mẫu mới để lấy mã nhúng iFrame hoặc liên kết thu thập thông tin khách hàng.</p>
               <button
@@ -2475,7 +2447,6 @@ export default function LeadFormsPage() {
                 onClick={handleOpenCreateModal}
                 style={{ marginTop: '12px' }}
               >
-                <IconPlus />
                 <span>Tạo biểu mẫu đầu tiên</span>
               </button>
             </div>
@@ -2635,7 +2606,6 @@ export default function LeadFormsPage() {
 
           {filteredSubmissions.length === 0 ? (
             <div className="lead-empty-state">
-              <div className="lead-empty-icon">📬</div>
               <h4>Chưa có Lead nào gửi từ biểu mẫu</h4>
               <p>Khi khách truy cập điền và gửi biểu mẫu trên website, dữ liệu sẽ ngay lập tức xuất hiện tại đây.</p>
             </div>
@@ -2646,7 +2616,7 @@ export default function LeadFormsPage() {
                   <tr>
                     <th>Thông tin người liên hệ</th>
                     <th>Doanh nghiệp / Công ty</th>
-                    <th style={{ width: '280px' }}>Nhu cầu tư vấn & Ghi chú</th>
+                    <th style={{ minWidth: '360px', width: '400px' }}>Nhu cầu tư vấn & Ghi chú</th>
                     <th>Nguồn biểu mẫu</th>
                     <th style={{ width: '130px' }}>Thời gian gửi</th>
                     <th style={{ width: '160px', textAlign: 'center' }}>Trạng thái xử lý</th>
@@ -2661,8 +2631,8 @@ export default function LeadFormsPage() {
                           <div className="lead-contact-info">
                             <strong className="lead-contact-name">{sub.full_name}</strong>
                             <div className="lead-contact-detail">
-                              <span>📞 {sub.phone}</span>
-                              <span>✉️ {sub.email}</span>
+                              <span>{sub.phone}</span>
+                              <span>{sub.email}</span>
                             </div>
                           </div>
                         </td>
@@ -3134,17 +3104,17 @@ export default function LeadFormsPage() {
               <div className="embed-guide-box">
                 {embedType === 'IFRAME' && (
                   <p>
-                    💡 <strong>Cách dùng:</strong> Sao chép đoạn mã iFrame bên dưới và dán vào vị trí bạn muốn hiển thị trên website WordPress, Webflow, Landing Page hoặc trang HTML tĩnh. Form sẽ tự động co giãn và thu thập dữ liệu về CRM.
+                    <strong>Cách dùng:</strong> Sao chép đoạn mã iFrame bên dưới và dán vào vị trí bạn muốn hiển thị trên website WordPress, Webflow, Landing Page hoặc trang HTML tĩnh. Form sẽ tự động co giãn và thu thập dữ liệu về CRM.
                   </p>
                 )}
                 {embedType === 'HTML' && (
                   <p>
-                    💡 <strong>Cách dùng:</strong> Dành cho Lập trình viên muốn tùy biến hoàn toàn mã HTML và giao diện CSS theo phong cách riêng của website.
+                    <strong>Cách dùng:</strong> Dành cho Lập trình viên muốn tùy biến hoàn toàn mã HTML và giao diện CSS theo phong cách riêng của website.
                   </p>
                 )}
                 {embedType === 'LINK' && (
                   <p>
-                    💡 <strong>Cách dùng:</strong> Sử dụng đường link độc lập này để gửi trực tiếp cho khách qua Zalo, Messenger, Email hoặc chèn vào nút kêu gọi hành động (CTA).
+                    <strong>Cách dùng:</strong> Sử dụng đường link độc lập này để gửi trực tiếp cho khách qua Zalo, Messenger, Email hoặc chèn vào nút kêu gọi hành động (CTA).
                   </p>
                 )}
               </div>
@@ -3349,20 +3319,18 @@ export default function LeadFormsPage() {
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span className={`lead-score-pill ${(selectedLeadForScore.score_tier || 'WARM').toLowerCase()}`}>
-                        {LEAD_TIER_CONFIG[selectedLeadForScore.score_tier || 'WARM']?.emoji}{' '}
                         {LEAD_TIER_CONFIG[selectedLeadForScore.score_tier || 'WARM']?.label}
                       </span>
                       {selectedLeadForScore.segment && (
                         <span className={`lead-segment-badge ${(LEAD_SEGMENT_CONFIG[selectedLeadForScore.segment]?.className || 'unqualified')}`}>
-                          {LEAD_SEGMENT_CONFIG[selectedLeadForScore.segment]?.icon}{' '}
                           {LEAD_SEGMENT_CONFIG[selectedLeadForScore.segment]?.label}
                         </span>
                       )}
                     </div>
                     <p style={{ margin: '6px 0 0 0', fontSize: '12.5px', color: '#475569' }}>
                       {selectedLeadForScore.is_manually_scored
-                        ? '✍️ Điểm số và phân nhóm được điều chỉnh thủ công bởi quản trị viên.'
-                        : '🤖 Điểm số được hệ thống tự động tính toán dựa trên dữ liệu BANT và hành vi.'}
+                        ? 'Điểm số và phân nhóm được điều chỉnh thủ công bởi quản trị viên.'
+                        : 'Điểm số được hệ thống tự động tính toán dựa trên dữ liệu BANT và hành vi.'}
                     </p>
                     {selectedLeadForScore.last_scored_at && (
                       <span style={{ fontSize: '11px', color: '#94a3b8' }}>
@@ -3393,7 +3361,7 @@ export default function LeadFormsPage() {
                     <span style={{ fontSize: '12px', color: '#64748b' }}>/ 35đ</span>
                   </span>
                   <span style={{ fontSize: '11px', color: '#64748b' }}>
-                    {selectedLeadForScore.company ? `🏢 ${selectedLeadForScore.company}` : 'Cá nhân (Chưa có cty)'}
+                    {selectedLeadForScore.company ? selectedLeadForScore.company : 'Cá nhân (Chưa có cty)'}
                   </span>
                 </div>
 
@@ -3508,10 +3476,10 @@ export default function LeadFormsPage() {
                           style={{ padding: '7px 10px', fontSize: '13px' }}
                           id="select-manual-segment"
                         >
-                          <option value="ENTERPRISE_VIP">👑 Doanh nghiệp VIP</option>
-                          <option value="HIGH_POTENTIAL">⭐ Tiềm năng cao</option>
-                          <option value="NURTURE">🌱 Cần nuôi dưỡng</option>
-                          <option value="UNQUALIFIED">⚠️ Không phù hợp</option>
+                          <option value="ENTERPRISE_VIP">Doanh nghiệp VIP</option>
+                          <option value="HIGH_POTENTIAL">Tiềm năng cao</option>
+                          <option value="NURTURE">Cần nuôi dưỡng</option>
+                          <option value="UNQUALIFIED">Không phù hợp</option>
                         </select>
                       </div>
                     </div>
@@ -3636,7 +3604,7 @@ export default function LeadFormsPage() {
               {/* Mục 1: Thông tin Khách hàng Doanh nghiệp */}
               <div className="convert-section-panel">
                 <h4 className="convert-section-title">
-                  <span>🏢 1. Khách hàng trong CRM (Doanh nghiệp)</span>
+                  <span>1. Khách hàng trong CRM (Doanh nghiệp)</span>
                 </h4>
 
                 <div className="convert-radio-group">
@@ -4146,12 +4114,12 @@ export default function LeadFormsPage() {
                       onChange={(e) => setNewInteractionOutcome(e.target.value)}
                       id="select-interaction-outcome"
                     >
-                      <option value="Thành công - Quan tâm cao">✅ Thành công - Khách quan tâm cao</option>
-                      <option value="Hẹn gọi lại sau">⏳ Khách bận - Hẹn gọi lại</option>
-                      <option value="Đã gửi thông tin / Báo giá">📨 Đã gửi brochure / báo giá</option>
-                      <option value="Đã chốt lịch Demo">🤝 Đã chốt lịch hẹn Demo</option>
-                      <option value="Không nghe máy">📵 Không nghe máy / Thuê bao</option>
-                      <option value="Chưa có nhu cầu lúc này">❌ Chưa có nhu cầu / Từ chối</option>
+                      <option value="Thành công - Quan tâm cao">Thành công - Khách quan tâm cao</option>
+                      <option value="Hẹn gọi lại sau">Khách bận - Hẹn gọi lại</option>
+                      <option value="Đã gửi thông tin / Báo giá">Đã gửi brochure / báo giá</option>
+                      <option value="Đã chốt lịch Demo">Đã chốt lịch hẹn Demo</option>
+                      <option value="Không nghe máy">Không nghe máy / Thuê bao</option>
+                      <option value="Chưa có nhu cầu lúc này">Chưa có nhu cầu / Từ chối</option>
                     </select>
                   </div>
 
@@ -4255,7 +4223,6 @@ export default function LeadFormsPage() {
                 </div>
               ) : filteredLeadInteractions.length === 0 ? (
                 <div className="lead-empty-state" style={{ padding: '24px' }}>
-                  <div className="lead-empty-icon">📝</div>
                   <h4>Chưa có tương tác nào với khách hàng này</h4>
                   <p>Hãy sử dụng biểu mẫu phía trên để ghi lại cuộc gọi hoặc email đầu tiên.</p>
                 </div>
@@ -4273,11 +4240,11 @@ export default function LeadFormsPage() {
                         case 'NOTE':
                           return { icon: <IconFileText />, cls: 'note' }
                         case 'STATUS_CHANGE':
-                          return { icon: '🔄', cls: 'status_change' }
+                          return { icon: '', cls: 'status_change' }
                         case 'SCORE_UPDATE':
-                          return { icon: '🎯', cls: 'score_update' }
+                          return { icon: '', cls: 'score_update' }
                         default:
-                          return { icon: '⚙️', cls: 'system' }
+                          return { icon: '', cls: 'system' }
                       }
                     }
                     const { icon, cls } = getIconAndClass()
@@ -4291,10 +4258,10 @@ export default function LeadFormsPage() {
                             <div className="interaction-card-title-group">
                               <span className="interaction-card-title">{act.title}</span>
                               <div className="interaction-card-meta">
-                                <span>👤 {act.performed_by_name}</span>
+                                <span>{act.performed_by_name}</span>
                                 <span>•</span>
                                 <span>
-                                  🕒 {new Date(act.performed_at).toLocaleString('vi-VN', {
+                                  {new Date(act.performed_at).toLocaleString('vi-VN', {
                                     day: '2-digit',
                                     month: '2-digit',
                                     year: 'numeric',
@@ -4329,7 +4296,7 @@ export default function LeadFormsPage() {
                           {act.next_action && (
                             <div className="interaction-next-action">
                               <span className="interaction-next-action-text">
-                                <span>📌 Việc tiếp theo:</span> {act.next_action}
+                                <span>Việc tiếp theo:</span> {act.next_action}
                               </span>
                               {act.next_action_due && (
                                 <span className="interaction-next-action-due">
