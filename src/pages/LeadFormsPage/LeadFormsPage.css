@@ -1728,16 +1728,40 @@
   flex-direction: column;
   gap: 18px;
   padding: 20px 24px;
-  max-height: 75vh;
+  max-height: 72vh;
   overflow-y: auto;
+  background: #ffffff;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.convert-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.convert-modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* Auto-fill banner */
+.convert-autofill-banner {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  border: 1px solid #bfdbfe;
+  border-left: 4px solid #2563eb;
+  border-radius: 10px;
+  padding: 13px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 /* Lead Preview Card */
 .convert-preview-card {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px 18px;
+  border-radius: 10px;
+  padding: 14px 18px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1789,14 +1813,15 @@
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 16px 18px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .convert-section-title {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 700;
   color: #0f172a;
   display: flex;
@@ -1814,28 +1839,34 @@
 .convert-radio-label {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
   font-size: 13px;
   color: #1e293b;
   cursor: pointer;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1.5px solid #e2e8f0;
   background: #f8fafc;
   transition: all 0.15s ease;
 }
 
+.convert-radio-label:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+}
+
 .convert-radio-label.active {
-  border-color: #3b82f6;
+  border-color: #2563eb;
   background: #eff6ff;
   font-weight: 600;
   color: #1d4ed8;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
 }
 
 .convert-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 14px 18px;
 }
 
 @media (max-width: 640px) {
@@ -1844,20 +1875,97 @@
   }
 }
 
+/* Convert modal form fields */
+.convert-modal-body .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.convert-modal-body .form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0;
+  line-height: 1.4;
+  display: block;
+}
+
+.convert-modal-body .form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #0f172a;
+  background-color: #ffffff;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.convert-modal-body .form-control:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  background-color: #ffffff;
+}
+
+.convert-modal-body .form-control::placeholder {
+  color: #94a3b8;
+  font-size: 13.5px;
+}
+
+.convert-modal-body select.form-control {
+  padding: 10px 14px;
+  cursor: pointer;
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.convert-modal-body textarea.form-control {
+  padding: 10px 14px;
+  min-height: 70px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* Representative contact subpanel */
+.convert-contact-subpanel {
+  grid-column: span 2;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 3.5px solid #2563eb;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.convert-contact-subpanel-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
 .currency-input-wrapper {
   position: relative;
+  width: 100%;
   display: flex;
   align-items: center;
 }
 
 .currency-input-wrapper input {
-  padding-right: 50px;
+  padding-right: 56px !important;
 }
 
 .currency-symbol {
   position: absolute;
-  right: 12px;
-  font-size: 12px;
+  right: 14px;
+  font-size: 12.5px;
   font-weight: 700;
   color: #64748b;
   pointer-events: none;
