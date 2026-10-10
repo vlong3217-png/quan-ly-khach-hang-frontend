@@ -12,6 +12,7 @@ type GroupByFilter = 'OWNER' | 'TEAM'
 
 // Chỉ tiêu kế hoạch mặc định theo nhân viên và đội nhóm (có thể tùy chỉnh)
 const DEFAULT_OWNER_TARGETS: Record<string, number> = {
+  'Lưu Quang Trường': 160000000,
   'Nguyễn Văn An': 150000000,
   'Trần Thị Mai': 120000000,
   'Lê Hoàng Long': 100000000,
