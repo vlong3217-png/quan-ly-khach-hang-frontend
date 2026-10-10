@@ -9,6 +9,7 @@ import { pipelineService } from '../../services/pipelineService.ts'
 import OpportunityDetailModal from '../../components/OpportunityDetailModal/OpportunityDetailModal.tsx'
 import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
 import SalesForecastView from '../../components/SalesForecastView/SalesForecastView.tsx'
+import StalledOpportunityAlerts from '../../components/StalledOpportunityAlerts/StalledOpportunityAlerts.tsx'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import './OpportunitiesPage.css'
 
@@ -43,6 +44,7 @@ const IconCheckSquare = () => (
 
 export default function OpportunitiesPage() {
   const { user } = useAuth()
+  const isManagerOrAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER'
 
   // State danh sách
   const [opportunities, setOpportunities] = useState<Opportunity[]>([])
@@ -56,8 +58,8 @@ export default function OpportunitiesPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL')
   const [viewMode, setViewMode] = useState<'TABLE' | 'KANBAN'>('TABLE')
 
-  // Main Nav Tab (Danh sách Cơ hội vs Dự báo doanh số S5-06 vs Lý do Thắng/Thua S5-05)
-  const [mainNavTab, setMainNavTab] = useState<'PIPELINE' | 'FORECAST' | 'WIN_LOSS'>('PIPELINE')
+  // Main Nav Tab (Danh sách Cơ hội vs Dự báo doanh số S5-06 vs Cảnh báo đình trệ S5-07 vs Lý do Thắng/Thua S5-05)
+  const [mainNavTab, setMainNavTab] = useState<'PIPELINE' | 'FORECAST' | 'STALLED' | 'WIN_LOSS'>('PIPELINE')
 
   // Modal Chi tiết Cơ hội
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null)
@@ -296,7 +298,7 @@ export default function OpportunitiesPage() {
         )}
       </div>
 
-      {/* ── Main Sub-tabs: Cơ hội bán hàng vs Dự báo doanh số (S5-06) vs Lý do Thắng / Thua (S5-05) ── */}
+      {/* ── Main Sub-tabs: Cơ hội bán hàng vs Dự báo doanh số (S5-06) vs Cảnh báo đình trệ (S5-07) vs Lý do Thắng / Thua (S5-05) ── */}
       <div className="opp-main-tabs" id="opp-main-tabs">
         <button
           type="button"
@@ -306,6 +308,17 @@ export default function OpportunitiesPage() {
         >
           <span className="tab-title">Danh sách Cơ hội & Pipeline</span>
           <span className="tab-count-badge">{totalCount}</span>
+        </button>
+        <button
+          type="button"
+          className={`opp-main-tab-btn ${mainNavTab === 'STALLED' ? 'active' : ''}`}
+          id="tab-btn-opp-stalled"
+          onClick={() => setMainNavTab('STALLED')}
+        >
+          <span className="tab-title">🚨 Cảnh báo Đình trệ (S5-07)</span>
+          <span className="tab-tag-badge badge-stalled-count">
+            {opportunities.filter((o) => opportunityService.analyzeStalledOpportunity(o).isStalled).length} Cần can thiệp
+          </span>
         </button>
         <button
           type="button"
@@ -327,7 +340,18 @@ export default function OpportunitiesPage() {
         </button>
       </div>
 
-      {mainNavTab === 'FORECAST' ? (
+      {mainNavTab === 'STALLED' ? (
+        <div className="opp-stalled-container">
+          <StalledOpportunityAlerts
+            opportunities={opportunities}
+            isManagerOrAdmin={isManagerOrAdmin}
+            managerName={user?.full_name || 'Bế Hoàng Quân (Trưởng nhóm)'}
+            managerId={user?.id ? Number(user.id) : 1}
+            onOpportunityUpdated={handleOppUpdated}
+            onOpenOpportunityDetail={(opp) => handleOpenDetail(opp, 'DETAILS')}
+          />
+        </div>
+      ) : mainNavTab === 'FORECAST' ? (
         <div className="opp-forecast-container">
           <SalesForecastView
             opportunities={opportunities}
@@ -484,6 +508,22 @@ export default function OpportunitiesPage() {
                         >
                           {opp.title}
                         </span>
+                        {(() => {
+                          const stalledCheck = opportunityService.analyzeStalledOpportunity(opp)
+                          if (!stalledCheck.isStalled) return null
+                          return (
+                            <span
+                              className={`opp-stalled-table-badge ${stalledCheck.severity === 'CRITICAL' ? 'badge-crit' : 'badge-warn'}`}
+                              title={`[Cảnh báo S5-07]: ${stalledCheck.message}`}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setMainNavTab('STALLED')
+                              }}
+                            >
+                              ⚠️ {stalledCheck.severity === 'CRITICAL' ? 'Đình trệ nguy cấp' : 'Cảnh báo đình trệ'}
+                            </span>
+                          )
+                        })()}
                         <div className="opp-cust-sub">
                           🏢 {opp.customer_name}
                           {opp.lead_id && <span className="lead-tag">Từ Lead</span>}
@@ -602,6 +642,18 @@ export default function OpportunitiesPage() {
                       >
                         <div className="card-top">
                           <span className="code-pill">{opp.code}</span>
+                          {(() => {
+                            const stalledCheck = opportunityService.analyzeStalledOpportunity(opp)
+                            if (!stalledCheck.isStalled) return null
+                            return (
+                              <span
+                                className={`kanban-stalled-tag ${stalledCheck.severity === 'CRITICAL' ? 'crit' : 'warn'}`}
+                                title={`[Cảnh báo S5-07]: ${stalledCheck.message}`}
+                              >
+                                ⚠️ Đình trệ
+                              </span>
+                            )
+                          })()}
                           <span className="deal-prob">{opp.win_probability}%</span>
                         </div>
                         <h5 className="deal-title">{opp.title}</h5>
