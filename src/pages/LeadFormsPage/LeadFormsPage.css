@@ -521,6 +521,15 @@
   animation: leadModalIn 0.2s ease-out;
 }
 
+.lead-modal-content > form,
+.lead-modal-container > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 @keyframes leadModalIn {
   from {
     opacity: 0;
@@ -539,6 +548,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .lead-modal-title,
@@ -577,11 +587,24 @@
 
 .lead-modal-body {
   padding: 20px 24px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
   background: #ffffff;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.lead-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lead-modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
 }
 
 .lead-reassign-customer-box {
@@ -605,6 +628,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .lead-modal-footer .btn {
