@@ -685,10 +685,11 @@ export default function CustomerManagementPage() {
             type="button"
             className="btn btn-secondary"
             onClick={() => fileInputRef.current?.click()}
-            title="Nhập danh sách khách hàng hàng loạt từ Excel"
+            title="Nhập dữ liệu khách hàng từ file Excel"
+            id="btn-import-customer"
           >
             <IconUpload />
-            <span>Nhập Excel</span>
+            <span>Nhập</span>
           </button>
           <input
             type="file"
@@ -701,20 +702,21 @@ export default function CustomerManagementPage() {
             type="button"
             className="btn btn-secondary"
             onClick={handleDownloadTemplate}
-            title="Tải về file mẫu Excel/CSV chuẩn để nhập dữ liệu"
+            title="Tải về file mẫu Excel/CSV chuẩn để nhập khách hàng"
             id="btn-download-customer-template"
           >
             <IconDownload />
-            <span>Tải file mẫu</span>
+            <span>File mẫu</span>
           </button>
           <button
             type="button"
             className="btn btn-secondary"
             onClick={handleExportCSV}
-            title="Xuất file CSV / Excel danh sách khách hàng"
+            title="Xuất danh sách khách hàng ra file Excel/CSV"
+            id="btn-export-customer"
           >
             <IconDownload />
-            <span>Xuất Excel</span>
+            <span>Xuất</span>
           </button>
           <button
             type="button"
