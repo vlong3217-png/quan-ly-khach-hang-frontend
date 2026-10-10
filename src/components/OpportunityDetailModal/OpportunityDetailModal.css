@@ -375,3 +375,338 @@
     justify-content: space-between;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   S5-05: Styles for Close Won / Close Lost / Reopen Actions
+   ───────────────────────────────────────────────────────────── */
+
+.step-locked {
+  opacity: 0.55;
+  cursor: not-allowed !important;
+}
+
+.opp-close-actions-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.opp-btn-action-won {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+}
+
+.opp-btn-action-won:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.opp-btn-action-lost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+}
+
+.opp-btn-action-lost:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.opp-closed-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.pill-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.3rem 0.7rem;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+}
+
+.badge-won {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-lost {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.opp-btn-action-reopen {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem;
+  background: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.opp-btn-action-reopen:hover {
+  background: #2563eb;
+}
+
+/* Banner thông báo trạng thái đóng */
+.opp-closed-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.85rem;
+  border-bottom: 1px solid transparent;
+}
+
+.banner-won {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.banner-lost {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.closed-banner-icon {
+  font-size: 1.25rem;
+}
+
+.closed-banner-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.opp-btn-banner-reopen {
+  padding: 0.35rem 0.75rem;
+  background: #ffffff;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+}
+
+.opp-btn-banner-reopen:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+/* Summary Card in Details Tab */
+.win-loss-summary-card {
+  border-left: 4px solid #10b981;
+}
+
+.win-loss-summary-card.lost-card {
+  border-left-color: #ef4444;
+}
+
+.win-loss-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem 1.25rem;
+}
+
+.full-row {
+  grid-column: 1 / -1;
+}
+
+.note-quota-counted {
+  background: #f0fdf4;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  color: #15803d;
+  font-size: 0.83rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.reopen-history-item {
+  background: #f8fafc;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-style: italic;
+  font-size: 0.82rem;
+  color: #475569;
+}
+
+/* ── Submodals (Close Won / Close Lost / Reopen) ── */
+.opp-submodal-overlay {
+  z-index: 1300;
+  background: rgba(15, 23, 42, 0.75);
+}
+
+.opp-submodal-card {
+  max-width: 520px;
+  width: 95%;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  padding: 0;
+  animation: oppModalFadeIn 0.2s ease-out;
+}
+
+.submodal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  color: #ffffff;
+}
+
+.submodal-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.submodal-header.won-header {
+  background: #059669;
+}
+
+.submodal-header.lost-header {
+  background: #dc2626;
+}
+
+.submodal-header.reopen-header {
+  background: #2563eb;
+}
+
+.submodal-close-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.submodal-close-btn:hover {
+  opacity: 1;
+}
+
+.submodal-form {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.submodal-intro {
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.5;
+  background: #f8fafc;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border-left: 3px solid #cbd5e1;
+}
+
+.submodal-error-alert {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 0.6rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.submodal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-submodal-cancel {
+  padding: 0.55rem 1rem;
+  background: #e2e8f0;
+  color: #334155;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-submodal-cancel:hover {
+  background: #cbd5e1;
+}
+
+.btn-submodal-submit {
+  padding: 0.55rem 1.25rem;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-submodal-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.won-submit {
+  background: #059669;
+}
+
+.won-submit:hover:not(:disabled) {
+  background: #047857;
+}
+
+.lost-submit {
+  background: #dc2626;
+}
+
+.lost-submit:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.reopen-submit {
+  background: #2563eb;
+}
+
+.reopen-submit:hover:not(:disabled) {
+  background: #1d4ed8;
+}
