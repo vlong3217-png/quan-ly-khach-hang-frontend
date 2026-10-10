@@ -8,6 +8,7 @@ import { opportunityService } from '../../services/opportunityService.ts'
 import { pipelineService } from '../../services/pipelineService.ts'
 import OpportunityDetailModal from '../../components/OpportunityDetailModal/OpportunityDetailModal.tsx'
 import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
+import SalesForecastView from '../../components/SalesForecastView/SalesForecastView.tsx'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import './OpportunitiesPage.css'
 
@@ -55,8 +56,8 @@ export default function OpportunitiesPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL')
   const [viewMode, setViewMode] = useState<'TABLE' | 'KANBAN'>('TABLE')
 
-  // Main Nav Tab (Danh sách Cơ hội vs Lý do Thắng/Thua & Đối thủ)
-  const [mainNavTab, setMainNavTab] = useState<'PIPELINE' | 'WIN_LOSS'>('PIPELINE')
+  // Main Nav Tab (Danh sách Cơ hội vs Dự báo doanh số S5-06 vs Lý do Thắng/Thua S5-05)
+  const [mainNavTab, setMainNavTab] = useState<'PIPELINE' | 'FORECAST' | 'WIN_LOSS'>('PIPELINE')
 
   // Modal Chi tiết Cơ hội
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null)
@@ -295,7 +296,7 @@ export default function OpportunitiesPage() {
         )}
       </div>
 
-      {/* ── Main Sub-tabs: Cơ hội bán hàng vs Lý do Thắng / Thua & Đối thủ ── */}
+      {/* ── Main Sub-tabs: Cơ hội bán hàng vs Dự báo doanh số (S5-06) vs Lý do Thắng / Thua (S5-05) ── */}
       <div className="opp-main-tabs" id="opp-main-tabs">
         <button
           type="button"
@@ -308,16 +309,32 @@ export default function OpportunitiesPage() {
         </button>
         <button
           type="button"
+          className={`opp-main-tab-btn ${mainNavTab === 'FORECAST' ? 'active' : ''}`}
+          id="tab-btn-opp-forecast"
+          onClick={() => setMainNavTab('FORECAST')}
+        >
+          <span className="tab-title">📈 Dự báo Doanh số (S5-06)</span>
+          <span className="tab-tag-badge">Forecast</span>
+        </button>
+        <button
+          type="button"
           className={`opp-main-tab-btn ${mainNavTab === 'WIN_LOSS' ? 'active' : ''}`}
           id="tab-btn-opp-winloss"
           onClick={() => setMainNavTab('WIN_LOSS')}
         >
           <span className="tab-title">Lý do Thắng / Thua & Đối thủ cạnh tranh</span>
-          <span className="tab-tag-badge">Sprint 5</span>
+          <span className="tab-tag-badge">S5-05</span>
         </button>
       </div>
 
-      {mainNavTab === 'WIN_LOSS' ? (
+      {mainNavTab === 'FORECAST' ? (
+        <div className="opp-forecast-container">
+          <SalesForecastView
+            opportunities={opportunities}
+            onOpenOpportunityDetail={(opp) => handleOpenDetail(opp, 'DETAILS')}
+          />
+        </div>
+      ) : mainNavTab === 'WIN_LOSS' ? (
         <div className="opp-winloss-container">
           <WinLossCompetitorsPage />
         </div>
