@@ -624,7 +624,7 @@ export default function LeadFormsPage() {
           user?.full_name || 'Quản lý'
         )
         .then((act) => setAllRecentInteractions((prev) => [act, ...prev]))
-        .catch(() => {})
+        .catch(() => { })
 
       showToast(`Đã lưu phân loại và điểm số mới cho "${updated.full_name}"!`)
       setIsScoreModalOpen(false)
@@ -891,8 +891,8 @@ export default function LeadFormsPage() {
         filterActive === 'ALL'
           ? true
           : filterActive === 'ACTIVE'
-          ? f.is_active
-          : !f.is_active
+            ? f.is_active
+            : !f.is_active
       return matchSearch && matchStatus
     })
   }, [forms, searchQuery, filterActive])
@@ -977,7 +977,7 @@ export default function LeadFormsPage() {
       leadInteractionService
         .recordStatusChange(leadId, oldStatus, status, user?.full_name || 'Nhân viên kinh doanh')
         .then((act) => setAllRecentInteractions((prev) => [act, ...prev]))
-        .catch(() => {})
+        .catch(() => { })
 
       showToast(`Đã cập nhật trạng thái Lead: ${LEAD_STATUS_CONFIG[status].label}`)
     } catch {
@@ -1348,9 +1348,7 @@ export default function LeadFormsPage() {
       <div className="lead-page-header">
         <div className="lead-page-header-info">
           <h1 className="lead-page-title">Quản lý Khách hàng Tiềm năng (Leads)</h1>
-          <p className="lead-page-subtitle">
-            Thu thập lead đa kênh từ biểu mẫu nhúng website, tạo thủ công và nhập hàng loạt từ file Excel.
-          </p>
+
         </div>
 
         <div className="lead-page-header-actions">
@@ -1418,7 +1416,7 @@ export default function LeadFormsPage() {
             title="Chuyển đổi Lead thành Khách hàng và Cơ hội bán hàng"
             style={{ color: '#1d4ed8', borderColor: '#93c5fd', background: '#eff6ff' }}
           >
-            <span>Chuyển đổi Lead (S4-05)</span>
+            <span>Chuyển đổi Lead</span>
           </button>
 
           {/* Nút Dòng thời gian tương tác (S4-06) */}
@@ -1522,7 +1520,7 @@ export default function LeadFormsPage() {
           onClick={() => setActiveTab('LEAD_SCORING')}
           id="tab-btn-lead-scoring"
         >
-          <span>Chấm điểm & Phân loại (S4-04)</span>
+          <span>Chấm điểm & Phân loại</span>
           <span className="tab-badge primary">
             {scoringStats.hotCount} Nóng
           </span>
@@ -1535,7 +1533,7 @@ export default function LeadFormsPage() {
           onClick={() => setActiveTab('LEAD_CONVERSION')}
           id="tab-btn-lead-conversion"
         >
-          <span>Chuyển đổi Lead (S4-05)</span>
+          <span>Chuyển đổi Lead </span>
           <span className="tab-badge" style={{ background: '#ecfdf5', color: '#059669', borderColor: '#a7f3d0' }}>
             {stats.convertedLeads} đã chuyển
           </span>
@@ -1547,7 +1545,7 @@ export default function LeadFormsPage() {
           onClick={() => setActiveTab('LEAD_INTERACTIONS')}
           id="tab-btn-lead-interactions"
         >
-          <span>Dòng thời gian tương tác (S4-06)</span>
+          <span>Dòng thời gian tương tác </span>
           <span className="tab-badge" style={{ background: '#f0f9ff', color: '#0284c7', borderColor: '#bae6fd' }}>
             {allRecentInteractions.length} hoạt động
           </span>
@@ -1558,7 +1556,7 @@ export default function LeadFormsPage() {
           className={`lead-tab-btn ${activeTab === 'IMPORT_EXCEL' ? 'active' : ''}`}
           onClick={() => setActiveTab('IMPORT_EXCEL')}
         >
-          <span>Nhập Lead từ Excel (S4-02)</span>
+          <span>Nhập Lead từ Excel </span>
           <span className="tab-badge info">Mới</span>
         </button>
 
@@ -1567,7 +1565,7 @@ export default function LeadFormsPage() {
           className={`lead-tab-btn ${activeTab === 'FORMS' ? 'active' : ''}`}
           onClick={() => setActiveTab('FORMS')}
         >
-          <span>Biểu mẫu Website (S4-01)</span>
+          <span>Biểu mẫu Website </span>
           <span className="tab-badge">{forms.length}</span>
         </button>
 
@@ -1690,7 +1688,7 @@ export default function LeadFormsPage() {
                     <th style={{ width: '100px' }}>Mã Lead</th>
                     <th>Họ và tên & Liên hệ</th>
                     <th>Doanh nghiệp & Ngành nghề</th>
-                    <th>Nguồn Lead</th>
+                    <th style={{ width: '165px', minWidth: '155px' }}>Nguồn Lead</th>
                     <th style={{ minWidth: '360px', width: '400px' }}>Nhu cầu tư vấn</th>
                     <th style={{ width: '150px' }}>Người phụ trách</th>
                     <th style={{ width: '140px', textAlign: 'center' }}>Điểm & Phân loại</th>
@@ -2329,7 +2327,7 @@ export default function LeadFormsPage() {
                     <th style={{ width: '90px' }}>Mã Lead</th>
                     <th>Họ và tên & Liên hệ</th>
                     <th>Công ty & Ngành</th>
-                    <th style={{ width: '130px' }}>Nguồn Lead</th>
+                    <th style={{ width: '165px', minWidth: '155px' }}>Nguồn Lead</th>
                     <th style={{ width: '160px' }}>Điểm số & Mức độ</th>
                     <th style={{ width: '120px', textAlign: 'center' }}>Phân hạng</th>
                     <th style={{ width: '140px', textAlign: 'center' }}>Phân nhóm</th>
@@ -3294,7 +3292,7 @@ export default function LeadFormsPage() {
                     <th>Thông tin người liên hệ</th>
                     <th>Doanh nghiệp / Công ty</th>
                     <th style={{ minWidth: '360px', width: '400px' }}>Nhu cầu tư vấn & Ghi chú</th>
-                    <th>Nguồn biểu mẫu</th>
+                    <th style={{ width: '165px', minWidth: '155px' }}>Nguồn biểu mẫu</th>
                     <th style={{ width: '130px' }}>Thời gian gửi</th>
                     <th style={{ width: '160px', textAlign: 'center' }}>Trạng thái xử lý</th>
                   </tr>
