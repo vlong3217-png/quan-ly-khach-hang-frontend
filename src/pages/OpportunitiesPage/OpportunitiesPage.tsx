@@ -14,34 +14,7 @@ import ReassignOpportunityModal from '../../components/ReassignOpportunityModal/
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import './OpportunitiesPage.css'
 
-/* ─────────── Inline SVG Icons ─────────── */
-const IconPlus = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19" />
-    <line x1="5" y1="12" x2="19" y2="12" />
-  </svg>
-)
 
-const IconActivity = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-  </svg>
-)
-
-const IconTrash = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 6h18" />
-    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-  </svg>
-)
-
-const IconCheckSquare = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 11 12 14 22 4" />
-    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-  </svg>
-)
 
 export default function OpportunitiesPage() {
   const { user } = useAuth()
@@ -283,9 +256,7 @@ export default function OpportunitiesPage() {
       <div className="opportunities-header">
         <div>
           <h2>Cơ hội bán hàng & Pipeline (Opportunities)</h2>
-          <p>
-            Quản lý phễu cơ hội bán hàng, theo dõi lịch sử hoạt động (S5-03), công việc (S5-04) và lý do thắng/thua, đối thủ (S2-10).
-          </p>
+
         </div>
 
         {mainNavTab === 'PIPELINE' && (
@@ -296,7 +267,6 @@ export default function OpportunitiesPage() {
               id="create-opp-btn"
               onClick={handleOpenCreateModal}
             >
-              <IconPlus />
               <span>Thêm cơ hội mới</span>
             </button>
           </div>
@@ -320,9 +290,9 @@ export default function OpportunitiesPage() {
           id="tab-btn-opp-stalled"
           onClick={() => setMainNavTab('STALLED')}
         >
-          <span className="tab-title">🚨 Cảnh báo Đình trệ (S5-07)</span>
+          <span className="tab-title"> Cảnh báo Đình trệ</span>
           <span className="tab-tag-badge badge-stalled-count">
-            {opportunities.filter((o) => opportunityService.analyzeStalledOpportunity(o).isStalled).length} Cần can thiệp
+            {opportunities.filter((o) => opportunityService.analyzeStalledOpportunity(o).isStalled).length}
           </span>
         </button>
         <button
@@ -331,7 +301,7 @@ export default function OpportunitiesPage() {
           id="tab-btn-opp-forecast"
           onClick={() => setMainNavTab('FORECAST')}
         >
-          <span className="tab-title">📈 Dự báo Doanh số (S5-06)</span>
+          <span className="tab-title">Dự báo Doanh số</span>
           <span className="tab-tag-badge">Forecast</span>
         </button>
         <button
@@ -341,7 +311,7 @@ export default function OpportunitiesPage() {
           onClick={() => setMainNavTab('WIN_LOSS')}
         >
           <span className="tab-title">Lý do Thắng / Thua & Đối thủ cạnh tranh</span>
-          <span className="tab-tag-badge">S5-05</span>
+
         </button>
       </div>
 
@@ -374,327 +344,325 @@ export default function OpportunitiesPage() {
       ) : (
         <>
           {/* ── KPI Stat Cards ── */}
-      <div className="opp-kpi-grid">
-        <div className="opp-kpi-card">
-          <span className="kpi-title">Tổng số cơ hội</span>
-          <span className="kpi-number">{totalCount}</span>
-          <span className="kpi-hint">{wonCount} cơ hội đã chốt thành công</span>
-        </div>
-        <div className="opp-kpi-card">
-          <span className="kpi-title">Tổng giá trị Pipeline</span>
-          <span className="kpi-number text-primary">{formatCurrency(totalRevenue)}</span>
-          <span className="kpi-hint">Tổng giá trị danh nghĩa</span>
-        </div>
-        <div className="opp-kpi-card">
-          <span className="kpi-title">Doanh số dự báo (Weighted)</span>
-          <span className="kpi-number text-success">{formatCurrency(weightedRevenue)}</span>
-          <span className="kpi-hint">Tính theo xác suất thắng từng giai đoạn</span>
-        </div>
-        <div className="opp-kpi-card">
-          <span className="kpi-title">Tỷ lệ chốt đơn (Win rate)</span>
-          <span className="kpi-number text-info">
-            {totalCount > 0 ? `${Math.round((wonCount / totalCount) * 100)}%` : '0%'}
-          </span>
-          <span className="kpi-hint">Dựa trên toàn bộ cơ hội</span>
-        </div>
-      </div>
-
-      {/* ── Filter Bar ── */}
-      <div className="opp-filter-bar">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Tìm theo mã cơ hội, tên deal, khách hàng..."
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            id="opp-search-input"
-          />
-          {searchKeyword && (
-            <button
-              type="button"
-              className="clear-btn"
-              onClick={() => setSearchKeyword('')}
-            >
-              ✕
-            </button>
-          )}
-        </div>
-
-        <div className="filter-select-group">
-          <select
-            value={selectedStageId}
-            onChange={(e) => setSelectedStageId(e.target.value)}
-            className="filter-select"
-            id="opp-stage-filter"
-          >
-            <option value="ALL">-- Tất cả giai đoạn --</option>
-            {stages.map((stg) => (
-              <option key={stg.id} value={stg.id}>
-                {stg.name} ({stg.win_probability}%)
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="filter-select"
-            id="opp-status-filter"
-          >
-            <option value="ALL">-- Tất cả trạng thái --</option>
-            <option value="OPEN">Đang mở (OPEN)</option>
-            <option value="WON">Thắng deal (WON)</option>
-            <option value="LOST">Thua deal (LOST)</option>
-          </select>
-        </div>
-
-        <div className="view-mode-toggle">
-          <button
-            type="button"
-            className={`view-btn ${viewMode === 'TABLE' ? 'active' : ''}`}
-            onClick={() => setViewMode('TABLE')}
-            title="Xem dạng Bảng"
-          >
-            ☰ Bảng
-          </button>
-          <button
-            type="button"
-            className={`view-btn ${viewMode === 'KANBAN' ? 'active' : ''}`}
-            onClick={() => setViewMode('KANBAN')}
-            title="Xem dạng Pipeline Kanban"
-          >
-            ☷ Pipeline
-          </button>
-        </div>
-      </div>
-
-      {/* ── Opportunities Table View ── */}
-      {viewMode === 'TABLE' ? (
-        <div className="opp-table-card">
-          {loading ? (
-            <div className="opp-loading-state">
-              <div className="spinner-border" />
-              <p>Đang tải danh sách cơ hội bán hàng...</p>
+          <div className="opp-kpi-grid">
+            <div className="opp-kpi-card">
+              <span className="kpi-title">Tổng số cơ hội</span>
+              <span className="kpi-number">{totalCount}</span>
+              <span className="kpi-hint">{wonCount} cơ hội đã chốt thành công</span>
             </div>
-          ) : filteredOpportunities.length === 0 ? (
-            <div className="opp-empty-state">
-              <p>Chưa có cơ hội bán hàng nào phù hợp với bộ lọc.</p>
+            <div className="opp-kpi-card">
+              <span className="kpi-title">Tổng giá trị Pipeline</span>
+              <span className="kpi-number text-primary">{formatCurrency(totalRevenue)}</span>
+              <span className="kpi-hint">Tổng giá trị danh nghĩa</span>
+            </div>
+            <div className="opp-kpi-card">
+              <span className="kpi-title">Doanh số dự báo (Weighted)</span>
+              <span className="kpi-number text-success">{formatCurrency(weightedRevenue)}</span>
+              <span className="kpi-hint">Tính theo xác suất thắng từng giai đoạn</span>
+            </div>
+            <div className="opp-kpi-card">
+              <span className="kpi-title">Tỷ lệ chốt đơn (Win rate)</span>
+              <span className="kpi-number text-info">
+                {totalCount > 0 ? `${Math.round((wonCount / totalCount) * 100)}%` : '0%'}
+              </span>
+              <span className="kpi-hint">Dựa trên toàn bộ cơ hội</span>
+            </div>
+          </div>
+
+          {/* ── Filter Bar ── */}
+          <div className="opp-filter-bar">
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="Tìm theo mã cơ hội, tên deal, khách hàng..."
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                id="opp-search-input"
+              />
+              {searchKeyword && (
+                <button
+                  type="button"
+                  className="clear-btn"
+                  onClick={() => setSearchKeyword('')}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div className="filter-select-group">
+              <select
+                value={selectedStageId}
+                onChange={(e) => setSelectedStageId(e.target.value)}
+                className="filter-select"
+                id="opp-stage-filter"
+              >
+                <option value="ALL">-- Tất cả giai đoạn --</option>
+                {stages.map((stg) => (
+                  <option key={stg.id} value={stg.id}>
+                    {stg.name} ({stg.win_probability}%)
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="filter-select"
+                id="opp-status-filter"
+              >
+                <option value="ALL">-- Tất cả trạng thái --</option>
+                <option value="OPEN">Đang mở (OPEN)</option>
+                <option value="WON">Thắng deal (WON)</option>
+                <option value="LOST">Thua deal (LOST)</option>
+              </select>
+            </div>
+
+            <div className="view-mode-toggle">
               <button
                 type="button"
-                className="btn btn-secondary"
-                onClick={handleOpenCreateModal}
+                className={`view-btn ${viewMode === 'TABLE' ? 'active' : ''}`}
+                onClick={() => setViewMode('TABLE')}
+                title="Xem dạng Bảng"
               >
-                + Tạo cơ hội bán hàng mới
+                Bảng
+              </button>
+              <button
+                type="button"
+                className={`view-btn ${viewMode === 'KANBAN' ? 'active' : ''}`}
+                onClick={() => setViewMode('KANBAN')}
+                title="Xem dạng Pipeline Kanban"
+              >
+                Pipeline
               </button>
             </div>
-          ) : (
-            <table className="opp-table" id="opportunities-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '100px' }}>Mã OPP</th>
-                  <th>Tên cơ hội & Khách hàng</th>
-                  <th>Giai đoạn Pipeline</th>
-                  <th>Xác suất</th>
-                  <th style={{ textAlign: 'right' }}>Giá trị dự kiến</th>
-                  <th style={{ textAlign: 'right' }}>Doanh thu dự báo</th>
-                  <th>Ngày dự kiến chốt</th>
-                  <th>Người phụ trách</th>
-                  <th style={{ textAlign: 'center', width: '160px' }}>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredOpportunities.map((opp) => (
-                  <tr key={opp.id} className="opp-row-item">
-                    <td>
-                      <span className="code-pill">{opp.code}</span>
-                    </td>
-                    <td>
-                      <div className="opp-title-cell">
-                        <span
-                          className="opp-name-link"
-                          onClick={() => handleOpenDetail(opp)}
-                          title="Nhấp để xem chi tiết và lịch sử hoạt động"
-                        >
-                          {opp.title}
-                        </span>
-                        {(() => {
-                          const stalledCheck = opportunityService.analyzeStalledOpportunity(opp)
-                          if (!stalledCheck.isStalled) return null
-                          return (
-                            <span
-                              className={`opp-stalled-table-badge ${stalledCheck.severity === 'CRITICAL' ? 'badge-crit' : 'badge-warn'}`}
-                              title={`[Cảnh báo S5-07]: ${stalledCheck.message}`}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setMainNavTab('STALLED')
-                              }}
-                            >
-                              ⚠️ {stalledCheck.severity === 'CRITICAL' ? 'Đình trệ nguy cấp' : 'Cảnh báo đình trệ'}
-                            </span>
-                          )
-                        })()}
-                        <div className="opp-cust-sub">
-                          🏢 {opp.customer_name}
-                          {opp.lead_id && <span className="lead-tag">Từ Lead</span>}
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      {opp.status === 'WON' ? (
-                        <span className="opp-status-badge status-won" title="Đã đóng thắng">🏆 Thắng deal</span>
-                      ) : opp.status === 'LOST' ? (
-                        <span className="opp-status-badge status-lost" title="Đã đóng thua">❌ Thua deal</span>
-                      ) : (
-                        <select
-                          className="stage-inline-select"
-                          value={opp.stage_id}
-                          style={{ borderLeftColor: opp.stage_color || '#2563eb' }}
-                          onChange={(e) => handleQuickChangeStage(opp, e.target.value)}
-                          title="Đổi giai đoạn"
-                        >
-                          {stages.map((stg) => (
-                            <option key={stg.id} value={stg.id}>
-                              {stg.name}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </td>
-                    <td>
-                      <span className="prob-badge">{opp.win_probability}%</span>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <strong className="revenue-text">
-                        {formatCurrency(opp.expected_revenue)}
-                      </strong>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <span className="weighted-text">
-                        {formatCurrency((opp.expected_revenue * opp.win_probability) / 100)}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="close-date-text">
-                        {opp.expected_close_date || '—'}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="owner-badge">{opp.owner_name}</span>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <div className="table-actions">
-                        <button
-                          type="button"
-                          className="btn-action view-btn"
-                          title="Xem chi tiết & Lịch sử hoạt động (S5-03)"
-                          onClick={() => handleOpenDetail(opp, 'ACTIVITIES')}
-                        >
-                          <IconActivity />
-                          <span>Hoạt động</span>
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-action task-btn"
-                          title="Quản lý công việc & lịch nhắc (S5-04)"
-                          onClick={() => handleOpenDetail(opp, 'TASKS')}
-                        >
-                          <IconCheckSquare />
-                          <span>Công việc</span>
-                        </button>
-                        {isManagerOrAdmin && opp.status === 'OPEN' && (
-                          <button
-                            type="button"
-                            className="btn-action reassign-btn"
-                            title="Phân bổ lại cơ hội cho người khác (S5-08)"
-                            onClick={() => {
-                              setOppToReassign(opp)
-                              setIsReassignModalOpen(true)
-                            }}
-                          >
-                            <span>🔄 Chuyển giao</span>
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          className="btn-action delete-btn"
-                          title="Xóa cơ hội"
-                          onClick={() => handleDeleteOpp(opp)}
-                        >
-                          <IconTrash />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      ) : (
-        /* ── Opportunities Pipeline Kanban View ── */
-        <div className="opp-kanban-board">
-          {stages.map((stage) => {
-            const stageOpps = filteredOpportunities.filter((o) => o.stage_id === stage.id)
-            const stageTotal = stageOpps.reduce((acc, o) => acc + o.expected_revenue, 0)
-            return (
-              <div key={stage.id} className="kanban-column">
-                <div
-                  className="kanban-column-header"
-                  style={{ borderTopColor: stage.color || '#2563eb' }}
-                >
-                  <div className="col-header-top">
-                    <h4>{stage.name}</h4>
-                    <span className="col-count">{stageOpps.length}</span>
-                  </div>
-                  <div className="col-header-meta">
-                    <span>Xác suất: {stage.win_probability}%</span>
-                    <span>{formatCurrency(stageTotal)}</span>
-                  </div>
-                </div>
+          </div>
 
-                <div className="kanban-column-body">
-                  {stageOpps.length === 0 ? (
-                    <div className="kanban-empty">Không có cơ hội</div>
-                  ) : (
-                    stageOpps.map((opp) => (
-                      <div
-                        key={opp.id}
-                        className="kanban-deal-card"
-                        onClick={() => handleOpenDetail(opp)}
-                      >
-                        <div className="card-top">
+          {/* ── Opportunities Table View ── */}
+          {viewMode === 'TABLE' ? (
+            <div className="opp-table-card">
+              {loading ? (
+                <div className="opp-loading-state">
+                  <div className="spinner-border" />
+                  <p>Đang tải danh sách cơ hội bán hàng...</p>
+                </div>
+              ) : filteredOpportunities.length === 0 ? (
+                <div className="opp-empty-state">
+                  <p>Chưa có cơ hội bán hàng nào phù hợp với bộ lọc.</p>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleOpenCreateModal}
+                  >
+                    + Tạo cơ hội bán hàng mới
+                  </button>
+                </div>
+              ) : (
+                <table className="opp-table" id="opportunities-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '100px' }}>Mã OPP</th>
+                      <th>Tên cơ hội & Khách hàng</th>
+                      <th>Giai đoạn Pipeline</th>
+                      <th>Xác suất</th>
+                      <th style={{ textAlign: 'right' }}>Giá trị dự kiến</th>
+                      <th style={{ textAlign: 'right' }}>Doanh thu dự báo</th>
+                      <th>Ngày dự kiến chốt</th>
+                      <th>Người phụ trách</th>
+                      <th style={{ textAlign: 'center', width: '160px' }}>Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredOpportunities.map((opp) => (
+                      <tr key={opp.id} className="opp-row-item">
+                        <td>
                           <span className="code-pill">{opp.code}</span>
-                          {(() => {
-                            const stalledCheck = opportunityService.analyzeStalledOpportunity(opp)
-                            if (!stalledCheck.isStalled) return null
-                            return (
-                              <span
-                                className={`kanban-stalled-tag ${stalledCheck.severity === 'CRITICAL' ? 'crit' : 'warn'}`}
-                                title={`[Cảnh báo S5-07]: ${stalledCheck.message}`}
-                              >
-                                ⚠️ Đình trệ
-                              </span>
-                            )
-                          })()}
-                          <span className="deal-prob">{opp.win_probability}%</span>
-                        </div>
-                        <h5 className="deal-title">{opp.title}</h5>
-                        <div className="deal-cust">🏢 {opp.customer_name}</div>
-                        <div className="card-bottom">
-                          <strong className="deal-revenue">
+                        </td>
+                        <td>
+                          <div className="opp-title-cell">
+                            <span
+                              className="opp-name-link"
+                              onClick={() => handleOpenDetail(opp)}
+                              title="Nhấp để xem chi tiết và lịch sử hoạt động"
+                            >
+                              {opp.title}
+                            </span>
+                            {(() => {
+                              const stalledCheck = opportunityService.analyzeStalledOpportunity(opp)
+                              if (!stalledCheck.isStalled) return null
+                              return (
+                                <span
+                                  className={`opp-stalled-table-badge ${stalledCheck.severity === 'CRITICAL' ? 'badge-crit' : 'badge-warn'}`}
+                                  title={`[Cảnh báo S5-07]: ${stalledCheck.message}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setMainNavTab('STALLED')
+                                  }}
+                                >
+                                  {stalledCheck.severity === 'CRITICAL' ? 'Đình trệ nguy cấp' : 'Cảnh báo đình trệ'}
+                                </span>
+                              )
+                            })()}
+                            <div className="opp-cust-sub">
+                              {opp.customer_name}
+                              {opp.lead_id && <span className="lead-tag">Từ Lead</span>}
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          {opp.status === 'WON' ? (
+                            <span className="opp-status-badge status-won" title="Đã đóng thắng">Thắng deal</span>
+                          ) : opp.status === 'LOST' ? (
+                            <span className="opp-status-badge status-lost" title="Đã đóng thua">Thua deal</span>
+                          ) : (
+                            <select
+                              className="stage-inline-select"
+                              value={opp.stage_id}
+                              style={{ borderLeftColor: opp.stage_color || '#2563eb' }}
+                              onChange={(e) => handleQuickChangeStage(opp, e.target.value)}
+                              title="Đổi giai đoạn"
+                            >
+                              {stages.map((stg) => (
+                                <option key={stg.id} value={stg.id}>
+                                  {stg.name}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </td>
+                        <td>
+                          <span className="prob-badge">{opp.win_probability}%</span>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <strong className="revenue-text">
                             {formatCurrency(opp.expected_revenue)}
                           </strong>
-                          <span className="deal-owner">{opp.owner_name}</span>
-                        </div>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <span className="weighted-text">
+                            {formatCurrency((opp.expected_revenue * opp.win_probability) / 100)}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="close-date-text">
+                            {opp.expected_close_date || '—'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="owner-badge">{opp.owner_name}</span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <div className="table-actions">
+                            <button
+                              type="button"
+                              className="btn-action view-btn"
+                              title="Xem chi tiết & Lịch sử hoạt động (S5-03)"
+                              onClick={() => handleOpenDetail(opp, 'ACTIVITIES')}
+                            >
+                              <span>Hoạt động</span>
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-action task-btn"
+                              title="Quản lý công việc & lịch nhắc (S5-04)"
+                              onClick={() => handleOpenDetail(opp, 'TASKS')}
+                            >
+                              <span>Công việc</span>
+                            </button>
+                            {isManagerOrAdmin && opp.status === 'OPEN' && (
+                              <button
+                                type="button"
+                                className="btn-action reassign-btn"
+                                title="Phân bổ lại cơ hội cho người khác (S5-08)"
+                                onClick={() => {
+                                  setOppToReassign(opp)
+                                  setIsReassignModalOpen(true)
+                                }}
+                              >
+                                <span>Chuyển giao</span>
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              className="btn-action delete-btn"
+                              title="Xóa cơ hội"
+                              onClick={() => handleDeleteOpp(opp)}
+                            >
+                              <span>Xóa</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          ) : (
+            /* ── Opportunities Pipeline Kanban View ── */
+            <div className="opp-kanban-board">
+              {stages.map((stage) => {
+                const stageOpps = filteredOpportunities.filter((o) => o.stage_id === stage.id)
+                const stageTotal = stageOpps.reduce((acc, o) => acc + o.expected_revenue, 0)
+                return (
+                  <div key={stage.id} className="kanban-column">
+                    <div
+                      className="kanban-column-header"
+                      style={{ borderTopColor: stage.color || '#2563eb' }}
+                    >
+                      <div className="col-header-top">
+                        <h4>{stage.name}</h4>
+                        <span className="col-count">{stageOpps.length}</span>
                       </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+                      <div className="col-header-meta">
+                        <span>Xác suất: {stage.win_probability}%</span>
+                        <span>{formatCurrency(stageTotal)}</span>
+                      </div>
+                    </div>
+
+                    <div className="kanban-column-body">
+                      {stageOpps.length === 0 ? (
+                        <div className="kanban-empty">Không có cơ hội</div>
+                      ) : (
+                        stageOpps.map((opp) => (
+                          <div
+                            key={opp.id}
+                            className="kanban-deal-card"
+                            onClick={() => handleOpenDetail(opp)}
+                          >
+                            <div className="card-top">
+                              <span className="code-pill">{opp.code}</span>
+                              {(() => {
+                                const stalledCheck = opportunityService.analyzeStalledOpportunity(opp)
+                                if (!stalledCheck.isStalled) return null
+                                return (
+                                  <span
+                                    className={`kanban-stalled-tag ${stalledCheck.severity === 'CRITICAL' ? 'crit' : 'warn'}`}
+                                    title={`[Cảnh báo S5-07]: ${stalledCheck.message}`}
+                                  >
+                                    Đình trệ
+                                  </span>
+                                )
+                              })()}
+                              <span className="deal-prob">{opp.win_probability}%</span>
+                            </div>
+                            <h5 className="deal-title">{opp.title}</h5>
+                            <div className="deal-cust">{opp.customer_name}</div>
+                            <div className="card-bottom">
+                              <strong className="deal-revenue">
+                                {formatCurrency(opp.expected_revenue)}
+                              </strong>
+                              <span className="deal-owner">{opp.owner_name}</span>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </>
       )}
 
@@ -748,7 +716,7 @@ export default function OpportunitiesPage() {
             <form onSubmit={handleCreateSubmit}>
               <div className="modal-body">
                 {createError && (
-                  <div className="modal-alert-error">⚠️ {createError}</div>
+                  <div className="modal-alert-error">{createError}</div>
                 )}
 
                 <div className="form-group">

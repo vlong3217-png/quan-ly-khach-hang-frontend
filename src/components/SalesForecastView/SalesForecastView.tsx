@@ -246,7 +246,7 @@ export default function SalesForecastView({
       {/* ── Header & Bộ lọc Kỳ / Nhóm ── */}
       <div className="forecast-header-section">
         <div className="forecast-header-title">
-          <div className="forecast-badge-pill">S5-06: Báo cáo & Phân tích</div>
+          <div className="forecast-badge-pill">Báo cáo & Phân tích</div>
           <h2>Dự Báo Doanh Số Bán Hàng Theo Trọng Số Xác Suất</h2>
           <p className="forecast-subtitle">
             Dự báo = Tổng (Giá trị cơ hội × Xác suất thắng từng giai đoạn). Tự động so sánh với chỉ tiêu giao và số tiền đã ký chốt thực tế.
@@ -298,14 +298,14 @@ export default function SalesForecastView({
                 className={`groupby-btn ${groupBy === 'OWNER' ? 'active' : ''}`}
                 onClick={() => { setGroupBy('OWNER'); setSelectedGroupKey('ALL') }}
               >
-                👤 Từng nhân viên
+                Từng nhân viên
               </button>
               <button
                 type="button"
                 className={`groupby-btn ${groupBy === 'TEAM' ? 'active' : ''}`}
                 onClick={() => { setGroupBy('TEAM'); setSelectedGroupKey('ALL') }}
               >
-                🏢 Đội kinh doanh
+                Đội kinh doanh
               </button>
             </div>
           </div>
@@ -380,7 +380,7 @@ export default function SalesForecastView({
               className="btn-clear-group-filter"
               onClick={() => setSelectedGroupKey('ALL')}
             >
-              ✕ Bỏ lọc "{selectedGroupKey}" (Xem tất cả)
+              Bỏ lọc "{selectedGroupKey}" (Xem tất cả)
             </button>
           )}
         </div>
@@ -538,7 +538,7 @@ export default function SalesForecastView({
                       <td>
                         <div className="deal-title-block">
                           <strong className="deal-name">{opp.title}</strong>
-                          <span className="deal-customer">🏢 {opp.customer_name}</span>
+                          <span className="deal-customer">{opp.customer_name}</span>
                         </div>
                       </td>
                       <td>
@@ -562,7 +562,7 @@ export default function SalesForecastView({
                       <td>
                         <span className="deal-date">
                           {opp.status === 'WON' && opp.actual_close_date
-                            ? `✓ Ký: ${opp.actual_close_date}`
+                            ? `Ký: ${opp.actual_close_date}`
                             : (opp.expected_close_date || '—')}
                         </span>
                       </td>
