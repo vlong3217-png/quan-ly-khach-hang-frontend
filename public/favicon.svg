@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Nguoi dung trung tam -->
+  <circle cx="12" cy="7" r="3.2" fill="#2563eb" fill-opacity="0.15" />
+  <path d="M6.5 19.5c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5" />
+  <!-- Khach hang / thanh vien ket noi ben trai -->
+  <circle cx="4.5" cy="9.5" r="2.2" fill="#2563eb" fill-opacity="0.15" />
+  <path d="M2 18.5c0-2 1.5-3.5 3.5-3.5" />
+  <!-- Khach hang / thanh vien ket noi ben phai -->
+  <circle cx="19.5" cy="9.5" r="2.2" fill="#2563eb" fill-opacity="0.15" />
+  <path d="M22 18.5c0-2 1.5-3.5 3.5-3.5" />
+</svg>
