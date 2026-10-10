@@ -451,73 +451,9 @@ function DashboardPage() {
           )}
 
           {/* ─────────────────────────────────────────────────────────────
-              VIEW 5: CẤU HÌNH HỆ THỐNG & AUDIT LOGS (ADMIN ONLY)
+              VIEW 5: NHẬT KÝ HỆ THỐNG & AUDIT LOGS (ADMIN ONLY)
               ───────────────────────────────────────────────────────────── */}
-          {isSettingView && (
-            <PermissionGate
-              role={[ROLES.ADMIN]}
-              permission={PERMISSIONS.SYSTEM_SETTINGS}
-              fallback={
-                <div className="access-denied-card" id="forbidden-settings-card">
-                  <IconLock />
-                  <h3>Không có quyền truy cập Cấu hình hệ thống (Mã lỗi 403)</h3>
-                  <p>Khu vực này chỉ dành riêng cho Quản trị viên cao nhất (ADMIN).</p>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/settings' } })}
-                    >
-                      Mở trang lỗi 403
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      onClick={() => {
-                        setActiveMenuId('menu-dashboard')
-                        navigate('/dashboard')
-                      }}
-                    >
-                      Về trang chủ
-                    </button>
-                  </div>
-                </div>
-              }
-            >
-              <section className="dashboard-section settings-section">
-                <div className="section-header">
-                  <div>
-                    <h2 className="section-title">Nhật ký & Cấu hình hệ thống</h2>
-                    <p className="section-desc">
-                      Quản trị người dùng, phân bổ vai trò và theo dõi nhật ký hoạt động toàn hệ thống.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="settings-cards-grid">
-                  <div className="setting-card">
-                    <h4>Nhật ký hoạt động hệ thống</h4>
-                    <p>Ghi lại lịch sử đăng nhập, thay đổi dữ liệu khách hàng và truy cập API.</p>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => {
-                        setActiveMenuId('menu-audit-logs')
-                        navigate('/dashboard/audit-logs')
-                      }}
-                    >
-                      Xem nhật ký
-                    </button>
-                  </div>
-                </div>
-              </section>
-            </PermissionGate>
-          )}
-
-          {/* ─────────────────────────────────────────────────────────────
-              VIEW: NHẬT KÝ THAY ĐỔI HỆ THỐNG (AUDIT LOGS - S2-04)
-              ───────────────────────────────────────────────────────────── */}
-          {isAuditLogView && (
+          {(isSettingView || isAuditLogView) && (
             <PermissionGate
               role={[ROLES.ADMIN]}
               permission={PERMISSIONS.SYSTEM_SETTINGS}
@@ -538,7 +474,7 @@ function DashboardPage() {
                       type="button"
                       className="btn btn-primary"
                       onClick={() => {
-                        setActiveMenuId('menu-dashboard')
+                        setActiveMenuId('menu-settings')
                         navigate('/dashboard')
                       }}
                     >
