@@ -62,6 +62,10 @@ export interface LeadConversionPayload {
   create_new_customer: boolean
   customer_id?: string
   customer_name?: string
+  contact_name?: string
+  contact_position?: string
+  contact_phone?: string
+  contact_email?: string
   tax_code?: string
   industry?: string
   company_size?: string
@@ -100,6 +104,7 @@ export interface LeadConversionResult {
     expected_revenue: number
     stage_name?: string
     stage_id?: string
+    expected_close_date?: string
   }
   message: string
 }
@@ -130,8 +135,10 @@ export interface Lead {
   last_scored_at?: string
   converted_customer_id?: string
   converted_customer_name?: string
+  converted_customer_code?: string
   converted_opportunity_id?: string
   converted_opportunity_title?: string
+  converted_opportunity_code?: string
   converted_at?: string
   created_at: string
   updated_at: string
