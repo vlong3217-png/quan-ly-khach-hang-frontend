@@ -474,19 +474,25 @@ export default function OpportunitiesPage() {
                       </div>
                     </td>
                     <td>
-                      <select
-                        className="stage-inline-select"
-                        value={opp.stage_id}
-                        style={{ borderLeftColor: opp.stage_color || '#2563eb' }}
-                        onChange={(e) => handleQuickChangeStage(opp, e.target.value)}
-                        title="Đổi giai đoạn"
-                      >
-                        {stages.map((stg) => (
-                          <option key={stg.id} value={stg.id}>
-                            {stg.name}
-                          </option>
-                        ))}
-                      </select>
+                      {opp.status === 'WON' ? (
+                        <span className="opp-status-badge status-won" title="Đã đóng thắng">🏆 Thắng deal</span>
+                      ) : opp.status === 'LOST' ? (
+                        <span className="opp-status-badge status-lost" title="Đã đóng thua">❌ Thua deal</span>
+                      ) : (
+                        <select
+                          className="stage-inline-select"
+                          value={opp.stage_id}
+                          style={{ borderLeftColor: opp.stage_color || '#2563eb' }}
+                          onChange={(e) => handleQuickChangeStage(opp, e.target.value)}
+                          title="Đổi giai đoạn"
+                        >
+                          {stages.map((stg) => (
+                            <option key={stg.id} value={stg.id}>
+                              {stg.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </td>
                     <td>
                       <span className="prob-badge">{opp.win_probability}%</span>
