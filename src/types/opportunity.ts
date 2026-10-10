@@ -23,8 +23,24 @@ export interface Opportunity {
   expected_close_date: string // Ngày dự kiến chốt (YYYY-MM-DD)
   source: string // Nguồn cơ hội
   status: OpportunityStatus
-  lost_reason?: string
-  competitor_id?: string
+  // ── S5-05: Đóng Thắng / Thua & Mở lại cơ hội ──
+  actual_revenue?: number // Giá trị chốt thực tế (khi đóng thắng)
+  actual_close_date?: string // Ngày ký hợp đồng / ngày chốt thực tế (YYYY-MM-DD)
+  win_reason_id?: string // Lý do thắng
+  win_reason_name?: string
+  win_notes?: string
+  lost_reason_id?: string // Lý do thua
+  lost_reason?: string // Tên/nội dung lý do thua
+  competitor_id?: string // Đối thủ thắng thầu nếu có
+  competitor_name?: string
+  loss_notes?: string
+  closed_at?: string // Thời điểm đóng cơ hội
+  closed_by_id?: number
+  closed_by_name?: string
+  reopened_at?: string // Thời điểm mở lại
+  reopened_by_id?: number
+  reopened_by_name?: string
+  reopen_reason?: string // Lý do mở lại bắt buộc
   owner_id: number
   owner_name: string
   team_id?: number
@@ -34,6 +50,33 @@ export interface Opportunity {
   created_at: string
   updated_at: string
 }
+
+export interface CloseOpportunityWonPayload {
+  actual_revenue: number // Bắt buộc
+  actual_close_date: string // Bắt buộc ngày ký (YYYY-MM-DD)
+  win_reason_id?: string
+  win_notes?: string
+  closed_by_id?: number
+  closed_by_name?: string
+}
+
+export interface CloseOpportunityLostPayload {
+  lost_reason_id: string // Bắt buộc chọn lý do thua
+  lost_reason: string
+  competitor_id?: string // Đối thủ thắng thầu nếu có
+  competitor_name?: string
+  loss_notes?: string
+  closed_by_id?: number
+  closed_by_name?: string
+}
+
+export interface ReopenOpportunityPayload {
+  reopen_reason: string // Bắt buộc nhập lý do mở lại
+  target_stage_id?: string
+  reopened_by_id?: number
+  reopened_by_name?: string
+}
+
 
 export interface CreateOpportunityPayload {
   title: string

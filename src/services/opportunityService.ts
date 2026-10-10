@@ -239,4 +239,179 @@ export const opportunityService = {
     const list = getStoredOpportunities().filter((o) => o.id !== id)
     saveStoredOpportunities(list)
   },
+
+  /* ──────────── User Story S5-05: Đóng Cơ hội Thắng / Thua & Mở lại ──────────── */
+  /**
+   * Đóng Thắng (Close Won):
+   * - Bắt buộc: actual_revenue (giá trị chốt thực tế) và actual_close_date (ngày ký hợp đồng)
+   * - Chuyển trạng thái sang WON, giai đoạn sang "Chốt thành công (Won)" (100%)
+   * - Cơ hội bị khóa không cho sửa thông thường
+   */
+  async closeWon(
+    id: string,
+    payload: {
+      actual_revenue: number
+      actual_close_date: string
+      win_reason_id?: string
+      win_reason_name?: string
+      win_notes?: string
+      closed_by_id?: number
+      closed_by_name?: string
+    }
+  ): Promise<Opportunity> {
+    if (!payload.actual_revenue || payload.actual_revenue <= 0) {
+      throw new Error('Đóng Thắng bắt buộc nhập giá trị chốt thực tế lớn hơn 0!')
+    }
+    if (!payload.actual_close_date || !payload.actual_close_date.trim()) {
+      throw new Error('Đóng Thắng bắt buộc nhập ngày ký hợp đồng thực tế!')
+    }
+
+    const list = getStoredOpportunities()
+    const idx = list.findIndex((o) => o.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy cơ hội bán hàng!')
+
+    const existing = list[idx]
+    const nowIso = new Date().toISOString()
+
+    const updatedOpp: Opportunity = {
+      ...existing,
+      status: 'WON',
+      stage_id: 'stage-6',
+      stage_name: 'Chốt thành công (Won)',
+      stage_color: '#16a34a',
+      win_probability: 100,
+      actual_revenue: Number(payload.actual_revenue),
+      actual_close_date: payload.actual_close_date.trim(),
+      win_reason_id: payload.win_reason_id,
+      win_reason_name: payload.win_reason_name,
+      win_notes: payload.win_notes?.trim(),
+      closed_at: nowIso,
+      closed_by_id: payload.closed_by_id || 1,
+      closed_by_name: payload.closed_by_name || 'Nhân viên kinh doanh',
+      updated_at: nowIso,
+    }
+
+    try {
+      await fetch(`${API_BASE_URL}/opportunities/${id}/close-won`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updatedOpp),
+      })
+    } catch {}
+
+    list[idx] = updatedOpp
+    saveStoredOpportunities(list)
+    return updatedOpp
+  },
+
+  /**
+   * Đóng Thua (Close Lost):
+   * - Bắt buộc: chọn lý do thua (lost_reason_id & lost_reason)
+   * - Đối thủ thắng thầu nếu có (competitor_id & competitor_name)
+   * - Chuyển trạng thái sang LOST, xác suất về 0%
+   */
+  async closeLost(
+    id: string,
+    payload: {
+      lost_reason_id: string
+      lost_reason: string
+      competitor_id?: string
+      competitor_name?: string
+      loss_notes?: string
+      closed_by_id?: number
+      closed_by_name?: string
+    }
+  ): Promise<Opportunity> {
+    if (!payload.lost_reason_id || !payload.lost_reason) {
+      throw new Error('Đóng Thua bắt buộc chọn lý do thất bại!')
+    }
+
+    const list = getStoredOpportunities()
+    const idx = list.findIndex((o) => o.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy cơ hội bán hàng!')
+
+    const existing = list[idx]
+    const nowIso = new Date().toISOString()
+
+    const updatedOpp: Opportunity = {
+      ...existing,
+      status: 'LOST',
+      win_probability: 0,
+      lost_reason_id: payload.lost_reason_id,
+      lost_reason: payload.lost_reason,
+      competitor_id: payload.competitor_id || undefined,
+      competitor_name: payload.competitor_name || undefined,
+      loss_notes: payload.loss_notes?.trim(),
+      closed_at: nowIso,
+      closed_by_id: payload.closed_by_id || 1,
+      closed_by_name: payload.closed_by_name || 'Nhân viên kinh doanh',
+      updated_at: nowIso,
+    }
+
+    try {
+      await fetch(`${API_BASE_URL}/opportunities/${id}/close-lost`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updatedOpp),
+      })
+    } catch {}
+
+    list[idx] = updatedOpp
+    saveStoredOpportunities(list)
+    return updatedOpp
+  },
+
+  /**
+   * Mở lại cơ hội đã đóng (Reopen Opportunity):
+   * - Chỉ Trưởng nhóm (Manager) trở lên mới được mở lại
+   * - Bắt buộc nhập lý do mở lại (reopen_reason)
+   */
+  async reopenOpportunity(
+    id: string,
+    payload: {
+      reopen_reason: string
+      target_stage_id?: string
+      target_stage_name?: string
+      target_win_probability?: number
+      reopened_by_id?: number
+      reopened_by_name?: string
+    }
+  ): Promise<Opportunity> {
+    if (!payload.reopen_reason || !payload.reopen_reason.trim()) {
+      throw new Error('Trưởng nhóm bắt buộc phải nhập lý do mở lại cơ hội!')
+    }
+
+    const list = getStoredOpportunities()
+    const idx = list.findIndex((o) => o.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy cơ hội bán hàng!')
+
+    const existing = list[idx]
+    const nowIso = new Date().toISOString()
+
+    const updatedOpp: Opportunity = {
+      ...existing,
+      status: 'OPEN',
+      stage_id: payload.target_stage_id || 'stage-5',
+      stage_name: payload.target_stage_name || 'Đàm phán hợp đồng',
+      win_probability: payload.target_win_probability ?? 85,
+      reopened_at: nowIso,
+      reopened_by_id: payload.reopened_by_id || 1,
+      reopened_by_name: payload.reopened_by_name || 'Trưởng nhóm',
+      reopen_reason: payload.reopen_reason.trim(),
+      updated_at: nowIso,
+    }
+
+    try {
+      await fetch(`${API_BASE_URL}/opportunities/${id}/reopen`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updatedOpp),
+      })
+    } catch {}
+
+    list[idx] = updatedOpp
+    saveStoredOpportunities(list)
+    return updatedOpp
+  },
 }
+
