@@ -155,8 +155,16 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Tạo, phân quyền vai trò, nhóm và khóa tài khoản người dùng',
       },
       {
+        id: 'menu-audit-logs',
+        title: 'Nhật ký hệ thống',
+        path: '/dashboard/audit-logs',
+        roles: [ROLES.ADMIN],
+        permissions: [PERMISSIONS.SYSTEM_SETTINGS],
+        description: 'Truy vết toàn diện lịch sử thay đổi trên dữ liệu nhạy cảm',
+      },
+      {
         id: 'menu-settings',
-        title: 'Nhật ký & Hệ thống',
+        title: 'Cấu hình hệ thống',
         path: '/dashboard/settings',
         roles: [ROLES.ADMIN],
         permissions: [PERMISSIONS.SYSTEM_SETTINGS],

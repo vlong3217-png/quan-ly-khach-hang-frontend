@@ -16,6 +16,7 @@ import CustomerManagementPage from '../CustomerManagementPage/CustomerManagement
 import LeadFormsPage from '../LeadFormsPage/LeadFormsPage.tsx'
 import CampaignsPage from '../CampaignsPage/CampaignsPage.tsx'
 import OpportunitiesPage from '../OpportunitiesPage/OpportunitiesPage.tsx'
+import AuditLogPage from '../AuditLogPage/AuditLogPage.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -90,6 +91,8 @@ function DashboardPage() {
     const path = location.pathname
     if (path.startsWith('/dashboard/users')) {
       setActiveMenuId('menu-users')
+    } else if (path.startsWith('/dashboard/audit-logs')) {
+      setActiveMenuId('menu-audit-logs')
     } else if (path.startsWith('/dashboard/settings')) {
       setActiveMenuId('menu-settings')
     } else if (path.startsWith('/dashboard/reports')) {
@@ -169,6 +172,9 @@ function DashboardPage() {
   const isSettingView =
     activeMenuId === 'menu-settings' ||
     activeMenuId.startsWith('menu-settings-')
+  const isAuditLogView =
+    activeMenuId === 'menu-audit-logs' ||
+    activeMenuId.startsWith('menu-audit-logs-')
   const isUserView =
     activeMenuId === 'menu-users' ||
     activeMenuId.startsWith('menu-users-')
@@ -495,12 +501,55 @@ function DashboardPage() {
                     <button
                       type="button"
                       className="btn btn-secondary"
-                      onClick={() => navigate('/admin/audit-logs')}
+                      onClick={() => {
+                        setActiveMenuId('menu-audit-logs')
+                        navigate('/dashboard/audit-logs')
+                      }}
                     >
                       Xem nhật ký
                     </button>
                   </div>
                 </div>
+              </section>
+            </PermissionGate>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: NHẬT KÝ THAY ĐỔI HỆ THỐNG (AUDIT LOGS - S2-04)
+              ───────────────────────────────────────────────────────────── */}
+          {isAuditLogView && (
+            <PermissionGate
+              role={[ROLES.ADMIN]}
+              permission={PERMISSIONS.SYSTEM_SETTINGS}
+              fallback={
+                <div className="access-denied-card" id="forbidden-audit-logs-card">
+                  <IconLock />
+                  <h3>Không có quyền truy cập Nhật ký hệ thống (Mã lỗi 403)</h3>
+                  <p>Truy vết nhật ký thay đổi chỉ dành riêng cho Quản trị viên cao nhất (ADMIN).</p>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/audit-logs' } })}
+                    >
+                      Mở trang lỗi 403
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setActiveMenuId('menu-dashboard')
+                        navigate('/dashboard')
+                      }}
+                    >
+                      Về trang chủ
+                    </button>
+                  </div>
+                </div>
+              }
+            >
+              <section className="dashboard-section audit-logs-section">
+                <AuditLogPage embeddedMode={true} />
               </section>
             </PermissionGate>
           )}
