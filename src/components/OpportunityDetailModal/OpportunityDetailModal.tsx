@@ -7,6 +7,7 @@ import { opportunityActivityService } from '../../services/opportunityActivitySe
 import { winLossService } from '../../services/winLossService.ts'
 import OpportunityActivityTimeline from '../OpportunityActivityTimeline/OpportunityActivityTimeline.tsx'
 import OpportunityTaskManager from '../OpportunityTaskManager/OpportunityTaskManager.tsx'
+import ReassignOpportunityModal from '../ReassignOpportunityModal/ReassignOpportunityModal.tsx'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import './OpportunityDetailModal.css'
 
@@ -113,6 +114,9 @@ export default function OpportunityDetailModal({
   const [reopenReasonInput, setReopenReasonInput] = useState<string>('')
   const [reopenTargetStageId, setReopenTargetStageId] = useState<string>('stage-5')
   const [reopenModalError, setReopenModalError] = useState<string | null>(null)
+
+  // State Modal Phân bổ lại cơ hội (S5-08)
+  const [isReassignModalOpen, setIsReassignModalOpen] = useState(false)
 
   // Data lý do và đối thủ từ winLossService
   const winReasons = winLossService.getReasons('WIN_REASON').filter((r) => r.is_active)
@@ -365,6 +369,17 @@ export default function OpportunityDetailModal({
           <div className="opp-close-actions-ribbon">
             {!isClosed ? (
               <>
+                {isManagerOrAdmin && (
+                  <button
+                    type="button"
+                    className="opp-btn-action-reassign-ribbon"
+                    onClick={() => setIsReassignModalOpen(true)}
+                    title="Phân bổ lại cơ hội cho nhân viên khác trong nhóm (S5-08)"
+                    id="btn-reassign-ribbon"
+                  >
+                    🔄 Phân bổ lại
+                  </button>
+                )}
                 <button
                   type="button"
                   className="opp-btn-action-won"
@@ -608,13 +623,62 @@ export default function OpportunityDetailModal({
                 </div>
                 <div className="detail-item">
                   <span className="d-label">Người phụ trách:</span>
-                  <span className="d-val">{currentOpp.owner_name}</span>
+                  <span className="d-val font-bold text-primary">
+                    {currentOpp.owner_name}
+                    {isManagerOrAdmin && !isClosed && (
+                      <button
+                        type="button"
+                        className="btn-quick-reassign-link"
+                        onClick={() => setIsReassignModalOpen(true)}
+                        title="Bàn giao cơ hội cho người khác (S5-08)"
+                      >
+                        [Chuyển giao 🔄]
+                      </button>
+                    )}
+                  </span>
                 </div>
                 <div className="detail-item">
                   <span className="d-label">Đội nhóm:</span>
                   <span className="d-val">{currentOpp.team_name || 'Đội Kinh Doanh 1'}</span>
                 </div>
               </div>
+
+              {/* Lịch sử phân bổ lại cơ hội (S5-08) */}
+              {(() => {
+                const reassignHistory = opportunityService.getReassignHistory(currentOpp.id)
+                if (reassignHistory.length === 0) return null
+                return (
+                  <div className="details-card full-width reassign-history-card">
+                    <h4>🔄 Lịch sử Phân bổ lại & Bàn giao Cơ hội (S5-08)</h4>
+                    <div className="reassign-history-list">
+                      {reassignHistory.map((item) => (
+                        <div key={item.id} className="reassign-history-entry">
+                          <div className="entry-header">
+                            <span className="entry-users">
+                              Từ <strong>{item.from_owner_name}</strong> ➜ Tiếp nhận:{' '}
+                              <strong className="text-primary">{item.to_owner_name}</strong>
+                            </span>
+                            <span className="entry-date">
+                              {new Date(item.created_at).toLocaleString('vi-VN')}
+                            </span>
+                          </div>
+                          <div className="entry-body">
+                            <span className="reason-label">Lý do:</span> {item.reassign_reason}
+                            {item.transfer_notes && (
+                              <div className="notes-val">
+                                <em>Ghi chú bàn giao:</em> "{item.transfer_notes}"
+                              </div>
+                            )}
+                            <div className="manager-sign">
+                              Người điều phối: {item.reassigned_by_name}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
 
               {currentOpp.description && (
                 <div className="details-card full-width">
@@ -885,6 +949,22 @@ export default function OpportunityDetailModal({
             </form>
           </div>
         </div>
+      )}
+
+      {/* ── MODAL: PHÂN BỔ LẠI CƠ HỘI (S5-08) ── */}
+      {isReassignModalOpen && (
+        <ReassignOpportunityModal
+          opportunity={currentOpp}
+          isOpen={isReassignModalOpen}
+          managerName={user?.full_name || 'Bế Hoàng Quân (Trưởng nhóm)'}
+          managerId={user?.id ? Number(user.id) : 1}
+          onClose={() => setIsReassignModalOpen(false)}
+          onSuccess={(updated) => {
+            setCurrentOpp(updated)
+            onOpportunityUpdated(updated)
+            showNotice(`Đã bàn giao cơ hội ${updated.code} cho ${updated.owner_name} thành công!`)
+          }}
+        />
       )}
     </div>
   )

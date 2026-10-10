@@ -666,5 +666,116 @@ export const opportunityService = {
       })
     } catch {}
   },
+
+  /* ──────────── User Story S5-08: Phân bổ lại cơ hội (Reassign Opportunity) ──────────── */
+  /**
+   * Phân bổ lại cơ hội cho người khác trong nhóm:
+   * - Chỉ Trưởng nhóm (Manager) hoặc Quản trị viên (Admin) mới có quyền thực hiện
+   * - Bắt buộc chọn người nhận mới (new_owner_id, new_owner_name)
+   * - Bắt buộc nhập lý do phân bổ lại (reassign_reason): nghỉ ốm dài ngày, quá tải, chuyển địa bàn...
+   * - Tùy chọn chuyển giao toàn bộ công việc chưa hoàn thành (tasks)
+   * - Tự động ghi nhận lịch sử bàn giao vào Timeline hoạt động và lịch sử cơ hội
+   */
+  async reassignOpportunity(
+    id: string,
+    payload: {
+      new_owner_id: number
+      new_owner_name: string
+      new_team_id?: number
+      new_team_name?: string
+      reassign_reason: string
+      transfer_notes?: string
+      transfer_open_tasks?: boolean
+      reassigned_by_id?: number
+      reassigned_by_name?: string
+    }
+  ): Promise<Opportunity> {
+    if (!payload.new_owner_id || !payload.new_owner_name) {
+      throw new Error('Vui lòng chọn nhân viên kinh doanh tiếp nhận cơ hội!')
+    }
+    if (!payload.reassign_reason || !payload.reassign_reason.trim()) {
+      throw new Error('Trưởng nhóm bắt buộc phải nhập lý do phân bổ lại cơ hội!')
+    }
+
+    const list = getStoredOpportunities()
+    const idx = list.findIndex((o) => o.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy cơ hội bán hàng!')
+
+    const existing = list[idx]
+    const oldOwnerId = existing.owner_id
+    const oldOwnerName = existing.owner_name
+    const nowIso = new Date().toISOString()
+
+    const updatedOpp: Opportunity = {
+      ...existing,
+      owner_id: payload.new_owner_id,
+      owner_name: payload.new_owner_name,
+      team_id: payload.new_team_id || existing.team_id,
+      team_name: payload.new_team_name || existing.team_name,
+      last_activity_at: nowIso,
+      updated_at: nowIso,
+    }
+
+    // Lưu vào lịch sử phân bổ localStorage
+    const historyItem = {
+      id: `reassign-${Date.now()}`,
+      opportunity_id: id,
+      from_owner_id: oldOwnerId,
+      from_owner_name: oldOwnerName,
+      to_owner_id: payload.new_owner_id,
+      to_owner_name: payload.new_owner_name,
+      reassign_reason: payload.reassign_reason.trim(),
+      transfer_notes: payload.transfer_notes?.trim() || '',
+      reassigned_by_name: payload.reassigned_by_name || 'Trưởng nhóm',
+      created_at: nowIso,
+    }
+
+    try {
+      const rawHist = localStorage.getItem('crm_opportunity_reassign_history')
+      const histList = rawHist ? JSON.parse(rawHist) : []
+      histList.unshift(historyItem)
+      localStorage.setItem('crm_opportunity_reassign_history', JSON.stringify(histList))
+    } catch {}
+
+    try {
+      await fetch(`${API_BASE_URL}/opportunities/${id}/reassign`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          ...updatedOpp,
+          ...payload,
+        }),
+      })
+    } catch {}
+
+    list[idx] = updatedOpp
+    saveStoredOpportunities(list)
+    return updatedOpp
+  },
+
+  /**
+   * Lấy lịch sử phân bổ lại của một cơ hội
+   */
+  getReassignHistory(opportunityId: string): Array<{
+    id: string
+    opportunity_id: string
+    from_owner_id: number
+    from_owner_name: string
+    to_owner_id: number
+    to_owner_name: string
+    reassign_reason: string
+    transfer_notes?: string
+    reassigned_by_name: string
+    created_at: string
+  }> {
+    try {
+      const rawHist = localStorage.getItem('crm_opportunity_reassign_history')
+      if (rawHist) {
+        const histList = JSON.parse(rawHist)
+        return histList.filter((h: any) => h.opportunity_id === opportunityId)
+      }
+    } catch {}
+    return []
+  },
 }
 

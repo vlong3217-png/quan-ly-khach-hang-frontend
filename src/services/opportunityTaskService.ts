@@ -316,4 +316,33 @@ export const opportunityTaskService = {
       overdue,
     }
   },
+
+  /**
+   * Chuyển giao toàn bộ công việc chưa hoàn thành của một cơ hội sang người mới (S5-08)
+   */
+  async reassignTasksForOpportunity(
+    opportunityId: string,
+    newOwnerId: number,
+    newOwnerName: string
+  ): Promise<number> {
+    const list = getStoredTasks()
+    let count = 0
+    const updatedList = list.map((t) => {
+      if (t.opportunity_id === opportunityId && !t.is_completed) {
+        count++
+        return {
+          ...t,
+          assigned_to_id: newOwnerId,
+          assigned_to_name: newOwnerName,
+          updated_at: new Date().toISOString(),
+        }
+      }
+      return t
+    })
+    if (count > 0) {
+      saveStoredTasks(updatedList)
+    }
+    return count
+  },
 }
+
