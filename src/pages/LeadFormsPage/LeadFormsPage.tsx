@@ -294,6 +294,10 @@ export default function LeadFormsPage() {
     lead_id: '',
     create_new_customer: true,
     customer_name: '',
+    contact_name: '',
+    contact_position: 'Người liên hệ đại diện',
+    contact_phone: '',
+    contact_email: '',
     tax_code: '',
     industry: 'Công nghệ thông tin & Viễn thông',
     company_size: '10 - 50 nhân sự',
@@ -564,7 +568,7 @@ export default function LeadFormsPage() {
     }
   }
 
-  // ── S4-05: Chuyển đổi Lead thành Khách hàng & Cơ hội ──
+  // ── S4-08: Chuyển đổi Lead thành Khách hàng & Cơ hội ──
   const handleOpenConvertModal = (lead: Lead) => {
     if (lead.status === 'CONVERTED') {
       showToast(`Lead "${lead.full_name}" đã được chuyển đổi sang Khách hàng trước đó!`, true)
@@ -585,6 +589,10 @@ export default function LeadFormsPage() {
       create_new_customer: true,
       customer_id: customers[0]?.id || '',
       customer_name: preview.default_customer_name,
+      contact_name: preview.default_contact_name || lead.full_name,
+      contact_position: preview.default_contact_position || 'Người liên hệ đại diện',
+      contact_phone: preview.default_contact_phone || lead.phone,
+      contact_email: preview.default_contact_email || lead.email,
       tax_code: '',
       industry: preview.lead_industry,
       company_size: '10 - 50 nhân sự',
@@ -601,7 +609,7 @@ export default function LeadFormsPage() {
       win_probability: preview.default_win_probability,
       owner_id: lead.owner_id || 1,
       owner_name: lead.owner_name || 'Nguyễn Văn An',
-      notes: lead.requirement || '',
+      notes: preview.default_notes || lead.requirement || '',
     })
 
     setIsConvertModalOpen(true)
@@ -610,11 +618,23 @@ export default function LeadFormsPage() {
   const handleConfirmConversion = async () => {
     if (!convertingLead) return
 
-    // Validation
+    // Validation chặt chẽ theo nghiệp vụ S4-08
     const errs: Record<string, string> = {}
     if (conversionForm.create_new_customer) {
       if (!conversionForm.customer_name?.trim()) {
         errs.customer_name = 'Vui lòng nhập tên công ty / khách hàng'
+      }
+      if (conversionForm.phone && !/^[0-9+() -]{8,15}$/.test(conversionForm.phone.trim())) {
+        errs.phone = 'Số điện thoại doanh nghiệp không hợp lệ'
+      }
+      if (conversionForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(conversionForm.email.trim())) {
+        errs.email = 'Email doanh nghiệp không hợp lệ'
+      }
+      if (conversionForm.contact_phone && !/^[0-9+() -]{8,15}$/.test(conversionForm.contact_phone.trim())) {
+        errs.contact_phone = 'Số điện thoại người liên hệ không hợp lệ'
+      }
+      if (conversionForm.contact_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(conversionForm.contact_email.trim())) {
+        errs.contact_email = 'Email người liên hệ không hợp lệ'
       }
     } else {
       if (!conversionForm.customer_id) {
@@ -627,12 +647,15 @@ export default function LeadFormsPage() {
         errs.opportunity_title = 'Vui lòng nhập tên cơ hội bán hàng'
       }
       if (!conversionForm.expected_close_date) {
-        errs.expected_close_date = 'Vui lòng chọn ngày dự kiến chốt'
+        errs.expected_close_date = 'Vui lòng chọn ngày dự kiến chốt hợp đồng'
       } else {
         const todayStr = new Date().toISOString().split('T')[0]
         if (conversionForm.expected_close_date < todayStr) {
           errs.expected_close_date = 'Ngày dự kiến chốt không được ở trong quá khứ'
         }
+      }
+      if ((conversionForm.expected_revenue ?? 0) < 0) {
+        errs.expected_revenue = 'Doanh thu kỳ vọng không được âm'
       }
     }
 
@@ -654,13 +677,21 @@ export default function LeadFormsPage() {
                 status: 'CONVERTED' as LeadStatus,
                 converted_customer_id: result.customer?.id,
                 converted_customer_name: result.customer?.name,
+                converted_customer_code: result.customer?.code,
                 converted_opportunity_id: result.opportunity?.id,
                 converted_opportunity_title: result.opportunity?.title,
+                converted_opportunity_code: result.opportunity?.code,
                 converted_at: new Date().toISOString(),
               }
             : l
         )
       )
+
+      // Đồng bộ danh sách tương tác mới nhất vào timeline
+      try {
+        const updatedInteractions = await leadInteractionService.getAllRecentInteractions()
+        setAllRecentInteractions(updatedInteractions)
+      } catch {}
 
       setIsConvertModalOpen(false)
       setConversionResult(result)
@@ -1474,22 +1505,24 @@ export default function LeadFormsPage() {
 
                         <td style={{ textAlign: 'center' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                            {/* Nút Chuyển đổi (S4-05) */}
+                            {/* Nút Chuyển đổi (S4-08) */}
                             {l.status === 'CONVERTED' ? (
-                              <span
+                              <button
+                                type="button"
                                 className="tab-badge"
-                                style={{ background: '#ecfdf5', color: '#059669', borderColor: '#a7f3d0', fontSize: '11px', cursor: 'default' }}
-                                title={`Đã chuyển đổi sang Khách hàng: ${l.converted_customer_name || 'Khách hàng CRM'}`}
+                                style={{ background: '#ecfdf5', color: '#059669', borderColor: '#a7f3d0', fontSize: '11px', cursor: 'pointer', padding: '3px 8px', border: '1px solid #a7f3d0', borderRadius: '6px' }}
+                                title={`Đã chuyển đổi sang Khách hàng: ${l.converted_customer_name || 'Khách hàng CRM'} (Mã KH: ${l.converted_customer_code || 'N/A'})${l.converted_opportunity_title ? ` | Cơ hội: ${l.converted_opportunity_title}` : ''}. Click để xem hồ sơ.`}
+                                onClick={() => navigate('/dashboard/customers')}
                               >
-                                Đã chuyển
-                              </span>
+                                ✓ Đã chuyển
+                              </button>
                             ) : (
                               <button
                                 type="button"
                                 className="btn-action-icon"
                                 style={{ color: '#2563eb', borderColor: '#bfdbfe', background: '#eff6ff' }}
                                 onClick={() => handleOpenConvertModal(l)}
-                                title="Chuyển đổi thành Khách hàng & Cơ hội (S4-05)"
+                                title="Chuyển đổi thành Khách hàng & Cơ hội (S4-08)"
                                 id={`btn-convert-lead-${l.id}`}
                               >
                                 <IconUserCheck />
@@ -1740,21 +1773,24 @@ export default function LeadFormsPage() {
                         </td>
                         <td style={{ textAlign: 'center' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                            {/* Nút Chuyển đổi (S4-05) */}
+                            {/* Nút Chuyển đổi (S4-08) */}
                             {l.status === 'CONVERTED' ? (
-                              <span
+                              <button
+                                type="button"
                                 className="tab-badge"
-                                style={{ background: '#ecfdf5', color: '#059669', borderColor: '#a7f3d0', fontSize: '11px', cursor: 'default' }}
+                                style={{ background: '#ecfdf5', color: '#059669', borderColor: '#a7f3d0', fontSize: '11px', cursor: 'pointer', padding: '3px 8px', border: '1px solid #a7f3d0', borderRadius: '6px' }}
+                                title={`Đã chuyển đổi sang Khách hàng: ${l.converted_customer_name || 'Khách hàng CRM'}. Click để xem.`}
+                                onClick={() => navigate('/dashboard/customers')}
                               >
-                                Đã chuyển
-                              </span>
+                                ✓ Đã chuyển
+                              </button>
                             ) : (
                               <button
                                 type="button"
                                 className="btn-action-icon"
                                 style={{ color: '#2563eb', borderColor: '#bfdbfe', background: '#eff6ff' }}
                                 onClick={() => handleOpenConvertModal(l)}
-                                title="Chuyển đổi thành Khách hàng & Cơ hội (S4-05)"
+                                title="Chuyển đổi thành Khách hàng & Cơ hội (S4-08)"
                                 id={`btn-convert-score-lead-${l.id}`}
                               >
                                 <IconUserCheck />
@@ -1951,14 +1987,28 @@ export default function LeadFormsPage() {
                             {l.converted_at ? new Date(l.converted_at).toLocaleString('vi-VN') : 'Hôm nay'}
                           </td>
                           <td style={{ textAlign: 'center' }}>
-                            <button
-                              type="button"
-                              className="btn btn-secondary btn-sm"
-                              onClick={() => navigate('/dashboard/customers')}
-                              style={{ fontSize: '11px', padding: '3px 8px' }}
-                            >
-                              Xem CRM →
-                            </button>
+                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                              <button
+                                type="button"
+                                className="btn btn-secondary btn-sm"
+                                onClick={() => navigate('/dashboard/customers')}
+                                style={{ fontSize: '11px', padding: '3px 8px' }}
+                                title="Xem hồ sơ Khách hàng trong danh bạ"
+                              >
+                                Xem KH →
+                              </button>
+                              {l.converted_opportunity_id && (
+                                <button
+                                  type="button"
+                                  className="btn btn-secondary btn-sm"
+                                  onClick={() => navigate('/dashboard/pipeline')}
+                                  style={{ fontSize: '11px', padding: '3px 8px', color: '#7c3aed', borderColor: '#ddd6fe' }}
+                                  title="Xem cơ hội bán hàng trong Pipeline"
+                                >
+                                  Xem Deal →
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -3535,36 +3585,77 @@ export default function LeadFormsPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          MODAL S4-05: CHUYỂN ĐỔI LEAD THÀNH KHÁCH HÀNG & CƠ HỘI
+          MODAL S4-08: CHUYỂN ĐỔI LEAD THÀNH KHÁCH HÀNG & CƠ HỘI
           ───────────────────────────────────────────────────────────── */}
       {isConvertModalOpen && convertingLead && (
         <div className="lead-modal-backdrop" onClick={() => !isConverting && setIsConvertModalOpen(false)}>
           <div
             className="lead-modal-content"
-            style={{ maxWidth: '840px' }}
+            style={{ maxWidth: '860px' }}
             onClick={(e) => e.stopPropagation()}
             id="modal-convert-lead"
           >
             <div className="lead-modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ color: '#2563eb' }}><IconUserCheck /></div>
-                <h3 className="lead-modal-title">Chuyển đổi Khách hàng tiềm năng</h3>
+                <div>
+                  <h3 className="lead-modal-title" style={{ margin: 0 }}>Chuyển đổi Khách hàng tiềm năng</h3>
+                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                    Đồng bộ dữ liệu sang Khách hàng CRM và Cơ hội bán hàng không cần nhập lại
+                  </div>
+                </div>
               </div>
               <button
                 type="button"
                 className="lead-modal-close"
                 onClick={() => !isConverting && setIsConvertModalOpen(false)}
+                title="Đóng"
               >
                 <IconX />
               </button>
             </div>
 
             <div className="convert-modal-body">
+              {/* Banner thông báo tự động mapping dữ liệu */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: '10px',
+                  padding: '12px 16px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '12px',
+                }}
+              >
+                <div
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    background: '#2563eb',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    flexShrink: 0,
+                  }}
+                >
+                  ✓
+                </div>
+                <div style={{ fontSize: '13px', color: '#1e3a8a', lineHeight: 1.5 }}>
+                  <strong>Auto-fill thông minh đã kích hoạt:</strong> Toàn bộ dữ liệu của Lead{' '}
+                  <strong>[{convertingLead.code}] {convertingLead.full_name}</strong> (Tên, SĐT, Email, Công ty, Nhu cầu) đã được tự động điền sẵn vào Khách hàng và Cơ hội bên dưới. Bạn không phải mất thời gian hỏi và nhập lại thông tin khách hàng.
+                </div>
+              </div>
+
               {/* Thẻ tóm tắt Lead */}
               <div className="convert-preview-card">
                 <div className="convert-preview-header">
                   <div className="convert-preview-title">
-                    <span>Khách hàng tiềm năng: <strong>{convertingLead.full_name}</strong></span>
+                    <span>Khách hàng tiềm năng nguồn: <strong>{convertingLead.full_name}</strong></span>
                     <span className={`lead-status-badge ${convertingLead.status.toLowerCase()}`}>
                       {LEAD_STATUS_CONFIG[convertingLead.status]?.label || convertingLead.status}
                     </span>
@@ -3581,19 +3672,19 @@ export default function LeadFormsPage() {
 
                 <div className="convert-preview-grid">
                   <div className="convert-preview-item">
-                    <span className="lbl">Số điện thoại</span>
+                    <span className="lbl">Số điện thoại Lead</span>
                     <span className="val">{convertingLead.phone || 'Chưa cập nhật'}</span>
                   </div>
                   <div className="convert-preview-item">
-                    <span className="lbl">Email</span>
+                    <span className="lbl">Email Lead</span>
                     <span className="val">{convertingLead.email || 'Chưa cập nhật'}</span>
                   </div>
                   <div className="convert-preview-item">
                     <span className="lbl">Công ty / Doanh nghiệp</span>
-                    <span className="val">{convertingLead.company || 'Chưa có thông tin công ty'}</span>
+                    <span className="val">{convertingLead.company || 'Cá nhân / Chưa có cty'}</span>
                   </div>
                   <div className="convert-preview-item">
-                    <span className="lbl">Nhu cầu tư vấn</span>
+                    <span className="lbl">Nhu cầu tư vấn ban đầu</span>
                     <span className="val" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {convertingLead.requirement || 'Nhu cầu chung'}
                     </span>
@@ -3601,10 +3692,10 @@ export default function LeadFormsPage() {
                 </div>
               </div>
 
-              {/* Mục 1: Thông tin Khách hàng Doanh nghiệp */}
+              {/* Mục 1: Thông tin Khách hàng Doanh nghiệp & Người liên hệ */}
               <div className="convert-section-panel">
                 <h4 className="convert-section-title">
-                  <span>1. Khách hàng trong CRM (Doanh nghiệp)</span>
+                  <span>1. Khách hàng trong CRM (Hồ sơ Doanh nghiệp & Người liên hệ)</span>
                 </h4>
 
                 <div className="convert-radio-group">
@@ -3618,7 +3709,7 @@ export default function LeadFormsPage() {
                     <div>
                       <div><strong>Tạo hồ sơ Khách hàng mới</strong></div>
                       <div style={{ fontSize: '12px', color: '#64748b' }}>
-                        Tạo tài khoản Doanh nghiệp mới từ thông tin của Lead này vào danh bạ khách hàng
+                        Tạo mới Doanh nghiệp kèm Người liên hệ chính từ Lead vào Danh bạ Khách hàng CRM
                       </div>
                     </div>
                   </label>
@@ -3633,7 +3724,7 @@ export default function LeadFormsPage() {
                     <div>
                       <div><strong>Liên kết vào Khách hàng đã có sẵn</strong></div>
                       <div style={{ fontSize: '12px', color: '#64748b' }}>
-                        Gắn Lead này như một liên hệ hoặc cơ hội mới vào một doanh nghiệp đã có trong hệ thống
+                        Gắn Lead này như một người liên hệ hoặc cơ hội mới vào một doanh nghiệp đã có trong hệ thống
                       </div>
                     </div>
                   </label>
@@ -3641,7 +3732,7 @@ export default function LeadFormsPage() {
 
                 {conversionForm.create_new_customer ? (
                   <div className="convert-form-grid">
-                    <div className="form-group">
+                    <div className="form-group" style={{ gridColumn: 'span 2' }}>
                       <label>Tên Doanh nghiệp / Tổ chức *</label>
                       <input
                         type="text"
@@ -3694,23 +3785,42 @@ export default function LeadFormsPage() {
                     </div>
 
                     <div className="form-group">
-                      <label>Số điện thoại</label>
+                      <label>Website doanh nghiệp</label>
                       <input
                         type="text"
                         className="form-control"
-                        value={conversionForm.phone || ''}
-                        onChange={(e) => setConversionForm((prev) => ({ ...prev, phone: e.target.value }))}
+                        placeholder="https://..."
+                        value={conversionForm.website || ''}
+                        onChange={(e) => setConversionForm((prev) => ({ ...prev, website: e.target.value }))}
                       />
                     </div>
 
                     <div className="form-group">
-                      <label>Email liên hệ</label>
+                      <label>SĐT Doanh nghiệp</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Số điện thoại tổng đài/công ty..."
+                        value={conversionForm.phone || ''}
+                        onChange={(e) => setConversionForm((prev) => ({ ...prev, phone: e.target.value }))}
+                      />
+                      {conversionErrors.phone && (
+                        <div className="field-error">{conversionErrors.phone}</div>
+                      )}
+                    </div>
+
+                    <div className="form-group">
+                      <label>Email Doanh nghiệp</label>
                       <input
                         type="email"
                         className="form-control"
+                        placeholder="contact@company.vn..."
                         value={conversionForm.email || ''}
                         onChange={(e) => setConversionForm((prev) => ({ ...prev, email: e.target.value }))}
                       />
+                      {conversionErrors.email && (
+                        <div className="field-error">{conversionErrors.email}</div>
+                      )}
                     </div>
 
                     <div className="form-group" style={{ gridColumn: 'span 2' }}>
@@ -3722,6 +3832,66 @@ export default function LeadFormsPage() {
                         value={conversionForm.address || ''}
                         onChange={(e) => setConversionForm((prev) => ({ ...prev, address: e.target.value }))}
                       />
+                    </div>
+
+                    {/* Khối người liên hệ đại diện */}
+                    <div
+                      style={{
+                        gridColumn: 'span 2',
+                        background: '#f8fafc',
+                        border: '1px dashed #cbd5e1',
+                        borderRadius: '8px',
+                        padding: '12px 14px',
+                        marginTop: '4px',
+                      }}
+                    >
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '10px' }}>
+                        👤 Thông tin Người liên hệ đại diện (Tự động thêm vào Danh bạ Người liên hệ)
+                      </div>
+                      <div className="convert-form-grid" style={{ gap: '10px' }}>
+                        <div className="form-group">
+                          <label>Tên người liên hệ</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={conversionForm.contact_name || ''}
+                            onChange={(e) => setConversionForm((prev) => ({ ...prev, contact_name: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Chức danh / Vị trí</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={conversionForm.contact_position || ''}
+                            onChange={(e) => setConversionForm((prev) => ({ ...prev, contact_position: e.target.value }))}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>SĐT người liên hệ</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={conversionForm.contact_phone || ''}
+                            onChange={(e) => setConversionForm((prev) => ({ ...prev, contact_phone: e.target.value }))}
+                          />
+                          {conversionErrors.contact_phone && (
+                            <div className="field-error">{conversionErrors.contact_phone}</div>
+                          )}
+                        </div>
+                        <div className="form-group">
+                          <label>Email người liên hệ</label>
+                          <input
+                            type="email"
+                            className="form-control"
+                            value={conversionForm.contact_email || ''}
+                            onChange={(e) => setConversionForm((prev) => ({ ...prev, contact_email: e.target.value }))}
+                          />
+                          {conversionErrors.contact_email && (
+                            <div className="field-error">{conversionErrors.contact_email}</div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -3743,6 +3913,21 @@ export default function LeadFormsPage() {
                     {conversionErrors.customer_id && (
                       <div className="field-error">{conversionErrors.customer_id}</div>
                     )}
+                    {conversionForm.customer_id && (
+                      <div style={{ marginTop: '10px', padding: '10px', background: '#f8fafc', borderRadius: '6px', fontSize: '12px', color: '#475569' }}>
+                        {(() => {
+                          const selected = existingCustomers.find((c) => c.id === conversionForm.customer_id)
+                          if (!selected) return null
+                          return (
+                            <div>
+                              <div><strong>{selected.name}</strong> ({selected.code})</div>
+                              <div>Ngành: {selected.industry} | Địa chỉ: {selected.address || 'N/A'}</div>
+                              <div>Liên hệ: {selected.phone || selected.email || 'Chưa có SĐT'}</div>
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -3761,7 +3946,7 @@ export default function LeadFormsPage() {
                       onChange={(e) => setConversionForm((prev) => ({ ...prev, create_opportunity: e.target.checked }))}
                       id="checkbox-create-opportunity"
                     />
-                    <span>Tạo Cơ hội bán hàng ngay</span>
+                    <span>Tạo Cơ hội bán hàng đồng thời</span>
                   </label>
                 </div>
 
@@ -3828,6 +4013,9 @@ export default function LeadFormsPage() {
                         />
                         <span className="currency-symbol">VND</span>
                       </div>
+                      {conversionErrors.expected_revenue && (
+                        <div className="field-error">{conversionErrors.expected_revenue}</div>
+                      )}
                     </div>
 
                     <div className="form-group">
@@ -3857,7 +4045,7 @@ export default function LeadFormsPage() {
                     </div>
 
                     <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                      <label>Ghi chú cơ hội</label>
+                      <label>Ghi chú cơ hội & Nhu cầu khách hàng (Kế thừa từ Lead)</label>
                       <textarea
                         rows={2}
                         className="form-control"
@@ -3896,13 +4084,13 @@ export default function LeadFormsPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          MODAL S4-05: KẾT QUẢ CHUYỂN ĐỔI THÀNH CÔNG
+          MODAL S4-08: KẾT QUẢ CHUYỂN ĐỔI THÀNH CÔNG
           ───────────────────────────────────────────────────────────── */}
       {isSuccessModalOpen && conversionResult && (
         <div className="lead-modal-backdrop" onClick={() => setIsSuccessModalOpen(false)}>
           <div
             className="lead-modal-content"
-            style={{ maxWidth: '620px' }}
+            style={{ maxWidth: '640px' }}
             onClick={(e) => e.stopPropagation()}
             id="modal-conversion-success"
           >
@@ -3922,11 +4110,12 @@ export default function LeadFormsPage() {
               <div className="convert-success-cards-grid">
                 {conversionResult.customer && (
                   <div className="convert-result-card customer">
-                    <span className="res-title">Khách hàng CRM</span>
+                    <span className="res-title">Khách hàng CRM đã tạo</span>
                     <span className="res-name">{conversionResult.customer.name}</span>
-                    <span className="res-sub">Mã: {conversionResult.customer.code}</span>
+                    <span className="res-sub">Mã KH: <strong>{conversionResult.customer.code}</strong></span>
                     <span className="res-sub">SĐT: {conversionResult.customer.phone || 'N/A'}</span>
-                    <div style={{ marginTop: '6px' }}>
+                    <span className="res-sub">Email: {conversionResult.customer.email || 'N/A'}</span>
+                    <div style={{ marginTop: '8px' }}>
                       <button
                         type="button"
                         className="btn btn-secondary btn-sm"
@@ -3943,13 +4132,14 @@ export default function LeadFormsPage() {
 
                 {conversionResult.opportunity && (
                   <div className="convert-result-card opportunity">
-                    <span className="res-title">Cơ hội bán hàng</span>
+                    <span className="res-title">Cơ hội bán hàng đã tạo</span>
                     <span className="res-name">{conversionResult.opportunity.title}</span>
-                    <span className="res-sub">Mã: {conversionResult.opportunity.code}</span>
+                    <span className="res-sub">Mã Opp: <strong>{conversionResult.opportunity.code}</strong></span>
+                    <span className="res-sub">Giai đoạn: {conversionResult.opportunity.stage_name || 'Tiếp cận'}</span>
                     <span className="res-sub">
-                      Giá trị: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(conversionResult.opportunity.expected_revenue)}
+                      Giá trị: <strong>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(conversionResult.opportunity.expected_revenue)}</strong>
                     </span>
-                    <div style={{ marginTop: '6px' }}>
+                    <div style={{ marginTop: '8px' }}>
                       <button
                         type="button"
                         className="btn btn-secondary btn-sm"
