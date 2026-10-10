@@ -326,7 +326,7 @@ export const leadInteractionService = {
     return this.createInteraction({
       lead_id: leadId,
       type: 'SLA_ALERT',
-      title: `⚠️ Cảnh báo SLA quá hạn: ${leadName}`,
+      title: `Cảnh báo SLA quá hạn: ${leadName}`,
       content: `Lead được phân cho ${salesName} đã vượt quá thời hạn cam kết phản hồi (SLA). Cần trưởng nhóm can thiệp tái phân bổ.`,
       performed_by_name: 'Hệ thống giám sát SLA',
       outcome: 'Cảnh báo Trưởng nhóm',
