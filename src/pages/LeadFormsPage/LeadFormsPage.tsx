@@ -759,16 +759,16 @@ export default function LeadFormsPage() {
         prev.map((l) =>
           l.id === convertingLead.id
             ? {
-                ...l,
-                status: 'CONVERTED' as LeadStatus,
-                converted_customer_id: result.customer?.id,
-                converted_customer_name: result.customer?.name,
-                converted_customer_code: result.customer?.code,
-                converted_opportunity_id: result.opportunity?.id,
-                converted_opportunity_title: result.opportunity?.title,
-                converted_opportunity_code: result.opportunity?.code,
-                converted_at: new Date().toISOString(),
-              }
+              ...l,
+              status: 'CONVERTED' as LeadStatus,
+              converted_customer_id: result.customer?.id,
+              converted_customer_name: result.customer?.name,
+              converted_customer_code: result.customer?.code,
+              converted_opportunity_id: result.opportunity?.id,
+              converted_opportunity_title: result.opportunity?.title,
+              converted_opportunity_code: result.opportunity?.code,
+              converted_at: new Date().toISOString(),
+            }
             : l
         )
       )
@@ -777,7 +777,7 @@ export default function LeadFormsPage() {
       try {
         const updatedInteractions = await leadInteractionService.getAllRecentInteractions()
         setAllRecentInteractions(updatedInteractions)
-      } catch {}
+      } catch { }
 
       setIsConvertModalOpen(false)
       setConversionResult(result)
@@ -1522,7 +1522,7 @@ export default function LeadFormsPage() {
         >
           <span>Chấm điểm & Phân loại</span>
           <span className="tab-badge primary">
-            {scoringStats.hotCount} Nóng
+            {scoringStats.hotCount}
           </span>
         </button>
 
@@ -1535,7 +1535,7 @@ export default function LeadFormsPage() {
         >
           <span>Chuyển đổi Lead </span>
           <span className="tab-badge" style={{ background: '#ecfdf5', color: '#059669', borderColor: '#a7f3d0' }}>
-            {stats.convertedLeads} đã chuyển
+            {stats.convertedLeads}
           </span>
         </button>
 
@@ -1547,7 +1547,7 @@ export default function LeadFormsPage() {
         >
           <span>Dòng thời gian tương tác </span>
           <span className="tab-badge" style={{ background: '#f0f9ff', color: '#0284c7', borderColor: '#bae6fd' }}>
-            {allRecentInteractions.length} hoạt động
+            {allRecentInteractions.length}
           </span>
         </button>
 
@@ -1685,7 +1685,7 @@ export default function LeadFormsPage() {
               <table className="lead-data-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '100px' }}>Mã Lead</th>
+                    <th style={{ width: '90px', textAlign: 'center' }}>Số thứ tự</th>
                     <th>Họ và tên & Liên hệ</th>
                     <th>Doanh nghiệp & Ngành nghề</th>
                     <th style={{ width: '165px', minWidth: '155px' }}>Nguồn Lead</th>
@@ -1697,15 +1697,15 @@ export default function LeadFormsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredLeads.map((l) => {
+                  {filteredLeads.map((l, index) => {
                     const statusCfg = LEAD_STATUS_CONFIG[l.status]
                     const tier = l.score_tier || 'WARM'
                     const seg = l.segment || 'HIGH_POTENTIAL'
                     const segCfg = LEAD_SEGMENT_CONFIG[seg]
                     return (
                       <tr key={l.id} id={`lead-row-${l.id}`}>
-                        <td>
-                          <span className="lead-code-tag">{l.code}</span>
+                        <td style={{ textAlign: 'center' }}>
+                          <span className="lead-stt-badge">{index + 1}</span>
                         </td>
 
                         <td>
@@ -2324,7 +2324,7 @@ export default function LeadFormsPage() {
               <table className="lead-data-table" id="table-lead-scoring">
                 <thead>
                   <tr>
-                    <th style={{ width: '90px' }}>Mã Lead</th>
+                    <th style={{ width: '90px', textAlign: 'center' }}>Số thứ tự</th>
                     <th>Họ và tên & Liên hệ</th>
                     <th>Công ty & Ngành</th>
                     <th style={{ width: '165px', minWidth: '155px' }}>Nguồn Lead</th>
@@ -2336,7 +2336,7 @@ export default function LeadFormsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredScoredLeads.map((l) => {
+                  {filteredScoredLeads.map((l, index) => {
                     const tier = l.score_tier || 'WARM'
                     const tierCfg = LEAD_TIER_CONFIG[tier]
                     const seg = l.segment || 'HIGH_POTENTIAL'
@@ -2344,8 +2344,8 @@ export default function LeadFormsPage() {
                     const score = l.score ?? 50
                     return (
                       <tr key={l.id} id={`score-row-${l.id}`}>
-                        <td>
-                          <span className="lead-code-tag">{l.code}</span>
+                        <td style={{ textAlign: 'center' }}>
+                          <span className="lead-stt-badge">{index + 1}</span>
                         </td>
                         <td>
                           <div className="lead-contact-info">
