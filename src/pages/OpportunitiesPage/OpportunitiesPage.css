@@ -597,3 +597,65 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Stalled Opportunity Badges (S5-07) ── */
+.badge-stalled-count {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca;
+  font-weight: 700;
+  animation: pulse-soft 2s infinite ease-in-out;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+.opp-stalled-table-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+  transition: opacity 0.2s;
+}
+
+.opp-stalled-table-badge:hover {
+  opacity: 0.85;
+}
+
+.opp-stalled-table-badge.badge-crit {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.opp-stalled-table-badge.badge-warn {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.kanban-stalled-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.kanban-stalled-tag.crit {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.kanban-stalled-tag.warn {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+

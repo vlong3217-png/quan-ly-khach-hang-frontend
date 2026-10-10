@@ -51,8 +51,10 @@ const INITIAL_OPPORTUNITIES: Opportunity[] = [
     team_id: 1,
     team_name: 'Đội Kinh Doanh 1',
     description: 'Khách hàng có nhu cầu mở rộng gói cho 50 users kinh doanh và CSKH.',
+    last_activity_at: '2026-10-09T14:30:00Z',
+    days_in_stage: 2,
     created_at: '2026-10-01T09:00:00Z',
-    updated_at: '2026-10-05T14:30:00Z',
+    updated_at: '2026-10-09T14:30:00Z',
   },
   {
     id: 'opp-002',
@@ -77,8 +79,66 @@ const INITIAL_OPPORTUNITIES: Opportunity[] = [
     team_id: 1,
     team_name: 'Đội Kinh Doanh 1',
     description: 'Đã gửi dự thảo báo giá và bảng tính ROI chi tiết.',
+    last_activity_at: '2026-10-08T16:00:00Z',
+    days_in_stage: 4,
     created_at: '2026-10-02T10:15:00Z',
-    updated_at: '2026-10-07T16:00:00Z',
+    updated_at: '2026-10-08T16:00:00Z',
+  },
+  {
+    id: 'opp-003',
+    code: 'OPP-003',
+    title: 'Phần mềm CRM Chuỗi Bán Lẻ Thời Trang - NEM Fashion',
+    customer_id: 'cust-003',
+    customer_name: 'Công ty Cổ phần Thời Trang NEM',
+    contact_name: 'Vũ Hải Đăng',
+    contact_phone: '0934 112 233',
+    contact_email: 'dang.vu@nemfashion.vn',
+    stage_id: 'stage-2',
+    stage_name: 'Tìm hiểu nhu cầu',
+    stage_order: 2,
+    stage_color: '#f59e0b',
+    win_probability: 30,
+    expected_revenue: 280000000,
+    expected_close_date: '2026-10-05',
+    source: 'Quảng cáo Facebook',
+    status: 'OPEN',
+    owner_id: 3,
+    owner_name: 'Lê Hoàng Cường',
+    team_id: 1,
+    team_name: 'Đội Kinh Doanh 1',
+    description: 'Khách hàng quan tâm mô-đun tích hợp loyalty và thẻ tích điểm cho chuỗi showroom.',
+    last_activity_at: '2026-09-28T10:00:00Z', // 12 ngày không có hoạt động
+    days_in_stage: 14, // 14 ngày ở stage-2
+    created_at: '2026-09-25T08:00:00Z',
+    updated_at: '2026-09-28T10:00:00Z',
+  },
+  {
+    id: 'opp-004',
+    code: 'OPP-004',
+    title: 'Giải pháp CRM Quản lý Logistics Vận tải - Delta Express',
+    customer_id: 'cust-004',
+    customer_name: 'Công ty TNHH Tiếp Vận Quốc Tế Delta',
+    contact_name: 'Nguyễn Phương Thảo',
+    contact_phone: '0908 776 543',
+    contact_email: 'thao.nguyen@deltaexpress.vn',
+    stage_id: 'stage-5',
+    stage_name: 'Đàm phán & Thương lượng hợp đồng',
+    stage_order: 5,
+    stage_color: '#06b6d4',
+    win_probability: 85,
+    expected_revenue: 450000000,
+    expected_close_date: '2026-10-08',
+    source: 'Giới thiệu (Referral)',
+    status: 'OPEN',
+    owner_id: 4,
+    owner_name: 'Lưu Quang Trường',
+    team_id: 1,
+    team_name: 'Đội Kinh Doanh 1',
+    description: 'Hợp đồng lớn đang trong giai đoạn rà soát điều khoản pháp lý, nhưng nhân viên phụ trách đang nghỉ ốm dài ngày.',
+    last_activity_at: '2026-09-30T15:30:00Z', // 10 ngày không có tương tác
+    days_in_stage: 11,
+    created_at: '2026-09-20T09:30:00Z',
+    updated_at: '2026-09-30T15:30:00Z',
   },
 ]
 
@@ -412,6 +472,199 @@ export const opportunityService = {
     list[idx] = updatedOpp
     saveStoredOpportunities(list)
     return updatedOpp
+  },
+
+  /* ──────────── User Story S5-07: Cảnh báo cơ hội đình trệ (Stalled Alerts) ──────────── */
+  /**
+   * Cấu hình ngưỡng cảnh báo đình trệ:
+   * - max_days_in_stage: Quá số ngày này ở 1 stage mà chưa chuyển (mặc định 7 ngày)
+   * - max_days_inactive: Quá số ngày này không có tương tác / note / task (mặc định 5 ngày)
+   */
+  getStalledConfig(): { max_days_in_stage: number; max_days_inactive: number } {
+    try {
+      const raw = localStorage.getItem('crm_stalled_opp_config')
+      if (raw) return JSON.parse(raw)
+    } catch {}
+    return {
+      max_days_in_stage: 7,
+      max_days_inactive: 5,
+    }
+  },
+
+  saveStalledConfig(config: { max_days_in_stage: number; max_days_inactive: number }): void {
+    localStorage.setItem('crm_stalled_opp_config', JSON.stringify(config))
+  },
+
+  /**
+   * Kiểm tra và phân tích xem một cơ hội có bị đình trệ hay không
+   */
+  analyzeStalledOpportunity(
+    opp: Opportunity,
+    customConfig?: { max_days_in_stage: number; max_days_inactive: number }
+  ): {
+    isStalled: boolean
+    stalledType?: 'INACTIVE_LONG' | 'STAGE_OVERDUE' | 'CLOSE_DATE_PASSED'
+    severity?: 'WARNING' | 'CRITICAL'
+    daysStalled: number
+    message: string
+    suggestedAction: string
+  } {
+    const config = customConfig || opportunityService.getStalledConfig()
+    // Chỉ cảnh báo với cơ hội đang mở (OPEN)
+    if (opp.status !== 'OPEN') {
+      return {
+        isStalled: false,
+        daysStalled: 0,
+        message: '',
+        suggestedAction: '',
+      }
+    }
+
+    const now = new Date().getTime()
+    const referenceDate = new Date('2026-10-10T09:00:00Z').getTime() // Thời điểm chuẩn của hệ thống
+    const nowTime = Math.max(now, referenceDate)
+
+    // 1. Quá hạn dự kiến chốt (Close Date Passed)
+    if (opp.expected_close_date) {
+      const closeTime = new Date(`${opp.expected_close_date}T23:59:59Z`).getTime()
+      if (nowTime > closeTime) {
+        const diffDays = Math.ceil((nowTime - closeTime) / (1000 * 60 * 60 * 24))
+        return {
+          isStalled: true,
+          stalledType: 'CLOSE_DATE_PASSED',
+          severity: diffDays > 5 ? 'CRITICAL' : 'WARNING',
+          daysStalled: diffDays,
+          message: `Đã quá hạn ngày dự kiến chốt (${opp.expected_close_date}) ${diffDays} ngày mà thương vụ chưa có kết quả.`,
+          suggestedAction: 'Trưởng nhóm cần đôn đốc NVKD cập nhật lại ngày chốt hoặc thúc đẩy đàm phán hợp đồng gấp.',
+        }
+      }
+    }
+
+    // 2. Không có hoạt động / tương tác mới (Inactive Long)
+    const lastActivityTime = opp.last_activity_at
+      ? new Date(opp.last_activity_at).getTime()
+      : new Date(opp.updated_at || opp.created_at).getTime()
+    const daysInactive = Math.floor((nowTime - lastActivityTime) / (1000 * 60 * 60 * 24))
+
+    if (daysInactive >= config.max_days_inactive) {
+      return {
+        isStalled: true,
+        stalledType: 'INACTIVE_LONG',
+        severity: daysInactive >= config.max_days_inactive * 1.5 ? 'CRITICAL' : 'WARNING',
+        daysStalled: daysInactive,
+        message: `Đã ${daysInactive} ngày không có bất kỳ cuộc gọi, email hay ghi chú chăm sóc nào cho cơ hội này.`,
+        suggestedAction: 'Thương vụ có nguy cơ nguội lạnh. Trưởng nhóm cần yêu cầu liên hệ lại khách hàng ngay hoặc bàn giao người khác.',
+      }
+    }
+
+    // 3. Đứng yên ở 1 giai đoạn quá lâu (Stage Overdue)
+    const daysInStage = opp.days_in_stage ?? 0
+    if (daysInStage >= config.max_days_in_stage) {
+      return {
+        isStalled: true,
+        stalledType: 'STAGE_OVERDUE',
+        severity: daysInStage >= config.max_days_in_stage * 1.5 ? 'CRITICAL' : 'WARNING',
+        daysStalled: daysInStage,
+        message: `Cơ hội bị tắc ở giai đoạn "${opp.stage_name}" suốt ${daysInStage} ngày chưa thể chuyển tiếp.`,
+        suggestedAction: 'Cần can thiệp tháo gỡ vướng mắc (về giá, kỹ thuật, pháp lý) để đẩy nhanh tiến độ chốt hợp đồng.',
+      }
+    }
+
+    return {
+      isStalled: false,
+      daysStalled: 0,
+      message: '',
+      suggestedAction: '',
+    }
+  },
+
+  /**
+   * Lấy danh sách tất cả cơ hội đang bị đình trệ
+   */
+  async getStalledOpportunities(customConfig?: { max_days_in_stage: number; max_days_inactive: number }): Promise<{
+    alerts: Array<{
+      opportunity: Opportunity
+      stalled_type: 'INACTIVE_LONG' | 'STAGE_OVERDUE' | 'CLOSE_DATE_PASSED'
+      severity: 'WARNING' | 'CRITICAL'
+      days_stalled: number
+      message: string
+      suggested_action: string
+    }>
+    summary: {
+      total_stalled: number
+      critical_count: number
+      warning_count: number
+      stalled_revenue: number
+    }
+  }> {
+    const config = customConfig || opportunityService.getStalledConfig()
+    const opps = await opportunityService.getOpportunities()
+    const alerts: Array<{
+      opportunity: Opportunity
+      stalled_type: 'INACTIVE_LONG' | 'STAGE_OVERDUE' | 'CLOSE_DATE_PASSED'
+      severity: 'WARNING' | 'CRITICAL'
+      days_stalled: number
+      message: string
+      suggested_action: string
+    }> = []
+
+    let criticalCount = 0
+    let warningCount = 0
+    let stalledRevenue = 0
+
+    for (const opp of opps) {
+      const result = opportunityService.analyzeStalledOpportunity(opp, config)
+      if (result.isStalled && result.stalledType && result.severity) {
+        alerts.push({
+          opportunity: opp,
+          stalled_type: result.stalledType,
+          severity: result.severity,
+          days_stalled: result.daysStalled,
+          message: result.message,
+          suggested_action: result.suggestedAction,
+        })
+        if (result.severity === 'CRITICAL') criticalCount++
+        else warningCount++
+        stalledRevenue += opp.expected_revenue
+      }
+    }
+
+    return {
+      alerts,
+      summary: {
+        total_stalled: alerts.length,
+        critical_count: criticalCount,
+        warning_count: warningCount,
+        stalled_revenue: stalledRevenue,
+      },
+    }
+  },
+
+  /**
+   * Gửi cảnh báo / nhắc nhở can thiệp tới NVKD phụ trách cơ hội đình trệ
+   */
+  async sendStalledInterventionNotice(
+    opportunityId: string,
+    message: string,
+    managerName = 'Trưởng nhóm'
+  ): Promise<void> {
+    const list = getStoredOpportunities()
+    const opp = list.find((o) => o.id === opportunityId)
+    if (!opp) throw new Error('Không tìm thấy cơ hội!')
+
+    // Cập nhật hoạt động can thiệp của Trưởng nhóm
+    const note = `[CAN THIỆP SỚM TỪ TRƯỞNG NHÓM ${managerName.toUpperCase()}]: ${message}`
+    opp.updated_at = new Date().toISOString()
+    opp.last_activity_at = new Date().toISOString()
+    saveStoredOpportunities(list)
+
+    try {
+      await fetch(`${API_BASE_URL}/opportunities/${opportunityId}/intervene`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ message: note }),
+      })
+    } catch {}
   },
 }
 
