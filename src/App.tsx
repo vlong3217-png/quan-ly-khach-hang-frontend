@@ -7,7 +7,6 @@ import DashboardPage from './pages/DashboardPage/DashboardPage.tsx'
 import ForbiddenPage from './pages/ForbiddenPage/ForbiddenPage.tsx'
 import ImportUsersPage from './pages/ImportUsersPage/ImportUsersPage.tsx'
 import ProfilePage from './pages/ProfilePage/ProfilePage.tsx'
-import AuditLogPage from './pages/AuditLogPage/AuditLogPage.tsx'
 import PublicLeadFormPage from './pages/PublicLeadFormPage/PublicLeadFormPage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import AdminRoute from './components/AdminRoute.tsx'
@@ -178,15 +177,11 @@ function App() {
       {/* ── S2-04: Nhật ký thay đổi dữ liệu nhạy cảm (Audit Logs) ── */}
       <Route
         path="/admin/audit-logs"
-        element={
-          <AdminRoute>
-            <AuditLogPage />
-          </AdminRoute>
-        }
+        element={<Navigate to="/dashboard/audit-logs" replace />}
       />
       <Route
         path="/audit-logs"
-        element={<Navigate to="/admin/audit-logs" replace />}
+        element={<Navigate to="/dashboard/audit-logs" replace />}
       />
 
       {/* 6. Route Dashboard tổng quan */}

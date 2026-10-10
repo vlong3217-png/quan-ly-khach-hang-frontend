@@ -628,7 +628,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
             <button
               type="button"
               className="user-mgmt-add-btn"
-              onClick={() => navigate('/admin/audit-logs')}
+              onClick={() => navigate('/dashboard/audit-logs')}
               id="user-mgmt-audit-btn"
               style={{
                 background: '#e0e7ff',
