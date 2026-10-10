@@ -10,60 +10,6 @@ import type {
 import type { Lead } from '../../types/lead.ts'
 import './CampaignsPage.css'
 
-/* ──────────── Inline Icons ──────────── */
-const IconPlus = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19" />
-    <line x1="5" y1="12" x2="19" y2="12" />
-  </svg>
-)
-
-const IconSearch = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-)
-
-const IconEdit = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-  </svg>
-)
-
-const IconTrash = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-  </svg>
-)
-
-const IconUsers = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-)
-
-const IconDownload = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="7 10 12 15 17 10" />
-    <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
-)
-
-const IconCalendar = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-    <line x1="16" x2="16" y1="2" y2="6" />
-    <line x1="8" x2="8" y1="2" y2="6" />
-    <line x1="3" x2="21" y1="10" y2="10" />
-  </svg>
-)
-
 /* ──────────── Cấu hình Kênh và Trạng thái ──────────── */
 const CHANNEL_CONFIG: Record<
   CampaignChannel,
@@ -287,9 +233,7 @@ export default function CampaignsPage() {
       <div className="campaign-page-header">
         <div className="campaign-header-info">
           <h2>Quản lý Chiến dịch & Theo dõi Lead</h2>
-          <p>
-            Theo dõi ngân sách, kênh tiếp thị, số lượng Lead và tỷ lệ chuyển đổi khách hàng theo từng chiến dịch (S4-03).
-          </p>
+
         </div>
 
         <div className="campaign-header-actions">
@@ -299,7 +243,6 @@ export default function CampaignsPage() {
             onClick={handleOpenCreateModal}
             id="btn-create-campaign"
           >
-            <IconPlus />
             <span>Tạo chiến dịch mới</span>
           </button>
         </div>
@@ -354,7 +297,6 @@ export default function CampaignsPage() {
       <div className="campaign-card-panel">
         <div className="campaign-panel-controls">
           <div className="campaign-search-box">
-            <IconSearch />
             <input
               type="text"
               placeholder="Tìm theo tên chiến dịch hoặc mã..."
@@ -400,7 +342,6 @@ export default function CampaignsPage() {
           </div>
         ) : filteredCampaigns.length === 0 ? (
           <div className="campaign-empty-state">
-            <div className="campaign-empty-icon">📢</div>
             <h4>Không tìm thấy chiến dịch nào</h4>
             <p>Tạo chiến dịch tiếp thị mới để phân bổ ngân sách và theo dõi nguồn khách hàng tiềm năng.</p>
             <button
@@ -409,7 +350,6 @@ export default function CampaignsPage() {
               onClick={handleOpenCreateModal}
               style={{ marginTop: '12px' }}
             >
-              <IconPlus />
               <span>Tạo chiến dịch đầu tiên</span>
             </button>
           </div>
@@ -470,7 +410,6 @@ export default function CampaignsPage() {
                       <td>
                         <div className="camp-date-cell">
                           <div className="date-item">
-                            <IconCalendar />
                             <span>
                               {new Date(camp.start_date).toLocaleDateString('vi-VN')} -{' '}
                               {new Date(camp.end_date).toLocaleDateString('vi-VN')}
@@ -486,7 +425,6 @@ export default function CampaignsPage() {
                           onClick={() => handleOpenLeadsModal(camp)}
                           title="Bấm để xem danh sách chi tiết các Lead thuộc chiến dịch này"
                         >
-                          <IconUsers />
                           <strong>{camp.actual_leads} Leads</strong>
                           <span className="converted-sub">({camp.converted_leads} CĐ)</span>
                         </button>
@@ -514,7 +452,6 @@ export default function CampaignsPage() {
                             onClick={() => handleOpenLeadsModal(camp)}
                             title="Xem chi tiết các Lead thuộc chiến dịch"
                           >
-                            <IconUsers />
                             <span>Leads</span>
                           </button>
 
@@ -525,7 +462,7 @@ export default function CampaignsPage() {
                             onClick={() => handleOpenEditModal(camp)}
                             title="Chỉnh sửa thông tin chiến dịch"
                           >
-                            <IconEdit />
+                            <span>Sửa</span>
                           </button>
 
                           {/* Xóa */}
@@ -535,7 +472,7 @@ export default function CampaignsPage() {
                             onClick={() => setDeletingCampaign(camp)}
                             title="Xóa chiến dịch"
                           >
-                            <IconTrash />
+                            <span>Xóa</span>
                           </button>
                         </div>
                       </td>
@@ -824,14 +761,12 @@ export default function CampaignsPage() {
                   }
                   title="Xuất danh sách Lead này ra file Excel"
                 >
-                  <IconDownload />
                   <span>Xuất Excel</span>
                 </button>
               </div>
 
               {/* Ô tìm kiếm trong modal */}
               <div className="modal-search-box">
-                <IconSearch />
                 <input
                   type="text"
                   placeholder="Tìm kiếm Lead trong chiến dịch này..."
@@ -848,7 +783,6 @@ export default function CampaignsPage() {
                 </div>
               ) : filteredModalLeads.length === 0 ? (
                 <div className="campaign-empty-state" style={{ padding: '32px 16px' }}>
-                  <div className="campaign-empty-icon">👥</div>
                   <h4>Chưa có Lead nào thuộc chiến dịch này</h4>
                   <p>Khi khách hàng đăng ký qua biểu mẫu hoặc nhân viên gán lead vào chiến dịch này, dữ liệu sẽ hiển thị tại đây.</p>
                 </div>
@@ -877,8 +811,8 @@ export default function CampaignsPage() {
                           </td>
                           <td>
                             <div style={{ fontSize: '12.5px' }}>
-                              <div>📞 {l.phone}</div>
-                              <div style={{ color: '#64748b' }}>✉️ {l.email}</div>
+                              <div>{l.phone}</div>
+                              <div style={{ color: '#64748b' }}>{l.email}</div>
                             </div>
                           </td>
                           <td>{l.company || '—'}</td>
