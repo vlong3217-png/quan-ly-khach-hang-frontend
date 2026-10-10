@@ -47,8 +47,27 @@ export interface Opportunity {
   team_name?: string
   description?: string
   lead_id?: string // ID Lead nguồn nếu được chuyển đổi từ Lead
+  // ── S5-07: Cảnh báo cơ hội đình trệ (Stalled Opportunity Alert) ──
+  last_activity_at?: string // Thời điểm hoạt động / tương tác gần nhất
+  days_in_stage?: number // Số ngày nằm ở giai đoạn hiện tại mà chưa chuyển tiếp
+  is_stalled?: boolean // Đang bị đình trệ
+  stalled_reason?: string // Lý do đình trệ (quá hạn giai đoạn, không có hoạt động, quá hạn chốt)
   created_at: string
   updated_at: string
+}
+
+export interface StalledOpportunityConfig {
+  max_days_in_stage: number // Ngưỡng số ngày tối đa ở 1 giai đoạn trước khi báo động (mặc định 7 ngày)
+  max_days_inactive: number // Ngưỡng số ngày tối đa không có tương tác / hoạt động (mặc định 5 ngày)
+}
+
+export interface StalledOpportunityAlert {
+  opportunity: Opportunity
+  stalled_type: 'INACTIVE_LONG' | 'STAGE_OVERDUE' | 'CLOSE_DATE_PASSED'
+  severity: 'WARNING' | 'CRITICAL'
+  days_stalled: number
+  message: string
+  suggested_action: string
 }
 
 export interface CloseOpportunityWonPayload {
