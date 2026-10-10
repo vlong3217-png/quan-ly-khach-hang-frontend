@@ -879,5 +879,81 @@ export const leadService = {
     saveStoredLeads(leads)
     return updatedLead
   },
+
+  /* ──────────── User Story S4-09: Bộ lọc lưu sẵn cho Lead ──────────── */
+  getSavedFilters(): import('../types/lead.ts').SavedLeadFilter[] {
+    const STORAGE_SAVED_FILTERS = 'crm_lead_saved_filters_v1'
+    const PRESET_FILTERS: import('../types/lead.ts').SavedLeadFilter[] = [
+      {
+        id: 'preset-today',
+        name: 'Cần gọi hôm nay',
+        icon: '📞',
+        follow_up_timing: 'TODAY',
+        only_my_leads: true,
+        is_preset: true,
+      },
+      {
+        id: 'preset-hot-qualified',
+        name: 'Lead Hot & Đủ tiêu chuẩn (BANT)',
+        icon: '🔥',
+        score_tier: 'HOT',
+        status: 'QUALIFIED',
+        is_preset: true,
+      },
+      {
+        id: 'preset-sla-warning',
+        name: 'Cảnh báo hạn SLA (< 4h)',
+        icon: '⏳',
+        sla_status: 'WARNING',
+        is_preset: true,
+      },
+      {
+        id: 'preset-new-uncontacted',
+        name: 'Mới tiếp nhận chưa liên hệ',
+        icon: '✨',
+        status: 'NEW',
+        is_preset: true,
+      },
+    ]
+
+    try {
+      const raw = localStorage.getItem(STORAGE_SAVED_FILTERS)
+      if (raw) {
+        const custom: import('../types/lead.ts').SavedLeadFilter[] = JSON.parse(raw)
+        return [...PRESET_FILTERS, ...custom]
+      }
+    } catch {}
+    return PRESET_FILTERS
+  },
+
+  saveCustomFilter(filter: Omit<import('../types/lead.ts').SavedLeadFilter, 'id' | 'is_preset'>): import('../types/lead.ts').SavedLeadFilter {
+    const STORAGE_SAVED_FILTERS = 'crm_lead_saved_filters_v1'
+    const newFilter: import('../types/lead.ts').SavedLeadFilter = {
+      ...filter,
+      id: `flt-${Date.now()}`,
+      is_preset: false,
+    }
+
+    try {
+      const raw = localStorage.getItem(STORAGE_SAVED_FILTERS)
+      const list: import('../types/lead.ts').SavedLeadFilter[] = raw ? JSON.parse(raw) : []
+      const updated = [newFilter, ...list]
+      localStorage.setItem(STORAGE_SAVED_FILTERS, JSON.stringify(updated))
+    } catch {}
+
+    return newFilter
+  },
+
+  deleteCustomFilter(filterId: string): void {
+    const STORAGE_SAVED_FILTERS = 'crm_lead_saved_filters_v1'
+    try {
+      const raw = localStorage.getItem(STORAGE_SAVED_FILTERS)
+      if (raw) {
+        const list: import('../types/lead.ts').SavedLeadFilter[] = JSON.parse(raw)
+        const updated = list.filter((f) => f.id !== filterId)
+        localStorage.setItem(STORAGE_SAVED_FILTERS, JSON.stringify(updated))
+      }
+    } catch {}
+  },
 }
 
