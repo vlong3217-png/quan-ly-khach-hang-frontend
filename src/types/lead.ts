@@ -281,4 +281,22 @@ export interface CreateLeadInteractionPayload {
   next_action_due?: string
 }
 
+/* ──────────── User Story S4-09: Bộ lọc & Bộ lọc lưu sẵn cho Lead ──────────── */
+export type FollowUpTiming = 'TODAY' | 'OVERDUE' | 'THIS_WEEK' | 'ALL'
+
+export interface SavedLeadFilter {
+  id: string
+  name: string
+  icon?: string
+  search?: string
+  status?: string
+  source?: string
+  sla_status?: string
+  assignment_status?: string
+  score_tier?: string
+  follow_up_timing?: FollowUpTiming
+  only_my_leads?: boolean
+  is_preset?: boolean
+}
+
 
