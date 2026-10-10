@@ -143,9 +143,6 @@ export default function OrganizationPage() {
       <div className="org-header">
         <div>
           <h2>Cơ cấu Tổ chức Kinh doanh & Khu vực địa lý</h2>
-          <p className="org-subtitle">
-            Mô hình cấu trúc cây phân quyền dữ liệu cho Trưởng nhóm và nhân viên. Mỗi nhân viên thuộc duy nhất một nhóm.
-          </p>
         </div>
         <div className="org-header-actions">
           <button type="button" className="btn btn-secondary" onClick={() => setIsRegionModalOpen(true)}>
