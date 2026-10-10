@@ -129,7 +129,7 @@ export default function CategoriesPage() {
           </p>
         </div>
         <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
-          + Thêm mục mới
+          Thêm mục mới
         </button>
       </div>
 
@@ -197,7 +197,7 @@ export default function CategoriesPage() {
                   <td>
                     {item.is_referenced ? (
                       <span className="ref-tag referenced" title="Đang được liên kết với dữ liệu thật, không thể xóa">
-                        🔒 Đang dùng ({item.reference_count} bản ghi)
+                        Đang dùng ({item.reference_count} bản ghi)
                       </span>
                     ) : (
                       <span className="ref-tag unreferenced">Chưa dùng (Có thể xóa)</span>
