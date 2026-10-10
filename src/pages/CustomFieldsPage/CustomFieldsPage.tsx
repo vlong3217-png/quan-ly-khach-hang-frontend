@@ -174,7 +174,7 @@ export default function CustomFieldsPage() {
         <table className="cf-table">
           <thead>
             <tr>
-              <th>Mã trường (API Key)</th>
+              <th style={{ width: '90px', textAlign: 'center' }}>Số thứ tự</th>
               <th>Tên nhãn hiển thị</th>
               <th>Kiểu dữ liệu</th>
               <th>Bắt buộc (Required)</th>
@@ -192,9 +192,11 @@ export default function CustomFieldsPage() {
                 </td>
               </tr>
             ) : (
-              fields.map((f) => (
+              fields.map((f, index) => (
                 <tr key={f.id}>
-                  <td className="field-key"><code>{f.key}</code></td>
+                  <td style={{ textAlign: 'center' }}>
+                    <span className="cf-stt-badge">{index + 1}</span>
+                  </td>
                   <td><strong>{f.label}</strong></td>
                   <td>{renderTypeBadge(f.type)}</td>
                   <td>
