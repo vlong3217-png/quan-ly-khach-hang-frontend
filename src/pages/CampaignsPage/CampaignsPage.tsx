@@ -286,8 +286,8 @@ export default function CampaignsPage() {
       {/* ── 1. Page Header ── */}
       <div className="campaign-page-header">
         <div className="campaign-header-info">
-          <h1 className="campaign-page-title">Quản lý Chiến dịch & Theo dõi Lead</h1>
-          <p className="campaign-page-subtitle">
+          <h2>Quản lý Chiến dịch & Theo dõi Lead</h2>
+          <p>
             Theo dõi ngân sách, kênh tiếp thị, số lượng Lead và tỷ lệ chuyển đổi khách hàng theo từng chiến dịch (S4-03).
           </p>
         </div>
