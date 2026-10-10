@@ -140,8 +140,40 @@ export interface Lead {
   converted_opportunity_title?: string
   converted_opportunity_code?: string
   converted_at?: string
+  // ── S4-07: Phân bổ & Ràng buộc SLA phản hồi ──
+  assignment_status?: LeadAssignmentStatus
+  assigned_at?: string
+  sla_hours?: number
+  sla_deadline?: string
+  sla_status?: LeadSlaStatus
+  rejection_reason?: string
+  rejected_at?: string
+  accepted_at?: string
   created_at: string
   updated_at: string
+}
+
+export type LeadAssignmentStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'UNASSIGNED'
+export type LeadSlaStatus = 'ON_TIME' | 'WARNING' | 'OVERDUE'
+
+export interface AcceptLeadPayload {
+  lead_id: string
+  owner_id?: number
+  owner_name?: string
+  note?: string
+}
+
+export interface RejectLeadPayload {
+  lead_id: string
+  reason: string
+  notes?: string
+}
+
+export interface ReassignLeadPayload {
+  lead_id: string
+  new_owner_id: number
+  new_owner_name: string
+  sla_hours?: number
 }
 
 export interface CreateLeadPayload {
@@ -155,6 +187,8 @@ export interface CreateLeadPayload {
   campaign_id?: string
   status?: LeadStatus
   owner_id?: number
+  assignment_status?: LeadAssignmentStatus
+  sla_hours?: number
   requirement?: string
   notes?: string
 }
@@ -170,6 +204,15 @@ export interface UpdateLeadPayload {
   campaign_id?: string
   status?: LeadStatus
   owner_id?: number
+  owner_name?: string
+  assignment_status?: LeadAssignmentStatus
+  assigned_at?: string
+  sla_hours?: number
+  sla_deadline?: string
+  sla_status?: LeadSlaStatus
+  rejection_reason?: string
+  rejected_at?: string
+  accepted_at?: string
   requirement?: string
   notes?: string
 }
@@ -197,7 +240,7 @@ export interface ImportLeadResult {
   errors: { row: number; name: string; error: string }[]
 }
 
-/* ──────────── User Story S4-06: Lịch sử tương tác với Lead ──────────── */
+/* ──────────── User Story S4-06 & S4-07: Lịch sử tương tác với Lead ──────────── */
 export type LeadInteractionType =
   | 'CALL'
   | 'EMAIL'
@@ -206,6 +249,8 @@ export type LeadInteractionType =
   | 'STATUS_CHANGE'
   | 'SCORE_UPDATE'
   | 'SYSTEM'
+  | 'SLA_ASSIGNMENT'
+  | 'SLA_ALERT'
 
 export interface LeadInteraction {
   id: string
@@ -235,4 +280,5 @@ export interface CreateLeadInteractionPayload {
   next_action?: string
   next_action_due?: string
 }
+
 

@@ -2194,4 +2194,351 @@
   margin-top: 4px;
 }
 
+/* ──────────── User Story S4-07: Styles cho Phân bổ & Ràng buộc SLA Phản hồi ──────────── */
+.lead-sla-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Banner Cảnh báo SLA */
+.sla-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #ef4444;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  animation: pulseAlert 2.5s infinite ease-in-out;
+}
+
+@keyframes pulseAlert {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.08); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+}
+
+.sla-alert-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sla-alert-content {
+  flex: 1;
+}
+
+.sla-alert-content strong {
+  display: block;
+  font-size: 13.5px;
+  color: #991b1b;
+  margin-bottom: 2px;
+}
+
+.sla-alert-content p {
+  margin: 0;
+  font-size: 12.5px;
+  color: #7f1d1d;
+  line-height: 1.4;
+}
+
+/* Grid SLA Metrics */
+.sla-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.sla-metric-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.15s ease;
+}
+
+.sla-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.sla-metric-card.pending {
+  border-left: 3.5px solid #f59e0b;
+}
+
+.sla-metric-card.overdue {
+  border-left: 3.5px solid #ef4444;
+  background: #fffafa;
+}
+
+.sla-metric-card.warning {
+  border-left: 3.5px solid #d97706;
+}
+
+.sla-metric-card.queue {
+  border-left: 3.5px solid #64748b;
+}
+
+.sla-metric-icon {
+  font-size: 20px;
+}
+
+.sla-metric-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.sla-metric-num {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.sla-metric-lbl {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Badge SLA & Trạng thái phân bổ trong bảng */
+.sla-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.sla-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.sla-badge.warning {
+  background: #fefce8;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+}
+
+.sla-badge.overdue {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  animation: blinkOverdue 1.8s infinite;
+}
+
+@keyframes blinkOverdue {
+  0% { opacity: 1; }
+  50% { opacity: 0.75; }
+  100% { opacity: 1; }
+}
+
+.sla-badge.accepted {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.sla-badge.unassigned {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+/* SLA Status Pill */
+.sla-status-pill {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+.sla-status-pill.unassigned {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.sla-status-pill.pending {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.sla-status-pill.accepted {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.sla-status-pill.rejected {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+/* SLA Flag Badge */
+.sla-flag-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.sla-flag-badge.overdue {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #f87171;
+}
+
+.sla-flag-badge.warning {
+  background: #fefce8;
+  color: #854d0e;
+  border: 1px solid #facc15;
+}
+
+.sla-flag-badge.ontime {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.sla-flag-badge.normal {
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+/* Nút hành động nhanh trong hàng bảng */
+.btn-action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.btn-action-pill.accept {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #059669;
+}
+
+.btn-action-pill.accept:hover {
+  background: #059669;
+}
+
+.btn-action-pill.reject {
+  background: #ffffff;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.btn-action-pill.reject:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+/* Nút hành động SLA trong tab chuyên dụng */
+.btn-sla-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.btn-sla-accept {
+  background: #059669;
+  color: #ffffff;
+  border-color: #047857;
+}
+
+.btn-sla-accept:hover {
+  background: #047857;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+}
+
+.btn-sla-reject {
+  background: #ffffff;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.btn-sla-reject:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+}
+
+.btn-sla-alert {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+.btn-sla-alert:hover {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Preset Chips */
+.btn-preset-chip {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-size: 11.5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-preset-chip:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+/* Highlighting rows */
+.row-sla-overdue {
+  background-color: #fff9f9 !important;
+}
+
+.row-sla-warning {
+  background-color: #fffef6 !important;
+}
+
+
 

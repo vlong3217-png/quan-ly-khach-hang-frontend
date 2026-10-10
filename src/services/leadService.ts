@@ -55,6 +55,11 @@ const INITIAL_LEADS: Lead[] = [
     owner_name: 'Nguyễn Văn An',
     requirement: 'Cần tư vấn gói CRM cho đội ngũ kinh doanh 25 nhân sự, quản lý pipeline và nhắc hẹn chăm sóc.',
     notes: 'Khách yêu cầu liên hệ lại vào buổi sáng.',
+    assignment_status: 'PENDING',
+    assigned_at: new Date(Date.now() - 4 * 3600 * 1000).toISOString(), // 4h trước
+    sla_hours: 24,
+    sla_deadline: new Date(Date.now() + 20 * 3600 * 1000).toISOString(),
+    sla_status: 'ON_TIME',
     created_at: '2026-10-08T09:15:00Z',
     updated_at: '2026-10-08T09:15:00Z',
   },
@@ -73,6 +78,12 @@ const INITIAL_LEADS: Lead[] = [
     owner_name: 'Trần Thị Bình',
     requirement: 'Muốn đặt lịch demo trực tiếp phần mềm vào sáng thứ 6 tuần này tại văn phòng công ty ở Cầu Giấy.',
     notes: 'Đã gọi điện thoại lần 1, giám đốc sales bên đó rất quan tâm.',
+    assignment_status: 'ACCEPTED',
+    assigned_at: '2026-10-07T15:30:00Z',
+    accepted_at: '2026-10-07T16:00:00Z',
+    sla_hours: 24,
+    sla_deadline: '2026-10-08T15:30:00Z',
+    sla_status: 'ON_TIME',
     created_at: '2026-10-07T15:30:00Z',
     updated_at: '2026-10-07T16:00:00Z',
   },
@@ -91,6 +102,11 @@ const INITIAL_LEADS: Lead[] = [
     owner_name: 'Nguyễn Văn An',
     requirement: 'Dùng thử tính năng phân quyền dữ liệu khách hàng theo chi nhánh Bắc - Trung - Nam.',
     notes: 'Quy mô công ty hơn 150 nhân viên.',
+    assignment_status: 'ACCEPTED',
+    assigned_at: '2026-10-06T10:45:00Z',
+    accepted_at: '2026-10-06T11:00:00Z',
+    sla_hours: 24,
+    sla_status: 'ON_TIME',
     created_at: '2026-10-06T10:45:00Z',
     updated_at: '2026-10-06T11:20:00Z',
   },
@@ -109,6 +125,11 @@ const INITIAL_LEADS: Lead[] = [
     owner_name: 'Lê Hoàng Cường',
     requirement: 'Tìm kiếm phần mềm quản lý học viên và phụ huynh, có tính năng gửi email báo giá khóa học.',
     notes: 'Đã chốt hợp đồng và chuyển đổi thành khách hàng chính thức.',
+    assignment_status: 'ACCEPTED',
+    assigned_at: '2026-10-05T08:20:00Z',
+    accepted_at: '2026-10-05T09:00:00Z',
+    sla_hours: 24,
+    sla_status: 'ON_TIME',
     created_at: '2026-10-05T08:20:00Z',
     updated_at: '2026-10-07T14:30:00Z',
   },
@@ -127,35 +148,130 @@ const INITIAL_LEADS: Lead[] = [
     owner_name: 'Trần Thị Bình',
     requirement: 'Cần hướng dẫn import dữ liệu khách hàng từ file Excel cũ vào hệ thống.',
     notes: 'Đang gửi tài liệu hướng dẫn qua Zalo.',
+    assignment_status: 'ACCEPTED',
+    assigned_at: '2026-10-04T14:10:00Z',
+    accepted_at: '2026-10-04T15:00:00Z',
+    sla_hours: 24,
+    sla_status: 'ON_TIME',
     created_at: '2026-10-04T14:10:00Z',
     updated_at: '2026-10-05T09:00:00Z',
   },
+  {
+    id: 'lead-006',
+    code: 'LEAD-006',
+    full_name: 'Phạm Minh Tuấn',
+    email: 'tuan.pm@daiduonggroup.vn',
+    phone: '0978112233',
+    company: 'Tập đoàn Đầu tư & Thương mại Đại Dương',
+    industry: 'Bất động sản & Xây dựng',
+    source: 'WEB_FORM',
+    source_detail: 'Form Báo giá gói Doanh nghiệp lớn',
+    status: 'NEW',
+    owner_id: 1,
+    owner_name: 'Nguyễn Văn An',
+    requirement: 'Quan tâm giải pháp CRM quản lý hơn 50 chuyên viên tư vấn đầu tư, cần SLA tiếp nhận khẩn cấp.',
+    notes: 'Khách hàng phân khúc VIP cần phản hồi trong vòng 24h.',
+    assignment_status: 'PENDING',
+    assigned_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString(), // Đã quá hạn 36h trước!
+    sla_hours: 24,
+    sla_deadline: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
+    sla_status: 'OVERDUE',
+    created_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 'lead-007',
+    code: 'LEAD-007',
+    full_name: 'Lê Bảo Trâm',
+    email: 'tram.lb@hoabinhpharma.com',
+    phone: '0933445566',
+    company: 'Công ty Dược phẩm Hòa Bình',
+    industry: 'Y tế & Chăm sóc sức khỏe',
+    source: 'MANUAL',
+    source_detail: 'Hội thảo triển lãm Dược phẩm 2026',
+    status: 'NEW',
+    assignment_status: 'UNASSIGNED',
+    requirement: 'Tìm kiếm nền tảng quản lý kênh phân phối nhà thuốc và trình dược viên.',
+    notes: 'Lead đang trong hàng chờ phân bổ cho nhân viên kinh doanh.',
+    sla_hours: 24,
+    created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+  },
 ]
+
+/**
+ * Hàm hỗ trợ tính toán trạng thái SLA động dựa trên deadline và trạng thái xử lý
+ */
+export function calculateSlaStatus(lead: Lead): 'ON_TIME' | 'WARNING' | 'OVERDUE' {
+  if (lead.assignment_status === 'ACCEPTED' || lead.status === 'CONTACTED' || lead.status === 'QUALIFIED' || lead.status === 'CONVERTED') {
+    return 'ON_TIME'
+  }
+  if (!lead.sla_deadline) {
+    if (!lead.assigned_at) return 'ON_TIME'
+    const hours = lead.sla_hours || 24
+    const deadline = new Date(new Date(lead.assigned_at).getTime() + hours * 3600 * 1000)
+    lead.sla_deadline = deadline.toISOString()
+  }
+
+  const now = Date.now()
+  const deadlineMs = new Date(lead.sla_deadline).getTime()
+  const diffHours = (deadlineMs - now) / (1000 * 3600)
+
+  if (diffHours < 0) {
+    return 'OVERDUE'
+  } else if (diffHours <= 4) {
+    return 'WARNING'
+  }
+  return 'ON_TIME'
+}
 
 function getStoredLeads(): Lead[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_LEADS)
     if (raw) {
       const parsed: Lead[] = JSON.parse(raw)
-      // Tự động bổ sung điểm số và phân nhóm nếu lead chưa được chấm
       let hasChanges = false
       const enriched = parsed.map((lead) => {
-        if (typeof lead.score !== 'number' || !lead.score_tier) {
+        let currentLead = { ...lead }
+        // Bổ sung điểm số nếu thiếu
+        if (typeof currentLead.score !== 'number' || !currentLead.score_tier) {
           hasChanges = true
-          const breakdown = calculateLeadScore(lead)
+          const breakdown = calculateLeadScore(currentLead)
           const score = breakdown.total_score
           const score_tier = determineScoreTier(score)
-          const segment = lead.segment || determineLeadSegment(lead, score)
-          return {
-            ...lead,
+          const segment = currentLead.segment || determineLeadSegment(currentLead, score)
+          currentLead = {
+            ...currentLead,
             score,
             score_tier,
             segment,
             score_breakdown: breakdown,
-            last_scored_at: lead.last_scored_at || new Date().toISOString(),
+            last_scored_at: currentLead.last_scored_at || new Date().toISOString(),
           }
         }
-        return lead
+
+        // Bổ sung SLA nếu thiếu
+        if (!currentLead.assignment_status) {
+          hasChanges = true
+          if (currentLead.status === 'NEW' && currentLead.owner_id) {
+            currentLead.assignment_status = 'PENDING'
+            currentLead.assigned_at = currentLead.created_at
+            currentLead.sla_hours = 24
+            currentLead.sla_deadline = new Date(new Date(currentLead.created_at).getTime() + 24 * 3600 * 1000).toISOString()
+          } else if (currentLead.status === 'NEW' && !currentLead.owner_id) {
+            currentLead.assignment_status = 'UNASSIGNED'
+          } else {
+            currentLead.assignment_status = 'ACCEPTED'
+          }
+        }
+
+        const dynamicSla = calculateSlaStatus(currentLead)
+        if (currentLead.sla_status !== dynamicSla) {
+          hasChanges = true
+          currentLead.sla_status = dynamicSla
+        }
+
+        return currentLead
       })
       if (hasChanges) {
         saveStoredLeads(enriched)
@@ -169,18 +285,21 @@ function getStoredLeads(): Lead[] {
     const score = breakdown.total_score
     const score_tier = determineScoreTier(score)
     const segment = lead.segment || determineLeadSegment(lead, score)
+    const dynamicSla = calculateSlaStatus(lead)
     return {
       ...lead,
       score,
       score_tier,
       segment,
       score_breakdown: breakdown,
+      sla_status: dynamicSla,
       last_scored_at: new Date().toISOString(),
     }
   })
   localStorage.setItem(STORAGE_KEY_LEADS, JSON.stringify(initialEnriched))
   return initialEnriched
 }
+
 
 function saveStoredLeads(leads: Lead[]): void {
   localStorage.setItem(STORAGE_KEY_LEADS, JSON.stringify(leads))
@@ -628,4 +747,137 @@ export const leadService = {
       })),
     }
   },
+
+  /* ──────────── User Story S4-07: Nhận / Từ chối Lead & Ràng buộc SLA phản hồi ──────────── */
+  /**
+   * Nhân viên kinh doanh nhận Lead:
+   * - Chuyển trạng thái sang CONTACTED ("Đang chăm sóc / Đã liên hệ")
+   * - assignment_status = 'ACCEPTED'
+   * - Ghi nhận accepted_at
+   */
+  async acceptLead(leadId: string, ownerId?: number, ownerName?: string): Promise<Lead> {
+    const leads = getStoredLeads()
+    const index = leads.findIndex((l) => l.id === leadId)
+    if (index === -1) throw new Error('Không tìm thấy Lead để tiếp nhận.')
+
+    const existing = leads[index]
+    const nowIso = new Date().toISOString()
+    const updatedLead: Lead = {
+      ...existing,
+      status: 'CONTACTED',
+      assignment_status: 'ACCEPTED',
+      accepted_at: nowIso,
+      owner_id: ownerId || existing.owner_id || 1,
+      owner_name: ownerName || existing.owner_name || 'Nhân viên kinh doanh',
+      sla_status: 'ON_TIME',
+      updated_at: nowIso,
+    }
+
+    try {
+      await fetch(`${API_BASE_URL}/leads/${leadId}/accept`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          owner_id: updatedLead.owner_id,
+          owner_name: updatedLead.owner_name,
+        }),
+      })
+    } catch {
+      // Fallback API
+    }
+
+    leads[index] = updatedLead
+    saveStoredLeads(leads)
+    return updatedLead
+  },
+
+  /**
+   * Nhân viên kinh doanh từ chối Lead:
+   * - Bắt buộc có lý do từ chối
+   * - Chuyển lead quay lại hàng chờ phân bổ (UNASSIGNED)
+   * - Xóa người phụ trách hiện tại
+   * - assignment_status = 'REJECTED' / 'UNASSIGNED'
+   */
+  async rejectLead(leadId: string, reason: string): Promise<Lead> {
+    if (!reason || !reason.trim()) {
+      throw new Error('Vui lòng nhập lý do từ chối tiếp nhận Lead.')
+    }
+
+    const leads = getStoredLeads()
+    const index = leads.findIndex((l) => l.id === leadId)
+    if (index === -1) throw new Error('Không tìm thấy Lead để từ chối.')
+
+    const existing = leads[index]
+    const nowIso = new Date().toISOString()
+    const updatedLead: Lead = {
+      ...existing,
+      status: 'NEW',
+      assignment_status: 'UNASSIGNED',
+      owner_id: undefined,
+      owner_name: undefined,
+      rejection_reason: reason.trim(),
+      rejected_at: nowIso,
+      sla_status: 'ON_TIME',
+      updated_at: nowIso,
+    }
+
+    try {
+      await fetch(`${API_BASE_URL}/leads/${leadId}/reject`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ reason: reason.trim() }),
+      })
+    } catch {
+      // Fallback API
+    }
+
+    leads[index] = updatedLead
+    saveStoredLeads(leads)
+    return updatedLead
+  },
+
+  /**
+   * Trưởng nhóm / Quản lý phân bổ lại Lead (Re-assign) với thời hạn SLA mới
+   */
+  async reassignLead(leadId: string, newOwnerId: number, newOwnerName: string, slaHours = 24): Promise<Lead> {
+    const leads = getStoredLeads()
+    const index = leads.findIndex((l) => l.id === leadId)
+    if (index === -1) throw new Error('Không tìm thấy Lead để phân bổ.')
+
+    const existing = leads[index]
+    const now = new Date()
+    const deadline = new Date(now.getTime() + slaHours * 3600 * 1000)
+
+    const updatedLead: Lead = {
+      ...existing,
+      status: 'NEW',
+      owner_id: newOwnerId,
+      owner_name: newOwnerName,
+      assignment_status: 'PENDING',
+      assigned_at: now.toISOString(),
+      sla_hours: slaHours,
+      sla_deadline: deadline.toISOString(),
+      sla_status: 'ON_TIME',
+      updated_at: now.toISOString(),
+    }
+
+    try {
+      await fetch(`${API_BASE_URL}/leads/${leadId}/reassign`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          new_owner_id: newOwnerId,
+          new_owner_name: newOwnerName,
+          sla_hours: slaHours,
+        }),
+      })
+    } catch {
+      // Fallback
+    }
+
+    leads[index] = updatedLead
+    saveStoredLeads(leads)
+    return updatedLead
+  },
 }
+

@@ -280,6 +280,61 @@ export const leadInteractionService = {
   },
 
   /**
+   * S4-07: Ghi nhận sự kiện Nhân viên kinh doanh nhận Lead
+   */
+  async recordLeadAccepted(
+    leadId: string,
+    salesName: string
+  ): Promise<LeadInteraction> {
+    return this.createInteraction({
+      lead_id: leadId,
+      type: 'SLA_ASSIGNMENT',
+      title: `Nhận chăm sóc Lead (SLA): ${salesName}`,
+      content: `Nhân viên ${salesName} đã chấp nhận phân bổ và cam kết xử lý lead theo SLA phản hồi.`,
+      performed_by_name: salesName,
+      outcome: 'Đã nhận Lead - Đang chăm sóc',
+      next_action: 'Liên hệ tư vấn khách hàng lần 1',
+    })
+  },
+
+  /**
+   * S4-07: Ghi nhận sự kiện Nhân viên từ chối Lead
+   */
+  async recordLeadRejected(
+    leadId: string,
+    salesName: string,
+    reason: string
+  ): Promise<LeadInteraction> {
+    return this.createInteraction({
+      lead_id: leadId,
+      type: 'SLA_ASSIGNMENT',
+      title: `Từ chối nhận Lead: ${salesName}`,
+      content: `Lý do từ chối: "${reason}". Lead đã được chuyển về hàng chờ phân bổ lại cho nhân viên khác.`,
+      performed_by_name: salesName,
+      outcome: 'Từ chối - Quay lại hàng chờ',
+    })
+  },
+
+  /**
+   * S4-07: Ghi nhận cảnh báo Quá hạn SLA gửi Trưởng nhóm
+   */
+  async recordSlaOverdueAlert(
+    leadId: string,
+    leadName: string,
+    salesName: string
+  ): Promise<LeadInteraction> {
+    return this.createInteraction({
+      lead_id: leadId,
+      type: 'SLA_ALERT',
+      title: `⚠️ Cảnh báo SLA quá hạn: ${leadName}`,
+      content: `Lead được phân cho ${salesName} đã vượt quá thời hạn cam kết phản hồi (SLA). Cần trưởng nhóm can thiệp tái phân bổ.`,
+      performed_by_name: 'Hệ thống giám sát SLA',
+      outcome: 'Cảnh báo Trưởng nhóm',
+    })
+  },
+
+
+  /**
    * Xóa một tương tác
    */
   async deleteInteraction(interactionId: string): Promise<boolean> {
