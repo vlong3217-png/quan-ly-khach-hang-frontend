@@ -10,6 +10,7 @@ import OpportunityDetailModal from '../../components/OpportunityDetailModal/Oppo
 import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
 import SalesForecastView from '../../components/SalesForecastView/SalesForecastView.tsx'
 import StalledOpportunityAlerts from '../../components/StalledOpportunityAlerts/StalledOpportunityAlerts.tsx'
+import ReassignOpportunityModal from '../../components/ReassignOpportunityModal/ReassignOpportunityModal.tsx'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import './OpportunitiesPage.css'
 
@@ -65,6 +66,10 @@ export default function OpportunitiesPage() {
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false)
   const [detailTab, setDetailTab] = useState<'ACTIVITIES' | 'DETAILS' | 'TASKS'>('ACTIVITIES')
+
+  // Modal Phân bổ lại cơ hội (S5-08)
+  const [oppToReassign, setOppToReassign] = useState<Opportunity | null>(null)
+  const [isReassignModalOpen, setIsReassignModalOpen] = useState<boolean>(false)
 
   // Modal Tạo Cơ hội mới
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false)
@@ -349,6 +354,10 @@ export default function OpportunitiesPage() {
             managerId={user?.id ? Number(user.id) : 1}
             onOpportunityUpdated={handleOppUpdated}
             onOpenOpportunityDetail={(opp) => handleOpenDetail(opp, 'DETAILS')}
+            onReassignOpportunity={(opp) => {
+              setOppToReassign(opp)
+              setIsReassignModalOpen(true)
+            }}
           />
         </div>
       ) : mainNavTab === 'FORECAST' ? (
@@ -592,6 +601,19 @@ export default function OpportunitiesPage() {
                           <IconCheckSquare />
                           <span>Công việc</span>
                         </button>
+                        {isManagerOrAdmin && opp.status === 'OPEN' && (
+                          <button
+                            type="button"
+                            className="btn-action reassign-btn"
+                            title="Phân bổ lại cơ hội cho người khác (S5-08)"
+                            onClick={() => {
+                              setOppToReassign(opp)
+                              setIsReassignModalOpen(true)
+                            }}
+                          >
+                            <span>🔄 Chuyển giao</span>
+                          </button>
+                        )}
                         <button
                           type="button"
                           className="btn-action delete-btn"
@@ -684,6 +706,24 @@ export default function OpportunitiesPage() {
           initialTab={detailTab}
           onClose={() => setIsDetailModalOpen(false)}
           onOpportunityUpdated={handleOppUpdated}
+        />
+      )}
+
+      {/* ── MODAL PHÂN BỔ LẠI CƠ HỘI (S5-08) ── */}
+      {oppToReassign && isReassignModalOpen && (
+        <ReassignOpportunityModal
+          opportunity={oppToReassign}
+          isOpen={isReassignModalOpen}
+          managerName={user?.full_name || 'Bế Hoàng Quân (Trưởng nhóm)'}
+          managerId={user?.id ? Number(user.id) : 1}
+          onClose={() => {
+            setIsReassignModalOpen(false)
+            setOppToReassign(null)
+          }}
+          onSuccess={(updated) => {
+            handleOppUpdated(updated)
+            showToast(`Đã chuyển giao cơ hội ${updated.code} sang ${updated.owner_name} thành công!`, 'success')
+          }}
         />
       )}
 
