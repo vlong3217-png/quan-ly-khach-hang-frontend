@@ -435,6 +435,58 @@ export default function CustomerManagementPage() {
     showToast(`Đã xuất thành công ${scopedCustomers.length} khách hàng ra file Excel/CSV!`)
   }
 
+  // Tải file mẫu nhập khách hàng (Excel / CSV)
+  const handleDownloadTemplate = () => {
+    const headers = [
+      'Tên doanh nghiệp (*)',
+      'Mã số thuế',
+      'Ngành nghề (*)',
+      'Quy mô nhân sự (*)',
+      'Số điện thoại',
+      'Email',
+      'Website',
+      'Địa chỉ',
+      'Mô tả ghi chú',
+    ]
+
+    const sampleRows = [
+      [
+        '"Công ty Cổ phần Công nghệ Alpha"',
+        '"0102345678"',
+        '"Công nghệ thông tin & Viễn thông"',
+        '"50 - 200 nhân sự (Quy mô vừa)"',
+        '"024 3768 9999"',
+        '"contact@alphatech.vn"',
+        '"https://alphatech.vn"',
+        '"Tầng 12, Tòa nhà Keangnam, Hà Nội"',
+        '"Khách hàng doanh nghiệp công nghệ tiềm năng"',
+      ],
+      [
+        '"Tập đoàn Xây dựng & Bất động sản Hòa Bình"',
+        '"0301122334"',
+        '"Bất động sản & Xây dựng"',
+        '"Trên 200 nhân sự (Tập đoàn lớn)"',
+        '"028 3822 4567"',
+        '"info@hoabinhgroup.vn"',
+        '"https://hoabinhgroup.vn"',
+        '"235 Võ Thị Sáu, Quận 3, TP. Hồ Chí Minh"',
+        '"Tổng thầu xây dựng các dự án dân dụng"',
+      ],
+    ]
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...sampleRows.map((r) => r.join(','))].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'file_mau_nhap_khach_hang_crm.csv')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    showToast('Đã tải xuống file mẫu nhập khách hàng thành công!')
+  }
+
   // ── S3-02 Contact Actions ──
   const handleOpenContactModal = (cust?: CustomerEnterprise) => {
     setEditingContact(null)
@@ -645,6 +697,16 @@ export default function CustomerManagementPage() {
             accept=".xlsx,.xls,.csv"
             onChange={handleFileChange}
           />
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleDownloadTemplate}
+            title="Tải về file mẫu Excel/CSV chuẩn để nhập dữ liệu"
+            id="btn-download-customer-template"
+          >
+            <IconDownload />
+            <span>Tải file mẫu</span>
+          </button>
           <button
             type="button"
             className="btn btn-secondary"
