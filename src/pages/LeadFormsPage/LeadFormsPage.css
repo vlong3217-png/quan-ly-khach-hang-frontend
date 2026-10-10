@@ -249,6 +249,21 @@
   letter-spacing: 0.3px;
 }
 
+.lead-stt-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  background: #f8fafc;
+  color: #475569;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+}
+
 .lead-form-info-cell {
   display: flex;
   flex-direction: column;
