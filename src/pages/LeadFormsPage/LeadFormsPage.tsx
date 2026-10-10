@@ -28,6 +28,8 @@ import type {
   ImportLeadResult,
   LeadAssignmentStatus,
   LeadSlaStatus,
+  SavedLeadFilter,
+  FollowUpTiming,
 } from '../../types/lead.ts'
 import type { CustomerEnterprise } from '../../types/customer.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
@@ -300,12 +302,23 @@ export default function LeadFormsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [toast, setToast] = useState<{ message: string; isError?: boolean } | null>(null)
 
-  // Bộ lọc danh sách Leads
+  // ── S4-09: Bộ lọc nâng cao & Bộ lọc lưu sẵn cho NVKD ──
   const [leadSearchQuery, setLeadSearchQuery] = useState('')
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>('ALL')
   const [leadSourceFilter, setLeadSourceFilter] = useState<string>('ALL')
   const [leadSlaFilter, setLeadSlaFilter] = useState<string>('ALL')
   const [leadAssignFilter, setLeadAssignFilter] = useState<string>('ALL')
+  const [leadScoreTierFilter, setLeadScoreTierFilter] = useState<string>('ALL')
+  const [leadTimingFilter, setLeadTimingFilter] = useState<FollowUpTiming>('ALL')
+  const [onlyMyLeadsFilter, setOnlyMyLeadsFilter] = useState<boolean>(false)
+  const [activeFilterPresetId, setActiveFilterPresetId] = useState<string | null>(null)
+
+  // Danh sách các bộ lọc lưu sẵn
+  const [savedFiltersList, setSavedFiltersList] = useState<SavedLeadFilter[]>(() =>
+    leadService.getSavedFilters()
+  )
+  const [isSaveFilterModalOpen, setIsSaveFilterModalOpen] = useState(false)
+  const [newFilterNameInput, setNewFilterNameInput] = useState('')
 
   // ── S4-07: State cho Nhận / Từ chối Lead & Ràng buộc SLA ──
   const [rejectingLead, setRejectingLead] = useState<Lead | null>(null)
@@ -511,15 +524,30 @@ export default function LeadFormsPage() {
     }
   }, [leads, forms])
 
-  // Lọc danh sách Leads
+  // Lọc danh sách Leads (S4-09: Bộ lọc linh hoạt & Lọc theo lịch cần gọi)
   const filteredLeads = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const endOfToday = new Date()
+    endOfToday.setHours(23, 59, 59, 999)
+
+    const endOfWeek = new Date()
+    const dayOfWeek = endOfWeek.getDay() || 7
+    endOfWeek.setDate(endOfWeek.getDate() + (7 - dayOfWeek))
+    endOfWeek.setHours(23, 59, 59, 999)
+
     return leads.filter((l) => {
+      // 1. Tìm kiếm từ khóa
+      const q = leadSearchQuery.toLowerCase().trim()
       const matchSearch =
-        l.full_name.toLowerCase().includes(leadSearchQuery.toLowerCase()) ||
-        l.email.toLowerCase().includes(leadSearchQuery.toLowerCase()) ||
-        l.phone.includes(leadSearchQuery) ||
-        l.company.toLowerCase().includes(leadSearchQuery.toLowerCase()) ||
-        l.code.toLowerCase().includes(leadSearchQuery.toLowerCase())
+        !q ||
+        l.full_name.toLowerCase().includes(q) ||
+        l.email.toLowerCase().includes(q) ||
+        l.phone.includes(q) ||
+        l.company.toLowerCase().includes(q) ||
+        l.code.toLowerCase().includes(q)
+
+      // 2. Trạng thái & Nguồn & SLA & Phân bổ
       const matchStatus = leadStatusFilter === 'ALL' || l.status === leadStatusFilter
       const matchSource = leadSourceFilter === 'ALL' || l.source === leadSourceFilter
       const matchSla = leadSlaFilter === 'ALL' || l.sla_status === leadSlaFilter
@@ -529,9 +557,58 @@ export default function LeadFormsPage() {
           ? l.assignment_status === 'UNASSIGNED' || !l.owner_id
           : l.assignment_status === leadAssignFilter)
 
-      return matchSearch && matchStatus && matchSource && matchSla && matchAssign
+      // 3. Phân hạng điểm số (Score Tier)
+      const matchScoreTier = leadScoreTierFilter === 'ALL' || l.score_tier === leadScoreTierFilter
+
+      // 4. Chỉ lead của tôi (NVKD phụ trách)
+      const matchMyLeads =
+        !onlyMyLeadsFilter ||
+        (user?.id ? Number(l.owner_id) === Number(user.id) : true) ||
+        l.owner_name === user?.full_name
+
+      // 5. Lịch hẹn tương tác / Cần gọi (Follow-up timing)
+      let matchTiming = true
+      if (leadTimingFilter !== 'ALL') {
+        // Tìm lịch tương tác hẹn gọi gần nhất của Lead
+        const leadInteractions = allRecentInteractions.filter((i) => i.lead_id === l.id && i.next_action_due)
+        const latestDue = leadInteractions.length > 0 ? leadInteractions[0]?.next_action_due : null
+
+        if (latestDue) {
+          const dueDate = new Date(latestDue)
+          if (leadTimingFilter === 'TODAY') {
+            matchTiming = dueDate >= today && dueDate <= endOfToday
+          } else if (leadTimingFilter === 'OVERDUE') {
+            matchTiming = dueDate < today && l.status !== 'CONVERTED'
+          } else if (leadTimingFilter === 'THIS_WEEK') {
+            matchTiming = dueDate <= endOfWeek && dueDate >= today
+          }
+        } else {
+          // Nếu lead chưa có lịch hẹn cụ thể, nhưng là lead mới trong ngày hoặc SLA cảnh báo
+          if (leadTimingFilter === 'TODAY') {
+            matchTiming = l.status === 'NEW' || l.sla_status === 'WARNING' || l.sla_status === 'OVERDUE'
+          } else if (leadTimingFilter === 'OVERDUE') {
+            matchTiming = l.sla_status === 'OVERDUE'
+          } else {
+            matchTiming = false
+          }
+        }
+      }
+
+      return matchSearch && matchStatus && matchSource && matchSla && matchAssign && matchScoreTier && matchMyLeads && matchTiming
     })
-  }, [leads, leadSearchQuery, leadStatusFilter, leadSourceFilter, leadSlaFilter, leadAssignFilter])
+  }, [
+    leads,
+    leadSearchQuery,
+    leadStatusFilter,
+    leadSourceFilter,
+    leadSlaFilter,
+    leadAssignFilter,
+    leadScoreTierFilter,
+    leadTimingFilter,
+    onlyMyLeadsFilter,
+    allRecentInteractions,
+    user,
+  ])
 
   // Danh sách Lead dành riêng cho Tab Quản lý Phân bổ & SLA (S4-07)
   const slaDistributionLeads = useMemo(() => {
@@ -541,6 +618,72 @@ export default function LeadFormsPage() {
     })
   }, [leads])
 
+  // ── S4-09: Handlers cho Bộ lọc lưu sẵn & Lọc thông minh ──
+  const handleApplyPresetFilter = (preset: SavedLeadFilter) => {
+    setActiveFilterPresetId(preset.id)
+    if (preset.search !== undefined) setLeadSearchQuery(preset.search)
+    if (preset.status !== undefined) setLeadStatusFilter(preset.status)
+    if (preset.source !== undefined) setLeadSourceFilter(preset.source)
+    if (preset.sla_status !== undefined) setLeadSlaFilter(preset.sla_status)
+    if (preset.assignment_status !== undefined) setLeadAssignFilter(preset.assignment_status)
+    if (preset.score_tier !== undefined) setLeadScoreTierFilter(preset.score_tier)
+    if (preset.follow_up_timing !== undefined) setLeadTimingFilter(preset.follow_up_timing)
+    if (preset.only_my_leads !== undefined) setOnlyMyLeadsFilter(preset.only_my_leads)
+
+    showToast(`Đã áp dụng bộ lọc "${preset.name}"`)
+  }
+
+  const handleResetFilters = () => {
+    setActiveFilterPresetId(null)
+    setLeadSearchQuery('')
+    setLeadStatusFilter('ALL')
+    setLeadSourceFilter('ALL')
+    setLeadSlaFilter('ALL')
+    setLeadAssignFilter('ALL')
+    setLeadScoreTierFilter('ALL')
+    setLeadTimingFilter('ALL')
+    setOnlyMyLeadsFilter(false)
+    showToast('Đã xóa tất cả bộ lọc, trở về mặc định.')
+  }
+
+  const handleSaveCurrentFilter = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newFilterNameInput.trim()) {
+      showToast('Vui lòng nhập tên cho bộ lọc lưu sẵn!', true)
+      return
+    }
+
+    const saved = leadService.saveCustomFilter({
+      name: newFilterNameInput.trim(),
+      icon: '⭐',
+      search: leadSearchQuery || undefined,
+      status: leadStatusFilter !== 'ALL' ? leadStatusFilter : undefined,
+      source: leadSourceFilter !== 'ALL' ? leadSourceFilter : undefined,
+      sla_status: leadSlaFilter !== 'ALL' ? leadSlaFilter : undefined,
+      assignment_status: leadAssignFilter !== 'ALL' ? leadAssignFilter : undefined,
+      score_tier: leadScoreTierFilter !== 'ALL' ? leadScoreTierFilter : undefined,
+      follow_up_timing: leadTimingFilter !== 'ALL' ? leadTimingFilter : undefined,
+      only_my_leads: onlyMyLeadsFilter,
+    })
+
+    setSavedFiltersList((prev) => [saved, ...prev])
+    setActiveFilterPresetId(saved.id)
+    setIsSaveFilterModalOpen(false)
+    setNewFilterNameInput('')
+    showToast(`Đã lưu thành công bộ lọc "${saved.name}"!`)
+  }
+
+  const handleDeleteCustomFilter = (filterId: string, filterName: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (window.confirm(`Bạn có chắc muốn xóa bộ lọc đã lưu "${filterName}"?`)) {
+      leadService.deleteCustomFilter(filterId)
+      setSavedFiltersList((prev) => prev.filter((f) => f.id !== filterId))
+      if (activeFilterPresetId === filterId) {
+        setActiveFilterPresetId(null)
+      }
+      showToast(`Đã xóa bộ lọc "${filterName}".`)
+    }
+  }
 
   // ── S4-04: Thống kê & Lọc Chấm điểm Lead ──
   const scoringStats = useMemo(() => {
@@ -1642,7 +1785,10 @@ export default function LeadFormsPage() {
               <select
                 className="lead-select-filter"
                 value={leadAssignFilter}
-                onChange={(e) => setLeadAssignFilter(e.target.value)}
+                onChange={(e) => {
+                  setLeadAssignFilter(e.target.value)
+                  setActiveFilterPresetId(null)
+                }}
                 title="Lọc theo trạng thái phân bổ"
               >
                 <option value="ALL">Tất cả phân bổ</option>
@@ -1650,6 +1796,115 @@ export default function LeadFormsPage() {
                 <option value="ACCEPTED">Đã nhận chăm sóc</option>
                 <option value="UNASSIGNED">Hàng chờ phân bổ lại</option>
               </select>
+
+              {/* S4-09: Lọc theo Hạng điểm số (Hot/Warm/Cold) */}
+              <select
+                className="lead-select-filter"
+                value={leadScoreTierFilter}
+                onChange={(e) => {
+                  setLeadScoreTierFilter(e.target.value)
+                  setActiveFilterPresetId(null)
+                }}
+                title="Lọc theo điểm tiềm năng"
+              >
+                <option value="ALL">Tất cả phân hạng điểm</option>
+                <option value="HOT">🔥 Lead Hot (≥ 80đ)</option>
+                <option value="WARM">☀️ Lead Warm (50 - 79đ)</option>
+                <option value="COLD">❄️ Lead Cold (&lt; 50đ)</option>
+              </select>
+
+              {/* S4-09: Lọc theo Lịch hẹn gọi (Sáng mở máy biết gọi ai) */}
+              <select
+                className="lead-select-filter highlight-filter"
+                value={leadTimingFilter}
+                onChange={(e) => {
+                  setLeadTimingFilter(e.target.value as FollowUpTiming)
+                  setActiveFilterPresetId(null)
+                }}
+                title="Bộ lọc lịch hẹn gọi chăm sóc"
+                style={{ fontWeight: 600, color: leadTimingFilter !== 'ALL' ? '#2563eb' : undefined }}
+              >
+                <option value="ALL">📅 Mọi lịch liên hệ</option>
+                <option value="TODAY">📞 Cần gọi hôm nay</option>
+                <option value="OVERDUE">⚠️ Quá hạn liên hệ</option>
+                <option value="THIS_WEEK">🗓️ Trong tuần này</option>
+              </select>
+
+              {/* S4-09: Tùy chọn chỉ xem Lead do mình phụ trách */}
+              <label className="only-my-leads-checkbox" title="Chỉ lọc các Lead được giao cho bạn">
+                <input
+                  type="checkbox"
+                  checked={onlyMyLeadsFilter}
+                  onChange={(e) => {
+                    setOnlyMyLeadsFilter(e.target.checked)
+                    setActiveFilterPresetId(null)
+                  }}
+                />
+                <span>👤 Lead của tôi</span>
+              </label>
+
+              {/* Nút Xóa nhanh bộ lọc */}
+              {(leadSearchQuery ||
+                leadStatusFilter !== 'ALL' ||
+                leadSourceFilter !== 'ALL' ||
+                leadSlaFilter !== 'ALL' ||
+                leadAssignFilter !== 'ALL' ||
+                leadScoreTierFilter !== 'ALL' ||
+                leadTimingFilter !== 'ALL' ||
+                onlyMyLeadsFilter) && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleResetFilters}
+                  title="Xóa toàn bộ tiêu chí lọc"
+                  style={{ padding: '6px 10px', fontSize: '12px' }}
+                >
+                  ✕ Đặt lại
+                </button>
+              )}
+
+              {/* Nút Lưu bộ lọc hiện tại */}
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => setIsSaveFilterModalOpen(true)}
+                title="Lưu bộ lọc hiện tại để dùng lại mỗi buổi sáng (S4-09)"
+                style={{ padding: '6px 12px', fontSize: '12px', whiteSpace: 'nowrap' }}
+                id="btn-open-save-filter-modal"
+              >
+                💾 Lưu bộ lọc
+              </button>
+            </div>
+          </div>
+
+          {/* ── S4-09: Thanh Bộ Lọc Lưu Sẵn (Saved Filters & Quick Morning Presets) ── */}
+          <div className="lead-saved-filters-bar" id="lead-saved-filters-bar">
+            <span className="saved-filters-label">⭐ Bộ lọc lưu sẵn:</span>
+            <div className="saved-filters-pills">
+              {savedFiltersList.map((filter) => {
+                const isActive = activeFilterPresetId === filter.id
+                return (
+                  <div
+                    key={filter.id}
+                    className={`saved-filter-pill ${isActive ? 'active' : ''}`}
+                    onClick={() => handleApplyPresetFilter(filter)}
+                    title={`Nhấp để áp dụng bộ lọc: ${filter.name}`}
+                  >
+                    <span className="pill-icon">{filter.icon || '📌'}</span>
+                    <span className="pill-name">{filter.name}</span>
+                    {!filter.is_preset && (
+                      <button
+                        type="button"
+                        className="btn-delete-saved-filter"
+                        onClick={(e) => handleDeleteCustomFilter(filter.id, filter.name, e)}
+                        title="Xóa bộ lọc này"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
 
@@ -5323,6 +5578,79 @@ export default function LeadFormsPage() {
                 {isReassigningLoading ? 'Đang phân bổ...' : 'Xác nhận phân bổ'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL S4-09: LƯU BỘ LỌC TÙY CHỌN DÀNH CHO NVKD
+          ───────────────────────────────────────────────────────────── */}
+      {isSaveFilterModalOpen && (
+        <div className="lead-modal-backdrop" onClick={() => setIsSaveFilterModalOpen(false)}>
+          <div className="lead-modal-container" style={{ maxWidth: '480px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="lead-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '20px' }}>💾</span>
+                <h3 className="lead-modal-title">Lưu Bộ Lọc Tìm Kiếm Lead</h3>
+              </div>
+              <button
+                type="button"
+                className="lead-modal-close"
+                onClick={() => setIsSaveFilterModalOpen(false)}
+              >
+                <IconX />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCurrentFilter}>
+              <div className="lead-modal-body">
+                <p style={{ margin: '0 0 14px 0', fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+                  Lưu các tiêu chí lọc đang chọn thành một phím tắt để mỗi buổi sáng mở máy là bạn có thể bấm 1 click để xem ngay danh sách cần gọi.
+                </p>
+
+                <div className="lead-form-group">
+                  <label className="lead-form-label" style={{ fontWeight: 600 }}>
+                    Tên bộ lọc <span style={{ color: '#dc2626' }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    className="lead-form-input"
+                    placeholder="Ví dụ: Khách cần gọi gấp sáng nay, Lead VIP chưa chốt..."
+                    value={newFilterNameInput}
+                    onChange={(e) => setNewFilterNameInput(e.target.value)}
+                    autoFocus
+                    id="input-save-filter-name"
+                  />
+                </div>
+
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 12px', marginTop: '12px', fontSize: '12px', color: '#64748b' }}>
+                  <div style={{ fontWeight: 600, color: '#334155', marginBottom: '4px' }}>Các tiêu chí sẽ được lưu:</div>
+                  <div>• Từ khóa tìm kiếm: {leadSearchQuery ? `"${leadSearchQuery}"` : 'Tất cả'}</div>
+                  <div>• Trạng thái: {leadStatusFilter} | Nguồn: {leadSourceFilter}</div>
+                  <div>• Hạn SLA: {leadSlaFilter} | Phân bổ: {leadAssignFilter}</div>
+                  <div>• Lịch hẹn gọi: {leadTimingFilter} | Phân hạng: {leadScoreTierFilter}</div>
+                  <div>• Chỉ lead của tôi: {onlyMyLeadsFilter ? 'Có' : 'Không'}</div>
+                </div>
+              </div>
+
+              <div className="lead-modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setIsSaveFilterModalOpen(false)}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  id="btn-confirm-save-filter"
+                >
+                  Xác nhận lưu
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
