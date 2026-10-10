@@ -70,6 +70,35 @@ export interface StalledOpportunityAlert {
   suggested_action: string
 }
 
+/**
+ * ── S5-08: Phân bổ lại cơ hội (Reassign Opportunity) ──
+ */
+export interface ReassignOpportunityPayload {
+  new_owner_id: number
+  new_owner_name: string
+  new_team_id?: number
+  new_team_name?: string
+  reassign_reason: string // Bắt buộc lý do (nghỉ ốm dài ngày, quá tải, chuyển địa bàn, theo yêu cầu khách hàng)
+  transfer_notes?: string // Ghi chú bàn giao công việc / đầu mối
+  transfer_open_tasks?: boolean // Chuyển giao toàn bộ công việc chưa hoàn thành sang nhân viên mới
+  reassigned_by_id?: number
+  reassigned_by_name?: string
+}
+
+export interface OpportunityReassignHistory {
+  id: string
+  opportunity_id: string
+  from_owner_id: number
+  from_owner_name: string
+  to_owner_id: number
+  to_owner_name: string
+  reassign_reason: string
+  transfer_notes?: string
+  transferred_tasks_count?: number
+  reassigned_by_name: string
+  created_at: string
+}
+
 export interface CloseOpportunityWonPayload {
   actual_revenue: number // Bắt buộc
   actual_close_date: string // Bắt buộc ngày ký (YYYY-MM-DD)
