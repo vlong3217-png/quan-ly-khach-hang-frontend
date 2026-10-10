@@ -9,6 +9,16 @@
   color: #1e293b;
 }
 
+.audit-log-page.audit-log-page-embedded {
+  min-height: auto;
+  background-color: transparent;
+}
+
+.audit-log-page.audit-log-page-embedded .audit-log-main {
+  max-width: 100%;
+  padding: 0;
+}
+
 /* ── Header Navbar ── */
 .audit-log-header {
   background-color: #ffffff;
