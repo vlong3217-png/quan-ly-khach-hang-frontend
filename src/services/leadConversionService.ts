@@ -11,6 +11,14 @@ import { API_BASE_URL } from './authService.ts'
 
 const STORAGE_KEY_LEADS = 'crm_leads_master_data'
 
+function getLoggedInUser(): { id?: number; full_name?: string } | null {
+  try {
+    const raw = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user')
+    if (raw) return JSON.parse(raw)
+  } catch {}
+  return null
+}
+
 function getAuthToken(): string | null {
   return (
     localStorage.getItem('access_token') ||
@@ -180,6 +188,7 @@ export const leadConversionService = {
         throw new Error('Vui lòng nhập tên công ty hoặc tên khách hàng.')
       }
 
+      const currentUser = getLoggedInUser()
       const newCustomer = customerService.createCustomer({
         name: customerName,
         tax_code: payload.tax_code?.trim() || undefined,
@@ -189,8 +198,8 @@ export const leadConversionService = {
         address: payload.address?.trim() || 'Hà Nội',
         phone: payload.phone?.trim() || currentLead.phone,
         email: payload.email?.trim() || currentLead.email,
-        owner_id: payload.owner_id || currentLead.owner_id || 1,
-        owner_name: payload.owner_name || currentLead.owner_name || 'Nguyễn Văn An',
+        owner_id: payload.owner_id || currentLead.owner_id || currentUser?.id || 1,
+        owner_name: payload.owner_name || currentLead.owner_name || currentUser?.full_name || 'Bế Hoàng Quân',
         team_id: 1,
         team_name: 'Đội Kinh Doanh 1',
         status: 'POTENTIAL',
@@ -280,6 +289,7 @@ export const leadConversionService = {
       const stages = pipelineService.getStages()
       const stage = stages.find((s) => s.id === payload.stage_id) || stages[0]
 
+      const currentUser = getLoggedInUser()
       const newOpp = await opportunityService.createOpportunity({
         title: oppTitle,
         customer_id: finalCustomer.id,
@@ -293,8 +303,8 @@ export const leadConversionService = {
         expected_revenue: Number(payload.expected_revenue) || 0,
         expected_close_date: payload.expected_close_date || new Date().toISOString().split('T')[0],
         source: currentLead.source_detail || `Nguồn Lead: ${currentLead.source}`,
-        owner_id: payload.owner_id || currentLead.owner_id || 1,
-        owner_name: payload.owner_name || currentLead.owner_name || 'Nguyễn Văn An',
+        owner_id: payload.owner_id || currentLead.owner_id || currentUser?.id || 1,
+        owner_name: payload.owner_name || currentLead.owner_name || currentUser?.full_name || 'Bế Hoàng Quân',
         description: payload.notes || currentLead.requirement || '',
         lead_id: currentLead.id,
       })
