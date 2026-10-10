@@ -245,12 +245,6 @@ const IconUserCheck = () => (
   </svg>
 )
 
-const IconTrendingUp = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-    <polyline points="17 6 23 6 23 12" />
-  </svg>
-)
 
 const LEAD_TIER_CONFIG: Record<LeadScoreTier, { label: string; emoji: string; className: string }> = {
   HOT: { label: 'Nóng (Hot)', emoji: '', className: 'hot' },
@@ -4462,13 +4456,10 @@ export default function LeadFormsPage() {
             id="modal-convert-lead"
           >
             <div className="lead-modal-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ color: '#2563eb' }}><IconUserCheck /></div>
-                <div>
-                  <h3 className="lead-modal-title" style={{ margin: 0 }}>Chuyển đổi Khách hàng tiềm năng</h3>
-                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                    Đồng bộ dữ liệu sang Khách hàng CRM và Cơ hội bán hàng không cần nhập lại
-                  </div>
+              <div>
+                <h3 className="lead-modal-title" style={{ margin: 0 }}>Chuyển đổi Khách hàng tiềm năng</h3>
+                <div style={{ fontSize: '12.5px', color: '#64748b', marginTop: '3px' }}>
+                  Đồng bộ dữ liệu sang Khách hàng CRM và Cơ hội bán hàng không cần nhập lại
                 </div>
               </div>
               <button
@@ -4477,39 +4468,13 @@ export default function LeadFormsPage() {
                 onClick={() => !isConverting && setIsConvertModalOpen(false)}
                 title="Đóng"
               >
-                <IconX />
+                ×
               </button>
             </div>
 
             <div className="convert-modal-body">
               {/* Banner thông báo tự động mapping dữ liệu */}
-              <div
-                style={{
-                  background: 'linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)',
-                  border: '1px solid #bfdbfe',
-                  borderRadius: '10px',
-                  padding: '12px 16px',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px',
-                }}
-              >
-                <div
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '50%',
-                    background: '#2563eb',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    flexShrink: 0,
-                  }}
-                >
-                </div>
+              <div className="convert-autofill-banner">
                 <div style={{ fontSize: '13px', color: '#1e3a8a', lineHeight: 1.5 }}>
                   <strong>Auto-fill thông minh đã kích hoạt:</strong> Toàn bộ dữ liệu của Lead{' '}
                   <strong>[{convertingLead.code}] {convertingLead.full_name}</strong> (Tên, SĐT, Email, Công ty, Nhu cầu) đã được tự động điền sẵn vào Khách hàng và Cơ hội bên dưới. Bạn không phải mất thời gian hỏi và nhập lại thông tin khách hàng.
@@ -4700,17 +4665,8 @@ export default function LeadFormsPage() {
                     </div>
 
                     {/* Khối người liên hệ đại diện */}
-                    <div
-                      style={{
-                        gridColumn: 'span 2',
-                        background: '#f8fafc',
-                        border: '1px dashed #cbd5e1',
-                        borderRadius: '8px',
-                        padding: '12px 14px',
-                        marginTop: '4px',
-                      }}
-                    >
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '10px' }}>
+                    <div className="convert-contact-subpanel">
+                      <div className="convert-contact-subpanel-title">
                         Thông tin Người liên hệ đại diện (Tự động thêm vào Danh bạ Người liên hệ)
                       </div>
                       <div className="convert-form-grid" style={{ gap: '10px' }}>
@@ -4801,7 +4757,6 @@ export default function LeadFormsPage() {
               <div className="convert-section-panel">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <h4 className="convert-section-title">
-                    <IconTrendingUp />
                     <span>2. Cơ hội bán hàng (Deal / Opportunity)</span>
                   </h4>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: '#2563eb' }}>
@@ -4940,7 +4895,6 @@ export default function LeadFormsPage() {
                 disabled={isConverting}
                 id="btn-confirm-lead-conversion"
               >
-                <IconCheck />
                 <span>{isConverting ? 'Đang chuyển đổi...' : 'Xác nhận chuyển đổi'}</span>
               </button>
             </div>
@@ -4960,8 +4914,6 @@ export default function LeadFormsPage() {
             id="modal-conversion-success"
           >
             <div className="convert-success-modal-body">
-              <div className="convert-success-icon-badge">
-              </div>
               <div>
                 <h3 style={{ margin: '0 0 6px 0', fontSize: '20px', color: '#0f172a' }}>
                   Chuyển đổi Lead thành công!
