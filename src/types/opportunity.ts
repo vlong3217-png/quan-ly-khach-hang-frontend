@@ -23,17 +23,108 @@ export interface Opportunity {
   expected_close_date: string // Ngày dự kiến chốt (YYYY-MM-DD)
   source: string // Nguồn cơ hội
   status: OpportunityStatus
-  lost_reason?: string
-  competitor_id?: string
+  // ── S5-05: Đóng Thắng / Thua & Mở lại cơ hội ──
+  actual_revenue?: number // Giá trị chốt thực tế (khi đóng thắng)
+  actual_close_date?: string // Ngày ký hợp đồng / ngày chốt thực tế (YYYY-MM-DD)
+  win_reason_id?: string // Lý do thắng
+  win_reason_name?: string
+  win_notes?: string
+  lost_reason_id?: string // Lý do thua
+  lost_reason?: string // Tên/nội dung lý do thua
+  competitor_id?: string // Đối thủ thắng thầu nếu có
+  competitor_name?: string
+  loss_notes?: string
+  closed_at?: string // Thời điểm đóng cơ hội
+  closed_by_id?: number
+  closed_by_name?: string
+  reopened_at?: string // Thời điểm mở lại
+  reopened_by_id?: number
+  reopened_by_name?: string
+  reopen_reason?: string // Lý do mở lại bắt buộc
   owner_id: number
   owner_name: string
   team_id?: number
   team_name?: string
   description?: string
   lead_id?: string // ID Lead nguồn nếu được chuyển đổi từ Lead
+  // ── S5-07: Cảnh báo cơ hội đình trệ (Stalled Opportunity Alert) ──
+  last_activity_at?: string // Thời điểm hoạt động / tương tác gần nhất
+  days_in_stage?: number // Số ngày nằm ở giai đoạn hiện tại mà chưa chuyển tiếp
+  is_stalled?: boolean // Đang bị đình trệ
+  stalled_reason?: string // Lý do đình trệ (quá hạn giai đoạn, không có hoạt động, quá hạn chốt)
   created_at: string
   updated_at: string
 }
+
+export interface StalledOpportunityConfig {
+  max_days_in_stage: number // Ngưỡng số ngày tối đa ở 1 giai đoạn trước khi báo động (mặc định 7 ngày)
+  max_days_inactive: number // Ngưỡng số ngày tối đa không có tương tác / hoạt động (mặc định 5 ngày)
+}
+
+export interface StalledOpportunityAlert {
+  opportunity: Opportunity
+  stalled_type: 'INACTIVE_LONG' | 'STAGE_OVERDUE' | 'CLOSE_DATE_PASSED'
+  severity: 'WARNING' | 'CRITICAL'
+  days_stalled: number
+  message: string
+  suggested_action: string
+}
+
+/**
+ * ── S5-08: Phân bổ lại cơ hội (Reassign Opportunity) ──
+ */
+export interface ReassignOpportunityPayload {
+  new_owner_id: number
+  new_owner_name: string
+  new_team_id?: number
+  new_team_name?: string
+  reassign_reason: string // Bắt buộc lý do (nghỉ ốm dài ngày, quá tải, chuyển địa bàn, theo yêu cầu khách hàng)
+  transfer_notes?: string // Ghi chú bàn giao công việc / đầu mối
+  transfer_open_tasks?: boolean // Chuyển giao toàn bộ công việc chưa hoàn thành sang nhân viên mới
+  reassigned_by_id?: number
+  reassigned_by_name?: string
+}
+
+export interface OpportunityReassignHistory {
+  id: string
+  opportunity_id: string
+  from_owner_id: number
+  from_owner_name: string
+  to_owner_id: number
+  to_owner_name: string
+  reassign_reason: string
+  transfer_notes?: string
+  transferred_tasks_count?: number
+  reassigned_by_name: string
+  created_at: string
+}
+
+export interface CloseOpportunityWonPayload {
+  actual_revenue: number // Bắt buộc
+  actual_close_date: string // Bắt buộc ngày ký (YYYY-MM-DD)
+  win_reason_id?: string
+  win_notes?: string
+  closed_by_id?: number
+  closed_by_name?: string
+}
+
+export interface CloseOpportunityLostPayload {
+  lost_reason_id: string // Bắt buộc chọn lý do thua
+  lost_reason: string
+  competitor_id?: string // Đối thủ thắng thầu nếu có
+  competitor_name?: string
+  loss_notes?: string
+  closed_by_id?: number
+  closed_by_name?: string
+}
+
+export interface ReopenOpportunityPayload {
+  reopen_reason: string // Bắt buộc nhập lý do mở lại
+  target_stage_id?: string
+  reopened_by_id?: number
+  reopened_by_name?: string
+}
+
 
 export interface CreateOpportunityPayload {
   title: string

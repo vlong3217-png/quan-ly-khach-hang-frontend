@@ -26,18 +26,40 @@ import type {
   CreateLeadPayload,
   ExcelLeadRow,
   ImportLeadResult,
+  LeadAssignmentStatus,
+  LeadSlaStatus,
+  SavedLeadFilter,
+  FollowUpTiming,
 } from '../../types/lead.ts'
 import type { CustomerEnterprise } from '../../types/customer.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
 import './LeadFormsPage.css'
 
-/* ──────────── Inline Icons ──────────── */
+
+
+const IconAlertTriangle = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+)
+
+const IconShieldAlert = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
+  </svg>
+)
+
 const IconPlus = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="12" y1="5" x2="12" y2="19" />
     <line x1="5" y1="12" x2="19" y2="12" />
   </svg>
 )
+
 
 const IconSearch = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -223,12 +245,6 @@ const IconUserCheck = () => (
   </svg>
 )
 
-const IconTrendingUp = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-    <polyline points="17 6 23 6 23 12" />
-  </svg>
-)
 
 const LEAD_TIER_CONFIG: Record<LeadScoreTier, { label: string; emoji: string; className: string }> = {
   HOT: { label: 'Nóng (Hot)', emoji: '', className: 'hot' },
@@ -244,11 +260,28 @@ const LEAD_SEGMENT_CONFIG: Record<LeadSegment, { label: string; className: strin
   UNCLASSIFIED: { label: 'Chưa phân nhóm', className: 'unqualified', icon: '' },
 }
 
+/* ──────────── User Story S4-07: Cấu hình SLA & Phân bổ ──────────── */
+const LEAD_SLA_CONFIG: Record<LeadSlaStatus, { label: string; bg: string; color: string; border: string }> = {
+  ON_TIME: { label: 'Đúng hạn SLA', bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
+  WARNING: { label: 'Sắp hết hạn (<4h)', bg: '#fefce8', color: '#854d0e', border: '#fef08a' },
+  OVERDUE: { label: 'Quá hạn SLA (Cảnh báo)', bg: '#fef2f2', color: '#991b1b', border: '#fecaca' },
+}
+
+const LEAD_ASSIGNMENT_LABELS: Record<LeadAssignmentStatus, { label: string; bg: string; color: string }> = {
+  PENDING: { label: 'Chờ tiếp nhận', bg: '#fef3c7', color: '#b45309' },
+  ACCEPTED: { label: 'Đã nhận chăm sóc', bg: '#ecfdf5', color: '#047857' },
+  REJECTED: { label: 'Đã từ chối', bg: '#fef2f2', color: '#b91c1c' },
+  UNASSIGNED: { label: 'Hàng chờ phân bổ', bg: '#f1f5f9', color: '#475569' },
+}
+
 export default function LeadFormsPage() {
   const { user } = useAuth()
   const canManageScoring = user?.role === 'ADMIN' || user?.role === 'MANAGER'
+  const isManagerOrAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER'
 
-  const [activeTab, setActiveTab] = useState<'LEADS_LIST' | 'LEAD_SCORING' | 'LEAD_CONVERSION' | 'LEAD_INTERACTIONS' | 'IMPORT_EXCEL' | 'FORMS' | 'SUBMISSIONS'>('LEADS_LIST')
+  const [activeTab, setActiveTab] = useState<
+    'LEADS_LIST' | 'LEAD_SLA_DISTRIBUTION' | 'LEAD_SCORING' | 'LEAD_CONVERSION' | 'LEAD_INTERACTIONS' | 'IMPORT_EXCEL' | 'FORMS' | 'SUBMISSIONS'
+  >('LEADS_LIST')
 
   // Data states
   const [leads, setLeads] = useState<Lead[]>([])
@@ -257,10 +290,41 @@ export default function LeadFormsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [toast, setToast] = useState<{ message: string; isError?: boolean } | null>(null)
 
-  // Bộ lọc danh sách Leads
+  // ── S4-09: Bộ lọc nâng cao & Bộ lọc lưu sẵn cho NVKD ──
   const [leadSearchQuery, setLeadSearchQuery] = useState('')
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>('ALL')
   const [leadSourceFilter, setLeadSourceFilter] = useState<string>('ALL')
+  const [leadSlaFilter, setLeadSlaFilter] = useState<string>('ALL')
+  const [leadAssignFilter, setLeadAssignFilter] = useState<string>('ALL')
+  const [leadScoreTierFilter, setLeadScoreTierFilter] = useState<string>('ALL')
+  const [leadTimingFilter, setLeadTimingFilter] = useState<FollowUpTiming>('ALL')
+  const [onlyMyLeadsFilter, setOnlyMyLeadsFilter] = useState<boolean>(false)
+  const [activeFilterPresetId, setActiveFilterPresetId] = useState<string | null>(null)
+
+  // ── Phân trang danh sách Lead ──
+  const [leadCurrentPage, setLeadCurrentPage] = useState(1)
+  const [leadPageSize, setLeadPageSize] = useState(10)
+
+  // Danh sách các bộ lọc lưu sẵn
+  const [savedFiltersList, setSavedFiltersList] = useState<SavedLeadFilter[]>(() =>
+    leadService.getSavedFilters()
+  )
+  const [isSaveFilterModalOpen, setIsSaveFilterModalOpen] = useState(false)
+  const [newFilterNameInput, setNewFilterNameInput] = useState('')
+
+  // ── S4-07: State cho Nhận / Từ chối Lead & Ràng buộc SLA ──
+  const [rejectingLead, setRejectingLead] = useState<Lead | null>(null)
+  const [rejectionReasonInput, setRejectionReasonInput] = useState('')
+  const [rejectionReasonError, setRejectionReasonError] = useState('')
+  const [isRejectingLoading, setIsRejectingLoading] = useState(false)
+  const [acceptingLeadId, setAcceptingLeadId] = useState<string | null>(null)
+
+  // Modal Phân bổ lại Lead (Trưởng nhóm Re-assign)
+  const [reassigningLead, setReassigningLead] = useState<Lead | null>(null)
+  const [reassignOwnerId, setReassignOwnerId] = useState<number>(1)
+  const [reassignSlaHours, setReassignSlaHours] = useState<number>(24)
+  const [isReassigningLoading, setIsReassigningLoading] = useState(false)
+
 
   // Bộ lọc danh sách form (S4-01)
   const [searchQuery, setSearchQuery] = useState('')
@@ -423,7 +487,7 @@ export default function LeadFormsPage() {
     loadData()
   }, [])
 
-  // Thống kê số liệu tổng quan
+  // Thống kê số liệu tổng quan & SLA (S4-07)
   const stats = useMemo(() => {
     const totalLeads = leads.length
     const newLeads = leads.filter((l) => l.status === 'NEW').length
@@ -431,6 +495,13 @@ export default function LeadFormsPage() {
     const convertedLeads = leads.filter((l) => l.status === 'CONVERTED').length
     const totalForms = forms.length
     const activeForms = forms.filter((f) => f.is_active).length
+
+    // S4-07 metrics
+    const pendingAssignmentLeads = leads.filter((l) => l.assignment_status === 'PENDING').length
+    const unassignedLeads = leads.filter((l) => l.assignment_status === 'UNASSIGNED' || !l.owner_id).length
+    const overdueSlaLeads = leads.filter((l) => l.sla_status === 'OVERDUE' && l.assignment_status !== 'ACCEPTED').length
+    const warningSlaLeads = leads.filter((l) => l.sla_status === 'WARNING' && l.assignment_status !== 'ACCEPTED').length
+
     return {
       totalLeads,
       newLeads,
@@ -438,23 +509,210 @@ export default function LeadFormsPage() {
       convertedLeads,
       totalForms,
       activeForms,
+      pendingAssignmentLeads,
+      unassignedLeads,
+      overdueSlaLeads,
+      warningSlaLeads,
     }
   }, [leads, forms])
 
-  // Lọc danh sách Leads
+  // Lọc danh sách Leads (S4-09: Bộ lọc linh hoạt & Lọc theo lịch cần gọi)
   const filteredLeads = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const endOfToday = new Date()
+    endOfToday.setHours(23, 59, 59, 999)
+
+    const endOfWeek = new Date()
+    const dayOfWeek = endOfWeek.getDay() || 7
+    endOfWeek.setDate(endOfWeek.getDate() + (7 - dayOfWeek))
+    endOfWeek.setHours(23, 59, 59, 999)
+
     return leads.filter((l) => {
+      // 1. Tìm kiếm từ khóa
+      const q = leadSearchQuery.toLowerCase().trim()
       const matchSearch =
-        l.full_name.toLowerCase().includes(leadSearchQuery.toLowerCase()) ||
-        l.email.toLowerCase().includes(leadSearchQuery.toLowerCase()) ||
-        l.phone.includes(leadSearchQuery) ||
-        l.company.toLowerCase().includes(leadSearchQuery.toLowerCase()) ||
-        l.code.toLowerCase().includes(leadSearchQuery.toLowerCase())
+        !q ||
+        l.full_name.toLowerCase().includes(q) ||
+        l.email.toLowerCase().includes(q) ||
+        l.phone.includes(q) ||
+        l.company.toLowerCase().includes(q) ||
+        l.code.toLowerCase().includes(q)
+
+      // 2. Trạng thái & Nguồn & SLA & Phân bổ
       const matchStatus = leadStatusFilter === 'ALL' || l.status === leadStatusFilter
       const matchSource = leadSourceFilter === 'ALL' || l.source === leadSourceFilter
-      return matchSearch && matchStatus && matchSource
+      const matchSla = leadSlaFilter === 'ALL' || l.sla_status === leadSlaFilter
+      const matchAssign =
+        leadAssignFilter === 'ALL' ||
+        (leadAssignFilter === 'UNASSIGNED'
+          ? l.assignment_status === 'UNASSIGNED' || !l.owner_id
+          : l.assignment_status === leadAssignFilter)
+
+      // 3. Phân hạng điểm số (Score Tier)
+      const matchScoreTier = leadScoreTierFilter === 'ALL' || l.score_tier === leadScoreTierFilter
+
+      // 4. Chỉ lead của tôi (NVKD phụ trách)
+      const matchMyLeads =
+        !onlyMyLeadsFilter ||
+        (user?.id ? Number(l.owner_id) === Number(user.id) : true) ||
+        l.owner_name === user?.full_name
+
+      // 5. Lịch hẹn tương tác / Cần gọi (Follow-up timing)
+      let matchTiming = true
+      if (leadTimingFilter !== 'ALL') {
+        // Tìm lịch tương tác hẹn gọi gần nhất của Lead
+        const leadInteractions = allRecentInteractions.filter((i) => i.lead_id === l.id && i.next_action_due)
+        const latestDue = leadInteractions.length > 0 ? leadInteractions[0]?.next_action_due : null
+
+        if (latestDue) {
+          const dueDate = new Date(latestDue)
+          if (leadTimingFilter === 'TODAY') {
+            matchTiming = dueDate >= today && dueDate <= endOfToday
+          } else if (leadTimingFilter === 'OVERDUE') {
+            matchTiming = dueDate < today && l.status !== 'CONVERTED'
+          } else if (leadTimingFilter === 'THIS_WEEK') {
+            matchTiming = dueDate <= endOfWeek && dueDate >= today
+          }
+        } else {
+          // Nếu lead chưa có lịch hẹn cụ thể, nhưng là lead mới trong ngày hoặc SLA cảnh báo
+          if (leadTimingFilter === 'TODAY') {
+            matchTiming = l.status === 'NEW' || l.sla_status === 'WARNING' || l.sla_status === 'OVERDUE'
+          } else if (leadTimingFilter === 'OVERDUE') {
+            matchTiming = l.sla_status === 'OVERDUE'
+          } else {
+            matchTiming = false
+          }
+        }
+      }
+
+      return matchSearch && matchStatus && matchSource && matchSla && matchAssign && matchScoreTier && matchMyLeads && matchTiming
     })
-  }, [leads, leadSearchQuery, leadStatusFilter, leadSourceFilter])
+  }, [
+    leads,
+    leadSearchQuery,
+    leadStatusFilter,
+    leadSourceFilter,
+    leadSlaFilter,
+    leadAssignFilter,
+    leadScoreTierFilter,
+    leadTimingFilter,
+    onlyMyLeadsFilter,
+    allRecentInteractions,
+    user,
+  ])
+
+  // Reset về trang 1 khi thay đổi bộ lọc hoặc tìm kiếm
+  useEffect(() => {
+    setLeadCurrentPage(1)
+  }, [leadSearchQuery, leadStatusFilter, leadSourceFilter, leadSlaFilter, leadAssignFilter, leadScoreTierFilter, leadTimingFilter, onlyMyLeadsFilter])
+
+  // Tính toán phân trang
+  const leadTotalPages = useMemo(() => Math.max(1, Math.ceil(filteredLeads.length / leadPageSize)), [filteredLeads.length, leadPageSize])
+
+  // Đảm bảo currentPage không vượt quá totalPages (xử lý khi xóa lead hoặc thay đổi pageSize)
+  useEffect(() => {
+    if (leadCurrentPage > leadTotalPages) {
+      setLeadCurrentPage(leadTotalPages)
+    }
+  }, [leadCurrentPage, leadTotalPages])
+
+  const paginatedLeads = useMemo(() => {
+    const start = (leadCurrentPage - 1) * leadPageSize
+    return filteredLeads.slice(start, start + leadPageSize)
+  }, [filteredLeads, leadCurrentPage, leadPageSize])
+
+  // Tính danh sách số trang hiển thị (giới hạn hiển thị tối đa 7 nút trang)
+  const leadPageNumbers = useMemo(() => {
+    const pages: (number | '...')[] = []
+    if (leadTotalPages <= 7) {
+      for (let i = 1; i <= leadTotalPages; i++) pages.push(i)
+    } else {
+      pages.push(1)
+      if (leadCurrentPage > 3) pages.push('...')
+      const start = Math.max(2, leadCurrentPage - 1)
+      const end = Math.min(leadTotalPages - 1, leadCurrentPage + 1)
+      for (let i = start; i <= end; i++) pages.push(i)
+      if (leadCurrentPage < leadTotalPages - 2) pages.push('...')
+      pages.push(leadTotalPages)
+    }
+    return pages
+  }, [leadCurrentPage, leadTotalPages])
+
+  // Danh sách Lead dành riêng cho Tab Quản lý Phân bổ & SLA (S4-07)
+  const slaDistributionLeads = useMemo(() => {
+    return leads.filter((l) => {
+      // Ưu tiên hiển thị các lead chưa hoàn tất hoặc quá hạn
+      return l.status !== 'CONVERTED' && l.status !== 'JUNK'
+    })
+  }, [leads])
+
+  // ── S4-09: Handlers cho Bộ lọc lưu sẵn & Lọc thông minh ──
+  const handleApplyPresetFilter = (preset: SavedLeadFilter) => {
+    setActiveFilterPresetId(preset.id)
+    if (preset.search !== undefined) setLeadSearchQuery(preset.search)
+    if (preset.status !== undefined) setLeadStatusFilter(preset.status)
+    if (preset.source !== undefined) setLeadSourceFilter(preset.source)
+    if (preset.sla_status !== undefined) setLeadSlaFilter(preset.sla_status)
+    if (preset.assignment_status !== undefined) setLeadAssignFilter(preset.assignment_status)
+    if (preset.score_tier !== undefined) setLeadScoreTierFilter(preset.score_tier)
+    if (preset.follow_up_timing !== undefined) setLeadTimingFilter(preset.follow_up_timing)
+    if (preset.only_my_leads !== undefined) setOnlyMyLeadsFilter(preset.only_my_leads)
+
+    showToast(`Đã áp dụng bộ lọc "${preset.name}"`)
+  }
+
+  const handleResetFilters = () => {
+    setActiveFilterPresetId(null)
+    setLeadSearchQuery('')
+    setLeadStatusFilter('ALL')
+    setLeadSourceFilter('ALL')
+    setLeadSlaFilter('ALL')
+    setLeadAssignFilter('ALL')
+    setLeadScoreTierFilter('ALL')
+    setLeadTimingFilter('ALL')
+    setOnlyMyLeadsFilter(false)
+    showToast('Đã xóa tất cả bộ lọc, trở về mặc định.')
+  }
+
+  const handleSaveCurrentFilter = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newFilterNameInput.trim()) {
+      showToast('Vui lòng nhập tên cho bộ lọc lưu sẵn!', true)
+      return
+    }
+
+    const saved = leadService.saveCustomFilter({
+      name: newFilterNameInput.trim(),
+      icon: '',
+      search: leadSearchQuery || undefined,
+      status: leadStatusFilter !== 'ALL' ? leadStatusFilter : undefined,
+      source: leadSourceFilter !== 'ALL' ? leadSourceFilter : undefined,
+      sla_status: leadSlaFilter !== 'ALL' ? leadSlaFilter : undefined,
+      assignment_status: leadAssignFilter !== 'ALL' ? leadAssignFilter : undefined,
+      score_tier: leadScoreTierFilter !== 'ALL' ? leadScoreTierFilter : undefined,
+      follow_up_timing: leadTimingFilter !== 'ALL' ? leadTimingFilter : undefined,
+      only_my_leads: onlyMyLeadsFilter,
+    })
+
+    setSavedFiltersList((prev) => [saved, ...prev])
+    setActiveFilterPresetId(saved.id)
+    setIsSaveFilterModalOpen(false)
+    setNewFilterNameInput('')
+    showToast(`Đã lưu thành công bộ lọc "${saved.name}"!`)
+  }
+
+  const handleDeleteCustomFilter = (filterId: string, filterName: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (window.confirm(`Bạn có chắc muốn xóa bộ lọc đã lưu "${filterName}"?`)) {
+      leadService.deleteCustomFilter(filterId)
+      setSavedFiltersList((prev) => prev.filter((f) => f.id !== filterId))
+      if (activeFilterPresetId === filterId) {
+        setActiveFilterPresetId(null)
+      }
+      showToast(`Đã xóa bộ lọc "${filterName}".`)
+    }
+  }
 
   // ── S4-04: Thống kê & Lọc Chấm điểm Lead ──
   const scoringStats = useMemo(() => {
@@ -899,8 +1157,132 @@ export default function LeadFormsPage() {
     }
   }
 
+  // ── S4-07: Xử lý Nhân viên kinh doanh nhận Lead ──
+  const handleAcceptLead = async (lead: Lead) => {
+    try {
+      setAcceptingLeadId(lead.id)
+      const currentUserName = user?.full_name || 'Nhân viên kinh doanh'
+      const currentUserId = typeof user?.id === 'number' ? user.id : 1
+      const updated = await leadService.acceptLead(lead.id, currentUserId, currentUserName)
+      setLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)))
+
+      // Ghi nhận tương tác
+      leadInteractionService
+        .recordLeadAccepted(lead.id, currentUserName)
+        .then((act) => setAllRecentInteractions((prev) => [act, ...prev]))
+        .catch(() => { })
+
+      showToast(`Bạn đã nhận chăm sóc Lead "${updated.full_name}" thành công! Trạng thái chuyển sang "Đang chăm sóc".`)
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Không thể tiếp nhận Lead', true)
+    } finally {
+      setAcceptingLeadId(null)
+    }
+  }
+
+  // Mở modal từ chối Lead (S4-07: Bắt buộc lý do)
+  const handleOpenRejectModal = (lead: Lead) => {
+    setRejectingLead(lead)
+    setRejectionReasonInput('')
+    setRejectionReasonError('')
+  }
+
+  // Xác nhận từ chối Lead (S4-07)
+  const handleConfirmRejectLead = async () => {
+    if (!rejectingLead) return
+    if (!rejectionReasonInput.trim()) {
+      setRejectionReasonError('Bắt buộc nhập lý do từ chối để hệ thống chuyển lead về hàng chờ phân bổ.')
+      return
+    }
+
+    try {
+      setIsRejectingLoading(true)
+      const currentUserName = user?.full_name || 'Nhân viên kinh doanh'
+      const updated = await leadService.rejectLead(rejectingLead.id, rejectionReasonInput.trim())
+      setLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)))
+
+      // Ghi nhận tương tác
+      leadInteractionService
+        .recordLeadRejected(rejectingLead.id, currentUserName, rejectionReasonInput.trim())
+        .then((act) => setAllRecentInteractions((prev) => [act, ...prev]))
+        .catch(() => { })
+
+      showToast(`Đã từ chối Lead "${rejectingLead.full_name}". Lead đã quay lại hàng chờ phân bổ.`)
+      setRejectingLead(null)
+      setRejectionReasonInput('')
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Lỗi khi từ chối Lead', true)
+    } finally {
+      setIsRejectingLoading(false)
+    }
+  }
+
+  // Mở modal Trưởng nhóm phân bổ lại Lead (S4-07)
+  const handleOpenReassignModal = (lead: Lead) => {
+    setReassigningLead(lead)
+    setReassignOwnerId(lead.owner_id || 1)
+    setReassignSlaHours(lead.sla_hours || 24)
+  }
+
+  // Xác nhận phân bổ lại Lead (S4-07)
+  const handleConfirmReassignLead = async () => {
+    if (!reassigningLead) return
+    const ownerNameMap: Record<number, string> = {
+      1: 'Nguyễn Văn An',
+      2: 'Trần Thị Bình',
+      3: 'Lê Hoàng Cường',
+      4: 'Lưu Quang Trường',
+    }
+    const newOwnerName = ownerNameMap[reassignOwnerId] || 'Nhân viên kinh doanh'
+
+    try {
+      setIsReassigningLoading(true)
+      const updated = await leadService.reassignLead(
+        reassigningLead.id,
+        reassignOwnerId,
+        newOwnerName,
+        reassignSlaHours
+      )
+      setLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)))
+
+      // Ghi nhận tương tác
+      leadInteractionService
+        .createInteraction({
+          lead_id: reassigningLead.id,
+          type: 'SLA_ASSIGNMENT',
+          title: `Phân bổ lại Lead cho ${newOwnerName}`,
+          content: `Trưởng nhóm đã chỉ định ${newOwnerName} phụ trách Lead với cam kết SLA ${reassignSlaHours}h.`,
+          performed_by_name: user?.full_name || 'Trưởng nhóm',
+          outcome: 'Tái phân bổ SLA',
+        })
+        .then((act) => setAllRecentInteractions((prev) => [act, ...prev]))
+        .catch(() => { })
+
+      showToast(`Đã phân bổ Lead "${updated.full_name}" cho ${newOwnerName} với hạn SLA ${reassignSlaHours}h!`)
+      setReassigningLead(null)
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Lỗi khi phân bổ Lead', true)
+    } finally {
+      setIsReassigningLoading(false)
+    }
+  }
+
+  // Gửi cảnh báo SLA quá hạn cho Trưởng nhóm (S4-07)
+  const handleAlertManagerForOverdue = (lead: Lead) => {
+    leadInteractionService
+      .recordSlaOverdueAlert(lead.id, lead.full_name, lead.owner_name || 'Nhân viên phụ trách')
+      .then((act) => {
+        setAllRecentInteractions((prev) => [act, ...prev])
+        showToast(`Đã gửi cảnh báo quá hạn SLA của Lead "${lead.full_name}" cho Trưởng nhóm thành công!`)
+      })
+      .catch(() => {
+        showToast('Không thể gửi cảnh báo lúc này', true)
+      })
+  }
+
   // Xóa Lead
   const handleDeleteLead = async () => {
+
     if (!deletingLead) return
     try {
       await leadService.deleteLead(deletingLead.id)
@@ -1162,6 +1544,28 @@ export default function LeadFormsPage() {
             <span>Nhập từ Excel</span>
           </button>
 
+          {/* Nút Xem Phân bổ & SLA (S4-07) */}
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setActiveTab('LEAD_SLA_DISTRIBUTION')}
+            id="btn-nav-lead-sla"
+            title="Quản lý Hàng chờ & Ràng buộc SLA phản hồi của Lead"
+            style={{
+              color: stats.overdueSlaLeads > 0 ? '#b91c1c' : '#b45309',
+              borderColor: stats.overdueSlaLeads > 0 ? '#fca5a5' : '#fde68a',
+              background: stats.overdueSlaLeads > 0 ? '#fef2f2' : '#fefce8',
+              fontWeight: 600,
+            }}
+          >
+            <span>Phân bổ & SLA</span>
+            {stats.overdueSlaLeads > 0 && (
+              <span style={{ background: '#ef4444', color: '#fff', fontSize: '10.5px', padding: '1px 6px', borderRadius: '10px' }}>
+                {stats.overdueSlaLeads}
+              </span>
+            )}
+          </button>
+
           {/* Nút Xem chấm điểm & phân loại (S4-04) */}
           <button
             type="button"
@@ -1172,6 +1576,7 @@ export default function LeadFormsPage() {
           >
             <span>Chấm điểm Lead</span>
           </button>
+
 
           {/* Nút Chuyển đổi Lead sang Khách hàng & Cơ hội (S4-05) */}
           <button
@@ -1259,6 +1664,29 @@ export default function LeadFormsPage() {
 
         <button
           type="button"
+          className={`lead-tab-btn ${activeTab === 'LEAD_SLA_DISTRIBUTION' ? 'active' : ''}`}
+          onClick={() => setActiveTab('LEAD_SLA_DISTRIBUTION')}
+          id="tab-btn-lead-sla-distribution"
+          style={{
+            borderColor: activeTab === 'LEAD_SLA_DISTRIBUTION' ? '#f59e0b' : undefined,
+          }}
+        >
+          <span>Phân bổ & SLA</span>
+          {stats.overdueSlaLeads > 0 ? (
+            <span className="tab-badge" style={{ background: '#fef2f2', color: '#b91c1c', borderColor: '#fca5a5' }}>
+              {stats.overdueSlaLeads}
+            </span>
+          ) : stats.pendingAssignmentLeads > 0 ? (
+            <span className="tab-badge" style={{ background: '#fef3c7', color: '#b45309', borderColor: '#fde68a' }}>
+              {stats.pendingAssignmentLeads}
+            </span>
+          ) : (
+            <span className="tab-badge">{leads.length}</span>
+          )}
+        </button>
+
+        <button
+          type="button"
           className={`lead-tab-btn ${activeTab === 'LEAD_SCORING' ? 'active' : ''}`}
           onClick={() => setActiveTab('LEAD_SCORING')}
           id="tab-btn-lead-scoring"
@@ -1268,6 +1696,7 @@ export default function LeadFormsPage() {
             {scoringStats.hotCount}
           </span>
         </button>
+
 
         <button
           type="button"
@@ -1366,8 +1795,146 @@ export default function LeadFormsPage() {
                 <option value="EVENT">Hội thảo / Triển lãm</option>
                 <option value="REFERRAL">Giới thiệu</option>
               </select>
+
+              {/* S4-07: Lọc theo thời hạn SLA */}
+              <select
+                className="lead-select-filter"
+                value={leadSlaFilter}
+                onChange={(e) => setLeadSlaFilter(e.target.value)}
+                title="Lọc theo tình trạng SLA cam kết"
+              >
+                <option value="ALL">Tất cả tình trạng SLA</option>
+                <option value="ON_TIME">Đúng hạn SLA</option>
+                <option value="WARNING">Sắp hết hạn (&lt; 4h)</option>
+                <option value="OVERDUE"> Quá hạn SLA</option>
+              </select>
+
+              {/* S4-07: Lọc theo trạng thái tiếp nhận */}
+              <select
+                className="lead-select-filter"
+                value={leadAssignFilter}
+                onChange={(e) => {
+                  setLeadAssignFilter(e.target.value)
+                  setActiveFilterPresetId(null)
+                }}
+                title="Lọc theo trạng thái phân bổ"
+              >
+                <option value="ALL">Tất cả phân bổ</option>
+                <option value="PENDING">Chờ nhân viên nhận</option>
+                <option value="ACCEPTED">Đã nhận chăm sóc</option>
+                <option value="UNASSIGNED">Hàng chờ phân bổ lại</option>
+              </select>
+
+              {/* S4-09: Lọc theo Hạng điểm số (Hot/Warm/Cold) */}
+              <select
+                className="lead-select-filter"
+                value={leadScoreTierFilter}
+                onChange={(e) => {
+                  setLeadScoreTierFilter(e.target.value)
+                  setActiveFilterPresetId(null)
+                }}
+                title="Lọc theo điểm tiềm năng"
+              >
+                <option value="ALL">Tất cả phân hạng điểm</option>
+                <option value="HOT">Lead Hot (≥ 80đ)</option>
+                <option value="WARM">Lead Warm (50 - 79đ)</option>
+                <option value="COLD">Lead Cold (&lt; 50đ)</option>
+              </select>
+
+              {/* S4-09: Lọc theo Lịch hẹn gọi (Sáng mở máy biết gọi ai) */}
+              <select
+                className="lead-select-filter highlight-filter"
+                value={leadTimingFilter}
+                onChange={(e) => {
+                  setLeadTimingFilter(e.target.value as FollowUpTiming)
+                  setActiveFilterPresetId(null)
+                }}
+                title="Bộ lọc lịch hẹn gọi chăm sóc"
+                style={{ fontWeight: 600, color: leadTimingFilter !== 'ALL' ? '#2563eb' : undefined }}
+              >
+                <option value="ALL">Mọi lịch liên hệ</option>
+                <option value="TODAY">Cần gọi hôm nay</option>
+                <option value="OVERDUE">Quá hạn liên hệ</option>
+                <option value="THIS_WEEK">Trong tuần này</option>
+              </select>
+
+              {/* S4-09: Tùy chọn chỉ xem Lead do mình phụ trách */}
+              <label className="only-my-leads-checkbox" title="Chỉ lọc các Lead được giao cho bạn">
+                <input
+                  type="checkbox"
+                  checked={onlyMyLeadsFilter}
+                  onChange={(e) => {
+                    setOnlyMyLeadsFilter(e.target.checked)
+                    setActiveFilterPresetId(null)
+                  }}
+                />
+                <span>Lead của tôi</span>
+              </label>
+
+              {/* Nút Xóa nhanh bộ lọc */}
+              {(leadSearchQuery ||
+                leadStatusFilter !== 'ALL' ||
+                leadSourceFilter !== 'ALL' ||
+                leadSlaFilter !== 'ALL' ||
+                leadAssignFilter !== 'ALL' ||
+                leadScoreTierFilter !== 'ALL' ||
+                leadTimingFilter !== 'ALL' ||
+                onlyMyLeadsFilter) && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={handleResetFilters}
+                    title="Xóa toàn bộ tiêu chí lọc"
+                    style={{ padding: '6px 10px', fontSize: '12px' }}
+                  >
+                    Đặt lại
+                  </button>
+                )}
+
+              {/* Nút Lưu bộ lọc hiện tại */}
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => setIsSaveFilterModalOpen(true)}
+                title="Lưu bộ lọc hiện tại để dùng lại mỗi buổi sáng (S4-09)"
+                style={{ padding: '6px 12px', fontSize: '12px', whiteSpace: 'nowrap' }}
+                id="btn-open-save-filter-modal"
+              >
+                Lưu bộ lọc
+              </button>
             </div>
           </div>
+
+          {/* ── S4-09: Thanh Bộ Lọc Lưu Sẵn (Saved Filters & Quick Morning Presets) ── */}
+          <div className="lead-saved-filters-bar" id="lead-saved-filters-bar">
+            <span className="saved-filters-label">Bộ lọc lưu sẵn:</span>
+            <div className="saved-filters-pills">
+              {savedFiltersList.map((filter) => {
+                const isActive = activeFilterPresetId === filter.id
+                return (
+                  <div
+                    key={filter.id}
+                    className={`saved-filter-pill ${isActive ? 'active' : ''}`}
+                    onClick={() => handleApplyPresetFilter(filter)}
+                    title={`Nhấp để áp dụng bộ lọc: ${filter.name}`}
+                  >
+                    <span className="pill-name">{filter.name}</span>
+                    {!filter.is_preset && (
+                      <button
+                        type="button"
+                        className="btn-delete-saved-filter"
+                        onClick={(e) => handleDeleteCustomFilter(filter.id, filter.name, e)}
+                        title="Xóa bộ lọc này"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
 
           {isLoading ? (
             <div className="lead-loading-box">
@@ -1412,7 +1979,7 @@ export default function LeadFormsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredLeads.map((l, index) => {
+                  {paginatedLeads.map((l, index) => {
                     const statusCfg = LEAD_STATUS_CONFIG[l.status]
                     const tier = l.score_tier || 'WARM'
                     const seg = l.segment || 'HIGH_POTENTIAL'
@@ -1420,7 +1987,7 @@ export default function LeadFormsPage() {
                     return (
                       <tr key={l.id} id={`lead-row-${l.id}`}>
                         <td style={{ textAlign: 'center' }}>
-                          <span className="lead-stt-badge">{index + 1}</span>
+                          <span className="lead-stt-badge">{(leadCurrentPage - 1) * leadPageSize + index + 1}</span>
                         </td>
 
                         <td>
@@ -1455,9 +2022,33 @@ export default function LeadFormsPage() {
                         </td>
 
                         <td>
-                          <span style={{ fontSize: '13px', color: '#334155' }}>
-                            {l.owner_name || 'Chưa phân công'}
-                          </span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                            <span style={{ fontSize: '13px', color: '#334155', fontWeight: 500 }}>
+                              {l.owner_name || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Chưa phân công</span>}
+                            </span>
+
+                            {/* S4-07: SLA & Trạng thái phân bổ */}
+                            {l.assignment_status === 'UNASSIGNED' || !l.owner_id ? (
+                              <span className="sla-badge unassigned" title="Lead đang nằm trong hàng chờ phân bổ">
+                                Hàng chờ phân bổ
+                              </span>
+                            ) : l.assignment_status === 'PENDING' ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <span className={`sla-badge ${l.sla_status === 'OVERDUE' ? 'overdue' : l.sla_status === 'WARNING' ? 'warning' : 'pending'}`}>
+                                  {l.sla_status === 'OVERDUE' ? ' Quá hạn SLA' : l.sla_status === 'WARNING' ? ' Sắp hết hạn' : ' Chờ nhận (SLA 24h)'}
+                                </span>
+                                {l.sla_status === 'OVERDUE' && (
+                                  <span style={{ fontSize: '10.5px', color: '#b91c1c', fontWeight: 600 }}>
+                                    Quá hạn nhận lead
+                                  </span>
+                                )}
+                              </div>
+                            ) : l.assignment_status === 'ACCEPTED' ? (
+                              <span className="sla-badge accepted">
+                                Đã nhận ({l.sla_hours || 24}h SLA)
+                              </span>
+                            ) : null}
+                          </div>
                         </td>
 
                         <td style={{ textAlign: 'center' }}>
@@ -1502,7 +2093,47 @@ export default function LeadFormsPage() {
                         </td>
 
                         <td style={{ textAlign: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flexWrap: 'wrap' }}>
+                            {/* S4-07: Action Nhận Lead nếu đang chờ hoặc chưa nhận */}
+                            {(l.assignment_status === 'PENDING' || l.status === 'NEW') && l.assignment_status !== 'ACCEPTED' && (
+                              <button
+                                type="button"
+                                className="btn-action-pill accept"
+                                onClick={() => handleAcceptLead(l)}
+                                disabled={acceptingLeadId === l.id}
+                                title="Nhận chăm sóc Lead này (Chuyển sang Đang chăm sóc theo SLA)"
+                                id={`btn-accept-lead-${l.id}`}
+                              >
+                                {acceptingLeadId === l.id ? '...' : 'Nhận'}
+                              </button>
+                            )}
+
+                            {/* S4-07: Action Từ chối Lead (bắt buộc nhập lý do) */}
+                            {(l.assignment_status === 'PENDING' || (l.status === 'NEW' && l.owner_id)) && (
+                              <button
+                                type="button"
+                                className="btn-action-pill reject"
+                                onClick={() => handleOpenRejectModal(l)}
+                                title="Từ chối nhận Lead này (Bắt buộc lý do để quay lại hàng chờ)"
+                                id={`btn-reject-lead-${l.id}`}
+                              >
+                                Từ chối
+                              </button>
+                            )}
+
+                            {/* S4-07: Nếu quá hạn SLA -> Có nút Cảnh báo Trưởng nhóm */}
+                            {l.sla_status === 'OVERDUE' && l.assignment_status !== 'ACCEPTED' && (
+                              <button
+                                type="button"
+                                className="btn-action-icon alert"
+                                onClick={() => handleAlertManagerForOverdue(l)}
+                                title="Gửi cảnh báo quá hạn SLA phản hồi tới Trưởng nhóm"
+                                style={{ color: '#b91c1c', borderColor: '#fca5a5', background: '#fef2f2' }}
+                              >
+                                <IconAlertTriangle />
+                              </button>
+                            )}
+
                             {/* Nút Chuyển đổi (S4-08) */}
                             {l.status === 'CONVERTED' ? (
                               <button
@@ -1512,7 +2143,7 @@ export default function LeadFormsPage() {
                                 title={`Đã chuyển đổi sang Khách hàng: ${l.converted_customer_name || 'Khách hàng CRM'} (Mã KH: ${l.converted_customer_code || 'N/A'})${l.converted_opportunity_title ? ` | Cơ hội: ${l.converted_opportunity_title}` : ''}. Click để xem hồ sơ.`}
                                 onClick={() => navigate('/dashboard/customers')}
                               >
-                                ✓ Đã chuyển
+                                Đã chuyển
                               </button>
                             ) : (
                               <button
@@ -1550,6 +2181,7 @@ export default function LeadFormsPage() {
                               <IconTarget />
                             </button>
 
+
                             {/* Nút Xóa */}
                             <button
                               type="button"
@@ -1569,12 +2201,370 @@ export default function LeadFormsPage() {
               </table>
             </div>
           )}
+
+          {/* ── Phân trang danh sách Lead ── */}
+          {!isLoading && filteredLeads.length > 0 && (
+            <div className="customer-pagination lead-pagination" id="lead-pagination">
+              <div className="customer-pagination-info">
+                <span>
+                  Hiển thị <strong>{Math.min((leadCurrentPage - 1) * leadPageSize + 1, filteredLeads.length)}</strong> –{' '}
+                  <strong>{Math.min(leadCurrentPage * leadPageSize, filteredLeads.length)}</strong> trong tổng số{' '}
+                  <strong>{filteredLeads.length}</strong> Lead
+                </span>
+                <div className="customer-pagination-size">
+                  <label htmlFor="lead-page-size-select">Hiển thị:</label>
+                  <select
+                    id="lead-page-size-select"
+                    value={leadPageSize}
+                    onChange={(e) => {
+                      setLeadPageSize(Number(e.target.value))
+                      setLeadCurrentPage(1)
+                    }}
+                    className="customer-pagination-select"
+                  >
+                    <option value={10}>10 / trang</option>
+                    <option value={20}>20 / trang</option>
+                    <option value={50}>50 / trang</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="customer-pagination-controls">
+                <button
+                  type="button"
+                  disabled={leadCurrentPage === 1}
+                  onClick={() => setLeadCurrentPage(1)}
+                  className="customer-page-btn nav-btn"
+                  title="Trang đầu tiên"
+                >
+                  «
+                </button>
+                <button
+                  type="button"
+                  disabled={leadCurrentPage === 1}
+                  onClick={() => setLeadCurrentPage((p) => Math.max(p - 1, 1))}
+                  className="customer-page-btn nav-btn"
+                  title="Trang trước"
+                >
+                  ‹
+                </button>
+
+                <div className="customer-page-numbers">
+                  {leadPageNumbers.map((pageNum, idx) =>
+                    pageNum === '...' ? (
+                      <span key={`ellipsis-${idx}`} className="lead-pagination-ellipsis">…</span>
+                    ) : (
+                      <button
+                        key={pageNum}
+                        type="button"
+                        className={`customer-page-btn number-btn ${pageNum === leadCurrentPage ? 'active' : ''}`}
+                        onClick={() => setLeadCurrentPage(pageNum as number)}
+                      >
+                        {pageNum}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={leadCurrentPage >= leadTotalPages}
+                  onClick={() => setLeadCurrentPage((p) => Math.min(p + 1, leadTotalPages))}
+                  className="customer-page-btn nav-btn"
+                  title="Trang tiếp theo"
+                >
+                  ›
+                </button>
+                <button
+                  type="button"
+                  disabled={leadCurrentPage >= leadTotalPages}
+                  onClick={() => setLeadCurrentPage(leadTotalPages)}
+                  className="customer-page-btn nav-btn"
+                  title="Trang cuối cùng"
+                >
+                  »
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          TAB 2: PHÂN LOẠI & CHẤM ĐIỂM LEAD (USER STORY S4-04)
+          TAB: QUẢN LÝ PHÂN BỔ & RÀNG BUỘC SLA PHẢN HỒI (USER STORY S4-07)
           ───────────────────────────────────────────────────────────── */}
+      {activeTab === 'LEAD_SLA_DISTRIBUTION' && (
+        <div className="lead-card-panel lead-sla-panel" id="lead-sla-panel">
+          {/* Header Panel */}
+          <div className="lead-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px', marginBottom: '18px' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>
+                  Phân bổ & Ràng buộc SLA Phản hồi Lead
+                </h3>
+              </div>
+              <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '13px' }}>
+                Nhân viên kinh doanh chủ động <strong>Nhận lead</strong> (chuyển sang <em>Đang chăm sóc</em>) hoặc <strong>Từ chối</strong> (bắt buộc lý do để quay lại hàng chờ phân bổ). Quá hạn SLA (24h/48h) sẽ kích hoạt cờ cảnh báo gửi Trưởng nhóm.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={loadData}
+                title="Làm mới trạng thái SLA"
+              >
+                <IconRefreshCw />
+                <span>Làm mới SLA</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Banner Cảnh báo SLA nếu có lead quá hạn */}
+          {stats.overdueSlaLeads > 0 && (
+            <div className="sla-alert-banner">
+              <div className="sla-alert-icon">
+                <IconShieldAlert />
+              </div>
+              <div className="sla-alert-content">
+                <strong>Phát hiện {stats.overdueSlaLeads} khách hàng tiềm năng quá hạn SLA phản hồi!</strong>
+                <p>
+                  Các lead này đã quá thời gian cam kết phản hồi mà nhân viên chưa liên hệ hoặc chưa nhận. Cần Trưởng nhóm (Manager) can thiệp tái phân bổ để tránh lead bị nguội.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-danger btn-sm"
+                onClick={() => {
+                  const firstOverdue = leads.find((l) => l.sla_status === 'OVERDUE')
+                  if (firstOverdue) handleAlertManagerForOverdue(firstOverdue)
+                }}
+              >
+                Báo động Trưởng nhóm ngay
+              </button>
+            </div>
+          )}
+
+          {/* SLA Metric Cards */}
+          <div className="sla-metrics-grid">
+            <div className="sla-metric-card pending">
+              <div className="sla-metric-body">
+                <span className="sla-metric-num">{stats.pendingAssignmentLeads}</span>
+                <span className="sla-metric-lbl">Chờ nhân viên nhận</span>
+              </div>
+            </div>
+
+            <div className="sla-metric-card overdue">
+              <div className="sla-metric-body">
+                <span className="sla-metric-num" style={{ color: '#b91c1c' }}>{stats.overdueSlaLeads}</span>
+                <span className="sla-metric-lbl">Quá hạn cam kết SLA</span>
+              </div>
+            </div>
+
+            <div className="sla-metric-card warning">
+              <div className="sla-metric-body">
+                <span className="sla-metric-num" style={{ color: '#d97706' }}>{stats.warningSlaLeads}</span>
+                <span className="sla-metric-lbl">Sắp hết hạn (&lt; 4 giờ)</span>
+              </div>
+            </div>
+
+            <div className="sla-metric-card queue">
+              <div className="sla-metric-body">
+                <span className="sla-metric-num" style={{ color: '#475569' }}>{stats.unassignedLeads}</span>
+                <span className="sla-metric-lbl">Hàng chờ phân bổ lại</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bảng Danh sách Phân bổ SLA */}
+          <div className="lead-table-responsive" style={{ marginTop: '16px' }}>
+            <table className="lead-data-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '100px' }}>Mã Lead</th>
+                  <th>Họ và tên & Liên hệ</th>
+                  <th>Công ty & Nhu cầu</th>
+                  <th style={{ width: '160px' }}>Nhân viên phụ trách</th>
+                  <th style={{ width: '140px', textAlign: 'center' }}>Trạng thái tiếp nhận</th>
+                  <th style={{ width: '160px', textAlign: 'center' }}>Hạn chót SLA</th>
+                  <th style={{ width: '150px', textAlign: 'center' }}>Cảnh báo SLA</th>
+                  <th style={{ width: '190px', textAlign: 'center' }}>Hành động NVKD (S4-07)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {slaDistributionLeads.map((l) => {
+                  const isOverdue = l.sla_status === 'OVERDUE'
+                  const isWarning = l.sla_status === 'WARNING'
+                  const isAccepted = l.assignment_status === 'ACCEPTED'
+
+                  return (
+                    <tr
+                      key={l.id}
+                      className={isOverdue ? 'row-sla-overdue' : isWarning ? 'row-sla-warning' : ''}
+                      id={`sla-lead-row-${l.id}`}
+                    >
+
+                      <td>
+                        <span className="lead-code-tag">{l.code}</span>
+                      </td>
+
+                      <td>
+                        <div className="lead-contact-info">
+                          <strong className="lead-contact-name">{l.full_name}</strong>
+                          <div className="lead-contact-detail">
+                            <span>{l.phone}</span>
+                            <span>{l.email}</span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td>
+                        <div>
+                          <strong>{l.company || 'Doanh nghiệp'}</strong>
+                          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px', lineClamp: 1, WebkitLineClamp: 1 }}>
+                            {l.requirement || 'Nhu cầu tư vấn giải pháp CRM'}
+                          </div>
+                        </div>
+                      </td>
+
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>
+                            {l.owner_name || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Chưa chỉ định</span>}
+                          </span>
+                          {isManagerOrAdmin && (
+                            <button
+                              type="button"
+                              className="btn-link-action"
+                              onClick={() => handleOpenReassignModal(l)}
+                              style={{ fontSize: '11px', color: '#2563eb', padding: 0, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}
+                            >
+                              Phân bổ lại →
+                            </button>
+                          )}
+                        </div>
+                      </td>
+
+                      <td style={{ textAlign: 'center' }}>
+                        {(() => {
+                          const statusKey = l.assignment_status || (l.owner_id ? 'PENDING' : 'UNASSIGNED')
+                          const cfg = LEAD_ASSIGNMENT_LABELS[statusKey] || LEAD_ASSIGNMENT_LABELS.UNASSIGNED
+                          return (
+                            <span
+                              className="sla-status-pill"
+                              style={{ backgroundColor: cfg.bg, color: cfg.color }}
+                            >
+                              {cfg.label}
+                            </span>
+                          )
+                        })()}
+                        {l.rejection_reason && (
+                          <div style={{ fontSize: '11px', color: '#dc2626', marginTop: '4px', fontStyle: 'italic' }}>
+                            Lý do: &quot;{l.rejection_reason}&quot;
+                          </div>
+                        )}
+                      </td>
+
+                      <td style={{ textAlign: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 500, color: '#334155' }}>
+                            {l.sla_deadline ? new Date(l.sla_deadline).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '24 giờ từ khi phân'}
+                          </span>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>
+                            Cam kết {l.sla_hours || 24}h
+                          </span>
+                        </div>
+                      </td>
+
+                      <td style={{ textAlign: 'center' }}>
+                        {(() => {
+                          const slaKey = l.sla_status || 'ON_TIME'
+                          const slaCfg = LEAD_SLA_CONFIG[slaKey] || LEAD_SLA_CONFIG.ON_TIME
+                          return (
+                            <span
+                              className="sla-flag-badge"
+                              style={{
+                                backgroundColor: slaCfg.bg,
+                                color: slaCfg.color,
+                                border: `1px solid ${slaCfg.border}`,
+                              }}
+                              title={slaCfg.label}
+                            >
+                              {slaCfg.label}
+                            </span>
+                          )
+                        })()}
+                      </td>
+
+
+                      <td style={{ textAlign: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                          {/* Nút Nhận Lead (S4-07 AC1) */}
+                          {(!isAccepted || l.status === 'NEW') && (
+                            <button
+                              type="button"
+                              className="btn-sla-action btn-sla-accept"
+                              onClick={() => handleAcceptLead(l)}
+                              disabled={acceptingLeadId === l.id}
+                              id={`sla-accept-btn-${l.id}`}
+                              title="Bấm nhận Lead: Trạng thái chuyển sang Đang chăm sóc"
+                            >
+                              <IconCheck />
+                              <span>{acceptingLeadId === l.id ? 'Đang nhận...' : 'Nhận Lead'}</span>
+                            </button>
+                          )}
+
+                          {/* Nút Từ chối Lead (S4-07 AC2: Bắt buộc lý do) */}
+                          {l.owner_id && !isAccepted && (
+                            <button
+                              type="button"
+                              className="btn-sla-action btn-sla-reject"
+                              onClick={() => handleOpenRejectModal(l)}
+                              id={`sla-reject-btn-${l.id}`}
+                              title="Từ chối Lead: Bắt buộc nhập lý do, lead quay lại hàng chờ"
+                            >
+                              <IconX />
+                              <span>Từ chối</span>
+                            </button>
+                          )}
+
+                          {/* Nút Cảnh báo Trưởng nhóm nếu quá hạn (S4-07 AC3) */}
+                          {isOverdue && !isAccepted && (
+                            <button
+                              type="button"
+                              className="btn-sla-action btn-sla-alert"
+                              onClick={() => handleAlertManagerForOverdue(l)}
+                              title="Gửi báo cáo / thông báo trực tiếp cho Trưởng nhóm"
+                            >
+                              <IconAlertTriangle />
+                              <span>Báo Trưởng nhóm</span>
+                            </button>
+                          )}
+
+                          {/* Nút Phân bổ lại cho Trưởng nhóm */}
+                          {isManagerOrAdmin && (
+                            <button
+                              type="button"
+                              className="btn-action-icon"
+                              style={{ color: '#475569', borderColor: '#cbd5e1', background: '#f8fafc' }}
+                              onClick={() => handleOpenReassignModal(l)}
+                              title="Chỉ định nhân viên khác phụ trách Lead này"
+                            >
+                              <IconSliders />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {activeTab === 'LEAD_SCORING' && (
         <div className="lead-card-panel lead-scoring-panel" id="lead-scoring-panel">
           {/* Header Panel */}
@@ -1780,7 +2770,7 @@ export default function LeadFormsPage() {
                                 title={`Đã chuyển đổi sang Khách hàng: ${l.converted_customer_name || 'Khách hàng CRM'}. Click để xem.`}
                                 onClick={() => navigate('/dashboard/customers')}
                               >
-                                ✓ Đã chuyển
+                                Đã chuyển
                               </button>
                             ) : (
                               <button
@@ -2026,7 +3016,6 @@ export default function LeadFormsPage() {
         <div className="lead-card-panel lead-interaction-panel">
           <div className="lead-panel-controls">
             <div className="lead-search-box">
-              <IconSearch />
               <input
                 type="text"
                 placeholder="Tìm hoạt động theo tiêu đề, nội dung hoặc người thực hiện..."
@@ -2094,13 +3083,13 @@ export default function LeadFormsPage() {
                 const getIconAndClass = () => {
                   switch (act.type) {
                     case 'CALL':
-                      return { icon: <IconPhone />, cls: 'call' }
+                      return { icon: '', cls: 'call' }
                     case 'EMAIL':
-                      return { icon: <IconMail />, cls: 'email' }
+                      return { icon: '', cls: 'email' }
                     case 'MEETING':
-                      return { icon: <IconCalendar />, cls: 'meeting' }
+                      return { icon: '', cls: 'meeting' }
                     case 'NOTE':
-                      return { icon: <IconFileText />, cls: 'note' }
+                      return { icon: '', cls: 'note' }
                     case 'STATUS_CHANGE':
                       return { icon: '', cls: 'status_change' }
                     case 'SCORE_UPDATE':
@@ -2118,7 +3107,7 @@ export default function LeadFormsPage() {
                     <div className="interaction-card">
                       <div className="interaction-card-header">
                         <div className="interaction-card-title-group">
-                          <span className="interaction-card-title">{act.title}</span>
+                          <span className="interaction-card-title">{act.title.replace(/^[⚠️🚨\s]+/, '')}</span>
                           <div className="interaction-card-meta">
                             <span>{act.performed_by_name}</span>
                             <span>•</span>
@@ -2259,7 +3248,7 @@ export default function LeadFormsPage() {
           {importResult && (
             <div className="import-result-summary-card">
               <div className="import-summary-header">
-                <div className="summary-status-icon success">✓</div>
+                <div className="summary-status-icon success"></div>
                 <div>
                   <h4>Kết quả nhập dữ liệu Excel</h4>
                   <p>Hệ thống đã hoàn tất xử lý danh sách Lead từ file.</p>
@@ -2394,7 +3383,7 @@ export default function LeadFormsPage() {
                         </td>
                         <td>
                           {row.is_valid ? (
-                            <span className="valid-check-tag">✓ Hợp lệ</span>
+                            <span className="valid-check-tag">Hợp lệ</span>
                           ) : (
                             <div className="invalid-errors-box">
                               {row.errors.map((e, idx) => (
@@ -3014,11 +4003,11 @@ export default function LeadFormsPage() {
                 <div className="lead-modal-field">
                   <label>Các trường thông tin thu thập tự động trên form</label>
                   <div className="lead-fields-preview-tags">
-                    <span className="field-tag required">✓ Họ và tên (Bắt buộc)</span>
-                    <span className="field-tag required">✓ Email làm việc (Bắt buộc)</span>
-                    <span className="field-tag required">✓ Số điện thoại (Bắt buộc)</span>
-                    <span className="field-tag optional">✓ Tên công ty / Doanh nghiệp</span>
-                    <span className="field-tag optional">✓ Nhu cầu tư vấn & Ghi chú</span>
+                    <span className="field-tag required">Họ và tên (Bắt buộc)</span>
+                    <span className="field-tag required">Email làm việc (Bắt buộc)</span>
+                    <span className="field-tag required">Số điện thoại (Bắt buộc)</span>
+                    <span className="field-tag optional">Tên công ty / Doanh nghiệp</span>
+                    <span className="field-tag optional">Nhu cầu tư vấn & Ghi chú</span>
                   </div>
                 </div>
 
@@ -3594,13 +4583,10 @@ export default function LeadFormsPage() {
             id="modal-convert-lead"
           >
             <div className="lead-modal-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ color: '#2563eb' }}><IconUserCheck /></div>
-                <div>
-                  <h3 className="lead-modal-title" style={{ margin: 0 }}>Chuyển đổi Khách hàng tiềm năng</h3>
-                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                    Đồng bộ dữ liệu sang Khách hàng CRM và Cơ hội bán hàng không cần nhập lại
-                  </div>
+              <div>
+                <h3 className="lead-modal-title" style={{ margin: 0 }}>Chuyển đổi Khách hàng tiềm năng</h3>
+                <div style={{ fontSize: '12.5px', color: '#64748b', marginTop: '3px' }}>
+                  Đồng bộ dữ liệu sang Khách hàng CRM và Cơ hội bán hàng không cần nhập lại
                 </div>
               </div>
               <button
@@ -3609,40 +4595,13 @@ export default function LeadFormsPage() {
                 onClick={() => !isConverting && setIsConvertModalOpen(false)}
                 title="Đóng"
               >
-                <IconX />
+                ×
               </button>
             </div>
 
             <div className="convert-modal-body">
               {/* Banner thông báo tự động mapping dữ liệu */}
-              <div
-                style={{
-                  background: 'linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)',
-                  border: '1px solid #bfdbfe',
-                  borderRadius: '10px',
-                  padding: '12px 16px',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px',
-                }}
-              >
-                <div
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '50%',
-                    background: '#2563eb',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    flexShrink: 0,
-                  }}
-                >
-                  ✓
-                </div>
+              <div className="convert-autofill-banner">
                 <div style={{ fontSize: '13px', color: '#1e3a8a', lineHeight: 1.5 }}>
                   <strong>Auto-fill thông minh đã kích hoạt:</strong> Toàn bộ dữ liệu của Lead{' '}
                   <strong>[{convertingLead.code}] {convertingLead.full_name}</strong> (Tên, SĐT, Email, Công ty, Nhu cầu) đã được tự động điền sẵn vào Khách hàng và Cơ hội bên dưới. Bạn không phải mất thời gian hỏi và nhập lại thông tin khách hàng.
@@ -3833,18 +4792,9 @@ export default function LeadFormsPage() {
                     </div>
 
                     {/* Khối người liên hệ đại diện */}
-                    <div
-                      style={{
-                        gridColumn: 'span 2',
-                        background: '#f8fafc',
-                        border: '1px dashed #cbd5e1',
-                        borderRadius: '8px',
-                        padding: '12px 14px',
-                        marginTop: '4px',
-                      }}
-                    >
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '10px' }}>
-                        👤 Thông tin Người liên hệ đại diện (Tự động thêm vào Danh bạ Người liên hệ)
+                    <div className="convert-contact-subpanel">
+                      <div className="convert-contact-subpanel-title">
+                        Thông tin Người liên hệ đại diện (Tự động thêm vào Danh bạ Người liên hệ)
                       </div>
                       <div className="convert-form-grid" style={{ gap: '10px' }}>
                         <div className="form-group">
@@ -3934,7 +4884,6 @@ export default function LeadFormsPage() {
               <div className="convert-section-panel">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <h4 className="convert-section-title">
-                    <IconTrendingUp />
                     <span>2. Cơ hội bán hàng (Deal / Opportunity)</span>
                   </h4>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: '#2563eb' }}>
@@ -4073,7 +5022,6 @@ export default function LeadFormsPage() {
                 disabled={isConverting}
                 id="btn-confirm-lead-conversion"
               >
-                <IconCheck />
                 <span>{isConverting ? 'Đang chuyển đổi...' : 'Xác nhận chuyển đổi'}</span>
               </button>
             </div>
@@ -4093,9 +5041,6 @@ export default function LeadFormsPage() {
             id="modal-conversion-success"
           >
             <div className="convert-success-modal-body">
-              <div className="convert-success-icon-badge">
-                ✓
-              </div>
               <div>
                 <h3 style={{ margin: '0 0 6px 0', fontSize: '20px', color: '#0f172a' }}>
                   Chuyển đổi Lead thành công!
@@ -4420,13 +5365,13 @@ export default function LeadFormsPage() {
                     const getIconAndClass = () => {
                       switch (act.type) {
                         case 'CALL':
-                          return { icon: <IconPhone />, cls: 'call' }
+                          return { icon: '', cls: 'call' }
                         case 'EMAIL':
-                          return { icon: <IconMail />, cls: 'email' }
+                          return { icon: '', cls: 'email' }
                         case 'MEETING':
-                          return { icon: <IconCalendar />, cls: 'meeting' }
+                          return { icon: '', cls: 'meeting' }
                         case 'NOTE':
-                          return { icon: <IconFileText />, cls: 'note' }
+                          return { icon: '', cls: 'note' }
                         case 'STATUS_CHANGE':
                           return { icon: '', cls: 'status_change' }
                         case 'SCORE_UPDATE':
@@ -4444,7 +5389,7 @@ export default function LeadFormsPage() {
                         <div className="interaction-card">
                           <div className="interaction-card-header">
                             <div className="interaction-card-title-group">
-                              <span className="interaction-card-title">{act.title}</span>
+                              <span className="interaction-card-title">{act.title.replace(/^[⚠️🚨\s]+/, '')}</span>
                               <div className="interaction-card-meta">
                                 <span>{act.performed_by_name}</span>
                                 <span>•</span>
@@ -4514,7 +5459,264 @@ export default function LeadFormsPage() {
         </div>
       )}
 
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL: TỪ CHỐI NHẬN LEAD (USER STORY S4-07: BẮT BUỘC NHẬP LÝ DO)
+          ───────────────────────────────────────────────────────────── */}
+      {rejectingLead && (
+        <div className="lead-modal-backdrop" onClick={() => !isRejectingLoading && setRejectingLead(null)}>
+          <div className="lead-modal-container" style={{ maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="lead-modal-header" style={{ borderBottom: '1px solid #fee2e2' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 className="lead-modal-title" style={{ color: '#b91c1c' }}>
+                  Từ chối nhận Lead
+                </h3>
+              </div>
+              <button
+                type="button"
+                className="lead-modal-close"
+                onClick={() => !isRejectingLoading && setRejectingLead(null)}
+              >
+                <IconX />
+              </button>
+            </div>
+
+            <div className="lead-modal-body">
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px' }}>
+                <p style={{ margin: 0, fontSize: '13px', color: '#991b1b', lineHeight: 1.5 }}>
+                  <strong>Quy tắc hệ thống:</strong> Khi từ chối, lead sẽ tự động quay trở lại <strong>hàng chờ phân bổ</strong> để Trưởng nhóm bàn giao cho nhân viên khác. Bạn bắt buộc phải ghi rõ lý do để phục vụ giám sát và SLA.
+                </p>
+              </div>
+
+              <div style={{ marginBottom: '14px', fontSize: '13.5px', color: '#334155' }}>
+                <div>Khách hàng: <strong>{rejectingLead.full_name}</strong> ({rejectingLead.code})</div>
+                <div>Doanh nghiệp: <strong>{rejectingLead.company || 'Chưa cập nhật'}</strong></div>
+              </div>
+
+              <div className="lead-form-group">
+                <label className="lead-form-label" style={{ fontWeight: 600 }}>
+                  Lý do từ chối nhận lead <span style={{ color: '#dc2626' }}>*</span>
+                </label>
+                <textarea
+                  className={`lead-form-input ${rejectionReasonError ? 'error' : ''}`}
+                  rows={4}
+                  placeholder="Ví dụ: Quá tải công việc tuần này; Khách hàng thuộc ngành ngoài chuyên môn; Trùng địa bàn quản lý..."
+                  value={rejectionReasonInput}
+                  onChange={(e) => {
+                    setRejectionReasonInput(e.target.value)
+                    if (rejectionReasonError) setRejectionReasonError('')
+                  }}
+                  id="textarea-rejection-reason"
+                />
+                {rejectionReasonError && (
+                  <span className="lead-form-error" style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                    {rejectionReasonError}
+                  </span>
+                )}
+              </div>
+
+              {/* Gợi ý lý do nhanh */}
+              <div style={{ marginTop: '10px' }}>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>Gợi ý lý do nhanh:</span>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                  {[
+                    'Quá tải lịch hẹn tư vấn trong tuần',
+                    'Sai khu vực địa lý / chi nhánh phụ trách',
+                    'Khách hàng yêu cầu chuyên môn ngành đặc thù',
+                    'Đang tạm nghỉ phép / vắng mặt',
+                  ].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      className="btn-preset-chip"
+                      onClick={() => {
+                        setRejectionReasonInput(preset)
+                        if (rejectionReasonError) setRejectionReasonError('')
+                      }}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="lead-modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setRejectingLead(null)}
+                disabled={isRejectingLoading}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleConfirmRejectLead}
+                disabled={isRejectingLoading}
+                id="btn-confirm-reject-lead"
+              >
+                {isRejectingLoading ? 'Đang xử lý...' : 'Xác nhận từ chối Lead'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL: TRƯỞNG NHÓM PHÂN BỔ LẠI LEAD (RE-ASSIGN & SET SLA)
+          ───────────────────────────────────────────────────────────── */}
+      {reassigningLead && (
+        <div className="lead-modal-backdrop" onClick={() => !isReassigningLoading && setReassigningLead(null)}>
+          <div className="lead-modal-container" style={{ maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="lead-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 className="lead-modal-title">
+                  Phân bổ lại Lead & Cài đặt SLA
+                </h3>
+              </div>
+              <button
+                type="button"
+                className="lead-modal-close"
+                onClick={() => !isReassigningLoading && setReassigningLead(null)}
+              >
+                <IconX />
+              </button>
+            </div>
+
+            <div className="lead-modal-body">
+              <div className="lead-reassign-customer-box">
+                <div>Khách hàng: <strong>{reassigningLead.full_name}</strong> <span style={{ color: '#64748b' }}>({reassigningLead.code})</span></div>
+                <div>Trạng thái hiện tại: <strong style={{ color: '#2563eb' }}>{reassigningLead.status}</strong> <span style={{ color: '#94a3b8' }}>•</span> <span style={{ color: '#b45309', fontWeight: 600 }}>{reassigningLead.assignment_status || 'CHƯA PHÂN BỔ'}</span></div>
+              </div>
+
+              <div className="lead-form-group" style={{ marginBottom: '14px' }}>
+                <label className="lead-form-label">Chọn nhân viên kinh doanh tiếp nhận</label>
+                <select
+                  className="lead-form-input"
+                  value={reassignOwnerId}
+                  onChange={(e) => setReassignOwnerId(Number(e.target.value))}
+                >
+                  <option value={1}>Nguyễn Văn An (Kinh doanh HN)</option>
+                  <option value={2}>Trần Thị Bình (Kinh doanh HCM)</option>
+                  <option value={3}>Lê Hoàng Cường (Kinh doanh ĐN)</option>
+                  <option value={4}>Lưu Quang Trường (Kinh doanh VIP)</option>
+                </select>
+              </div>
+
+              <div className="lead-form-group">
+                <label className="lead-form-label">Thời hạn SLA phản hồi bắt buộc</label>
+                <select
+                  className="lead-form-input"
+                  value={reassignSlaHours}
+                  onChange={(e) => setReassignSlaHours(Number(e.target.value))}
+                >
+                  <option value={4}>Khẩn cấp: 4 giờ</option>
+                  <option value={12}>Nhanh: 12 giờ</option>
+                  <option value={24}>Tiêu chuẩn: 24 giờ (Khuyến nghị)</option>
+                  <option value={48}>Linh hoạt: 48 giờ</option>
+                  <option value={72}>Mở rộng: 72 giờ</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="lead-modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setReassigningLead(null)}
+                disabled={isReassigningLoading}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleConfirmReassignLead}
+                disabled={isReassigningLoading}
+                id="btn-confirm-reassign-lead"
+              >
+                {isReassigningLoading ? 'Đang phân bổ...' : 'Xác nhận phân bổ'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL S4-09: LƯU BỘ LỌC TÙY CHỌN DÀNH CHO NVKD
+          ───────────────────────────────────────────────────────────── */}
+      {isSaveFilterModalOpen && (
+        <div className="lead-modal-backdrop" onClick={() => setIsSaveFilterModalOpen(false)}>
+          <div className="lead-modal-container" style={{ maxWidth: '480px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="lead-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 className="lead-modal-title">Lưu Bộ Lọc Tìm Kiếm Lead</h3>
+              </div>
+              <button
+                type="button"
+                className="lead-modal-close"
+                onClick={() => setIsSaveFilterModalOpen(false)}
+              >
+                <IconX />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCurrentFilter}>
+              <div className="lead-modal-body">
+                <p style={{ margin: '0 0 14px 0', fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+                  Lưu các tiêu chí lọc đang chọn thành một phím tắt để mỗi buổi sáng mở máy là bạn có thể bấm 1 click để xem ngay danh sách cần gọi.
+                </p>
+
+                <div className="lead-form-group">
+                  <label className="lead-form-label" style={{ fontWeight: 600 }}>
+                    Tên bộ lọc <span style={{ color: '#dc2626' }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    className="lead-form-input"
+                    placeholder="Ví dụ: Khách cần gọi gấp sáng nay, Lead VIP chưa chốt..."
+                    value={newFilterNameInput}
+                    onChange={(e) => setNewFilterNameInput(e.target.value)}
+                    autoFocus
+                    id="input-save-filter-name"
+                  />
+                </div>
+
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 12px', marginTop: '12px', fontSize: '12px', color: '#64748b' }}>
+                  <div style={{ fontWeight: 600, color: '#334155', marginBottom: '4px' }}>Các tiêu chí sẽ được lưu:</div>
+                  <div>• Từ khóa tìm kiếm: {leadSearchQuery ? `"${leadSearchQuery}"` : 'Tất cả'}</div>
+                  <div>• Trạng thái: {leadStatusFilter} | Nguồn: {leadSourceFilter}</div>
+                  <div>• Hạn SLA: {leadSlaFilter} | Phân bổ: {leadAssignFilter}</div>
+                  <div>• Lịch hẹn gọi: {leadTimingFilter} | Phân hạng: {leadScoreTierFilter}</div>
+                  <div>• Chỉ lead của tôi: {onlyMyLeadsFilter ? 'Có' : 'Không'}</div>
+                </div>
+              </div>
+
+              <div className="lead-modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setIsSaveFilterModalOpen(false)}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  id="btn-confirm-save-filter"
+                >
+                  Xác nhận lưu
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Toast thông báo */}
+
       {toast && (
         <div className={`lead-toast ${toast.isError ? 'error' : ''}`}>
           <span>{toast.message}</span>
