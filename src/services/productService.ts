@@ -5,7 +5,7 @@ const STORAGE_KEY = 'crm_products_pricing_data'
 const INITIAL_PRODUCTS: Product[] = [
   {
     id: 'prod-001',
-    code: 'SP-CRM-PRO',
+    code: '1001',
     name: 'Phần mềm CRM Doanh Nghiệp Pro (Bản quyền vĩnh viễn)',
     type: 'ONE_TIME',
     unit: 'Gói',
@@ -20,7 +20,7 @@ const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: 'prod-002',
-    code: 'DV-CLOUD-STD',
+    code: '1002',
     name: 'Dịch vụ CRM Cloud Tiêu chuẩn (Thuê bao hàng tháng)',
     type: 'SUBSCRIPTION',
     unit: 'User/Tháng',
@@ -35,7 +35,7 @@ const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: 'prod-003',
-    code: 'DV-SETUP-ONPREM',
+    code: '1003',
     name: 'Dịch vụ Cài đặt & Tích hợp On-Premise',
     type: 'ONE_TIME',
     unit: 'Dự án',
@@ -50,7 +50,7 @@ const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: 'prod-004',
-    code: 'SP-SMS-BRANDNAME',
+    code: '1004',
     name: 'Gói SMS Brandname Chăm sóc khách hàng (10,000 tin)',
     type: 'ONE_TIME',
     unit: 'Gói',
@@ -65,7 +65,7 @@ const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: 'prod-005',
-    code: 'DV-TRAIN-ADV',
+    code: '1005',
     name: 'Khóa đào tạo Quản trị & Vận hành CRM nâng cao',
     type: 'ONE_TIME',
     unit: 'Buổi',
@@ -80,7 +80,7 @@ const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: 'prod-006',
-    code: 'DV-MAINTAIN-YR',
+    code: '1006',
     name: 'Gói Bảo trì & Hỗ trợ kỹ thuật 24/7 (Hàng năm)',
     type: 'SUBSCRIPTION',
     unit: 'Năm',
@@ -98,7 +98,18 @@ const INITIAL_PRODUCTS: Product[] = [
 function getStoredProducts(): Product[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const parsed: Product[] = JSON.parse(raw)
+      // Tự động chuyển đổi các mã sản phẩm cũ có ký tự chữ sang số
+      const updated = parsed.map((p, idx) => {
+        if (!/^\d+$/.test(p.code)) {
+          return { ...p, code: String(1001 + idx) }
+        }
+        return p
+      })
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+      return updated
+    }
   } catch {
     // fallback
   }
