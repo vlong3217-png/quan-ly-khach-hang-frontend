@@ -128,7 +128,7 @@ export default function CategoriesPage() {
 
       <div className="cat-header">
         <div>
-          <h2>Khai báo Danh mục Bán hàng dùng chung</h2>
+          <h2>Danh mục Bán hàng dùng chung</h2>
         </div>
         <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
           Thêm mục mới
