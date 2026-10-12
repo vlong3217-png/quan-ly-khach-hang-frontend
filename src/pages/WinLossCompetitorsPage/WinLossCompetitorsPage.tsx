@@ -208,7 +208,7 @@ export default function WinLossCompetitorsPage() {
           <table className="wl-table">
             <thead>
               <tr>
-                <th style={{ width: '120px' }}>Mã lý do</th>
+                <th style={{ width: '90px', textAlign: 'center' }}>Số thứ tự</th>
                 <th>Tên lý do</th>
                 <th>Mô tả ngữ cảnh</th>
                 <th>Trạng thái</th>
@@ -216,9 +216,9 @@ export default function WinLossCompetitorsPage() {
               </tr>
             </thead>
             <tbody>
-              {currentReasons.map((r) => (
+              {currentReasons.map((r, index) => (
                 <tr key={r.id}>
-                  <td><code>{r.code}</code></td>
+                  <td style={{ textAlign: 'center', fontWeight: 600, color: '#64748b' }}>{index + 1}</td>
                   <td><strong>{r.name}</strong></td>
                   <td className="desc-cell">{r.description || '—'}</td>
                   <td>
