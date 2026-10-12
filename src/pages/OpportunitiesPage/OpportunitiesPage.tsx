@@ -11,6 +11,7 @@ import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitors
 import SalesForecastView from '../../components/SalesForecastView/SalesForecastView.tsx'
 import StalledOpportunityAlerts from '../../components/StalledOpportunityAlerts/StalledOpportunityAlerts.tsx'
 import ReassignOpportunityModal from '../../components/ReassignOpportunityModal/ReassignOpportunityModal.tsx'
+import { opportunityActivityService } from '../../services/opportunityActivityService.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import './OpportunitiesPage.css'
 
@@ -25,6 +26,11 @@ export default function OpportunitiesPage() {
   const [stages, setStages] = useState<PipelineStage[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  // Drag and drop state
+  const [draggingOppId, setDraggingOppId] = useState<string | null>(null)
+  const [dragOverStageId, setDragOverStageId] = useState<string | null>(null)
+  const [isUpdatingStage, setIsUpdatingStage] = useState<boolean>(false)
 
   // Bộ lọc
   const [searchKeyword, setSearchKeyword] = useState<string>('')
@@ -129,11 +135,13 @@ export default function OpportunitiesPage() {
     }
   }
 
-  // Đổi nhanh giai đoạn
+  // Đổi nhanh giai đoạn (Hỗ trợ kéo thả Pipeline & chọn giai đoạn)
   const handleQuickChangeStage = async (opp: Opportunity, targetStageId: string) => {
     const targetStage = stages.find((s) => s.id === targetStageId)
     if (!targetStage || targetStage.id === opp.stage_id) return
+    setIsUpdatingStage(true)
     try {
+      const oldStageName = opp.stage_name
       const updated = await opportunityService.updateOpportunity(opp.id, {
         stage_id: targetStage.id,
         stage_name: targetStage.name,
@@ -141,10 +149,64 @@ export default function OpportunitiesPage() {
         stage_color: targetStage.color,
       })
       handleOppUpdated(updated)
+
+      // Ghi nhận hoạt động STAGE_CHANGE tự động vào timeline (S5-03)
+      await opportunityActivityService.createActivity({
+        opportunity_id: opp.id,
+        type: 'STAGE_CHANGE',
+        title: `Chuyển giai đoạn (Pipeline): ${oldStageName} → ${targetStage.name}`,
+        content: `Cơ hội "${opp.title}" được kéo thả/chuyển sang giai đoạn "${targetStage.name}" (xác suất chốt: ${targetStage.win_probability}%).`,
+        performed_by_id: user?.id ? Number(user.id) : undefined,
+        performed_by_name: user?.full_name || 'Người dùng',
+      })
+
       showToast(`Đã chuyển cơ hội "${opp.code}" sang "${targetStage.name}"`, 'success')
     } catch {
-      showToast('Không thể chuyển giai đoạn.', 'error')
+      showToast('Không thể chuyển giai đoạn. Vui lòng thử lại.', 'error')
+    } finally {
+      setIsUpdatingStage(false)
     }
+  }
+
+  // Xử lý kéo thả Kanban (Drag & Drop)
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, opp: Opportunity) => {
+    e.dataTransfer.setData('text/plain', opp.id)
+    e.dataTransfer.effectAllowed = 'move'
+    setDraggingOppId(opp.id)
+  }
+
+  const handleDragEnd = () => {
+    setDraggingOppId(null)
+    setDragOverStageId(null)
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, stageId: string) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (dragOverStageId !== stageId) {
+      setDragOverStageId(stageId)
+    }
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>, stageId: string) => {
+    // Chỉ reset khi con trỏ thật sự rời khỏi container stage
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return
+    if (dragOverStageId === stageId) {
+      setDragOverStageId(null)
+    }
+  }
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>, targetStageId: string) => {
+    e.preventDefault()
+    setDragOverStageId(null)
+    const oppId = e.dataTransfer.getData('text/plain') || draggingOppId
+    setDraggingOppId(null)
+
+    if (!oppId) return
+    const opp = opportunities.find((o) => o.id === oppId)
+    if (!opp || opp.stage_id === targetStageId) return
+
+    await handleQuickChangeStage(opp, targetStageId)
   }
 
   // Mở modal tạo mới
@@ -604,8 +666,16 @@ export default function OpportunitiesPage() {
               {stages.map((stage) => {
                 const stageOpps = filteredOpportunities.filter((o) => o.stage_id === stage.id)
                 const stageTotal = stageOpps.reduce((acc, o) => acc + o.expected_revenue, 0)
+                const isDragOver = dragOverStageId === stage.id
+
                 return (
-                  <div key={stage.id} className="kanban-column">
+                  <div
+                    key={stage.id}
+                    className={`kanban-column ${isDragOver ? 'drag-over' : ''}`}
+                    onDragOver={(e) => handleDragOver(e, stage.id)}
+                    onDragLeave={(e) => handleDragLeave(e, stage.id)}
+                    onDrop={(e) => handleDrop(e, stage.id)}
+                  >
                     <div
                       className="kanban-column-header"
                       style={{ borderTopColor: stage.color || '#2563eb' }}
@@ -622,40 +692,48 @@ export default function OpportunitiesPage() {
 
                     <div className="kanban-column-body">
                       {stageOpps.length === 0 ? (
-                        <div className="kanban-empty">Không có cơ hội</div>
+                        <div className={`kanban-empty ${isDragOver ? 'drag-target-placeholder' : ''}`}>
+                          {isDragOver ? 'Thả cơ hội vào đây...' : 'Không có cơ hội'}
+                        </div>
                       ) : (
-                        stageOpps.map((opp) => (
-                          <div
-                            key={opp.id}
-                            className="kanban-deal-card"
-                            onClick={() => handleOpenDetail(opp)}
-                          >
-                            <div className="card-top">
-                              <span className="code-pill">{opp.code}</span>
-                              {(() => {
-                                const stalledCheck = opportunityService.analyzeStalledOpportunity(opp)
-                                if (!stalledCheck.isStalled) return null
-                                return (
-                                  <span
-                                    className={`kanban-stalled-tag ${stalledCheck.severity === 'CRITICAL' ? 'crit' : 'warn'}`}
-                                    title={`[Cảnh báo S5-07]: ${stalledCheck.message}`}
-                                  >
-                                    Đình trệ
-                                  </span>
-                                )
-                              })()}
-                              <span className="deal-prob">{opp.win_probability}%</span>
+                        stageOpps.map((opp) => {
+                          const isDragging = draggingOppId === opp.id
+                          return (
+                            <div
+                              key={opp.id}
+                              draggable={!isUpdatingStage}
+                              onDragStart={(e) => handleDragStart(e, opp)}
+                              onDragEnd={handleDragEnd}
+                              className={`kanban-deal-card ${isDragging ? 'dragging' : ''}`}
+                              onClick={() => handleOpenDetail(opp)}
+                            >
+                              <div className="card-top">
+                                <span className="code-pill">{opp.code}</span>
+                                {(() => {
+                                  const stalledCheck = opportunityService.analyzeStalledOpportunity(opp)
+                                  if (!stalledCheck.isStalled) return null
+                                  return (
+                                    <span
+                                      className={`kanban-stalled-tag ${stalledCheck.severity === 'CRITICAL' ? 'crit' : 'warn'}`}
+                                      title={`[Cảnh báo S5-07]: ${stalledCheck.message}`}
+                                    >
+                                      Đình trệ
+                                    </span>
+                                  )
+                                })()}
+                                <span className="deal-prob">{opp.win_probability}%</span>
+                              </div>
+                              <h5 className="deal-title">{opp.title}</h5>
+                              <div className="deal-cust">{opp.customer_name}</div>
+                              <div className="card-bottom">
+                                <strong className="deal-revenue">
+                                  {formatCurrency(opp.expected_revenue)}
+                                </strong>
+                                <span className="deal-owner">{opp.owner_name}</span>
+                              </div>
                             </div>
-                            <h5 className="deal-title">{opp.title}</h5>
-                            <div className="deal-cust">{opp.customer_name}</div>
-                            <div className="card-bottom">
-                              <strong className="deal-revenue">
-                                {formatCurrency(opp.expected_revenue)}
-                              </strong>
-                              <span className="deal-owner">{opp.owner_name}</span>
-                            </div>
-                          </div>
-                        ))
+                          )
+                        })
                       )}
                     </div>
                   </div>
