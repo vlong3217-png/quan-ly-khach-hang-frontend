@@ -1531,74 +1531,7 @@ export default function LeadFormsPage() {
             onClick={() => setIsCreateLeadModalOpen(true)}
             id="btn-create-lead-manual"
           >
-            <span>Tạo Lead thủ công</span>
-          </button>
-
-          {/* Nút Chuyển sang Tab Nhập Excel */}
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setActiveTab('IMPORT_EXCEL')}
-            id="btn-nav-import-excel"
-          >
-            <span>Nhập từ Excel</span>
-          </button>
-
-          {/* Nút Xem Phân bổ & SLA (S4-07) */}
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setActiveTab('LEAD_SLA_DISTRIBUTION')}
-            id="btn-nav-lead-sla"
-            title="Quản lý Hàng chờ & Ràng buộc SLA phản hồi của Lead"
-            style={{
-              color: stats.overdueSlaLeads > 0 ? '#b91c1c' : '#b45309',
-              borderColor: stats.overdueSlaLeads > 0 ? '#fca5a5' : '#fde68a',
-              background: stats.overdueSlaLeads > 0 ? '#fef2f2' : '#fefce8',
-              fontWeight: 600,
-            }}
-          >
-            <span>Phân bổ & SLA</span>
-            {stats.overdueSlaLeads > 0 && (
-              <span style={{ background: '#ef4444', color: '#fff', fontSize: '10.5px', padding: '1px 6px', borderRadius: '10px' }}>
-                {stats.overdueSlaLeads}
-              </span>
-            )}
-          </button>
-
-          {/* Nút Xem chấm điểm & phân loại (S4-04) */}
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setActiveTab('LEAD_SCORING')}
-            id="btn-nav-lead-scoring"
-            title="Xem bảng xếp hạng điểm và phân loại Lead"
-          >
-            <span>Chấm điểm Lead</span>
-          </button>
-
-
-          {/* Nút Chuyển đổi Lead sang Khách hàng & Cơ hội (S4-05) */}
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setActiveTab('LEAD_CONVERSION')}
-            id="btn-nav-lead-conversion"
-            title="Chuyển đổi Lead thành Khách hàng và Cơ hội bán hàng"
-            style={{ color: '#1d4ed8', borderColor: '#93c5fd', background: '#eff6ff' }}
-          >
-            <span>Chuyển đổi Lead</span>
-          </button>
-
-          {/* Nút Dòng thời gian tương tác (S4-06) */}
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setActiveTab('LEAD_INTERACTIONS')}
-            id="btn-nav-lead-interactions"
-            title="Xem toàn bộ lịch sử tương tác và chăm sóc Lead"
-          >
-            <span>Dòng thời gian tương tác</span>
+            <span>+ Tạo Lead thủ công</span>
           </button>
 
           {/* Nút Xuất Excel */}
