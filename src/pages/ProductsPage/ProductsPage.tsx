@@ -222,7 +222,7 @@ export default function ProductsPage() {
         <table className="products-table">
           <thead>
             <tr>
-              <th style={{ width: '90px', textAlign: 'center' }}>Số thứ tự</th>
+              <th style={{ width: '120px' }}>Mã SP</th>
               <th>Tên sản phẩm / Dịch vụ</th>
               <th>Loại</th>
               <th>ĐVT</th>
@@ -241,12 +241,10 @@ export default function ProductsPage() {
                 </td>
               </tr>
             ) : (
-              pagedProducts.map((p, index) => (
+              pagedProducts.map((p) => (
                 <tr key={p.id}>
-                  <td style={{ textAlign: 'center' }}>
-                    <span className="product-stt-badge">
-                      {(currentPage - 1) * pageSize + index + 1}
-                    </span>
+                  <td>
+                    <span className="code-badge">{p.code}</span>
                   </td>
                   <td>
                     <div className="product-name-cell">
