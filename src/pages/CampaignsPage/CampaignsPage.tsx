@@ -46,6 +46,10 @@ export default function CampaignsPage() {
   const [filterChannel, setFilterChannel] = useState<string>('ALL')
   const [filterStatus, setFilterStatus] = useState<string>('ALL')
 
+  // Phân trang
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
+
   // Modal Tạo / Sửa Chiến dịch
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null)
@@ -108,6 +112,18 @@ export default function CampaignsPage() {
       return matchSearch && matchChannel && matchStatus
     })
   }, [campaigns, searchQuery, filterChannel, filterStatus])
+
+  // Reset trang về 1 khi lọc
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, filterChannel, filterStatus])
+
+  // Dữ liệu phân trang
+  const totalPages = Math.max(1, Math.ceil(filteredCampaigns.length / pageSize))
+  const paginatedCampaigns = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredCampaigns.slice(start, start + pageSize)
+  }, [filteredCampaigns, currentPage, pageSize])
 
   // Mở modal tạo mới
   const handleOpenCreateModal = () => {
@@ -368,7 +384,7 @@ export default function CampaignsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredCampaigns.map((camp) => {
+                {paginatedCampaigns.map((camp) => {
                   const channelCfg = CHANNEL_CONFIG[camp.channel] || CHANNEL_CONFIG.OTHER
                   const statusCfg = STATUS_CONFIG[camp.status] || STATUS_CONFIG.PLANNING
                   const costPct = camp.budget > 0 ? Math.min(100, Math.round((camp.actual_cost / camp.budget) * 100)) : 0
@@ -481,6 +497,68 @@ export default function CampaignsPage() {
                 })}
               </tbody>
             </table>
+
+            {/* Thanh phân trang Pagination */}
+            {filteredCampaigns.length > 0 && (
+              <div className="customer-pagination" style={{ margin: '16px 20px 20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+                <div className="customer-pagination-info">
+                  <span>
+                    Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, filteredCampaigns.length)}</strong> -{' '}
+                    <strong>{Math.min(currentPage * pageSize, filteredCampaigns.length)}</strong> trên tổng số{' '}
+                    <strong>{filteredCampaigns.length}</strong> chiến dịch
+                  </span>
+                  <div className="customer-pagination-size">
+                    <label htmlFor="camp-page-size-select">Hiển thị:</label>
+                    <select
+                      id="camp-page-size-select"
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value))
+                        setCurrentPage(1)
+                      }}
+                      className="customer-pagination-select"
+                    >
+                      <option value={3}>3 chiến dịch / trang</option>
+                      <option value={5}>5 chiến dịch / trang</option>
+                      <option value={10}>10 chiến dịch / trang</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="customer-pagination-controls">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                    className="customer-page-btn nav-btn"
+                  >
+                    Trước
+                  </button>
+
+                  <div className="customer-page-numbers">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setCurrentPage(p)}
+                        className={`customer-page-btn page-num ${currentPage === p ? 'active' : ''}`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                    className="customer-page-btn nav-btn"
+                  >
+                    Sau
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
