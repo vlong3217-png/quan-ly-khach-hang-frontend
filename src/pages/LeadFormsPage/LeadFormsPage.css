@@ -2877,4 +2877,40 @@
 }
 
 
+/* ── Phân trang danh sách Lead ── */
+.lead-pagination {
+  margin-top: 0;
+  border-radius: 0 0 12px 12px;
+  border-top: 1px solid #e2e8f0;
+}
 
+.lead-pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  font-size: 14px;
+  color: #94a3b8;
+  user-select: none;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+  .lead-pagination.customer-pagination {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .lead-pagination .customer-pagination-info {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .lead-pagination .customer-pagination-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
