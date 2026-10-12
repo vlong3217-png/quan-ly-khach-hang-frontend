@@ -10,6 +10,7 @@ import {
   removeAvatarFromStorage,
 } from '../../services/avatarService.ts'
 import { AvatarCropModal } from '../../components/AvatarCropModal/AvatarCropModal.tsx'
+import { ChangePasswordModal } from '../../components/ChangePasswordModal/ChangePasswordModal.tsx'
 import { ROLE_LABELS } from '../../constants/permissions.ts'
 import type { UserProfile, ProfileFormErrors } from '../../types/profile.ts'
 import './ProfilePage.css'
@@ -150,6 +151,9 @@ export function ProfilePage() {
   const [isProcessingAvatar, setIsProcessingAvatar] = useState(false)
   const [isSavingAvatar, setIsSavingAvatar] = useState(false)
   const [avatarError, setAvatarError] = useState<string | null>(null)
+
+  // Change Password Modal State
+  const [isChangePwdModalOpen, setIsChangePwdModalOpen] = useState(false)
 
   // Xử lý chọn file ảnh từ máy tính (Validate JPG/PNG, <= 2MB)
   const handleAvatarFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -421,7 +425,7 @@ export function ProfilePage() {
             <button
               type="button"
               className="dashboard-change-pwd-btn"
-              onClick={() => navigate('/change-password')}
+              onClick={() => setIsChangePwdModalOpen(true)}
               title="Đổi mật khẩu"
               id="header-change-password-btn"
             >
@@ -902,6 +906,15 @@ export function ProfilePage() {
         }}
         onSave={handleSaveCroppedAvatar}
         isSaving={isSavingAvatar}
+      />
+
+      {/* ── Modal Đổi Mật Khẩu (Pop-up) ── */}
+      <ChangePasswordModal
+        isOpen={isChangePwdModalOpen}
+        onClose={() => setIsChangePwdModalOpen(false)}
+        onSuccess={() => {
+          setSuccessNotice('Đổi mật khẩu thành công! Tài khoản của bạn đã được cập nhật.')
+        }}
       />
     </div>
   )
