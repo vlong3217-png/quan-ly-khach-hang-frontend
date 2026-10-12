@@ -38,6 +38,10 @@ export default function OpportunitiesPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL')
   const [viewMode, setViewMode] = useState<'TABLE' | 'KANBAN'>('TABLE')
 
+  // Phân trang cho Table view
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(5)
+
   // Main Nav Tab (Danh sách Cơ hội vs Dự báo doanh số S5-06 vs Cảnh báo đình trệ S5-07 vs Lý do Thắng/Thua S5-05)
   const [mainNavTab, setMainNavTab] = useState<'PIPELINE' | 'FORECAST' | 'STALLED' | 'WIN_LOSS'>('PIPELINE')
 
@@ -296,6 +300,18 @@ export default function OpportunitiesPage() {
     return true
   })
 
+  // Reset về trang 1 khi lọc
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchKeyword, selectedStageId, selectedStatus])
+
+  // Phân trang cho Table view
+  const totalPages = Math.max(1, Math.ceil(filteredOpportunities.length / pageSize))
+  const paginatedOpportunities = filteredOpportunities.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
+
   // Thống kê nhanh KPI
   const totalCount = opportunities.length
   const totalRevenue = opportunities.reduce((acc, o) => acc + (o.expected_revenue || 0), 0)
@@ -520,7 +536,8 @@ export default function OpportunitiesPage() {
                   </button>
                 </div>
               ) : (
-                <table className="opp-table" id="opportunities-table">
+                <>
+                  <table className="opp-table" id="opportunities-table">
                   <thead>
                     <tr>
                       <th style={{ width: '100px' }}>Mã OPP</th>
@@ -535,7 +552,7 @@ export default function OpportunitiesPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredOpportunities.map((opp) => (
+                    {paginatedOpportunities.map((opp) => (
                       <tr key={opp.id} className="opp-row-item">
                         <td>
                           <span className="code-pill">{opp.code}</span>
@@ -658,6 +675,69 @@ export default function OpportunitiesPage() {
                     ))}
                   </tbody>
                 </table>
+
+                {/* Thanh phân trang Pagination */}
+                {filteredOpportunities.length > 0 && (
+                  <div className="customer-pagination" style={{ margin: '16px 20px 20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+                    <div className="customer-pagination-info">
+                      <span>
+                        Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, filteredOpportunities.length)}</strong> -{' '}
+                        <strong>{Math.min(currentPage * pageSize, filteredOpportunities.length)}</strong> trên tổng số{' '}
+                        <strong>{filteredOpportunities.length}</strong> cơ hội
+                      </span>
+                      <div className="customer-pagination-size">
+                        <label htmlFor="opp-page-size-select">Hiển thị:</label>
+                        <select
+                          id="opp-page-size-select"
+                          value={pageSize}
+                          onChange={(e) => {
+                            setPageSize(Number(e.target.value))
+                            setCurrentPage(1)
+                          }}
+                          className="customer-pagination-select"
+                        >
+                          <option value={5}>5 cơ hội / trang</option>
+                          <option value={10}>10 cơ hội / trang</option>
+                          <option value={20}>20 cơ hội / trang</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="customer-pagination-controls">
+                      <button
+                        type="button"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                        className="customer-page-btn nav-btn"
+                      >
+                        Trước
+                      </button>
+
+                      <div className="customer-page-numbers">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setCurrentPage(p)}
+                            className={`customer-page-btn page-num ${currentPage === p ? 'active' : ''}`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                        className="customer-page-btn nav-btn"
+                      >
+                        Sau
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
               )}
             </div>
           ) : (
