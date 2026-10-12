@@ -460,6 +460,46 @@
   display: flex;
   flex-direction: column;
   max-height: 80vh;
+  transition: all 0.2s ease;
+}
+
+.kanban-column.drag-over {
+  background: #eff6ff;
+  border: 2px dashed #3b82f6;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+}
+
+.kanban-empty.drag-target-placeholder {
+  background: #dbeafe;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  font-weight: 600;
+  border-style: dashed;
+}
+
+.kanban-deal-card {
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  padding: 0.85rem;
+  cursor: grab;
+  user-select: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.kanban-deal-card:active {
+  cursor: grabbing;
+}
+
+.kanban-deal-card.dragging {
+  opacity: 0.45;
+  border: 2px dashed #3b82f6;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transform: scale(0.98);
 }
 
 .kanban-column-header {
@@ -517,18 +557,6 @@
   border-radius: 6px;
 }
 
-.kanban-deal-card {
-  background: #ffffff;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  padding: 0.85rem;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-  transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
 
 .kanban-deal-card:hover {
   transform: translateY(-2px);
