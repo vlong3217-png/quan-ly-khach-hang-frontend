@@ -62,7 +62,7 @@ export default function ProductsPage() {
   const handleOpenCreate = () => {
     setEditingProduct(null)
     setFormData({
-      code: `SP-${Math.floor(100 + Math.random() * 900)}`,
+      code: String(Math.floor(1000 + Math.random() * 9000)),
       name: '',
       type: 'ONE_TIME',
       unit: 'Gói',
