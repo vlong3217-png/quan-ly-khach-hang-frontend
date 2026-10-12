@@ -4,6 +4,8 @@ import type {
   OpportunityFilterParams,
 } from '../types/opportunity.ts'
 import { API_BASE_URL } from './authService.ts'
+import type { PaginatedResponse, PaginationParams } from '../types/pagination.ts'
+import { normalizePaginatedResponse } from '../types/pagination.ts'
 
 const STORAGE_KEY_OPPORTUNITIES = 'crm_opportunities_master_data'
 
@@ -156,17 +158,27 @@ function saveStoredOpportunities(opps: Opportunity[]): void {
 }
 
 export const opportunityService = {
-  async getOpportunities(params?: OpportunityFilterParams): Promise<Opportunity[]> {
+  async getOpportunities(params?: OpportunityFilterParams & PaginationParams): Promise<Opportunity[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/opportunities`, {
+      const query = new URLSearchParams()
+      if (params?.page) query.set('page', String(params.page))
+      if (params?.limit) query.set('limit', String(params.limit))
+      if (params?.search) query.set('search', params.search)
+      if (params?.stage_id) query.set('stage_id', params.stage_id)
+
+      const url = `${API_BASE_URL}/opportunities${query.toString() ? '?' + query.toString() : ''}`
+      const response = await fetch(url, {
         method: 'GET',
         headers: getAuthHeaders(),
       })
       if (response.ok) {
-        const data = await response.json()
-        if (Array.isArray(data)) {
-          saveStoredOpportunities(data)
-          return data
+        const raw = await response.json()
+        const paginated = normalizePaginatedResponse<Opportunity>(raw, params?.page || 1, params?.limit || 10)
+        if (paginated.items.length > 0 || raw.items || Array.isArray(raw)) {
+          if (!params?.page || params.page === 1) {
+            saveStoredOpportunities(paginated.items)
+          }
+          return paginated.items
         }
       }
     } catch {}
@@ -185,6 +197,41 @@ export const opportunityService = {
       list = list.filter((o) => o.stage_id === params.stage_id)
     }
     return list
+  },
+
+  async getPaginatedOpportunities(params?: OpportunityFilterParams & PaginationParams): Promise<PaginatedResponse<Opportunity>> {
+    try {
+      const page = params?.page || 1
+      const limit = params?.limit || 10
+      const query = new URLSearchParams()
+      query.set('page', String(page))
+      query.set('limit', String(limit))
+      if (params?.search) query.set('search', params.search)
+      if (params?.stage_id) query.set('stage_id', params.stage_id)
+
+      const url = `${API_BASE_URL}/opportunities?${query.toString()}`
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
+      if (response.ok) {
+        const raw = await response.json()
+        return normalizePaginatedResponse<Opportunity>(raw, page, limit)
+      }
+    } catch {}
+
+    const all = await this.getOpportunities(params)
+    const page = params?.page || 1
+    const limit = params?.limit || 10
+    const start = (page - 1) * limit
+    const items = all.slice(start, start + limit)
+    return {
+      items,
+      total: all.length,
+      page,
+      limit,
+      total_pages: Math.max(1, Math.ceil(all.length / limit)),
+    }
   },
 
   async createOpportunity(payload: CreateOpportunityPayload): Promise<Opportunity> {

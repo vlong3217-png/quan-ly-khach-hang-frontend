@@ -7,6 +7,8 @@ import type {
   ImportLeadResult,
 } from '../types/lead.ts'
 import { API_BASE_URL } from './authService.ts'
+import type { PaginatedResponse, PaginationParams } from '../types/pagination.ts'
+import { normalizePaginatedResponse } from '../types/pagination.ts'
 import {
   calculateLeadScore,
   determineScoreTier,
@@ -308,23 +310,71 @@ function saveStoredLeads(leads: Lead[]): void {
 /* ──────────── Lead Service Implementation ──────────── */
 export const leadService = {
   /**
-   * Lấy danh sách toàn bộ Lead trong hệ thống
+   * Lấy danh sách toàn bộ Lead trong hệ thống (Hỗ trợ phân trang Backend)
    */
-  async getLeads(): Promise<Lead[]> {
+  async getLeads(params?: PaginationParams & { search?: string; status?: string }): Promise<Lead[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/leads`, {
+      const query = new URLSearchParams()
+      if (params?.page) query.set('page', String(params.page))
+      if (params?.limit) query.set('limit', String(params.limit))
+      if (params?.search) query.set('search', params.search)
+      if (params?.status) query.set('status', params.status)
+
+      const url = `${API_BASE_URL}/leads${query.toString() ? '?' + query.toString() : ''}`
+      const response = await fetch(url, {
         method: 'GET',
         headers: getAuthHeaders(),
       })
       if (response.ok) {
-        const data = await response.json()
-        if (Array.isArray(data)) {
-          saveStoredLeads(data)
-          return data
+        const raw = await response.json()
+        const paginated = normalizePaginatedResponse<Lead>(raw, params?.page || 1, params?.limit || 10)
+        if (paginated.items.length > 0 || raw.items || Array.isArray(raw)) {
+          if (!params?.page || params.page === 1) {
+            saveStoredLeads(paginated.items)
+          }
+          return paginated.items
         }
       }
     } catch {}
     return getStoredLeads()
+  },
+
+  /**
+   * Lấy chi tiết phân trang đầy đủ từ Backend
+   */
+  async getPaginatedLeads(params?: PaginationParams & { search?: string; status?: string }): Promise<PaginatedResponse<Lead>> {
+    try {
+      const page = params?.page || 1
+      const limit = params?.limit || 10
+      const query = new URLSearchParams()
+      query.set('page', String(page))
+      query.set('limit', String(limit))
+      if (params?.search) query.set('search', params.search)
+      if (params?.status) query.set('status', params.status)
+
+      const url = `${API_BASE_URL}/leads?${query.toString()}`
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
+      if (response.ok) {
+        const raw = await response.json()
+        return normalizePaginatedResponse<Lead>(raw, page, limit)
+      }
+    } catch {}
+
+    const all = getStoredLeads()
+    const page = params?.page || 1
+    const limit = params?.limit || 10
+    const start = (page - 1) * limit
+    const items = all.slice(start, start + limit)
+    return {
+      items,
+      total: all.length,
+      page,
+      limit,
+      total_pages: Math.max(1, Math.ceil(all.length / limit)),
+    }
   },
 
   /**

@@ -1,4 +1,6 @@
 import { API_BASE_URL } from './authService.ts'
+import type { PaginationParams } from '../types/pagination.ts'
+import { normalizePaginatedResponse } from '../types/pagination.ts'
 import type {
   LeadInteraction,
   CreateLeadInteractionPayload,
@@ -138,17 +140,23 @@ function saveStoredInteractions(list: LeadInteraction[]): void {
 
 export const leadInteractionService = {
   /**
-   * Lấy danh sách lịch sử tương tác của 1 Lead cụ thể
+   * Lấy danh sách lịch sử tương tác của 1 Lead cụ thể (Hỗ trợ phân trang Backend)
    */
-  async getInteractionsByLead(leadId: string): Promise<LeadInteraction[]> {
+  async getInteractionsByLead(leadId: string, params?: PaginationParams): Promise<LeadInteraction[]> {
     try {
-      const res = await fetch(`${API_BASE_URL}/leads/${leadId}/interactions`, {
+      const query = new URLSearchParams()
+      if (params?.page) query.set('page', String(params.page))
+      if (params?.limit) query.set('limit', String(params.limit))
+
+      const url = `${API_BASE_URL}/leads/${leadId}/interactions${query.toString() ? '?' + query.toString() : ''}`
+      const res = await fetch(url, {
         headers: getAuthHeaders(),
       })
       if (res.ok) {
         const json = await res.json()
-        if (json.data && Array.isArray(json.data)) {
-          return json.data
+        const paginated = normalizePaginatedResponse<LeadInteraction>(json, params?.page || 1, params?.limit || 10)
+        if (paginated.items.length > 0 || json.items || Array.isArray(json.data) || Array.isArray(json)) {
+          return paginated.items
         }
       }
     } catch {
@@ -164,15 +172,20 @@ export const leadInteractionService = {
   /**
    * Lấy toàn bộ tương tác gần nhất trong hệ thống (để hiển thị tab Timeline tổng)
    */
-  async getAllRecentInteractions(limit = 50): Promise<LeadInteraction[]> {
+  async getAllRecentInteractions(limit = 50, page = 1): Promise<LeadInteraction[]> {
     try {
-      const res = await fetch(`${API_BASE_URL}/leads/interactions/recent`, {
+      const query = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      })
+      const res = await fetch(`${API_BASE_URL}/leads/interactions/recent?${query.toString()}`, {
         headers: getAuthHeaders(),
       })
       if (res.ok) {
         const json = await res.json()
-        if (json.data && Array.isArray(json.data)) {
-          return json.data.slice(0, limit)
+        const paginated = normalizePaginatedResponse<LeadInteraction>(json, page, limit)
+        if (paginated.items.length > 0 || json.items || Array.isArray(json.data) || Array.isArray(json)) {
+          return paginated.items.slice(0, limit)
         }
       }
     } catch {

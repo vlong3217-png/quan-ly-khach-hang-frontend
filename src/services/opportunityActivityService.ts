@@ -1,4 +1,6 @@
 import { API_BASE_URL } from './authService.ts'
+import type { PaginationParams } from '../types/pagination.ts'
+import { normalizePaginatedResponse } from '../types/pagination.ts'
 import type {
   OpportunityActivity,
   CreateOpportunityActivityPayload,
@@ -133,22 +135,28 @@ function saveStoredActivities(activities: OpportunityActivity[]): void {
 
 export const opportunityActivityService = {
   /**
-   * Lấy danh sách lịch sử hoạt động của một cơ hội (Sắp xếp mới nhất lên đầu)
+   * Lấy danh sách lịch sử hoạt động của một cơ hội (Hỗ trợ phân trang Backend)
    */
-  async getActivities(opportunityId: string): Promise<OpportunityActivity[]> {
+  async getActivities(opportunityId: string, params?: PaginationParams): Promise<OpportunityActivity[]> {
     // 1. Thử gọi API Backend nếu có hỗ trợ
     try {
-      const response = await fetch(`${API_BASE_URL}/opportunities/${opportunityId}/activities`, {
+      const query = new URLSearchParams()
+      if (params?.page) query.set('page', String(params.page))
+      if (params?.limit) query.set('limit', String(params.limit))
+
+      const url = `${API_BASE_URL}/opportunities/${opportunityId}/activities${query.toString() ? '?' + query.toString() : ''}`
+      const response = await fetch(url, {
         method: 'GET',
         headers: getAuthHeaders(),
       })
       if (response.ok) {
         const data = await response.json()
-        if (Array.isArray(data)) {
+        const paginated = normalizePaginatedResponse<OpportunityActivity>(data, params?.page || 1, params?.limit || 10)
+        if (paginated.items.length > 0 || data.items || Array.isArray(data)) {
           // Lưu vào local cache và trả về
           const all = getStoredActivities().filter((a) => a.opportunity_id !== opportunityId)
-          saveStoredActivities([...data, ...all])
-          return data.sort(
+          saveStoredActivities([...paginated.items, ...all])
+          return paginated.items.sort(
             (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
           )
         }

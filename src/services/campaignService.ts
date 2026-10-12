@@ -8,6 +8,8 @@ import type {
 import type { Lead } from '../types/lead.ts'
 import { API_BASE_URL } from './authService.ts'
 import { leadService } from './leadService.ts'
+import type { PaginationParams } from '../types/pagination.ts'
+import { normalizePaginatedResponse } from '../types/pagination.ts'
 
 const STORAGE_KEY_CAMPAIGNS = 'crm_campaigns_master_data'
 
@@ -122,19 +124,27 @@ function saveStoredCampaigns(campaigns: Campaign[]): void {
 
 export const campaignService = {
   /**
-   * Lấy danh sách toàn bộ Chiến dịch
+   * Lấy danh sách toàn bộ Chiến dịch (Hỗ trợ phân trang Backend)
    */
-  async getCampaigns(): Promise<Campaign[]> {
+  async getCampaigns(params?: PaginationParams): Promise<Campaign[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/campaigns`, {
+      const query = new URLSearchParams()
+      if (params?.page) query.set('page', String(params.page))
+      if (params?.limit) query.set('limit', String(params.limit))
+
+      const url = `${API_BASE_URL}/campaigns${query.toString() ? '?' + query.toString() : ''}`
+      const response = await fetch(url, {
         method: 'GET',
         headers: getAuthHeaders(),
       })
       if (response.ok) {
         const data = await response.json()
-        if (Array.isArray(data)) {
-          saveStoredCampaigns(data)
-          return data
+        const paginated = normalizePaginatedResponse<Campaign>(data, params?.page || 1, params?.limit || 10)
+        if (paginated.items.length > 0 || data.items || Array.isArray(data)) {
+          if (!params?.page || params.page === 1) {
+            saveStoredCampaigns(paginated.items)
+          }
+          return paginated.items
         }
       }
     } catch {}

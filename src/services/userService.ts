@@ -177,12 +177,16 @@ export async function getUsers(params?: {
   role?: UserRole | ''
   status?: UserStatus | ''
   team?: string
+  page?: number
+  limit?: number
 }): Promise<UserListResponse> {
   const useReal = await shouldUseRealApi()
 
   if (useReal) {
     try {
       const query = new URLSearchParams()
+      if (params?.page) query.set('page', String(params.page))
+      if (params?.limit) query.set('limit', String(params.limit))
       if (params?.search) query.set('search', params.search)
       if (params?.role) query.set('role', params.role)
       if (params?.status === 'active') query.set('is_active', 'true')
@@ -195,7 +199,9 @@ export async function getUsers(params?: {
 
       if (res.ok) {
         const data = await res.json()
-        const rawList: any[] = Array.isArray(data) ? data : data.users || []
+        const rawList: any[] = Array.isArray(data?.items)
+          ? data.items
+          : (Array.isArray(data) ? data : data.users || [])
         const mappedUsers: UserAccount[] = rawList.map((u) => {
           let userStatus: UserStatus = 'active'
           if (u.status) {
@@ -215,7 +221,15 @@ export async function getUsers(params?: {
             created_at: u.created_at || new Date().toISOString(),
           }
         })
-        return { success: true, users: mappedUsers, total: mappedUsers.length }
+        const total = typeof data.total === 'number' ? data.total : mappedUsers.length
+        return {
+          success: true,
+          users: mappedUsers,
+          total,
+          page: data.page ?? params?.page ?? 1,
+          limit: data.limit ?? params?.limit ?? 10,
+          total_pages: data.total_pages ?? Math.max(1, Math.ceil(total / (data.limit || params?.limit || 10))),
+        }
       }
     } catch {
       // Fallback
