@@ -140,10 +140,10 @@ export default function PipelineStagesPage() {
             onClick={() => navigate('/dashboard/opportunities')}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
           >
-            <span>💼 Quản lý Cơ hội bán hàng</span>
+            <span>Quản lý Cơ hội bán hàng</span>
           </button>
           <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
-            + Thêm giai đoạn mới
+            Thêm giai đoạn mới
           </button>
         </div>
       </div>
@@ -218,7 +218,7 @@ export default function PipelineStagesPage() {
                 <td>
                   <ul className="conditions-list">
                     {stage.required_conditions.map((cond, cIdx) => (
-                      <li key={cIdx}>✓ {cond}</li>
+                      <li key={cIdx}>{cond}</li>
                     ))}
                   </ul>
                 </td>
