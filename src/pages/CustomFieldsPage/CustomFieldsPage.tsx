@@ -8,6 +8,10 @@ export default function CustomFieldsPage() {
   const [fields, setFields] = useState<CustomFieldDefinition[]>([])
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
+  // Phân trang
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(5)
+
   // Modal Thêm / Chỉnh sửa
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingField, setEditingField] = useState<CustomFieldDefinition | null>(null)
@@ -32,6 +36,7 @@ export default function CustomFieldsPage() {
 
   useEffect(() => {
     loadData()
+    setCurrentPage(1)
   }, [activeTarget])
 
   const handleOpenCreate = () => {
@@ -192,53 +197,120 @@ export default function CustomFieldsPage() {
                 </td>
               </tr>
             ) : (
-              fields.map((f, index) => (
-                <tr key={f.id}>
-                  <td style={{ textAlign: 'center' }}>
-                    <span className="cf-stt-badge">{index + 1}</span>
-                  </td>
-                  <td><strong>{f.label}</strong></td>
-                  <td>{renderTypeBadge(f.type)}</td>
-                  <td>
-                    {f.is_required ? (
-                      <span className="req-pill req-yes">Bắt buộc (*)</span>
-                    ) : (
-                      <span className="req-pill req-no">Tùy chọn</span>
-                    )}
-                  </td>
-                  <td>
-                    {f.options && f.options.length > 0 ? (
-                      <span className="options-chip-list">
-                        {f.options.slice(0, 3).join(', ')}
-                        {f.options.length > 3 && ` (+${f.options.length - 3})`}
-                      </span>
-                    ) : (
-                      <span style={{ color: '#94a3b8' }}>—</span>
-                    )}
-                  </td>
-                  <td>{f.show_in_filter ? 'Có' : 'Không'}</td>
-                  <td>{f.show_in_export ? 'Có' : 'Không'}</td>
-                  <td className="actions-cell">
-                    <button
-                      type="button"
-                      className="cf-action-btn edit-btn"
-                      onClick={() => handleOpenEdit(f)}
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      type="button"
-                      className="cf-action-btn delete-btn"
-                      onClick={() => handleDelete(f)}
-                    >
-                      Xóa
-                    </button>
-                  </td>
-                </tr>
-              ))
+              fields
+                .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                .map((f, index) => {
+                  const actualIndex = (currentPage - 1) * pageSize + index
+                  return (
+                    <tr key={f.id}>
+                      <td style={{ textAlign: 'center' }}>
+                        <span className="cf-stt-badge">{actualIndex + 1}</span>
+                      </td>
+                      <td><strong>{f.label}</strong></td>
+                      <td>{renderTypeBadge(f.type)}</td>
+                      <td>
+                        {f.is_required ? (
+                          <span className="req-pill req-yes">Bắt buộc (*)</span>
+                        ) : (
+                          <span className="req-pill req-no">Tùy chọn</span>
+                        )}
+                      </td>
+                      <td>
+                        {f.options && f.options.length > 0 ? (
+                          <span className="options-chip-list">
+                            {f.options.slice(0, 3).join(', ')}
+                            {f.options.length > 3 && ` (+${f.options.length - 3})`}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#94a3b8' }}>—</span>
+                        )}
+                      </td>
+                      <td>{f.show_in_filter ? 'Có' : 'Không'}</td>
+                      <td>{f.show_in_export ? 'Có' : 'Không'}</td>
+                      <td className="actions-cell">
+                        <button
+                          type="button"
+                          className="cf-action-btn edit-btn"
+                          onClick={() => handleOpenEdit(f)}
+                        >
+                          Sửa
+                        </button>
+                        <button
+                          type="button"
+                          className="cf-action-btn delete-btn"
+                          onClick={() => handleDelete(f)}
+                        >
+                          Xóa
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })
             )}
           </tbody>
         </table>
+
+        {/* Thanh phân trang Pagination */}
+        {fields.length > 0 && (
+          <div className="customer-pagination" style={{ margin: '16px 20px 20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+            <div className="customer-pagination-info">
+              <span>
+                Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, fields.length)}</strong> -{' '}
+                <strong>{Math.min(currentPage * pageSize, fields.length)}</strong> trên tổng số{' '}
+                <strong>{fields.length}</strong> trường tuỳ chỉnh
+              </span>
+              <div className="customer-pagination-size">
+                <label htmlFor="cf-page-size-select">Hiển thị:</label>
+                <select
+                  id="cf-page-size-select"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value))
+                    setCurrentPage(1)
+                  }}
+                  className="customer-pagination-select"
+                >
+                  <option value={3}>3 trường / trang</option>
+                  <option value={5}>5 trường / trang</option>
+                  <option value={10}>10 trường / trang</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="customer-pagination-controls">
+              <button
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                className="customer-page-btn nav-btn"
+              >
+                Trước
+              </button>
+
+              <div className="customer-page-numbers">
+                {Array.from({ length: Math.max(1, Math.ceil(fields.length / pageSize)) }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setCurrentPage(p)}
+                    className={`customer-page-btn page-num ${currentPage === p ? 'active' : ''}`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                disabled={currentPage === Math.max(1, Math.ceil(fields.length / pageSize))}
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, Math.max(1, Math.ceil(fields.length / pageSize))))}
+                className="customer-page-btn nav-btn"
+              >
+                Sau
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal Thêm / Chỉnh sửa Trường */}

@@ -9,6 +9,10 @@ export default function PipelineStagesPage() {
   const [stages, setStages] = useState<PipelineStage[]>(() => pipelineService.getStages())
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
+  // Phân trang
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(5)
+
   // Modal Thêm / Chỉnh sửa
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingStage, setEditingStage] = useState<PipelineStage | null>(null)
@@ -181,78 +185,145 @@ export default function PipelineStagesPage() {
             </tr>
           </thead>
           <tbody>
-            {stages.map((stage, idx) => (
-              <tr key={stage.id}>
-                <td>
-                  <div className="reorder-controls">
-                    <button
-                      type="button"
-                      className="order-btn"
-                      disabled={idx === 0}
-                      onClick={() => handleMoveUp(idx)}
-                    >
-                      ▲
-                    </button>
-                    <span className="order-num">{stage.order}</span>
-                    <button
-                      type="button"
-                      className="order-btn"
-                      disabled={idx === stages.length - 1}
-                      onClick={() => handleMoveDown(idx)}
-                    >
-                      ▼
-                    </button>
-                  </div>
-                </td>
-                <td><code>{stage.code}</code></td>
-                <td>
-                  <strong style={{ color: stage.color }}>{stage.name}</strong>
-                  {stage.is_closed_stage && <span className="closed-badge">Giai đoạn chốt</span>}
-                </td>
-                <td>
-                  <div className="prob-bar-container">
-                    <div className="prob-bar-fill" style={{ width: `${stage.win_probability}%`, background: stage.color || '#2563eb' }} />
-                    <span className="prob-label">{stage.win_probability}%</span>
-                  </div>
-                </td>
-                <td>
-                  <ul className="conditions-list">
-                    {stage.required_conditions.map((cond, cIdx) => (
-                      <li key={cIdx}>{cond}</li>
-                    ))}
-                  </ul>
-                </td>
-                <td>
-                  <span className="active-deals-badge">
-                    {stage.active_opportunities_count || 0} deals
-                  </span>
-                </td>
-                <td className="actions-cell">
-                  <button
-                    type="button"
-                    className="pipe-action-btn edit-btn"
-                    onClick={() => handleOpenEdit(stage)}
-                  >
-                    Sửa
-                  </button>
-                  <button
-                    type="button"
-                    className="pipe-action-btn delete-btn"
-                    disabled={(stage.active_opportunities_count || 0) > 0}
-                    title={
-                      (stage.active_opportunities_count || 0) > 0
-                        ? 'Đang có cơ hội chạy - không thể xóa để tránh làm hỏng dữ liệu!'
-                        : 'Xóa giai đoạn'
-                    }
-                    onClick={() => handleDelete(stage)}
-                  >
-                    Xóa
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {stages
+              .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+              .map((stage, idx) => {
+                const actualIdx = (currentPage - 1) * pageSize + idx
+                return (
+                  <tr key={stage.id}>
+                    <td>
+                      <div className="reorder-controls">
+                        <button
+                          type="button"
+                          className="order-btn"
+                          disabled={actualIdx === 0}
+                          onClick={() => handleMoveUp(actualIdx)}
+                        >
+                          ▲
+                        </button>
+                        <span className="order-num">{stage.order}</span>
+                        <button
+                          type="button"
+                          className="order-btn"
+                          disabled={actualIdx === stages.length - 1}
+                          onClick={() => handleMoveDown(actualIdx)}
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    </td>
+                    <td><code>{stage.code}</code></td>
+                    <td>
+                      <strong style={{ color: stage.color }}>{stage.name}</strong>
+                      {stage.is_closed_stage && <span className="closed-badge">Giai đoạn chốt</span>}
+                    </td>
+                    <td>
+                      <div className="prob-bar-container">
+                        <div className="prob-bar-fill" style={{ width: `${stage.win_probability}%`, background: stage.color || '#2563eb' }} />
+                        <span className="prob-label">{stage.win_probability}%</span>
+                      </div>
+                    </td>
+                    <td>
+                      <ul className="conditions-list">
+                        {stage.required_conditions.map((cond, cIdx) => (
+                          <li key={cIdx}>{cond}</li>
+                        ))}
+                      </ul>
+                    </td>
+                    <td>
+                      <span className="active-deals-badge">
+                        {stage.active_opportunities_count || 0} deals
+                      </span>
+                    </td>
+                    <td className="actions-cell">
+                      <button
+                        type="button"
+                        className="pipe-action-btn edit-btn"
+                        onClick={() => handleOpenEdit(stage)}
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        type="button"
+                        className="pipe-action-btn delete-btn"
+                        disabled={(stage.active_opportunities_count || 0) > 0}
+                        title={
+                          (stage.active_opportunities_count || 0) > 0
+                            ? 'Đang có cơ hội chạy - không thể xóa để tránh làm hỏng dữ liệu!'
+                            : 'Xóa giai đoạn'
+                        }
+                        onClick={() => handleDelete(stage)}
+                      >
+                        Xóa
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
           </tbody>
         </table>
+
+        {/* Thanh phân trang Pagination */}
+        {stages.length > 0 && (
+          <div className="customer-pagination" style={{ margin: '16px 20px 20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+            <div className="customer-pagination-info">
+              <span>
+                Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, stages.length)}</strong> -{' '}
+                <strong>{Math.min(currentPage * pageSize, stages.length)}</strong> trên tổng số{' '}
+                <strong>{stages.length}</strong> giai đoạn
+              </span>
+              <div className="customer-pagination-size">
+                <label htmlFor="stage-page-size-select">Hiển thị:</label>
+                <select
+                  id="stage-page-size-select"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value))
+                    setCurrentPage(1)
+                  }}
+                  className="customer-pagination-select"
+                >
+                  <option value={3}>3 giai đoạn / trang</option>
+                  <option value={5}>5 giai đoạn / trang</option>
+                  <option value={10}>10 giai đoạn / trang</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="customer-pagination-controls">
+              <button
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                className="customer-page-btn nav-btn"
+              >
+                Trước
+              </button>
+
+              <div className="customer-page-numbers">
+                {Array.from({ length: Math.max(1, Math.ceil(stages.length / pageSize)) }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setCurrentPage(p)}
+                    className={`customer-page-btn page-num ${currentPage === p ? 'active' : ''}`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                disabled={currentPage === Math.max(1, Math.ceil(stages.length / pageSize))}
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, Math.max(1, Math.ceil(stages.length / pageSize))))}
+                className="customer-page-btn nav-btn"
+              >
+                Sau
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal Thêm / Chỉnh sửa Giai đoạn */}

@@ -15,6 +15,10 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState<SalesCategoryItem[]>([])
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
+  // Phân trang
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(5)
+
   // Modal Thêm / Sửa
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<SalesCategoryItem | null>(null)
@@ -35,6 +39,7 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     loadData()
+    setCurrentPage(1)
   }, [activeTab])
 
   const handleOpenCreate = () => {
@@ -163,66 +168,133 @@ export default function CategoriesPage() {
                 <td colSpan={6} className="empty-cell">Chưa có danh mục nào trong nhóm này.</td>
               </tr>
             ) : (
-              categories.map((item, idx) => (
-                <tr key={item.id}>
-                  <td>
-                    <div className="reorder-controls">
-                      <button
-                        type="button"
-                        className="order-btn"
-                        disabled={idx === 0}
-                        onClick={() => handleMoveUp(idx)}
-                        title="Di chuyển lên trên"
-                      >
-                        ▲
-                      </button>
-                      <span className="order-num">{item.sort_order}</span>
-                      <button
-                        type="button"
-                        className="order-btn"
-                        disabled={idx === categories.length - 1}
-                        onClick={() => handleMoveDown(idx)}
-                        title="Di chuyển xuống dưới"
-                      >
-                        ▼
-                      </button>
-                    </div>
-                  </td>
-                  <td className="cat-code">{item.code}</td>
-                  <td><strong>{item.name}</strong></td>
-                  <td>
-                    {item.is_referenced ? (
-                      <span className="ref-tag referenced" title="Đang được liên kết với dữ liệu thật, không thể xóa">
-                        Đang dùng ({item.reference_count} bản ghi)
-                      </span>
-                    ) : (
-                      <span className="ref-tag unreferenced">Chưa dùng (Có thể xóa)</span>
-                    )}
-                  </td>
-                  <td className="cat-desc">{item.description || '—'}</td>
-                  <td className="actions-cell">
-                    <button
-                      type="button"
-                      className="cat-action-btn edit-btn"
-                      onClick={() => handleOpenEdit(item)}
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      type="button"
-                      className="cat-action-btn delete-btn"
-                      disabled={item.is_referenced}
-                      title={item.is_referenced ? 'Đang được tham chiếu - không thể xóa!' : 'Xóa danh mục'}
-                      onClick={() => handleDelete(item)}
-                    >
-                      Xóa
-                    </button>
-                  </td>
-                </tr>
-              ))
+              categories
+                .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                .map((item, idx) => {
+                  const actualIdx = (currentPage - 1) * pageSize + idx
+                  return (
+                    <tr key={item.id}>
+                      <td>
+                        <div className="reorder-controls">
+                          <button
+                            type="button"
+                            className="order-btn"
+                            disabled={actualIdx === 0}
+                            onClick={() => handleMoveUp(actualIdx)}
+                            title="Di chuyển lên trên"
+                          >
+                            ▲
+                          </button>
+                          <span className="order-num">{item.sort_order}</span>
+                          <button
+                            type="button"
+                            className="order-btn"
+                            disabled={actualIdx === categories.length - 1}
+                            onClick={() => handleMoveDown(actualIdx)}
+                            title="Di chuyển xuống dưới"
+                          >
+                            ▼
+                          </button>
+                        </div>
+                      </td>
+                      <td className="cat-code">{item.code}</td>
+                      <td><strong>{item.name}</strong></td>
+                      <td>
+                        {item.is_referenced ? (
+                          <span className="ref-tag referenced" title="Đang được liên kết với dữ liệu thật, không thể xóa">
+                            Đang dùng ({item.reference_count} bản ghi)
+                          </span>
+                        ) : (
+                          <span className="ref-tag unreferenced">Chưa dùng (Có thể xóa)</span>
+                        )}
+                      </td>
+                      <td className="cat-desc">{item.description || '—'}</td>
+                      <td className="actions-cell">
+                        <button
+                          type="button"
+                          className="cat-action-btn edit-btn"
+                          onClick={() => handleOpenEdit(item)}
+                        >
+                          Sửa
+                        </button>
+                        <button
+                          type="button"
+                          className="cat-action-btn delete-btn"
+                          disabled={item.is_referenced}
+                          title={item.is_referenced ? 'Đang được tham chiếu - không thể xóa!' : 'Xóa danh mục'}
+                          onClick={() => handleDelete(item)}
+                        >
+                          Xóa
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })
             )}
           </tbody>
         </table>
+
+        {/* Thanh phân trang Pagination */}
+        {categories.length > 0 && (
+          <div className="customer-pagination" style={{ margin: '16px 20px 20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+            <div className="customer-pagination-info">
+              <span>
+                Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, categories.length)}</strong> -{' '}
+                <strong>{Math.min(currentPage * pageSize, categories.length)}</strong> trên tổng số{' '}
+                <strong>{categories.length}</strong> danh mục
+              </span>
+              <div className="customer-pagination-size">
+                <label htmlFor="cat-page-size-select">Hiển thị:</label>
+                <select
+                  id="cat-page-size-select"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value))
+                    setCurrentPage(1)
+                  }}
+                  className="customer-pagination-select"
+                >
+                  <option value={3}>3 mục / trang</option>
+                  <option value={5}>5 mục / trang</option>
+                  <option value={10}>10 mục / trang</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="customer-pagination-controls">
+              <button
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                className="customer-page-btn nav-btn"
+              >
+                Trước
+              </button>
+
+              <div className="customer-page-numbers">
+                {Array.from({ length: Math.max(1, Math.ceil(categories.length / pageSize)) }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setCurrentPage(p)}
+                    className={`customer-page-btn page-num ${currentPage === p ? 'active' : ''}`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                disabled={currentPage === Math.max(1, Math.ceil(categories.length / pageSize))}
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, Math.max(1, Math.ceil(categories.length / pageSize))))}
+                className="customer-page-btn nav-btn"
+              >
+                Sau
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal Thêm / Chỉnh sửa */}
