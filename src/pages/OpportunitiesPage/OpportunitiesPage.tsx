@@ -333,8 +333,7 @@ export default function OpportunitiesPage() {
       {/* ── Page Header ── */}
       <div className="opportunities-header">
         <div>
-          <h2>Cơ hội bán hàng & Pipeline (Opportunities)</h2>
-
+          <h2>Cơ hội bán hàng</h2>
         </div>
 
         {mainNavTab === 'PIPELINE' && (
