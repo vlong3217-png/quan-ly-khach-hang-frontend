@@ -11,6 +11,9 @@ import type {
   SupportTicket,
   PeriodicCareCustomer,
 } from '../types/customer.ts'
+import { API_BASE_URL } from './authService.ts'
+import type { PaginatedResponse, PaginationParams } from '../types/pagination.ts'
+import { normalizePaginatedResponse } from '../types/pagination.ts'
 
 const STORAGE_KEY = 'crm_enterprise_customers_data'
 
@@ -457,9 +460,9 @@ function saveStoredRelations(relations: ParentChildRelation[]): void {
 
 export const customerService = {
   /**
-   * Lấy danh sách khách hàng có hỗ trợ lọc và tìm kiếm
+   * Lấy danh sách khách hàng có hỗ trợ lọc, tìm kiếm và phân trang
    */
-  getCustomers(params?: CustomerFilterParams): CustomerEnterprise[] {
+  getCustomers(params?: CustomerFilterParams & PaginationParams): CustomerEnterprise[] {
     let list = getStoredCustomers()
 
     if (!params) return list
@@ -508,7 +511,60 @@ export const customerService = {
       }
     }
 
+    if (params?.page && params?.limit) {
+      const page = params.page
+      const limit = params.limit
+      const start = (page - 1) * limit
+      return list.slice(start, start + limit)
+    }
+
     return list
+  },
+
+  /**
+   * Lấy danh sách khách hàng dạng phân trang đồng bộ Backend API
+   */
+  async getPaginatedCustomers(params?: CustomerFilterParams & PaginationParams): Promise<PaginatedResponse<CustomerEnterprise>> {
+    const page = params?.page || 1
+    const limit = params?.limit || 10
+
+    try {
+      const query = new URLSearchParams()
+      query.set('page', String(page))
+      query.set('limit', String(limit))
+      if (params?.search) query.set('search', params.search)
+      if (params?.status) query.set('status', params.status)
+      if (params?.industry) query.set('industry', params.industry)
+      if (params?.company_size) query.set('company_size', params.company_size)
+      if (params?.owner_id) query.set('owner_id', String(params.owner_id))
+
+      const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token')
+      const response = await fetch(`${API_BASE_URL}/customers?${query.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      })
+      if (response.ok) {
+        const raw = await response.json()
+        const paginated = normalizePaginatedResponse<CustomerEnterprise>(raw, page, limit)
+        if (paginated.items.length > 0 || raw.items || Array.isArray(raw)) {
+          return paginated
+        }
+      }
+    } catch {}
+
+    const all = this.getCustomers({ ...params, page: undefined, limit: undefined })
+    const start = (page - 1) * limit
+    const items = all.slice(start, start + limit)
+    return {
+      items,
+      total: all.length,
+      page,
+      limit,
+      total_pages: Math.max(1, Math.ceil(all.length / limit)),
+    }
   },
 
   /**

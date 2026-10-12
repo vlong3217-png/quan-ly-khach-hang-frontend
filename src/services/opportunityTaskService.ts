@@ -1,4 +1,6 @@
 import { API_BASE_URL } from './authService.ts'
+import type { PaginationParams } from '../types/pagination.ts'
+import { normalizePaginatedResponse } from '../types/pagination.ts'
 import type {
   OpportunityTask,
   CreateOpportunityTaskPayload,
@@ -116,26 +118,32 @@ export const opportunityTaskService = {
   /**
    * Lấy danh sách công việc liên quan đến một cơ hội (hoặc tất cả nếu không truyền ID)
    */
-  async getTasks(opportunityId?: string): Promise<OpportunityTask[]> {
+  async getTasks(opportunityId?: string, params?: PaginationParams): Promise<OpportunityTask[]> {
     try {
-      const url = opportunityId
+      const query = new URLSearchParams()
+      if (params?.page) query.set('page', String(params.page))
+      if (params?.limit) query.set('limit', String(params.limit))
+
+      const base = opportunityId
         ? `${API_BASE_URL}/opportunities/${opportunityId}/tasks`
         : `${API_BASE_URL}/opportunity-tasks`
+      const url = `${base}${query.toString() ? '?' + query.toString() : ''}`
       const response = await fetch(url, {
         method: 'GET',
         headers: getAuthHeaders(),
       })
       if (response.ok) {
         const data = await response.json()
-        if (Array.isArray(data)) {
+        const paginated = normalizePaginatedResponse<OpportunityTask>(data, params?.page || 1, params?.limit || 10)
+        if (paginated.items.length > 0 || data.items || Array.isArray(data)) {
           const all = getStoredTasks()
           if (opportunityId) {
             const others = all.filter((t) => t.opportunity_id !== opportunityId)
-            saveStoredTasks([...data, ...others])
+            saveStoredTasks([...paginated.items, ...others])
           } else {
-            saveStoredTasks(data)
+            saveStoredTasks(paginated.items)
           }
-          return data.sort(
+          return paginated.items.sort(
             (a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
           )
         }

@@ -7,6 +7,8 @@ import type {
   LeadSubmissionStatus,
 } from '../types/leadForm.ts'
 import { API_BASE_URL } from './authService.ts'
+import type { PaginationParams } from '../types/pagination.ts'
+import { normalizePaginatedResponse } from '../types/pagination.ts'
 
 const STORAGE_KEY_FORMS = 'crm_lead_forms_data'
 const STORAGE_KEY_SUBMISSIONS = 'crm_lead_submissions_data'
@@ -187,19 +189,27 @@ function saveStoredSubmissions(subs: LeadSubmission[]): void {
 /* ──────────── Service API Implementation ──────────── */
 export const leadFormService = {
   /**
-   * Lấy danh sách toàn bộ biểu mẫu Lead
+   * Lấy danh sách toàn bộ biểu mẫu Lead (Hỗ trợ phân trang Backend)
    */
-  async getLeadForms(): Promise<LeadForm[]> {
+  async getLeadForms(params?: PaginationParams): Promise<LeadForm[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/lead-forms`, {
+      const query = new URLSearchParams()
+      if (params?.page) query.set('page', String(params.page))
+      if (params?.limit) query.set('limit', String(params.limit))
+
+      const url = `${API_BASE_URL}/lead-forms${query.toString() ? '?' + query.toString() : ''}`
+      const response = await fetch(url, {
         method: 'GET',
         headers: getAuthHeaders(),
       })
       if (response.ok) {
         const data = await response.json()
-        if (Array.isArray(data)) {
-          saveStoredForms(data)
-          return data
+        const paginated = normalizePaginatedResponse<LeadForm>(data, params?.page || 1, params?.limit || 10)
+        if (paginated.items.length > 0 || data.items || Array.isArray(data)) {
+          if (!params?.page || params.page === 1) {
+            saveStoredForms(paginated.items)
+          }
+          return paginated.items
         }
       }
     } catch {
@@ -417,20 +427,26 @@ export const leadFormService = {
   /**
    * Lấy danh sách Lead thu thập được từ biểu mẫu
    */
-  async getLeadSubmissions(formId?: string): Promise<LeadSubmission[]> {
+  async getLeadSubmissions(formId?: string, params?: PaginationParams): Promise<LeadSubmission[]> {
     try {
-      const url = formId
+      const query = new URLSearchParams()
+      if (params?.page) query.set('page', String(params.page))
+      if (params?.limit) query.set('limit', String(params.limit))
+
+      const base = formId
         ? `${API_BASE_URL}/lead-forms/${formId}/submissions`
         : `${API_BASE_URL}/lead-submissions`
+      const url = `${base}${query.toString() ? '?' + query.toString() : ''}`
       const response = await fetch(url, {
         method: 'GET',
         headers: getAuthHeaders(),
       })
       if (response.ok) {
         const data = await response.json()
-        if (Array.isArray(data)) {
-          saveStoredSubmissions(data)
-          return data
+        const paginated = normalizePaginatedResponse<LeadSubmission>(data, params?.page || 1, params?.limit || 10)
+        if (paginated.items.length > 0 || data.items || Array.isArray(data)) {
+          saveStoredSubmissions(paginated.items)
+          return paginated.items
         }
       }
     } catch {}
