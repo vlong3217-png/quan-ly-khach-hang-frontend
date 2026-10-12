@@ -301,6 +301,10 @@ export default function LeadFormsPage() {
   const [onlyMyLeadsFilter, setOnlyMyLeadsFilter] = useState<boolean>(false)
   const [activeFilterPresetId, setActiveFilterPresetId] = useState<string | null>(null)
 
+  // ── Phân trang danh sách Lead ──
+  const [leadCurrentPage, setLeadCurrentPage] = useState(1)
+  const [leadPageSize, setLeadPageSize] = useState(10)
+
   // Danh sách các bộ lọc lưu sẵn
   const [savedFiltersList, setSavedFiltersList] = useState<SavedLeadFilter[]>(() =>
     leadService.getSavedFilters()
@@ -597,6 +601,43 @@ export default function LeadFormsPage() {
     allRecentInteractions,
     user,
   ])
+
+  // Reset về trang 1 khi thay đổi bộ lọc hoặc tìm kiếm
+  useEffect(() => {
+    setLeadCurrentPage(1)
+  }, [leadSearchQuery, leadStatusFilter, leadSourceFilter, leadSlaFilter, leadAssignFilter, leadScoreTierFilter, leadTimingFilter, onlyMyLeadsFilter])
+
+  // Tính toán phân trang
+  const leadTotalPages = useMemo(() => Math.max(1, Math.ceil(filteredLeads.length / leadPageSize)), [filteredLeads.length, leadPageSize])
+
+  // Đảm bảo currentPage không vượt quá totalPages (xử lý khi xóa lead hoặc thay đổi pageSize)
+  useEffect(() => {
+    if (leadCurrentPage > leadTotalPages) {
+      setLeadCurrentPage(leadTotalPages)
+    }
+  }, [leadCurrentPage, leadTotalPages])
+
+  const paginatedLeads = useMemo(() => {
+    const start = (leadCurrentPage - 1) * leadPageSize
+    return filteredLeads.slice(start, start + leadPageSize)
+  }, [filteredLeads, leadCurrentPage, leadPageSize])
+
+  // Tính danh sách số trang hiển thị (giới hạn hiển thị tối đa 7 nút trang)
+  const leadPageNumbers = useMemo(() => {
+    const pages: (number | '...')[] = []
+    if (leadTotalPages <= 7) {
+      for (let i = 1; i <= leadTotalPages; i++) pages.push(i)
+    } else {
+      pages.push(1)
+      if (leadCurrentPage > 3) pages.push('...')
+      const start = Math.max(2, leadCurrentPage - 1)
+      const end = Math.min(leadTotalPages - 1, leadCurrentPage + 1)
+      for (let i = start; i <= end; i++) pages.push(i)
+      if (leadCurrentPage < leadTotalPages - 2) pages.push('...')
+      pages.push(leadTotalPages)
+    }
+    return pages
+  }, [leadCurrentPage, leadTotalPages])
 
   // Danh sách Lead dành riêng cho Tab Quản lý Phân bổ & SLA (S4-07)
   const slaDistributionLeads = useMemo(() => {
@@ -1938,7 +1979,7 @@ export default function LeadFormsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredLeads.map((l, index) => {
+                  {paginatedLeads.map((l, index) => {
                     const statusCfg = LEAD_STATUS_CONFIG[l.status]
                     const tier = l.score_tier || 'WARM'
                     const seg = l.segment || 'HIGH_POTENTIAL'
@@ -1946,7 +1987,7 @@ export default function LeadFormsPage() {
                     return (
                       <tr key={l.id} id={`lead-row-${l.id}`}>
                         <td style={{ textAlign: 'center' }}>
-                          <span className="lead-stt-badge">{index + 1}</span>
+                          <span className="lead-stt-badge">{(leadCurrentPage - 1) * leadPageSize + index + 1}</span>
                         </td>
 
                         <td>
@@ -2158,6 +2199,92 @@ export default function LeadFormsPage() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* ── Phân trang danh sách Lead ── */}
+          {!isLoading && filteredLeads.length > 0 && (
+            <div className="customer-pagination lead-pagination" id="lead-pagination">
+              <div className="customer-pagination-info">
+                <span>
+                  Hiển thị <strong>{Math.min((leadCurrentPage - 1) * leadPageSize + 1, filteredLeads.length)}</strong> –{' '}
+                  <strong>{Math.min(leadCurrentPage * leadPageSize, filteredLeads.length)}</strong> trong tổng số{' '}
+                  <strong>{filteredLeads.length}</strong> Lead
+                </span>
+                <div className="customer-pagination-size">
+                  <label htmlFor="lead-page-size-select">Hiển thị:</label>
+                  <select
+                    id="lead-page-size-select"
+                    value={leadPageSize}
+                    onChange={(e) => {
+                      setLeadPageSize(Number(e.target.value))
+                      setLeadCurrentPage(1)
+                    }}
+                    className="customer-pagination-select"
+                  >
+                    <option value={10}>10 / trang</option>
+                    <option value={20}>20 / trang</option>
+                    <option value={50}>50 / trang</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="customer-pagination-controls">
+                <button
+                  type="button"
+                  disabled={leadCurrentPage === 1}
+                  onClick={() => setLeadCurrentPage(1)}
+                  className="customer-page-btn nav-btn"
+                  title="Trang đầu tiên"
+                >
+                  «
+                </button>
+                <button
+                  type="button"
+                  disabled={leadCurrentPage === 1}
+                  onClick={() => setLeadCurrentPage((p) => Math.max(p - 1, 1))}
+                  className="customer-page-btn nav-btn"
+                  title="Trang trước"
+                >
+                  ‹
+                </button>
+
+                <div className="customer-page-numbers">
+                  {leadPageNumbers.map((pageNum, idx) =>
+                    pageNum === '...' ? (
+                      <span key={`ellipsis-${idx}`} className="lead-pagination-ellipsis">…</span>
+                    ) : (
+                      <button
+                        key={pageNum}
+                        type="button"
+                        className={`customer-page-btn number-btn ${pageNum === leadCurrentPage ? 'active' : ''}`}
+                        onClick={() => setLeadCurrentPage(pageNum as number)}
+                      >
+                        {pageNum}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={leadCurrentPage >= leadTotalPages}
+                  onClick={() => setLeadCurrentPage((p) => Math.min(p + 1, leadTotalPages))}
+                  className="customer-page-btn nav-btn"
+                  title="Trang tiếp theo"
+                >
+                  ›
+                </button>
+                <button
+                  type="button"
+                  disabled={leadCurrentPage >= leadTotalPages}
+                  onClick={() => setLeadCurrentPage(leadTotalPages)}
+                  className="customer-page-btn nav-btn"
+                  title="Trang cuối cùng"
+                >
+                  »
+                </button>
+              </div>
             </div>
           )}
         </div>
