@@ -2570,7 +2570,7 @@ export default function LeadFormsPage() {
           {/* Header Panel */}
           <div className="lead-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
             <div>
-              <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>Phân loại & Chấm điểm Khách hàng Tiềm năng (S4-04)</h3>
+              <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>Phân loại & Chấm điểm Khách hàng Tiềm năng</h3>
               <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '13px' }}>
                 Hệ thống đánh giá chất lượng Lead tự động theo 3 trụ cột (Hồ sơ Doanh nghiệp, Nhu cầu tư vấn, Kênh tiếp cận) và hỗ trợ Quản lý điều chỉnh điểm thủ công.
               </p>
