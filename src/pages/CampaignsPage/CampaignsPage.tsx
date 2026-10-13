@@ -459,14 +459,15 @@ export default function CampaignsPage() {
                         </span>
                       </td>
 
-                      <td>
-                        <div className="camp-actions-cluster">
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <div className="table-actions-container">
                           {/* Xem Lead theo Campaign */}
                           <button
                             type="button"
-                            className="btn-action-icon view-leads"
+                            className="btn-action view-btn"
                             onClick={() => handleOpenLeadsModal(camp)}
                             title="Xem chi tiết các Lead thuộc chiến dịch"
+                            style={{ padding: '4px 10px', fontSize: '12px' }}
                           >
                             <span>Leads</span>
                           </button>
@@ -474,9 +475,10 @@ export default function CampaignsPage() {
                           {/* Sửa */}
                           <button
                             type="button"
-                            className="btn-action-icon edit"
+                            className="btn-action task-btn"
                             onClick={() => handleOpenEditModal(camp)}
                             title="Chỉnh sửa thông tin chiến dịch"
+                            style={{ padding: '4px 10px', fontSize: '12px' }}
                           >
                             <span>Sửa</span>
                           </button>
@@ -484,9 +486,10 @@ export default function CampaignsPage() {
                           {/* Xóa */}
                           <button
                             type="button"
-                            className="btn-action-icon delete"
+                            className="btn-action delete-btn"
                             onClick={() => setDeletingCampaign(camp)}
                             title="Xóa chiến dịch"
+                            style={{ padding: '4px 10px', fontSize: '12px' }}
                           >
                             <span>Xóa</span>
                           </button>

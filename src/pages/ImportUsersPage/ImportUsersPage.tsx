@@ -307,9 +307,9 @@ function ImportUsersPage() {
   }
 
   /* ── Download template ── */
-  const handleDownloadTemplate = () => {
+  const handleDownloadTemplate = async () => {
     try {
-      downloadTemplateFile()
+      await downloadTemplateFile()
       showToast('Đã tải file mẫu thành công!', 'success')
     } catch {
       showToast('Không thể tạo file mẫu. Vui lòng thử lại.', 'error')
@@ -324,7 +324,7 @@ function ImportUsersPage() {
     setApiError(null)
 
     try {
-      const result = await importUsers(validRows)
+      const result = await importUsers(validRows, selectedFile)
 
       // Merge kết quả: thêm các dòng đã bị lỗi ở client vào báo cáo
       const totalOriginal = rows.length
@@ -399,7 +399,6 @@ function ImportUsersPage() {
               </div>
               <div className="dashboard-user-details">
                 <span className="dashboard-user-name">{user?.full_name ?? 'Người dùng'}</span>
-                <span className="dashboard-user-role">{user?.role ?? ''}</span>
               </div>
             </div>
             <button

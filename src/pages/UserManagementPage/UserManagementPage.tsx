@@ -604,15 +604,10 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
               type="button"
-              className="user-mgmt-add-btn"
+              className="btn btn-secondary"
               onClick={() => navigate('/import-users')}
               id="user-mgmt-import-btn"
-              style={{
-                background: '#f1f5f9',
-                color: '#334155',
-                border: '1px solid #cbd5e1',
-                boxShadow: 'none',
-              }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}
               title="Nhập danh sách người dùng từ file Excel"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -627,15 +622,10 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
             </button>
             <button
               type="button"
-              className="user-mgmt-add-btn"
+              className="btn btn-secondary"
               onClick={() => navigate('/dashboard/audit-logs')}
               id="user-mgmt-audit-btn"
-              style={{
-                background: '#e0e7ff',
-                color: '#4338ca',
-                border: '1px solid #c7d2fe',
-                boxShadow: 'none',
-              }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}
               title="Xem nhật ký thay đổi dữ liệu nhạy cảm"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
