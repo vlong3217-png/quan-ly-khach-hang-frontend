@@ -187,22 +187,29 @@
 .lead-filters-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .lead-select-filter {
-  padding: 8px 12px;
+  padding: 7px 12px;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #cbd5e1;
   background: #ffffff;
   font-size: 13px;
   color: #334155;
   outline: none;
   cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.lead-select-filter:hover {
+  border-color: #94a3b8;
 }
 
 .lead-select-filter:focus {
   border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 /* Table styles */
@@ -2659,13 +2666,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 3px 9px;
-  font-size: 11px;
+  padding: 4px 10px;
+  font-size: 11.5px;
   font-weight: 600;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 
 .btn-action-pill.accept {
@@ -2676,6 +2684,7 @@
 
 .btn-action-pill.accept:hover {
   background: #059669;
+  box-shadow: 0 2px 5px rgba(5, 150, 105, 0.25);
 }
 
 .btn-action-pill.reject {
@@ -2687,6 +2696,28 @@
 .btn-action-pill.reject:hover {
   background: #fef2f2;
   border-color: #ef4444;
+}
+
+.btn-action-pill.convert-trigger {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.btn-action-pill.convert-trigger:hover {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.25);
+}
+
+.btn-action-pill.converted {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.btn-action-pill.converted:hover {
+  background: #d1fae5;
 }
 
 /* Nút hành động SLA trong tab chuyên dụng */

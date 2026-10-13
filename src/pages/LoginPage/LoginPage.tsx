@@ -145,8 +145,13 @@ function LoginPage() {
   const isLockedOut = remainingLockSeconds > 0
 
   /* ---- Redirect if already logged in ---- */
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [authLoading, isAuthenticated, navigate])
+
   if (!authLoading && isAuthenticated) {
-    navigate('/dashboard', { replace: true })
     return null
   }
 

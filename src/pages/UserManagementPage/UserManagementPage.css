@@ -367,8 +367,10 @@
 
 /* Action buttons */
 .user-mgmt-actions {
-  display: flex;
-  gap: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
 }
 
 .user-mgmt-edit-btn {

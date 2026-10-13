@@ -21,19 +21,36 @@ function getAuthToken(): string | null {
   )
 }
 
-function getAuthHeaders(): Record<string, string> {
-  const token = getAuthToken()
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  }
-  if (token) {
-    headers['Authorization'] = `Bearer ${token.trim()}`
-  }
-  return headers
-}
 
 /* ──────────── Tạo file Excel mẫu ──────────── */
-export function downloadTemplateFile(): void {
+export async function downloadTemplateFile(): Promise<void> {
+  const token = getAuthToken()
+  try {
+    const res = await fetch(`${API_BASE_URL}/users/template`, {
+      method: 'GET',
+      headers: token ? { Authorization: `Bearer ${token.trim()}` } : {},
+    })
+    if (res.ok) {
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'user_import_template.xlsx'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+      return
+    }
+  } catch {
+    // fallback sang client-side XLSX generation
+  }
+
+  downloadTemplateFileClient()
+}
+
+export function downloadTemplateFileClient(): void {
+
   const wb = XLSX.utils.book_new()
 
   // Header
@@ -169,13 +186,17 @@ export async function readExcelFile(file: File): Promise<{
 /* ──────────── Map column name -> field key ──────────── */
 const COLUMN_MAP: Record<string, keyof Pick<ImportUserRow, 'full_name' | 'email' | 'phone' | 'role' | 'team' | 'password'>> = {
   'họ tên (*)': 'full_name',
+  'họ và tên (*)': 'full_name',
   'email (*)': 'email',
   'số điện thoại': 'phone',
   'vai trò (*)': 'role',
   'nhóm/team': 'team',
+  'team id': 'team',
+  'team_id': 'team',
   'mật khẩu (*)': 'password',
   // Tên cột không dấu *
   'họ tên': 'full_name',
+  'họ và tên': 'full_name',
   'email': 'email',
   'vai trò': 'role',
   'mật khẩu': 'password',
@@ -310,35 +331,83 @@ export function checkDuplicateEmails(rows: ImportUserRow[]): ImportUserRow[] {
 }
 
 /* ──────────── Gọi API Import ──────────── */
-export async function importUsers(validRows: ImportUserRow[]): Promise<ImportResult> {
-  const payload = {
-    users: validRows.map((row) => ({
-      full_name: row.full_name,
-      email: row.email,
-      phone: row.phone || undefined,
-      role: row.role.toUpperCase() as UserRole,
-      team: row.team || undefined,
-      password: row.password,
-    })),
+export async function importUsers(
+  validRows: ImportUserRow[],
+  file?: File | null
+): Promise<ImportResult> {
+  const token = getAuthToken()
+  const authHeaders: Record<string, string> = {}
+  if (token) {
+    authHeaders['Authorization'] = `Bearer ${token.trim()}`
   }
 
   try {
-    // Thử gọi API batch import nếu có
-    const response = await fetch(`${API_BASE_URL}/users/import`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(30000),
-    })
+    let response: Response
+
+    if (file) {
+      // Gửi trực tiếp file Excel lên Backend FastAPI (S2-01)
+      const formData = new FormData()
+      formData.append('file', file)
+
+      response = await fetch(`${API_BASE_URL}/users/import`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: formData,
+        signal: AbortSignal.timeout(30000),
+      })
+    } else {
+      // Fallback JSON payload
+      const payload = {
+        users: validRows.map((row) => ({
+          full_name: row.full_name,
+          email: row.email,
+          phone: row.phone || undefined,
+          role: row.role.toUpperCase() as UserRole,
+          team: row.team || undefined,
+          password: row.password,
+        })),
+      }
+      response = await fetch(`${API_BASE_URL}/users/import`, {
+        method: 'POST',
+        headers: {
+          ...authHeaders,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(30000),
+      })
+    }
 
     if (response.ok) {
-      const data = (await response.json()) as BatchImportResponse
+      const data = await response.json()
+
+      // Hỗ trợ định dạng trả về của Backend FastAPI (imported_count, skipped_count, details)
+      if (typeof data.imported_count === 'number') {
+        const skippedDetails = Array.isArray(data.details)
+          ? data.details.filter((d: any) => d.status === 'SKIPPED')
+          : []
+        return {
+          totalRows: data.total_rows ?? validRows.length,
+          validRows: validRows.length,
+          importedRows: data.imported_count,
+          errorRows: data.skipped_count ?? skippedDetails.length,
+          errors: skippedDetails.map((d: any, idx: number) => ({
+            rowIndex: d.row_number ?? idx + 2,
+            full_name: d.full_name ?? '',
+            email: d.email ?? '',
+            errors: [{ field: 'server', message: d.error_message || 'Bị bỏ qua bởi hệ thống' }],
+          })),
+        }
+      }
+
+      // Hỗ trợ định dạng JSON batch response
+      const batchData = data as BatchImportResponse
       return {
         totalRows: validRows.length,
         validRows: validRows.length,
-        importedRows: data.imported ?? validRows.length,
-        errorRows: data.failed ?? 0,
-        errors: (data.errors ?? []).map((e) => ({
+        importedRows: batchData.imported ?? validRows.length,
+        errorRows: batchData.failed ?? 0,
+        errors: (batchData.errors ?? []).map((e) => ({
           rowIndex: e.index,
           full_name: validRows[e.index]?.full_name ?? '',
           email: e.email,

@@ -33,6 +33,7 @@ import type {
 } from '../../types/lead.ts'
 import type { CustomerEnterprise } from '../../types/customer.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
+import TableActionMenu from '../../components/TableActionMenu/TableActionMenu.tsx'
 import './LeadFormsPage.css'
 
 
@@ -2025,10 +2026,10 @@ export default function LeadFormsPage() {
                           </select>
                         </td>
 
-                        <td style={{ textAlign: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flexWrap: 'wrap' }}>
-                            {/* S4-07: Action Nhận Lead nếu đang chờ hoặc chưa nhận */}
-                            {(l.assignment_status === 'PENDING' || l.status === 'NEW') && l.assignment_status !== 'ACCEPTED' && (
+                        <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <div className="table-actions-container">
+                            {/* Primary Action Button */}
+                            {(l.assignment_status === 'PENDING' || l.status === 'NEW') && l.assignment_status !== 'ACCEPTED' ? (
                               <button
                                 type="button"
                                 className="btn-action-pill accept"
@@ -2039,59 +2040,28 @@ export default function LeadFormsPage() {
                               >
                                 {acceptingLeadId === l.id ? '...' : 'Nhận'}
                               </button>
-                            )}
-
-                            {/* S4-07: Action Từ chối Lead (bắt buộc nhập lý do) */}
-                            {(l.assignment_status === 'PENDING' || (l.status === 'NEW' && l.owner_id)) && (
+                            ) : l.status === 'CONVERTED' ? (
                               <button
                                 type="button"
-                                className="btn-action-pill reject"
-                                onClick={() => handleOpenRejectModal(l)}
-                                title="Từ chối nhận Lead này (Bắt buộc lý do để quay lại hàng chờ)"
-                                id={`btn-reject-lead-${l.id}`}
-                              >
-                                Từ chối
-                              </button>
-                            )}
-
-                            {/* S4-07: Nếu quá hạn SLA -> Có nút Cảnh báo Trưởng nhóm */}
-                            {l.sla_status === 'OVERDUE' && l.assignment_status !== 'ACCEPTED' && (
-                              <button
-                                type="button"
-                                className="btn-action-icon alert"
-                                onClick={() => handleAlertManagerForOverdue(l)}
-                                title="Gửi cảnh báo quá hạn SLA phản hồi tới Trưởng nhóm"
-                                style={{ color: '#b91c1c', borderColor: '#fca5a5', background: '#fef2f2' }}
-                              >
-                                <IconAlertTriangle />
-                              </button>
-                            )}
-
-                            {/* Nút Chuyển đổi (S4-08) */}
-                            {l.status === 'CONVERTED' ? (
-                              <button
-                                type="button"
-                                className="tab-badge"
-                                style={{ background: '#ecfdf5', color: '#059669', borderColor: '#a7f3d0', fontSize: '11px', cursor: 'pointer', padding: '3px 8px', border: '1px solid #a7f3d0', borderRadius: '6px' }}
-                                title={`Đã chuyển đổi sang Khách hàng: ${l.converted_customer_name || 'Khách hàng CRM'} (Mã KH: ${l.converted_customer_code || 'N/A'})${l.converted_opportunity_title ? ` | Cơ hội: ${l.converted_opportunity_title}` : ''}. Click để xem hồ sơ.`}
+                                className="btn-action-pill converted"
+                                title={`Đã chuyển đổi sang Khách hàng: ${l.converted_customer_name || 'Khách hàng CRM'}. Click để xem hồ sơ.`}
                                 onClick={() => navigate('/dashboard/customers')}
                               >
-                                Đã chuyển
+                                ✓ Đã chuyển
                               </button>
                             ) : (
                               <button
                                 type="button"
-                                className="btn-action-icon"
-                                style={{ color: '#2563eb', borderColor: '#bfdbfe', background: '#eff6ff' }}
+                                className="btn-action-pill convert-trigger"
                                 onClick={() => handleOpenConvertModal(l)}
                                 title="Chuyển đổi thành Khách hàng & Cơ hội (S4-08)"
                                 id={`btn-convert-lead-${l.id}`}
                               >
-                                <IconUserCheck />
+                                Chuyển đổi
                               </button>
                             )}
 
-                            {/* Nút Xem lịch sử tương tác (S4-06) */}
+                            {/* Quick Action: Xem lịch sử tương tác */}
                             <button
                               type="button"
                               className="btn-action-icon"
@@ -2103,28 +2073,41 @@ export default function LeadFormsPage() {
                               <IconHistory />
                             </button>
 
-                            {/* Nút Chấm điểm */}
-                            <button
-                              type="button"
-                              className="btn-action-icon edit"
-                              onClick={() => handleOpenScoreModal(l)}
-                              title="Xem chi tiết & Điều chỉnh điểm số"
-                              id={`btn-score-lead-${l.id}`}
-                            >
-                              <IconTarget />
-                            </button>
-
-
-                            {/* Nút Xóa */}
-                            <button
-                              type="button"
-                              className="btn-action-icon delete"
-                              onClick={() => setDeletingLead(l)}
-                              title="Xóa Lead này"
-                              id={`btn-delete-lead-${l.id}`}
-                            >
-                              <IconTrash />
-                            </button>
+                            {/* More Actions Dropdown Menu */}
+                            <TableActionMenu
+                              buttonId={`btn-more-actions-lead-${l.id}`}
+                              items={[
+                                {
+                                  key: 'reject',
+                                  label: 'Từ chối Lead',
+                                  icon: <IconX />,
+                                  onClick: () => handleOpenRejectModal(l),
+                                  danger: true,
+                                  disabled: !(l.assignment_status === 'PENDING' || (l.status === 'NEW' && l.owner_id)),
+                                },
+                                {
+                                  key: 'alert',
+                                  label: 'Cảnh báo quá hạn SLA',
+                                  icon: <IconAlertTriangle />,
+                                  onClick: () => handleAlertManagerForOverdue(l),
+                                  danger: true,
+                                  disabled: !(l.sla_status === 'OVERDUE' && l.assignment_status !== 'ACCEPTED'),
+                                },
+                                {
+                                  key: 'score',
+                                  label: 'Chấm điểm & Phân hạng',
+                                  icon: <IconTarget />,
+                                  onClick: () => handleOpenScoreModal(l),
+                                },
+                                {
+                                  key: 'delete',
+                                  label: 'Xóa Lead này',
+                                  icon: <IconTrash />,
+                                  onClick: () => setDeletingLead(l),
+                                  danger: true,
+                                },
+                              ]}
+                            />
                           </div>
                         </td>
                       </tr>
@@ -5192,7 +5175,7 @@ export default function LeadFormsPage() {
                   <div className="form-group" style={{ gridColumn: 'span 2' }}>
                     <label>Nội dung chi tiết trao đổi</label>
                     <textarea
-                      rows={2}
+                      rows={3}
                       className="form-control"
                       placeholder="Ghi lại các ý chính trao đổi, phản hồi của khách, thắc mắc tính năng..."
                       value={newInteractionContent}
@@ -5298,19 +5281,19 @@ export default function LeadFormsPage() {
                     const getIconAndClass = () => {
                       switch (act.type) {
                         case 'CALL':
-                          return { icon: '', cls: 'call' }
+                          return { icon: <IconPhone />, cls: 'call' }
                         case 'EMAIL':
-                          return { icon: '', cls: 'email' }
+                          return { icon: <IconMail />, cls: 'email' }
                         case 'MEETING':
-                          return { icon: '', cls: 'meeting' }
+                          return { icon: <IconCalendar />, cls: 'meeting' }
                         case 'NOTE':
-                          return { icon: '', cls: 'note' }
+                          return { icon: <IconFileText />, cls: 'note' }
                         case 'STATUS_CHANGE':
-                          return { icon: '', cls: 'status_change' }
+                          return { icon: <IconRefreshCw />, cls: 'status_change' }
                         case 'SCORE_UPDATE':
-                          return { icon: '', cls: 'score_update' }
+                          return { icon: <IconTarget />, cls: 'score_update' }
                         default:
-                          return { icon: '', cls: 'system' }
+                          return { icon: <IconAlertTriangle />, cls: 'system' }
                       }
                     }
                     const { icon, cls } = getIconAndClass()

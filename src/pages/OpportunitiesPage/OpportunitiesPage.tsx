@@ -13,6 +13,7 @@ import StalledOpportunityAlerts from '../../components/StalledOpportunityAlerts/
 import ReassignOpportunityModal from '../../components/ReassignOpportunityModal/ReassignOpportunityModal.tsx'
 import { opportunityActivityService } from '../../services/opportunityActivityService.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
+import TableActionMenu from '../../components/TableActionMenu/TableActionMenu.tsx'
 import './OpportunitiesPage.css'
 
 
@@ -629,8 +630,8 @@ export default function OpportunitiesPage() {
                         <td>
                           <span className="owner-badge">{opp.owner_name}</span>
                         </td>
-                        <td style={{ textAlign: 'center' }}>
-                          <div className="table-actions">
+                        <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <div className="table-actions-container">
                             <button
                               type="button"
                               className="btn-action view-btn"
@@ -647,27 +648,31 @@ export default function OpportunitiesPage() {
                             >
                               <span>Công việc</span>
                             </button>
-                            {isManagerOrAdmin && opp.status === 'OPEN' && (
-                              <button
-                                type="button"
-                                className="btn-action reassign-btn"
-                                title="Phân bổ lại cơ hội cho người khác (S5-08)"
-                                onClick={() => {
-                                  setOppToReassign(opp)
-                                  setIsReassignModalOpen(true)
-                                }}
-                              >
-                                <span>Chuyển giao</span>
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              className="btn-action delete-btn"
-                              title="Xóa cơ hội"
-                              onClick={() => handleDeleteOpp(opp)}
-                            >
-                              <span>Xóa</span>
-                            </button>
+                            <TableActionMenu
+                              buttonId={`btn-more-opp-${opp.id}`}
+                              items={[
+                                {
+                                  key: 'detail',
+                                  label: 'Xem chi tiết cơ hội',
+                                  onClick: () => handleOpenDetail(opp, 'DETAILS'),
+                                },
+                                {
+                                  key: 'reassign',
+                                  label: 'Phân bổ lại (Chuyển giao)',
+                                  onClick: () => {
+                                    setOppToReassign(opp)
+                                    setIsReassignModalOpen(true)
+                                  },
+                                  disabled: !(isManagerOrAdmin && opp.status === 'OPEN'),
+                                },
+                                {
+                                  key: 'delete',
+                                  label: 'Xóa cơ hội',
+                                  onClick: () => handleDeleteOpp(opp),
+                                  danger: true,
+                                },
+                              ]}
+                            />
                           </div>
                         </td>
                       </tr>

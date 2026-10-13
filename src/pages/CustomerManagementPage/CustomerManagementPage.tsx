@@ -909,7 +909,7 @@ export default function CustomerManagementPage() {
           {/* Customer Table */}
           <div className="customer-table-card">
             <div className="customer-table-responsive">
-              <table className="enterprise-customer-table">
+              <table className="enterprise-customer-table cust-main-table">
                 <thead>
                   <tr>
                     <th>Mã KH</th>
@@ -1106,7 +1106,7 @@ export default function CustomerManagementPage() {
           </div>
 
           <div className="customer-table-responsive">
-            <table className="enterprise-customer-table">
+            <table className="enterprise-customer-table cust-contacts-table">
               <thead>
                 <tr>
                   <th>Họ và tên</th>
@@ -1314,7 +1314,7 @@ export default function CustomerManagementPage() {
           </div>
 
           <div className="customer-table-responsive">
-            <table className="enterprise-customer-table">
+            <table className="enterprise-customer-table cust-tickets-table">
               <thead>
                 <tr>
                   <th>Khách hàng</th>
@@ -1424,7 +1424,7 @@ export default function CustomerManagementPage() {
           </div>
 
           <div className="customer-table-responsive">
-            <table className="enterprise-customer-table">
+            <table className="enterprise-customer-table cust-periodic-table">
               <thead>
                 <tr>
                   <th>Khách hàng</th>
@@ -1445,26 +1445,46 @@ export default function CustomerManagementPage() {
                   periodicCareList.map((item) => (
                     <tr key={item.customer.id}>
                       <td>
-                        <strong>{item.customer.name}</strong> ({item.customer.code})
+                        <div className="periodic-cust-cell">
+                          <span className="periodic-cust-name">{item.customer.name}</span>
+                          <span className="cust-code-tag">{item.customer.code}</span>
+                        </div>
                       </td>
                       <td>
-                        <span style={{ color: '#dc2626', fontWeight: 700 }}>
-                          {item.days_without_interaction} ngày
+                        <span className="cust-days-pill">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                          </svg>
+                          <span>{item.days_without_interaction} ngày</span>
                         </span>
                       </td>
                       <td>
-                        <strong>{item.contract_value.toLocaleString('vi-VN')} đ</strong>
+                        <strong style={{ color: '#0f172a', fontSize: '13.5px' }}>
+                          {item.contract_value.toLocaleString('vi-VN')} đ
+                        </strong>
                       </td>
-                      <td>{item.customer.owner_name}</td>
                       <td>
-                        <div className="cust-action-group">
+                        <div className="periodic-owner-cell">
+                          <div className="periodic-avatar">
+                            {(item.customer.owner_name || 'U').charAt(0).toUpperCase()}
+                          </div>
+                          <span>{item.customer.owner_name || 'Chưa phân bổ'}</span>
+                        </div>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div className="cust-action-group" style={{ justifyContent: 'flex-end' }}>
                           {item.is_contacted_today ? (
-                            <span style={{ color: '#059669', fontSize: '12px', fontWeight: 600 }}>Đã liên hệ hôm nay</span>
+                            <span className="cust-contacted-badge">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                              <span>Đã liên hệ hôm nay</span>
+                            </span>
                           ) : (
                             <button
                               type="button"
-                              className="btn btn-primary"
-                              style={{ padding: '4px 10px', fontSize: '12px' }}
+                              className="btn btn-primary cust-call-btn"
                               onClick={() => {
                                 customerService.addActivity({
                                   customer_id: item.customer.id,
@@ -1478,7 +1498,10 @@ export default function CustomerManagementPage() {
                                 setPeriodicCareList([...periodicCareList])
                               }}
                             >
-                              Đánh dấu đã gọi
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                              </svg>
+                              <span>Đánh dấu đã gọi</span>
                             </button>
                           )}
                         </div>
@@ -1498,12 +1521,15 @@ export default function CustomerManagementPage() {
           <div className="c360-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="c360-header">
               <div className="c360-header-info">
-                <h3>{selected360Customer.name}</h3>
+                <h3>
+                  <span>🏢</span>
+                  <span>{selected360Customer.name}</span>
+                </h3>
                 <div className="c360-header-meta">
-                  <span>Mã: {selected360Customer.code}</span>
-                  <span>Mã số thuế: {selected360Customer.tax_code || 'Chưa cập nhật'}</span>
-                  <span>Ngành: {selected360Customer.industry}</span>
-                  <span>Người phụ trách: {selected360Customer.owner_name}</span>
+                  <span className="c360-meta-chip">🔖 Mã: <strong>{selected360Customer.code}</strong></span>
+                  <span className="c360-meta-chip">📑 MST: {selected360Customer.tax_code || 'Chưa cập nhật'}</span>
+                  <span className="c360-meta-chip">💼 Ngành: {selected360Customer.industry}</span>
+                  <span className="c360-meta-chip">👤 Phụ trách: {selected360Customer.owner_name}</span>
                 </div>
               </div>
               <button
@@ -1511,6 +1537,7 @@ export default function CustomerManagementPage() {
                 className="cust-modal-close-btn"
                 style={{ color: '#ffffff' }}
                 onClick={() => setSelected360Customer(null)}
+                title="Đóng cửa sổ"
               >
                 &times;
               </button>
@@ -1532,26 +1559,31 @@ export default function CustomerManagementPage() {
                     <span className="c360-kpi-val">{summary.openValue.toLocaleString('vi-VN')} đ</span>
                   </div>
                   {groupSummary.childrenCount > 0 ? (
-                    <div className="c360-kpi-item" style={{ background: '#ecfdf5', borderColor: '#a7f3d0' }}>
-                      <span className="c360-kpi-label" style={{ color: '#047857', fontWeight: 600 }}>Tổng HĐ Tập đoàn ({groupSummary.childrenCount} cty con)</span>
-                      <span className="c360-kpi-val highlight" style={{ color: '#047857' }}>
+                    <div className="c360-kpi-item" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
+                      <span className="c360-kpi-label" style={{ color: '#166534', fontWeight: 600 }}>Tổng HĐ Tập đoàn ({groupSummary.childrenCount} cty con)</span>
+                      <span className="c360-kpi-val highlight" style={{ color: '#166534' }}>
                         {groupSummary.totalValue.toLocaleString('vi-VN')} đ
                       </span>
                     </div>
                   ) : parentRel ? (
-                    <div className="c360-kpi-item" style={{ background: '#eff6ff', borderColor: '#bfdbfe' }}>
-                      <span className="c360-kpi-label" style={{ color: '#1d4ed8', fontWeight: 600 }}>Thuộc Tập đoàn</span>
-                      <span
-                        className="c360-kpi-val"
-                        style={{ fontSize: '13px', color: '#1d4ed8', cursor: 'pointer', textDecoration: 'underline' }}
-                        title="Xem trang 360 của công ty mẹ"
-                        onClick={() => {
-                          const pCust = customerService.getCustomerById(parentRel.parent_id)
-                          if (pCust) setSelected360Customer(pCust)
-                        }}
-                      >
-                        {parentRel.parent_name}
-                      </span>
+                    <div className="c360-kpi-item">
+                      <span className="c360-kpi-label">Thuộc Tập đoàn</span>
+                      <div className="c360-parent-chip">
+                        <span className="c360-parent-name" title={parentRel.parent_name}>
+                          🏢 {parentRel.parent_name}
+                        </span>
+                        <button
+                          type="button"
+                          className="c360-parent-jump-btn"
+                          title="Xem trang 360 của công ty mẹ"
+                          onClick={() => {
+                            const pCust = customerService.getCustomerById(parentRel.parent_id)
+                            if (pCust) setSelected360Customer(pCust)
+                          }}
+                        >
+                          Xem ↗
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div className="c360-kpi-item">
@@ -1561,7 +1593,14 @@ export default function CustomerManagementPage() {
                   )}
                   <div className="c360-kpi-item">
                     <span className="c360-kpi-label">Tình trạng</span>
-                    <span className={`c360-kpi-val ${summary.isAtRisk ? 'risk' : ''}`}>
+                    <span className={`c360-kpi-val ${summary.isAtRisk ? 'risk' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: summary.isAtRisk ? '#ef4444' : '#10b981',
+                        display: 'inline-block'
+                      }} />
                       {summary.isAtRisk ? 'Nguy cơ rời bỏ' : 'Ổn định'}
                     </span>
                   </div>
@@ -1723,28 +1762,55 @@ export default function CustomerManagementPage() {
                         </div>
                       </div>
                     ) : parentRel ? (
-                      <div style={{ padding: '20px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px' }}>
-                        <h4 style={{ margin: '0 0 8px 0', color: '#1e40af', fontSize: '15px' }}>
-                          Công ty thành viên trực thuộc Tập đoàn
-                        </h4>
-                        <p style={{ margin: '0 0 16px 0', fontSize: '13.5px', color: '#1e3a8a' }}>
-                          Doanh nghiệp này là công ty con trực thuộc: <strong>{parentRel.parent_name}</strong>
+                      <div style={{
+                        padding: '24px',
+                        background: 'linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%)',
+                        border: '1px solid #bfdbfe',
+                        borderRadius: '14px',
+                        boxShadow: '0 2px 6px rgba(37, 99, 235, 0.06)'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '20px' }}>🏢</span>
+                          <h4 style={{ margin: 0, color: '#1e40af', fontSize: '16px', fontWeight: 700 }}>
+                            Công ty thành viên trực thuộc Tập đoàn
+                          </h4>
+                        </div>
+                        <p style={{ margin: '0 0 18px 30px', fontSize: '14px', color: '#334155', lineHeight: 1.5 }}>
+                          Doanh nghiệp này là công ty con trực thuộc tập đoàn:{' '}
+                          <span style={{ display: 'inline-block', background: '#dbeafe', color: '#1d4ed8', padding: '2px 10px', borderRadius: '6px', fontWeight: 600 }}>
+                            {parentRel.parent_name}
+                          </span>
                         </p>
-                        <div style={{ display: 'flex', gap: '10px' }}>
+                        <div style={{ display: 'flex', gap: '12px', marginLeft: '30px', flexWrap: 'wrap' }}>
                           <button
                             type="button"
                             className="btn btn-primary"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '9px 18px', borderRadius: '8px', fontWeight: 600 }}
                             onClick={() => {
                               const pCust = customerService.getCustomerById(parentRel.parent_id)
                               if (pCust) setSelected360Customer(pCust)
                             }}
                           >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                              <polyline points="15 3 21 3 21 9" />
+                              <line x1="10" y1="14" x2="21" y2="3" />
+                            </svg>
                             Mở xem Trang 360 của Công ty mẹ
                           </button>
                           <button
                             type="button"
                             className="btn btn-secondary"
-                            style={{ color: '#dc2626', borderColor: '#fca5a5' }}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '9px 16px',
+                              borderRadius: '8px',
+                              color: '#dc2626',
+                              borderColor: '#fca5a5',
+                              background: '#fff'
+                            }}
                             onClick={() => {
                               if (confirm(`Bạn có chắc muốn gỡ liên kết công ty mẹ của "${selected360Customer.name}"?`)) {
                                 customerService.removeParentCompany(selected360Customer.id)
@@ -1753,6 +1819,10 @@ export default function CustomerManagementPage() {
                               }
                             }}
                           >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
                             Gỡ khỏi tập đoàn
                           </button>
                         </div>
@@ -2313,7 +2383,7 @@ export default function CustomerManagementPage() {
               </p>
 
               <div className="customer-table-responsive" style={{ maxHeight: '300px' }}>
-                <table className="enterprise-customer-table">
+                <table className="enterprise-customer-table cust-import-table">
                   <thead>
                     <tr>
                       <th>Dòng</th>
