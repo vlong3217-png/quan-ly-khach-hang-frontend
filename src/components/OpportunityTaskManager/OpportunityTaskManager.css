@@ -355,19 +355,37 @@
 }
 
 /* ── Modal ── */
-.opp-task-modal {
-  max-width: 580px;
-  width: 100%;
+.opp-task-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
 }
 
-.opp-task-modal .form-row-2 {
+.opp-task-modal-card {
+  max-width: 620px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.opp-task-modal-card .form-row-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
 }
 
 @media (max-width: 640px) {
-  .opp-task-modal .form-row-2 {
+  .opp-task-modal-card .form-row-2 {
     grid-template-columns: 1fr;
   }
 }

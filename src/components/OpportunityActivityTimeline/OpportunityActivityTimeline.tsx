@@ -533,11 +533,11 @@ export default function OpportunityActivityTimeline({
         </div>
       )}
 
-      {/* ── MODAL GHI NHẬN HOẠT ĐỘNG MỚI (User Story S5-03) ── */}
+      {/* ── MODAL GHI NHẬN HOẠT ĐỘNG MỚI ── */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+        <div className="opp-timeline-modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div
-            className="modal-content opp-activity-modal"
+            className="opp-activity-modal-card"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
