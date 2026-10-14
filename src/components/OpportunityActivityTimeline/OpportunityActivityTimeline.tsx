@@ -365,35 +365,35 @@ export default function OpportunityActivityTimeline({
             className={`filter-pill ${filterType === 'CALL' ? 'active' : ''}`}
             onClick={() => setFilterType('CALL')}
           >
-            📞 Cuộc gọi ({activities.filter((a) => a.type === 'CALL').length})
+            Cuộc gọi ({activities.filter((a) => a.type === 'CALL').length})
           </button>
           <button
             type="button"
             className={`filter-pill ${filterType === 'EMAIL' ? 'active' : ''}`}
             onClick={() => setFilterType('EMAIL')}
           >
-            ✉️ Email ({activities.filter((a) => a.type === 'EMAIL').length})
+            Email ({activities.filter((a) => a.type === 'EMAIL').length})
           </button>
           <button
             type="button"
             className={`filter-pill ${filterType === 'MEETING' ? 'active' : ''}`}
             onClick={() => setFilterType('MEETING')}
           >
-            🤝 Demo / Gặp mặt ({activities.filter((a) => a.type === 'MEETING').length})
+            Demo / Gặp mặt ({activities.filter((a) => a.type === 'MEETING').length})
           </button>
           <button
             type="button"
             className={`filter-pill ${filterType === 'NOTE' ? 'active' : ''}`}
             onClick={() => setFilterType('NOTE')}
           >
-            📝 Ghi chú ({activities.filter((a) => a.type === 'NOTE').length})
+            Ghi chú ({activities.filter((a) => a.type === 'NOTE').length})
           </button>
           <button
             type="button"
             className={`filter-pill ${filterType === 'STAGE_CHANGE' ? 'active' : ''}`}
             onClick={() => setFilterType('STAGE_CHANGE')}
           >
-            🔄 Giai đoạn ({activities.filter((a) => a.type === 'STAGE_CHANGE').length})
+            Giai đoạn ({activities.filter((a) => a.type === 'STAGE_CHANGE').length})
           </button>
         </div>
 
@@ -426,7 +426,6 @@ export default function OpportunityActivityTimeline({
         </div>
       ) : error ? (
         <div className="timeline-state-box error-state">
-          <div className="error-icon">⚠️</div>
           <p>{error}</p>
           <button type="button" className="btn btn-secondary" onClick={loadActivities}>
             Thử lại
@@ -434,7 +433,6 @@ export default function OpportunityActivityTimeline({
         </div>
       ) : filteredActivities.length === 0 ? (
         <div className="timeline-state-box empty-state" id="timeline-empty-state">
-          <div className="empty-illustration">📭</div>
           <h4>Chưa có hoạt động nào được ghi nhận</h4>
           <p>
             {searchKeyword || filterType !== 'ALL'
@@ -561,7 +559,7 @@ export default function OpportunityActivityTimeline({
               <div className="modal-body">
                 {formError && (
                   <div className="modal-alert-error" role="alert">
-                    <span>⚠️ {formError}</span>
+                    <span>{formError}</span>
                   </div>
                 )}
 
@@ -585,11 +583,11 @@ export default function OpportunityActivityTimeline({
                       })
                     }
                   >
-                    <option value="CALL">📞 Cuộc gọi điện thoại</option>
-                    <option value="EMAIL">✉️ Gửi Email</option>
-                    <option value="MEETING">🤝 Cuộc họp / Thuyết trình Demo</option>
-                    <option value="NOTE">📝 Ghi chú nội bộ</option>
-                    <option value="TASK">✅ Công việc phát sinh</option>
+                    <option value="CALL">Cuộc gọi điện thoại</option>
+                    <option value="EMAIL">Gửi Email</option>
+                    <option value="MEETING">Cuộc họp / Thuyết trình Demo</option>
+                    <option value="NOTE">Ghi chú nội bộ</option>
+                    <option value="TASK">Công việc phát sinh</option>
                   </select>
                 </div>
 
@@ -685,7 +683,7 @@ export default function OpportunityActivityTimeline({
                 </div>
 
                 <div className="form-note">
-                  <span>ℹ️ Hoạt động sẽ được gắn trực tiếp vào dòng thời gian của cơ hội này và hiển thị người thực hiện là <strong>{user?.full_name || 'Bạn'}</strong>.</span>
+                  <span>Hoạt động sẽ được gắn trực tiếp vào dòng thời gian của cơ hội này và hiển thị người thực hiện là <strong>{user?.full_name || 'Bạn'}</strong>.</span>
                 </div>
               </div>
 
