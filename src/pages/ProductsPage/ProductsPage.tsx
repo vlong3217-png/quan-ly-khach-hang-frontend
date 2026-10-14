@@ -289,15 +289,29 @@ export default function ProductsPage() {
                     >
                       {p.status === 'ACTIVE' ? 'Ngừng' : 'Mở lại'}
                     </button>
-                    <button
-                      type="button"
-                      className="action-btn delete-btn"
-                      disabled={p.has_quotes}
-                      title={p.has_quotes ? 'Đã có trong báo giá - không thể xóa!' : 'Xóa sản phẩm'}
-                      onClick={() => handleDelete(p)}
-                    >
-                      Xóa
-                    </button>
+                    <details className="crm-more-actions">
+                      <summary className="crm-more-trigger" title="Thao tác khác" aria-label="Thao tác khác">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="5" r="1" />
+                          <circle cx="12" cy="12" r="1" />
+                          <circle cx="12" cy="19" r="1" />
+                        </svg>
+                      </summary>
+                      <div className="crm-more-menu">
+                        <button
+                          type="button"
+                          className="crm-more-item danger"
+                          disabled={p.has_quotes}
+                          title={p.has_quotes ? 'Đã có trong báo giá - không thể xóa!' : 'Xóa sản phẩm'}
+                          onClick={(event) => {
+                            event.currentTarget.closest('details')?.removeAttribute('open')
+                            handleDelete(p)
+                          }}
+                        >
+                          Xóa sản phẩm
+                        </button>
+                      </div>
+                    </details>
                   </td>
                 </tr>
               ))
