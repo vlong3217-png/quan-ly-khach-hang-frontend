@@ -374,7 +374,7 @@ export default function CampaignsPage() {
             <table className="campaign-data-table">
               <thead>
                 <tr>
-                  <th style={{ width: '100px' }}>Mã CD</th>
+                  <th style={{ width: '100px' }}>Số thứ tự</th>
                   <th>Tên chiến dịch & Kênh</th>
                   <th style={{ width: '180px' }}>Ngân sách & Chi phí</th>
                   <th style={{ width: '180px' }}>Thời gian thực hiện</th>
@@ -384,7 +384,7 @@ export default function CampaignsPage() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedCampaigns.map((camp) => {
+                {paginatedCampaigns.map((camp, index) => {
                   const channelCfg = CHANNEL_CONFIG[camp.channel] || CHANNEL_CONFIG.OTHER
                   const statusCfg = STATUS_CONFIG[camp.status] || STATUS_CONFIG.PLANNING
                   const costPct = camp.budget > 0 ? Math.min(100, Math.round((camp.actual_cost / camp.budget) * 100)) : 0
@@ -392,7 +392,7 @@ export default function CampaignsPage() {
                   return (
                     <tr key={camp.id} id={`campaign-row-${camp.id}`}>
                       <td>
-                        <span className="camp-code-tag">{camp.code}</span>
+                        <span className="camp-code-tag">{(currentPage - 1) * pageSize + index + 1}</span>
                       </td>
 
                       <td>
