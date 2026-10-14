@@ -29,82 +29,21 @@ function getAuthHeaders(): Record<string, string> {
   return headers
 }
 
-// Dữ liệu mẫu ban đầu cho công việc liên quan đến cơ hội bán hàng
-const INITIAL_TASKS: OpportunityTask[] = [
-  {
-    id: 'opp-task-1',
-    opportunity_id: 'opp-001',
-    opportunity_title: 'Hợp đồng Nâng cấp CRM Toàn diện - AlphaTech',
-    title: 'Soạn thảo bảng báo giá chính thức kèm chính sách chiết khấu năm',
-    description: 'Áp dụng chính sách giảm 10% gói Enterprise 50 Users khi thanh toán 1 năm trả trước. Gửi bản PDF có chữ ký Giám đốc kinh doanh.',
-    assigned_to_id: 1,
-    assigned_to_name: 'Nguyễn Văn An',
-    due_date: '2026-10-15',
-    due_time: '17:00',
-    status: 'IN_PROGRESS',
-    priority: 'HIGH',
-    reminder_type: '1_DAY_BEFORE',
-    reminder_at: '2026-10-14T17:00:00Z',
-    is_completed: false,
-    created_at: '2026-10-05T14:30:00Z',
-  },
-  {
-    id: 'opp-task-2',
-    opportunity_id: 'opp-001',
-    opportunity_title: 'Hợp đồng Nâng cấp CRM Toàn diện - AlphaTech',
-    title: 'Đặt lịch họp trực tiếp chốt điều khoản hợp đồng tại trụ sở AlphaTech',
-    description: 'Mời Trưởng phòng Kỹ thuật và Kế toán trưởng AlphaTech tham gia để thống nhất tiến độ nghiệm thu và đợt thanh toán.',
-    assigned_to_id: 1,
-    assigned_to_name: 'Nguyễn Văn An',
-    due_date: '2026-10-20',
-    due_time: '09:30',
-    status: 'TODO',
-    priority: 'URGENT',
-    reminder_type: '1_HOUR_BEFORE',
-    reminder_at: '2026-10-20T08:30:00Z',
-    is_completed: false,
-    created_at: '2026-10-06T10:00:00Z',
-  },
-  {
-    id: 'opp-task-3',
-    opportunity_id: 'opp-001',
-    opportunity_title: 'Hợp đồng Nâng cấp CRM Toàn diện - AlphaTech',
-    title: 'Gửi bản demo giải pháp và tài liệu API tích hợp',
-    description: 'Đã gửi link tài liệu Swagger API và tài khoản demo staging cho đội IT khách hàng kiểm tra.',
-    assigned_to_id: 1,
-    assigned_to_name: 'Nguyễn Văn An',
-    due_date: '2026-10-04',
-    due_time: '18:00',
-    status: 'COMPLETED',
-    priority: 'MEDIUM',
-    reminder_type: 'ON_DUE',
-    is_completed: true,
-    completed_at: '2026-10-04T16:45:00Z',
-    created_at: '2026-10-02T11:00:00Z',
-  },
-  {
-    id: 'opp-task-4',
-    opportunity_id: 'opp-002',
-    opportunity_title: 'Gói Chuyển đổi số Quản trị Xây dựng - Hòa Bình Group',
-    title: 'Thẩm định hồ sơ năng lực nhà thầu và phương án bảo mật dữ liệu',
-    description: 'Soạn thảo phụ lục bảo mật thông tin NDA và kế hoạch sao lưu dữ liệu máy chủ đám mây.',
-    assigned_to_id: 2,
-    assigned_to_name: 'Trần Thị Bình',
-    due_date: '2026-10-18',
-    due_time: '16:00',
-    status: 'TODO',
-    priority: 'HIGH',
-    reminder_type: '1_DAY_BEFORE',
-    reminder_at: '2026-10-17T16:00:00Z',
-    is_completed: false,
-    created_at: '2026-10-07T16:00:00Z',
-  },
-]
+// Dữ liệu ban đầu rỗng cho công việc liên quan đến cơ hội bán hàng
+const INITIAL_TASKS: OpportunityTask[] = []
 
 function getStoredTasks(): OpportunityTask[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      // Dọn dẹp nếu còn tàn dư mock task opp-task-
+      if (Array.isArray(parsed) && parsed.some((t: any) => typeof t.id === 'string' && t.id.startsWith('opp-task-'))) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([]))
+        return []
+      }
+      return parsed
+    }
   } catch {}
   localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_TASKS))
   return INITIAL_TASKS
