@@ -141,7 +141,6 @@ export default function CategoriesPage() {
           <thead>
             <tr>
               <th style={{ width: '80px' }}>Thứ tự</th>
-              <th>Mã danh mục</th>
               <th>Tên hiển thị</th>
               <th>Tham chiếu dữ liệu</th>
               <th>Mô tả</th>
@@ -151,7 +150,7 @@ export default function CategoriesPage() {
           <tbody>
             {categories.length === 0 ? (
               <tr>
-                <td colSpan={6} className="empty-cell">Chưa có danh mục nào trong nhóm này.</td>
+                <td colSpan={5} className="empty-cell">Chưa có danh mục nào trong nhóm này.</td>
               </tr>
             ) : (
               categories
@@ -160,7 +159,6 @@ export default function CategoriesPage() {
                   return (
                     <tr key={item.id}>
                       <td><span className="order-num">{item.sort_order}</span></td>
-                      <td className="cat-code">{item.code}</td>
                       <td><strong>{item.name}</strong></td>
                       <td>
                         {item.is_referenced ? (

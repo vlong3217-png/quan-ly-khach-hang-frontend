@@ -162,7 +162,6 @@ export default function PipelineStagesPage() {
           <thead>
             <tr>
               <th style={{ width: '80px' }}>Thứ tự</th>
-              <th>Mã</th>
               <th>Tên giai đoạn</th>
               <th>Xác suất thắng (%)</th>
               <th>Điều kiện bắt buộc để chuyển giai đoạn (Exit criteria)</th>
@@ -177,7 +176,6 @@ export default function PipelineStagesPage() {
                 return (
                   <tr key={stage.id}>
                     <td><span className="order-num">{stage.order}</span></td>
-                    <td><code>{stage.code}</code></td>
                     <td>
                       <strong style={{ color: stage.color }}>{stage.name}</strong>
                       {stage.is_closed_stage && <span className="closed-badge">Giai đoạn chốt</span>}
