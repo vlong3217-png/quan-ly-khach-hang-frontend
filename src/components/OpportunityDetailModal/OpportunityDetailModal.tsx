@@ -49,8 +49,10 @@ export default function OpportunityDetailModal({
   }
 
   // Format tiền tệ VNĐ
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+  const formatCurrency = (val: number | undefined | null) => {
+    const num = Number(val)
+    if (isNaN(num)) return '0 ₫'
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num)
   }
 
   // Chuyển giai đoạn Pipeline
@@ -299,9 +301,9 @@ export default function OpportunityDetailModal({
             </div>
             <h2 className="opp-title-heading">{currentOpp.title}</h2>
             <div className="opp-customer-subtitle">
-              <span>🏢 Khách hàng: <strong>{currentOpp.customer_name}</strong></span>
+              <span>Khách hàng: <strong>{currentOpp.customer_name}</strong></span>
               {currentOpp.contact_name && (
-                <span> | 👤 Người liên hệ: {currentOpp.contact_name}</span>
+                <span> • Người liên hệ: {currentOpp.contact_name}</span>
               )}
               {currentOpp.contact_phone && (
                 <span> ({currentOpp.contact_phone})</span>
@@ -339,33 +341,35 @@ export default function OpportunityDetailModal({
           </div>
         </div>
 
-        {/* ── Pipeline Stage Flow Ribbon & Close Actions (S5-05) ── */}
+        {/* ── Pipeline Stage Flow Ribbon & Close Actions ── */}
         <div className="opp-pipeline-ribbon">
-          <div className="ribbon-label">Quy trình bán hàng (Pipeline):</div>
-          <div className="ribbon-steps-container">
-            {stages.map((stage) => {
-              const isCurrent = stage.id === currentOpp.stage_id
-              return (
-                <button
-                  key={stage.id}
-                  type="button"
-                  className={`ribbon-step-btn ${isCurrent ? 'active-step' : ''} ${isClosed ? 'step-locked' : ''}`}
-                  disabled={isChangingStage || isClosed}
-                  onClick={() => handleStageChange(stage)}
-                  title={
-                    isClosed
-                      ? 'Cơ hội đã đóng, không thể đổi giai đoạn trực tiếp'
-                      : `Nhấp để chuyển sang: ${stage.name} (${stage.win_probability}%)`
-                  }
-                >
-                  <span className="step-name">{stage.name}</span>
-                  <span className="step-prob">{stage.win_probability}%</span>
-                </button>
-              )
-            })}
+          <div className="pipeline-flow-wrapper">
+            <span className="ribbon-label">Quy trình bán hàng (Pipeline):</span>
+            <div className="ribbon-steps-container">
+              {stages.map((stage) => {
+                const isCurrent = stage.id === currentOpp.stage_id
+                return (
+                  <button
+                    key={stage.id}
+                    type="button"
+                    className={`ribbon-step-btn ${isCurrent ? 'active-step' : ''} ${isClosed ? 'step-locked' : ''}`}
+                    disabled={isChangingStage || isClosed}
+                    onClick={() => handleStageChange(stage)}
+                    title={
+                      isClosed
+                        ? 'Cơ hội đã đóng, không thể đổi giai đoạn trực tiếp'
+                        : `Nhấp để chuyển sang: ${stage.name} (${stage.win_probability}%)`
+                    }
+                  >
+                    <span className="step-name">{stage.name}</span>
+                    <span className="step-prob">{stage.win_probability}%</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
-          {/* S5-05 Quick Action Buttons in Ribbon */}
+          {/* Quick Action Buttons */}
           <div className="opp-close-actions-ribbon">
             {!isClosed ? (
               <>
@@ -374,45 +378,45 @@ export default function OpportunityDetailModal({
                     type="button"
                     className="opp-btn-action-reassign-ribbon"
                     onClick={() => setIsReassignModalOpen(true)}
-                    title="Phân bổ lại cơ hội cho nhân viên khác trong nhóm (S5-08)"
+                    title="Phân bổ lại cơ hội cho nhân viên khác trong nhóm"
                     id="btn-reassign-ribbon"
                   >
-                    🔄 Phân bổ lại
+                    Phân bổ lại
                   </button>
                 )}
                 <button
                   type="button"
                   className="opp-btn-action-won"
                   onClick={() => setIsCloseWonModalOpen(true)}
-                  title="Chốt thành công cơ hội (S5-05 AC1)"
+                  title="Chốt thành công cơ hội"
                   id="btn-close-won"
                 >
-                  🏆 Đóng Thắng
+                  Đóng Thắng
                 </button>
                 <button
                   type="button"
                   className="opp-btn-action-lost"
                   onClick={() => setIsCloseLostModalOpen(true)}
-                  title="Chốt thất bại cơ hội (S5-05 AC2)"
+                  title="Chốt thất bại cơ hội"
                   id="btn-close-lost"
                 >
-                  ❌ Đóng Thua
+                  Đóng Thua
                 </button>
               </>
             ) : (
               <div className="opp-closed-status-pill">
                 <span className={`pill-badge badge-${currentOpp.status.toLowerCase()}`}>
-                  {currentOpp.status === 'WON' ? '✓ ĐÃ ĐÓNG THẮNG' : '✕ ĐÃ ĐÓNG THUA'}
+                  {currentOpp.status === 'WON' ? 'ĐÃ ĐÓNG THẮNG' : 'ĐÃ ĐÓNG THUA'}
                 </span>
                 {isManagerOrAdmin && (
                   <button
                     type="button"
                     className="opp-btn-action-reopen"
                     onClick={() => setIsReopenModalOpen(true)}
-                    title="Chỉ Quản lý/Trưởng nhóm mới có quyền mở lại cơ hội (S5-05 AC3)"
+                    title="Mở lại cơ hội bán hàng"
                     id="btn-reopen-opportunity"
                   >
-                    🔓 Mở lại cơ hội
+                    Mở lại cơ hội
                   </button>
                 )}
               </div>
@@ -423,9 +427,6 @@ export default function OpportunityDetailModal({
         {/* ── Notice Banner if Closed (S5-05) ── */}
         {isClosed && (
           <div className={`opp-closed-banner banner-${currentOpp.status.toLowerCase()}`}>
-            <div className="closed-banner-icon">
-              {currentOpp.status === 'WON' ? '🏆' : '📌'}
-            </div>
             <div className="closed-banner-content">
               <strong>
                 {currentOpp.status === 'WON'
@@ -456,7 +457,7 @@ export default function OpportunityDetailModal({
             onClick={() => setActiveTab('ACTIVITIES')}
             id="tab-btn-activities"
           >
-            📋 Lịch sử hoạt động (S5-03)
+            Lịch sử hoạt động
           </button>
           <button
             type="button"
@@ -464,7 +465,7 @@ export default function OpportunityDetailModal({
             onClick={() => setActiveTab('TASKS')}
             id="tab-btn-tasks"
           >
-            ✅ Công việc & Lịch nhắc (S5-04)
+            Công việc & Lịch nhắc
           </button>
           <button
             type="button"
@@ -472,7 +473,7 @@ export default function OpportunityDetailModal({
             onClick={() => setActiveTab('DETAILS')}
             id="tab-btn-details"
           >
-            ℹ️ Thông tin chi tiết cơ hội
+            Thông tin chi tiết
           </button>
         </div>
 
@@ -503,7 +504,7 @@ export default function OpportunityDetailModal({
               {/* Thẻ Kết quả Đóng Deal S5-05 nếu đã đóng */}
               {isClosed && (
                 <div className={`details-card full-width win-loss-summary-card ${currentOpp.status.toLowerCase()}-card`}>
-                  <h4>{currentOpp.status === 'WON' ? '🏆 Kết quả Chốt Thắng (Deal Won - S5-05)' : '❌ Kết quả Đóng Thua (Deal Lost - S5-05)'}</h4>
+                  <h4>{currentOpp.status === 'WON' ? 'Kết quả Chốt Thắng' : 'Kết quả Đóng Thua'}</h4>
                   <div className="win-loss-grid">
                     {currentOpp.status === 'WON' ? (
                       <>
@@ -632,7 +633,7 @@ export default function OpportunityDetailModal({
                         onClick={() => setIsReassignModalOpen(true)}
                         title="Bàn giao cơ hội cho người khác (S5-08)"
                       >
-                        [Chuyển giao 🔄]
+                        [Chuyển giao]
                       </button>
                     )}
                   </span>
@@ -649,7 +650,7 @@ export default function OpportunityDetailModal({
                 if (reassignHistory.length === 0) return null
                 return (
                   <div className="details-card full-width reassign-history-card">
-                    <h4>🔄 Lịch sử Phân bổ lại & Bàn giao Cơ hội (S5-08)</h4>
+                    <h4>Lịch sử phân bổ lại & bàn giao cơ hội</h4>
                     <div className="reassign-history-list">
                       {reassignHistory.map((item) => (
                         <div key={item.id} className="reassign-history-entry">
@@ -698,7 +699,7 @@ export default function OpportunityDetailModal({
         <div className="modal-overlay opp-submodal-overlay" onClick={() => !winLossSubmitting && setIsCloseWonModalOpen(false)}>
           <div className="modal-content opp-submodal-card" onClick={(e) => e.stopPropagation()}>
             <div className="submodal-header won-header">
-              <h3>🏆 Đóng Thắng Cơ Hội (Deal Won - S5-05)</h3>
+              <h3>Đóng Thắng Cơ Hội</h3>
               <button type="button" className="submodal-close-btn" onClick={() => setIsCloseWonModalOpen(false)}>✕</button>
             </div>
             <form onSubmit={handleConfirmCloseWon} className="submodal-form">
@@ -800,7 +801,7 @@ export default function OpportunityDetailModal({
         <div className="modal-overlay opp-submodal-overlay" onClick={() => !winLossSubmitting && setIsCloseLostModalOpen(false)}>
           <div className="modal-content opp-submodal-card" onClick={(e) => e.stopPropagation()}>
             <div className="submodal-header lost-header">
-              <h3>❌ Đóng Thua Cơ Hội (Deal Lost - S5-05)</h3>
+              <h3>Đóng Thua Cơ Hội</h3>
               <button type="button" className="submodal-close-btn" onClick={() => setIsCloseLostModalOpen(false)}>✕</button>
             </div>
             <form onSubmit={handleConfirmCloseLost} className="submodal-form">
@@ -888,7 +889,7 @@ export default function OpportunityDetailModal({
         <div className="modal-overlay opp-submodal-overlay" onClick={() => !winLossSubmitting && setIsReopenModalOpen(false)}>
           <div className="modal-content opp-submodal-card" onClick={(e) => e.stopPropagation()}>
             <div className="submodal-header reopen-header">
-              <h3>🔓 Mở Lại Cơ Hội Bán Hàng (S5-05 AC3)</h3>
+              <h3>Mở Lại Cơ Hội Bán Hàng</h3>
               <button type="button" className="submodal-close-btn" onClick={() => setIsReopenModalOpen(false)}>✕</button>
             </div>
             <form onSubmit={handleConfirmReopen} className="submodal-form">
