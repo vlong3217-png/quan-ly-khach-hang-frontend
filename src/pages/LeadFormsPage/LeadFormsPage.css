@@ -1480,23 +1480,46 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
+  margin-bottom: 6px;
 }
 
 .scoring-stat-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 16px;
+  padding: 16px 18px;
   display: flex;
   align-items: center;
   gap: 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scoring-stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+}
+
+.scoring-stat-card.avg {
+  border-left: 4px solid #2563eb;
+}
+
+.scoring-stat-card.hot {
+  border-left: 4px solid #ef4444;
+  background: #fffcfc;
+}
+
+.scoring-stat-card.warm {
+  border-left: 4px solid #f59e0b;
+}
+
+.scoring-stat-card.cold {
+  border-left: 4px solid #64748b;
+}
+
+.scoring-stat-card.vip {
+  border-left: 4px solid #7e22ce;
+  background: #faf5ff;
 }
 
 .scoring-stat-icon {
@@ -1508,6 +1531,7 @@
   justify-content: center;
   font-size: 20px;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
 
 .scoring-stat-icon.avg {
@@ -1527,7 +1551,7 @@
 
 .scoring-stat-icon.cold {
   background: #f1f5f9;
-  color: #64748b;
+  color: #475569;
 }
 
 .scoring-stat-icon.vip {
@@ -1541,30 +1565,86 @@
 }
 
 .scoring-stat-value {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   color: #0f172a;
-  line-height: 1.2;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.scoring-stat-card.hot .scoring-stat-value {
+  color: #dc2626;
+}
+
+.scoring-stat-card.warm .scoring-stat-value {
+  color: #d97706;
+}
+
+.scoring-stat-card.vip .scoring-stat-value {
+  color: #7e22ce;
 }
 
 .scoring-stat-label {
-  font-size: 12px;
+  font-size: 13px;
   color: #64748b;
   font-weight: 500;
-  margin-top: 2px;
+  margin-top: 4px;
+}
+
+/* Wide Responsive Scoring Table */
+.scoring-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.scoring-data-table {
+  min-width: 1200px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.scoring-data-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 14px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.scoring-data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13.5px;
+  vertical-align: middle;
+}
+
+.scoring-data-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.scoring-data-table tbody tr:hover {
+  background-color: #fbfdff;
 }
 
 /* Progress bar inside score cell */
 .score-cell-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 100px;
+  gap: 6px;
+  min-width: 120px;
 }
 
 .score-progress-bar-bg {
   width: 100%;
-  height: 6px;
+  height: 7px;
   background: #e2e8f0;
   border-radius: 9999px;
   overflow: hidden;

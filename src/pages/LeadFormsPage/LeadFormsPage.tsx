@@ -262,6 +262,19 @@ const IconInbox = () => (
   </svg>
 )
 
+const IconAward = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="8" r="7" />
+    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+  </svg>
+)
+
+const IconThermometer = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+  </svg>
+)
+
 
 const LEAD_TIER_CONFIG: Record<LeadScoreTier, { label: string; emoji: string; className: string }> = {
   HOT: { label: 'Nóng (Hot)', emoji: '', className: 'hot' },
@@ -2533,37 +2546,52 @@ export default function LeadFormsPage() {
 
           {/* KPI Dashboard Cards */}
           <div className="scoring-summary-cards">
-            <div className="scoring-stat-card">
+            <div className="scoring-stat-card avg">
+              <div className="scoring-stat-icon avg">
+                <IconAward />
+              </div>
               <div className="scoring-stat-info">
                 <span className="scoring-stat-value">{scoringStats.averageScore} / 100</span>
-                <span className="scoring-stat-label">Điểm trung bình hệ thống</span>
+                <span className="scoring-stat-label">Điểm trung bình</span>
               </div>
             </div>
 
-            <div className="scoring-stat-card">
+            <div className="scoring-stat-card hot">
+              <div className="scoring-stat-icon hot">
+                <IconFlame />
+              </div>
               <div className="scoring-stat-info">
-                <span className="scoring-stat-value" style={{ color: '#dc2626' }}>{scoringStats.hotCount}</span>
-                <span className="scoring-stat-label">Khách Nóng (Hot &ge; 70đ)</span>
+                <span className="scoring-stat-value">{scoringStats.hotCount}</span>
+                <span className="scoring-stat-label">Khách Nóng (&ge; 70đ)</span>
               </div>
             </div>
 
-            <div className="scoring-stat-card">
+            <div className="scoring-stat-card warm">
+              <div className="scoring-stat-icon warm">
+                <IconThermometer />
+              </div>
               <div className="scoring-stat-info">
-                <span className="scoring-stat-value" style={{ color: '#d97706' }}>{scoringStats.warmCount}</span>
-                <span className="scoring-stat-label">Khách Ấm (Warm 40-69đ)</span>
+                <span className="scoring-stat-value">{scoringStats.warmCount}</span>
+                <span className="scoring-stat-label">Khách Ấm (40-69đ)</span>
               </div>
             </div>
 
-            <div className="scoring-stat-card">
+            <div className="scoring-stat-card cold">
+              <div className="scoring-stat-icon cold">
+                <IconHourglass />
+              </div>
               <div className="scoring-stat-info">
-                <span className="scoring-stat-value" style={{ color: '#64748b' }}>{scoringStats.coldCount}</span>
-                <span className="scoring-stat-label">Khách Lạnh (Cold &lt; 40đ)</span>
+                <span className="scoring-stat-value">{scoringStats.coldCount}</span>
+                <span className="scoring-stat-label">Khách Lạnh (&lt; 40đ)</span>
               </div>
             </div>
 
-            <div className="scoring-stat-card">
+            <div className="scoring-stat-card vip">
+              <div className="scoring-stat-icon vip">
+                <IconTarget />
+              </div>
               <div className="scoring-stat-info">
-                <span className="scoring-stat-value" style={{ color: '#7e22ce' }}>{scoringStats.vipCount}</span>
+                <span className="scoring-stat-value">{scoringStats.vipCount}</span>
                 <span className="scoring-stat-label">Doanh nghiệp VIP</span>
               </div>
             </div>
@@ -2622,19 +2650,19 @@ export default function LeadFormsPage() {
               <p>Thử điều chỉnh từ khóa tìm kiếm hoặc bỏ chọn các bộ lọc phân hạng/nhóm.</p>
             </div>
           ) : (
-            <div className="lead-table-responsive">
-              <table className="lead-data-table" id="table-lead-scoring">
+            <div className="lead-table-responsive scoring-table-responsive">
+              <table className="lead-data-table scoring-data-table" id="table-lead-scoring">
                 <thead>
                   <tr>
-                    <th style={{ width: '90px', textAlign: 'center' }}>Số thứ tự</th>
-                    <th>Họ và tên & Liên hệ</th>
-                    <th>Công ty & Ngành</th>
-                    <th style={{ width: '165px', minWidth: '155px' }}>Nguồn Lead</th>
-                    <th style={{ width: '160px' }}>Điểm số & Mức độ</th>
-                    <th style={{ width: '120px', textAlign: 'center' }}>Phân hạng</th>
-                    <th style={{ width: '140px', textAlign: 'center' }}>Phân nhóm</th>
-                    <th style={{ width: '120px', textAlign: 'center' }}>Cách chấm</th>
-                    <th style={{ width: '195px', textAlign: 'center' }}>Thao tác</th>
+                    <th style={{ width: '70px', minWidth: '60px', textAlign: 'center' }}>STT</th>
+                    <th style={{ minWidth: '200px' }}>Họ và tên & Liên hệ</th>
+                    <th style={{ minWidth: '220px' }}>Doanh nghiệp & Ngành nghề</th>
+                    <th style={{ width: '150px', minWidth: '140px' }}>Nguồn Lead</th>
+                    <th style={{ width: '160px', minWidth: '150px' }}>Điểm số & Mức độ</th>
+                    <th style={{ width: '130px', minWidth: '120px', textAlign: 'center' }}>Phân hạng</th>
+                    <th style={{ width: '150px', minWidth: '140px', textAlign: 'center' }}>Phân nhóm</th>
+                    <th style={{ width: '120px', minWidth: '110px', textAlign: 'center' }}>Cách chấm</th>
+                    <th style={{ width: '170px', minWidth: '160px', textAlign: 'center' }}>Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
