@@ -5045,7 +5045,7 @@ export default function LeadFormsPage() {
         <div className="lead-modal-backdrop" onClick={() => setIsInteractionModalOpen(false)}>
           <div
             className="lead-modal-content"
-            style={{ maxWidth: '820px' }}
+            style={{ maxWidth: '860px', width: '100%' }}
             onClick={(e) => e.stopPropagation()}
             id="modal-lead-interactions"
           >
@@ -5067,22 +5067,42 @@ export default function LeadFormsPage() {
 
             <div className="interaction-modal-body">
               {/* Thẻ Lead Info tóm tắt */}
-              <div className="convert-preview-card">
-                <div className="convert-preview-header">
-                  <div className="convert-preview-title">
-                    <span>{selectedLeadForInteraction.full_name}</span>
-                    <span className={`lead-status-badge ${selectedLeadForInteraction.status.toLowerCase()}`}>
-                      {LEAD_STATUS_CONFIG[selectedLeadForInteraction.status]?.label || selectedLeadForInteraction.status}
-                    </span>
+              <div className="interaction-lead-banner">
+                <div className="interaction-lead-main">
+                  <div className="interaction-lead-avatar">
+                    {(selectedLeadForInteraction.full_name || 'L').charAt(0).toUpperCase()}
                   </div>
-                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                    <span className={`lead-score-pill ${selectedLeadForInteraction.score_tier?.toLowerCase() || 'warm'}`}>
-                      {selectedLeadForInteraction.score ?? 50}đ
-                    </span>
-                    <span className="tab-badge info">
-                      {selectedLeadForInteraction.phone} • {selectedLeadForInteraction.email}
-                    </span>
+                  <div className="interaction-lead-info">
+                    <div className="interaction-lead-name-row">
+                      <h4 className="interaction-lead-name">{selectedLeadForInteraction.full_name}</h4>
+                      <span className="interaction-lead-code">{selectedLeadForInteraction.code}</span>
+                      <span className={`lead-status-badge ${selectedLeadForInteraction.status.toLowerCase()}`}>
+                        {LEAD_STATUS_CONFIG[selectedLeadForInteraction.status]?.label || selectedLeadForInteraction.status}
+                      </span>
+                    </div>
+                    <div className="interaction-lead-contact-row">
+                      {selectedLeadForInteraction.phone && (
+                        <span className="interaction-lead-contact-item">
+                          <IconPhone /> {selectedLeadForInteraction.phone}
+                        </span>
+                      )}
+                      {selectedLeadForInteraction.email && (
+                        <span className="interaction-lead-contact-item">
+                          <IconMail /> {selectedLeadForInteraction.email}
+                        </span>
+                      )}
+                      {selectedLeadForInteraction.company && (
+                        <span className="interaction-lead-contact-item">
+                          • {selectedLeadForInteraction.company}
+                        </span>
+                      )}
+                    </div>
                   </div>
+                </div>
+                <div className="interaction-lead-badges">
+                  <span className={`lead-score-pill ${selectedLeadForInteraction.score_tier?.toLowerCase() || 'warm'}`}>
+                    Điểm Lead: <strong>{selectedLeadForInteraction.score ?? 50}đ</strong>
+                  </span>
                 </div>
               </div>
 
@@ -5150,12 +5170,12 @@ export default function LeadFormsPage() {
                   </div>
                 </div>
 
-                <div className="convert-form-grid">
-                  <div className="form-group">
-                    <label>Tiêu đề hoạt động *</label>
+                <div className="interaction-form-grid">
+                  <div className="interaction-form-group">
+                    <label className="interaction-form-label">Tiêu đề hoạt động <span className="req-star">*</span></label>
                     <input
                       type="text"
-                      className="form-control"
+                      className="interaction-form-input"
                       placeholder="Ví dụ: Gọi điện trao đổi về yêu cầu tích hợp..."
                       value={newInteractionTitle}
                       onChange={(e) => setNewInteractionTitle(e.target.value)}
@@ -5164,10 +5184,10 @@ export default function LeadFormsPage() {
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label>Kết quả tương tác</label>
+                  <div className="interaction-form-group">
+                    <label className="interaction-form-label">Kết quả tương tác</label>
                     <select
-                      className="form-control"
+                      className="interaction-form-select"
                       value={newInteractionOutcome}
                       onChange={(e) => setNewInteractionOutcome(e.target.value)}
                       id="select-interaction-outcome"
@@ -5181,11 +5201,11 @@ export default function LeadFormsPage() {
                     </select>
                   </div>
 
-                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                    <label>Nội dung chi tiết trao đổi</label>
+                  <div className="interaction-form-group full-width">
+                    <label className="interaction-form-label">Nội dung chi tiết trao đổi</label>
                     <textarea
                       rows={3}
-                      className="form-control"
+                      className="interaction-form-textarea"
                       placeholder="Ghi lại các ý chính trao đổi, phản hồi của khách, thắc mắc tính năng..."
                       value={newInteractionContent}
                       onChange={(e) => setNewInteractionContent(e.target.value)}
@@ -5193,29 +5213,29 @@ export default function LeadFormsPage() {
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label>Hành động tiếp theo (Next Action)</label>
+                  <div className="interaction-form-group">
+                    <label className="interaction-form-label">Hành động tiếp theo (Next Action)</label>
                     <input
                       type="text"
-                      className="form-control"
+                      className="interaction-form-input"
                       placeholder="Ví dụ: Gọi lại nhắc demo giải pháp..."
                       value={newInteractionNextAction}
                       onChange={(e) => setNewInteractionNextAction(e.target.value)}
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label>Hạn chót hành động</label>
+                  <div className="interaction-form-group">
+                    <label className="interaction-form-label">Hạn chót hành động</label>
                     <input
                       type="date"
-                      className="form-control"
+                      className="interaction-form-input"
                       value={newInteractionNextActionDue}
                       onChange={(e) => setNewInteractionNextActionDue(e.target.value)}
                     />
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div className="interaction-form-actions">
                   <button
                     type="submit"
                     className="btn btn-primary"
