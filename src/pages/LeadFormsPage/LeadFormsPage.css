@@ -1601,28 +1601,29 @@
 }
 
 .scoring-data-table {
-  min-width: 1200px;
   width: 100%;
+  min-width: 900px;
   border-collapse: separate;
   border-spacing: 0;
+  table-layout: auto;
 }
 
 .scoring-data-table th {
   background: #f8fafc;
   color: #475569;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  padding: 14px 16px;
+  letter-spacing: 0.2px;
+  padding: 9px 8px;
   border-bottom: 2px solid #e2e8f0;
   white-space: nowrap;
 }
 
 .scoring-data-table td {
-  padding: 14px 16px;
+  padding: 8px 8px;
   border-bottom: 1px solid #f1f5f9;
-  font-size: 13.5px;
+  font-size: 12.5px;
   vertical-align: middle;
 }
 
@@ -1638,13 +1639,13 @@
 .score-cell-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 120px;
+  gap: 3px;
+  min-width: 80px;
 }
 
 .score-progress-bar-bg {
   width: 100%;
-  height: 7px;
+  height: 5px;
   background: #e2e8f0;
   border-radius: 9999px;
   overflow: hidden;
@@ -3336,4 +3337,90 @@
     flex-wrap: wrap;
     justify-content: center;
   }
+}
+
+/* ── Bảng Chuyển đổi Lead (LEAD_CONVERSION) ── */
+#panel-lead-conversion .scoring-stat-card {
+  border-top: 3px solid #2563eb;
+  border-left: 1px solid #e2e8f0;
+  background: #ffffff;
+  padding: 18px 20px;
+}
+
+#panel-lead-conversion .scoring-stat-card:nth-child(2) {
+  border-top-color: #059669;
+}
+
+#panel-lead-conversion .scoring-stat-card:nth-child(3) {
+  border-top-color: #7c3aed;
+}
+
+.lead-conversion-table-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.lead-conversion-table-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.lead-conversion-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  font-size: 13.5px;
+}
+
+.lead-conversion-table thead th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 13px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.lead-conversion-table tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+  background: #ffffff;
+  transition: background-color 0.15s ease;
+}
+
+.lead-conversion-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.lead-conversion-table tbody tr:hover td {
+  background-color: #f8fafc;
+}
+
+.btn-conversion-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 600;
+  border-radius: 7px !important;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-conversion-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
 }
