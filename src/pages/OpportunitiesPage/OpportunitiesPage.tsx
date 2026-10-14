@@ -216,27 +216,39 @@ export default function OpportunitiesPage() {
     showToast(`Đã ghi đè và chuyển cơ hội sang "${targetStage?.name || 'Giai đoạn mới'}" thành công!`, 'success')
   }
 
+  // Ref lưu ID cơ hội đang được kéo để đảm bảo không bị mất qua DataTransfer của các trình duyệt
+  const draggedOppRef = (window as any).__draggedOppRef || { current: null }
+  ;(window as any).__draggedOppRef = draggedOppRef
+
   // Xử lý kéo thả Kanban (Drag & Drop)
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, opp: Opportunity) => {
-    e.dataTransfer.setData('text/plain', opp.id)
-    e.dataTransfer.effectAllowed = 'move'
+    try {
+      e.dataTransfer.setData('text/plain', opp.id)
+      e.dataTransfer.effectAllowed = 'move'
+    } catch {}
+    draggedOppRef.current = opp.id
     setDraggingOppId(opp.id)
   }
 
   const handleDragEnd = () => {
     setDraggingOppId(null)
     setDragOverStageId(null)
+    draggedOppRef.current = null
   }
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>, stageId: string) => {
     e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
+    e.stopPropagation()
+    try {
+      e.dataTransfer.dropEffect = 'move'
+    } catch {}
     if (dragOverStageId !== stageId) {
       setDragOverStageId(stageId)
     }
   }
 
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>, stageId: string) => {
+    e.preventDefault()
     // Chỉ reset khi con trỏ thật sự rời khỏi container stage
     if (e.currentTarget.contains(e.relatedTarget as Node)) return
     if (dragOverStageId === stageId) {
@@ -246,9 +258,19 @@ export default function OpportunitiesPage() {
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>, targetStageId: string) => {
     e.preventDefault()
+    e.stopPropagation()
     setDragOverStageId(null)
-    const oppId = e.dataTransfer.getData('text/plain') || draggingOppId
+
+    let oppId = ''
+    try {
+      oppId = e.dataTransfer.getData('text/plain')
+    } catch {}
+    if (!oppId) {
+      oppId = draggedOppRef.current || draggingOppId || ''
+    }
+
     setDraggingOppId(null)
+    draggedOppRef.current = null
 
     if (!oppId) return
     const opp = opportunities.find((o) => o.id === oppId)
@@ -854,6 +876,44 @@ export default function OpportunitiesPage() {
                                   {formatCurrency(opp.expected_revenue)}
                                 </strong>
                                 <span className="deal-owner">{opp.owner_name}</span>
+                              </div>
+
+                              {/* Thanh nút bấm chuyển giai đoạn nhanh không cần kéo thả */}
+                              <div
+                                className="card-quick-actions"
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                  display: 'flex',
+                                  gap: '4px',
+                                  marginTop: '6px',
+                                  paddingTop: '6px',
+                                  borderTop: '1px dashed #e2e8f0',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <select
+                                  value={opp.stage_id}
+                                  onChange={(e) => handleQuickChangeStage(opp, e.target.value)}
+                                  style={{
+                                    fontSize: '11px',
+                                    padding: '3px 6px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #cbd5e1',
+                                    background: '#f8fafc',
+                                    color: '#334155',
+                                    fontWeight: 600,
+                                    width: '100%',
+                                    cursor: 'pointer',
+                                  }}
+                                  title="Chuyển nhanh giai đoạn hoặc kéo thả thẻ sang cột mong muốn"
+                                >
+                                  {stages.map((stg) => (
+                                    <option key={stg.id} value={stg.id}>
+                                      ➜ {stg.name} ({stg.win_probability}%)
+                                    </option>
+                                  ))}
+                                </select>
                               </div>
                             </div>
                           )
