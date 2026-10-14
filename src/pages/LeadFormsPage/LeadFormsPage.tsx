@@ -1801,13 +1801,13 @@ export default function LeadFormsPage() {
             <span>+ Tạo Lead thủ công</span>
           </button>
 
-          {/* Nút Quét trùng lặp Lead (S4-04) */}
+          {/* Nút Quét trùng lặp Lead */}
           <button
             type="button"
             className="btn btn-secondary"
             onClick={handleScanDuplicates}
             id="btn-scan-duplicates"
-            title="Quét và phát hiện các Lead bị trùng Email, SĐT hoặc Tên công ty (S4-04)"
+            title="Quét và phát hiện các Lead bị trùng Email, SĐT hoặc Tên công ty"
             style={{ position: 'relative' }}
           >
             {isScanningDuplicates ? 'Đang quét...' : 'Quét trùng lặp Lead'}
@@ -2508,15 +2508,15 @@ export default function LeadFormsPage() {
             </div>
 
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-              {/* Nút S4-06: Cấu hình quy tắc phân bổ */}
+              {/* Nút Cấu hình quy tắc phân bổ */}
               <button
                 type="button"
                 className="btn btn-secondary"
                 onClick={() => setIsRulesModalOpen(true)}
                 id="btn-open-distribution-rules"
-                title="Cấu hình các quy tắc phân bổ tự động theo ngành nghề, khu vực, round-robin (S4-06)"
+                title="Cấu hình các quy tắc phân bổ tự động theo ngành nghề, khu vực, round-robin"
               >
-                <span>Cấu hình quy tắc phân bổ (S4-06)</span>
+                <span>Cấu hình quy tắc phân bổ</span>
                 <span className="tab-badge" style={{ marginLeft: '6px' }}>{distributionRules.length}</span>
               </button>
 
@@ -6034,7 +6034,7 @@ export default function LeadFormsPage() {
           >
             <div className="lead-modal-header">
               <div>
-                <h3 className="lead-modal-title">Phát hiện Khách hàng Tiềm năng trùng lặp (S4-04)</h3>
+                <h3 className="lead-modal-title">Phát hiện Khách hàng Tiềm năng trùng lặp</h3>
                 <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
                   Hệ thống tự động đối chiếu theo Email, Số điện thoại, Tên công ty và đối soát với Khách hàng hiện hữu.
                 </p>
@@ -6199,7 +6199,7 @@ export default function LeadFormsPage() {
           >
             <div className="lead-modal-header">
               <div>
-                <h3 className="lead-modal-title">Gộp Khách hàng Tiềm năng trùng lặp (S4-04)</h3>
+                <h3 className="lead-modal-title">Gộp Khách hàng Tiềm năng trùng lặp</h3>
                 <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
                   Chọn bản ghi chính (Primary Lead) để giữ lại. Toàn bộ lịch sử trao đổi, cuộc gọi, ghi chú từ các bản ghi phụ sẽ được bảo toàn và chuyển sang bản ghi chính.
                 </p>
@@ -6373,7 +6373,7 @@ export default function LeadFormsPage() {
           >
             <div className="lead-modal-header">
               <div>
-                <h3 className="lead-modal-title">Cấu hình Quy tắc Phân bổ Lead tự động (S4-06)</h3>
+                <h3 className="lead-modal-title">Cấu hình Quy tắc Phân bổ Lead tự động</h3>
                 <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
                   Phân bổ Lead theo thứ tự ưu tiên (Ngành nghề, Khu vực hoặc Xoay vòng đều Round-Robin). Lead không khớp rơi vào Hàng chờ để Trưởng nhóm phân tay.
                 </p>
