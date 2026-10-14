@@ -542,11 +542,11 @@ export default function OpportunityTaskManager({
         </div>
       )}
 
-      {/* ── MODAL TẠO / SỬA CÔNG VIỆC (S5-04) ── */}
+      {/* ── MODAL TẠO / SỬA CÔNG VIỆC ── */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+        <div className="opp-task-modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div
-            className="modal-content opp-task-modal"
+            className="opp-task-modal-card"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"

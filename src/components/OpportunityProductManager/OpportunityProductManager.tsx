@@ -183,7 +183,7 @@ export default function OpportunityProductManager({
       <div className="opp-product-header">
         <div>
           <h4 className="opp-product-title">
-            Danh mục Sản phẩm & Dịch vụ trong Cơ hội (S5-03)
+            Danh mục Sản phẩm & Dịch vụ trong Cơ hội
           </h4>
           <p className="opp-product-subtitle">
             Giá trị cơ hội được tự động tính căn cứ từ các dòng sản phẩm và bảng giá niêm yết chuẩn.

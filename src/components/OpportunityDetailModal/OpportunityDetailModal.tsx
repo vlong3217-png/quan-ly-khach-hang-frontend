@@ -320,148 +320,174 @@ export default function OpportunityDetailModal({
           </div>
         )}
 
-        {/* ── Modal Header ── */}
+        {/* ── Modal Header Cải Tiến ── */}
         <div className="opp-modal-header">
-          <div className="opp-header-title-block">
-            <div className="opp-header-badges">
-              <span className="opp-code-badge">{currentOpp.code}</span>
-              <span className={`opp-status-badge status-${currentOpp.status.toLowerCase()}`}>
-                {currentOpp.status === 'OPEN'
-                  ? 'Đang mở'
-                  : currentOpp.status === 'WON'
-                  ? 'Thắng deal'
-                  : currentOpp.status === 'LOST'
-                  ? 'Thua deal'
-                  : currentOpp.status}
-              </span>
-              {currentOpp.lead_id && (
-                <span className="opp-converted-badge" title="Cơ hội sinh ra từ chuyển đổi Lead">
-                  Lead converted
+          <div className="opp-header-top-row">
+            <div className="opp-header-title-block">
+              <div className="opp-header-badges">
+                <span className="opp-code-badge">{currentOpp.code}</span>
+                <span className={`opp-status-badge status-${currentOpp.status.toLowerCase()}`}>
+                  {currentOpp.status === 'OPEN'
+                    ? 'Đang mở'
+                    : currentOpp.status === 'WON'
+                    ? 'Thắng deal'
+                    : currentOpp.status === 'LOST'
+                    ? 'Thua deal'
+                    : currentOpp.status}
                 </span>
-              )}
+                {currentOpp.lead_id && (
+                  <span className="opp-converted-badge" title="Cơ hội sinh ra từ chuyển đổi Lead">
+                    Từ Lead
+                  </span>
+                )}
+              </div>
+              <h2 className="opp-title-heading">{currentOpp.title}</h2>
+              <div className="opp-customer-subtitle">
+                <span>Khách hàng: <strong>{currentOpp.customer_name}</strong></span>
+                {currentOpp.contact_name && (
+                  <span> • Người liên hệ: <strong>{currentOpp.contact_name}</strong></span>
+                )}
+                {currentOpp.contact_phone && (
+                  <span> ({currentOpp.contact_phone})</span>
+                )}
+              </div>
             </div>
-            <h2 className="opp-title-heading">{currentOpp.title}</h2>
-            <div className="opp-customer-subtitle">
-              <span>Khách hàng: <strong>{currentOpp.customer_name}</strong></span>
-              {currentOpp.contact_name && (
-                <span> • Người liên hệ: {currentOpp.contact_name}</span>
-              )}
-              {currentOpp.contact_phone && (
-                <span> ({currentOpp.contact_phone})</span>
-              )}
+
+            <div className="opp-header-right-side">
+              <div className="opp-header-kpi-block">
+                <div className="kpi-box kpi-box-revenue">
+                  <span className="kpi-label">Giá trị cơ hội</span>
+                  <span className="kpi-value revenue-value">
+                    {formatCurrency(currentOpp.expected_revenue)}
+                  </span>
+                </div>
+                <div className="kpi-box">
+                  <span className="kpi-label">Xác suất thắng</span>
+                  <span className="kpi-value prob-value">
+                    {currentOpp.win_probability}%
+                  </span>
+                </div>
+                <div className="kpi-box">
+                  <span className="kpi-label">Dự kiến chốt</span>
+                  <span className="kpi-value date-value">
+                    {currentOpp.expected_close_date || 'Chưa đặt'}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="opp-close-btn"
+                onClick={onClose}
+                aria-label="Đóng chi tiết cơ hội"
+                title="Đóng (Esc)"
+              >
+                ✕
+              </button>
             </div>
           </div>
 
-          <div className="opp-header-kpi-block">
-            <div className="kpi-box">
-              <span className="kpi-label">Giá trị cơ hội</span>
-              <span className="kpi-value revenue-value">
-                {formatCurrency(currentOpp.expected_revenue)}
-              </span>
+          {/* Quick Action Bar (Đóng thắng, Đóng thua, Phân bổ lại) */}
+          <div className="opp-header-action-bar">
+            <div className="opp-owner-indicator">
+              <span className="owner-label">Phụ trách:</span>
+              <span className="owner-name">{currentOpp.owner_name}</span>
+              {currentOpp.team_name && <span className="owner-team">({currentOpp.team_name})</span>}
             </div>
-            <div className="kpi-box">
-              <span className="kpi-label">Xác suất thắng</span>
-              <span className="kpi-value prob-value">
-                {currentOpp.win_probability}%
-              </span>
+
+            <div className="opp-action-buttons-group">
+              {!isClosed ? (
+                <>
+                  {isManagerOrAdmin && (
+                    <button
+                      type="button"
+                      className="opp-btn-action-reassign-ribbon"
+                      onClick={() => setIsReassignModalOpen(true)}
+                      title="Phân bổ lại cơ hội cho nhân viên khác trong nhóm"
+                      id="btn-reassign-ribbon"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+                      Phân bổ lại
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="opp-btn-action-won"
+                    onClick={() => setIsCloseWonModalOpen(true)}
+                    title="Chốt thành công cơ hội"
+                    id="btn-close-won"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Đóng Thắng
+                  </button>
+                  <button
+                    type="button"
+                    className="opp-btn-action-lost"
+                    onClick={() => setIsCloseLostModalOpen(true)}
+                    title="Chốt thất bại cơ hội"
+                    id="btn-close-lost"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Đóng Thua
+                  </button>
+                </>
+              ) : (
+                <div className="opp-closed-status-pill">
+                  <span className={`pill-badge badge-${currentOpp.status.toLowerCase()}`}>
+                    {currentOpp.status === 'WON' ? '✓ ĐÃ ĐÓNG THẮNG' : '✕ ĐÃ ĐÓNG THUA'}
+                  </span>
+                  {isManagerOrAdmin && (
+                    <button
+                      type="button"
+                      className="opp-btn-action-reopen"
+                      onClick={() => setIsReopenModalOpen(true)}
+                      title="Mở lại cơ hội bán hàng"
+                      id="btn-reopen-opportunity"
+                    >
+                      🔓 Mở lại cơ hội
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-            <div className="kpi-box">
-              <span className="kpi-label">Dự kiến chốt</span>
-              <span className="kpi-value date-value">
-                {currentOpp.expected_close_date || 'Chưa đặt'}
-              </span>
-            </div>
-            <button
-              type="button"
-              className="opp-close-btn"
-              onClick={onClose}
-              aria-label="Đóng chi tiết cơ hội"
-            >
-              ✕
-            </button>
           </div>
         </div>
 
-        {/* ── Pipeline Stage Flow Ribbon & Close Actions ── */}
-        <div className="opp-pipeline-ribbon">
-          <div className="pipeline-flow-wrapper">
-            <span className="ribbon-label">Quy trình bán hàng (Pipeline):</span>
-            <div className="ribbon-steps-container">
-              {stages.map((stage) => {
-                const isCurrent = stage.id === currentOpp.stage_id
-                return (
-                  <button
-                    key={stage.id}
-                    type="button"
-                    className={`ribbon-step-btn ${isCurrent ? 'active-step' : ''} ${isClosed ? 'step-locked' : ''}`}
-                    disabled={isChangingStage || isClosed}
-                    onClick={() => handleStageChange(stage)}
-                    title={
-                      isClosed
-                        ? 'Cơ hội đã đóng, không thể đổi giai đoạn trực tiếp'
-                        : `Nhấp để chuyển sang: ${stage.name} (${stage.win_probability}%)`
-                    }
-                  >
-                    <span className="step-name">{stage.name}</span>
-                    <span className="step-prob">{stage.win_probability}%</span>
-                  </button>
-                )
-              })}
-            </div>
+        {/* ── Pipeline Chevron Stepper ── */}
+        <div className="opp-pipeline-stepper-section">
+          <div className="pipeline-stepper-header">
+            <span className="stepper-title">Tiến trình bán hàng (Pipeline Stages):</span>
+            <span className="stepper-current-hint">
+              Hiện tại: <strong style={{ color: currentOpp.stage_color || '#2563eb' }}>{currentOpp.stage_name}</strong> ({currentOpp.win_probability}%)
+            </span>
           </div>
 
-          {/* Quick Action Buttons */}
-          <div className="opp-close-actions-ribbon">
-            {!isClosed ? (
-              <>
-                {isManagerOrAdmin && (
-                  <button
-                    type="button"
-                    className="opp-btn-action-reassign-ribbon"
-                    onClick={() => setIsReassignModalOpen(true)}
-                    title="Phân bổ lại cơ hội cho nhân viên khác trong nhóm"
-                    id="btn-reassign-ribbon"
-                  >
-                    Phân bổ lại
-                  </button>
-                )}
+          <div className="opp-pipeline-steps-flow">
+            {stages.map((stage, idx) => {
+              const isCurrent = stage.id === currentOpp.stage_id
+              const currentStageIdx = stages.findIndex((s) => s.id === currentOpp.stage_id)
+              const isPassed = currentStageIdx >= 0 && idx < currentStageIdx && !isClosed
+
+              return (
                 <button
+                  key={stage.id}
                   type="button"
-                  className="opp-btn-action-won"
-                  onClick={() => setIsCloseWonModalOpen(true)}
-                  title="Chốt thành công cơ hội"
-                  id="btn-close-won"
+                  className={`pipeline-step-item ${isCurrent ? 'is-current' : ''} ${isPassed ? 'is-passed' : ''} ${isClosed ? 'is-locked' : ''}`}
+                  disabled={isChangingStage || isClosed}
+                  onClick={() => handleStageChange(stage)}
+                  title={
+                    isClosed
+                      ? 'Cơ hội đã đóng, không thể đổi giai đoạn trực tiếp'
+                      : `Chuyển sang: ${stage.name} (Xác suất ${stage.win_probability}%)`
+                  }
                 >
-                  Đóng Thắng
+                  <span className="step-num">{idx + 1}</span>
+                  <span className="step-info">
+                    <span className="step-label">{stage.name}</span>
+                    <span className="step-rate">{stage.win_probability}%</span>
+                  </span>
                 </button>
-                <button
-                  type="button"
-                  className="opp-btn-action-lost"
-                  onClick={() => setIsCloseLostModalOpen(true)}
-                  title="Chốt thất bại cơ hội"
-                  id="btn-close-lost"
-                >
-                  Đóng Thua
-                </button>
-              </>
-            ) : (
-              <div className="opp-closed-status-pill">
-                <span className={`pill-badge badge-${currentOpp.status.toLowerCase()}`}>
-                  {currentOpp.status === 'WON' ? 'ĐÃ ĐÓNG THẮNG' : 'ĐÃ ĐÓNG THUA'}
-                </span>
-                {isManagerOrAdmin && (
-                  <button
-                    type="button"
-                    className="opp-btn-action-reopen"
-                    onClick={() => setIsReopenModalOpen(true)}
-                    title="Mở lại cơ hội bán hàng"
-                    id="btn-reopen-opportunity"
-                  >
-                    Mở lại cơ hội
-                  </button>
-                )}
-              </div>
-            )}
+              )
+            })}
           </div>
         </div>
 
@@ -498,7 +524,7 @@ export default function OpportunityDetailModal({
             onClick={() => setActiveTab('PRODUCTS')}
             id="tab-btn-products"
           >
-            Sản phẩm & Dịch vụ (S5-03)
+            Sản phẩm & Dịch vụ
             {currentOpp.product_items && currentOpp.product_items.length > 0 && (
               <span className="tab-pill">{currentOpp.product_items.length}</span>
             )}
