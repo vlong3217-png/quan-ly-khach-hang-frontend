@@ -235,19 +235,33 @@ export default function PipelineStagesPage() {
                   >
                     Sửa
                   </button>
-                  <button
-                    type="button"
-                    className="pipe-action-btn delete-btn"
-                    disabled={(stage.active_opportunities_count || 0) > 0}
-                    title={
-                      (stage.active_opportunities_count || 0) > 0
-                        ? 'Đang có cơ hội chạy - không thể xóa để tránh làm hỏng dữ liệu!'
-                        : 'Xóa giai đoạn'
-                    }
-                    onClick={() => handleDelete(stage)}
-                  >
-                    Xóa
-                  </button>
+                  <details className="crm-more-actions">
+                    <summary className="crm-more-trigger" title="Thao tác khác" aria-label="Thao tác khác">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="5" r="1" />
+                        <circle cx="12" cy="12" r="1" />
+                        <circle cx="12" cy="19" r="1" />
+                      </svg>
+                    </summary>
+                    <div className="crm-more-menu">
+                      <button
+                        type="button"
+                        className="crm-more-item danger"
+                        disabled={(stage.active_opportunities_count || 0) > 0}
+                        title={
+                          (stage.active_opportunities_count || 0) > 0
+                            ? 'Đang có cơ hội chạy - không thể xóa để tránh làm hỏng dữ liệu!'
+                            : 'Xóa giai đoạn'
+                        }
+                        onClick={(event) => {
+                          event.currentTarget.closest('details')?.removeAttribute('open')
+                          handleDelete(stage)
+                        }}
+                      >
+                        Xóa giai đoạn
+                      </button>
+                    </div>
+                  </details>
                 </td>
               </tr>
             ))}
