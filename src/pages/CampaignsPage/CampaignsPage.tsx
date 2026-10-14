@@ -465,15 +465,27 @@ export default function CampaignsPage() {
                             <span>Sửa</span>
                           </button>
 
-                          {/* Xóa */}
-                          <button
-                            type="button"
-                            className="btn-action-icon delete"
-                            onClick={() => setDeletingCampaign(camp)}
-                            title="Xóa chiến dịch"
-                          >
-                            <span>Xóa</span>
-                          </button>
+                          <details className="crm-more-actions">
+                            <summary className="crm-more-trigger" title="Thao tác khác" aria-label="Thao tác khác">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="5" r="1" />
+                                <circle cx="12" cy="12" r="1" />
+                                <circle cx="12" cy="19" r="1" />
+                              </svg>
+                            </summary>
+                            <div className="crm-more-menu">
+                              <button
+                                type="button"
+                                className="crm-more-item danger"
+                                onClick={(event) => {
+                                  event.currentTarget.closest('details')?.removeAttribute('open')
+                                  setDeletingCampaign(camp)
+                                }}
+                              >
+                                Xóa chiến dịch
+                              </button>
+                            </div>
+                          </details>
                         </div>
                       </td>
                     </tr>
