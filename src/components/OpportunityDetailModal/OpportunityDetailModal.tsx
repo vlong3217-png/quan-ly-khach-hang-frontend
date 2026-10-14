@@ -7,14 +7,17 @@ import { opportunityActivityService } from '../../services/opportunityActivitySe
 import { winLossService } from '../../services/winLossService.ts'
 import OpportunityActivityTimeline from '../OpportunityActivityTimeline/OpportunityActivityTimeline.tsx'
 import OpportunityTaskManager from '../OpportunityTaskManager/OpportunityTaskManager.tsx'
+import OpportunityProductManager from '../OpportunityProductManager/OpportunityProductManager.tsx'
+import StageGateEnforcementModal from '../StageGateEnforcementModal/StageGateEnforcementModal.tsx'
 import ReassignOpportunityModal from '../ReassignOpportunityModal/ReassignOpportunityModal.tsx'
+import type { StageGateEvaluation } from '../../types/opportunity.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import './OpportunityDetailModal.css'
 
 interface OpportunityDetailModalProps {
   opportunity: Opportunity
   isOpen: boolean
-  initialTab?: 'ACTIVITIES' | 'DETAILS' | 'TASKS'
+  initialTab?: 'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS'
   onClose: () => void
   onOpportunityUpdated: (updated: Opportunity) => void
 }
@@ -22,16 +25,21 @@ interface OpportunityDetailModalProps {
 export default function OpportunityDetailModal({
   opportunity,
   isOpen,
-  initialTab = 'ACTIVITIES',
+  initialTab = 'PRODUCTS',
   onClose,
   onOpportunityUpdated,
 }: OpportunityDetailModalProps) {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState<'ACTIVITIES' | 'DETAILS' | 'TASKS'>(initialTab)
+  const [activeTab, setActiveTab] = useState<'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS'>(initialTab)
   const [stages] = useState<PipelineStage[]>(() => pipelineService.getStages())
   const [currentOpp, setCurrentOpp] = useState<Opportunity>(opportunity)
   const [isChangingStage, setIsChangingStage] = useState<boolean>(false)
   const [notice, setNotice] = useState<string | null>(null)
+
+  // ── S5-04: State kiểm tra điều kiện rời giai đoạn (Stage Gate) ──
+  const [isStageGateModalOpen, setIsStageGateModalOpen] = useState(false)
+  const [targetStageToGate, setTargetStageToGate] = useState<PipelineStage | null>(null)
+  const [stageGateEvaluation, setStageGateEvaluation] = useState<StageGateEvaluation | null>(null)
 
   // Đồng bộ lại currentOpp và activeTab khi modal mở hoặc props đổi
   useEffect(() => {
@@ -55,9 +63,23 @@ export default function OpportunityDetailModal({
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num)
   }
 
-  // Chuyển giai đoạn Pipeline
+  // Chuyển giai đoạn Pipeline (S5-04: Kiểm tra điều kiện bắt buộc trước khi chuyển)
   const handleStageChange = async (targetStage: PipelineStage) => {
     if (targetStage.id === currentOpp.stage_id) return
+
+    // S5-04: Đánh giá điều kiện rời giai đoạn
+    const evaluation = await opportunityService.evaluateStageGate(currentOpp, targetStage.id)
+    if (!evaluation.can_proceed) {
+      setTargetStageToGate(targetStage)
+      setStageGateEvaluation(evaluation)
+      setIsStageGateModalOpen(true)
+      return
+    }
+
+    await executeStageChange(targetStage)
+  }
+
+  const executeStageChange = async (targetStage: PipelineStage) => {
     setIsChangingStage(true)
     try {
       const oldStageName = currentOpp.stage_name
@@ -86,6 +108,25 @@ export default function OpportunityDetailModal({
     } finally {
       setIsChangingStage(false)
     }
+  }
+
+  // Xử lý phê duyệt ghi đè từ Quản lý / Trưởng nhóm (S5-04 AC3)
+  const handleOverrideApproved = async (reason: string) => {
+    if (!targetStageToGate || !stageGateEvaluation) return
+    const updated = await opportunityService.overrideAndChangeStage(
+      currentOpp.id,
+      targetStageToGate.id,
+      {
+        user_id: user?.id ? Number(user.id) : 1,
+        user_name: user?.full_name || 'Trưởng nhóm kinh doanh',
+        user_role: user?.role === 'ADMIN' ? 'Giám đốc kinh doanh' : 'Trưởng nhóm kinh doanh',
+        reason,
+        unmet_conditions: stageGateEvaluation.unmet_conditions.map((c) => c.condition),
+      }
+    )
+    setCurrentOpp(updated)
+    onOpportunityUpdated(updated)
+    showNotice(`Đã ghi đè và chuyển sang giai đoạn "${targetStageToGate.name}" thành công!`)
   }
 
   const isClosed = currentOpp.status === 'WON' || currentOpp.status === 'LOST'
@@ -453,6 +494,17 @@ export default function OpportunityDetailModal({
         <div className="opp-modal-tabs">
           <button
             type="button"
+            className={`opp-tab-btn ${activeTab === 'PRODUCTS' ? 'active' : ''}`}
+            onClick={() => setActiveTab('PRODUCTS')}
+            id="tab-btn-products"
+          >
+            Sản phẩm & Dịch vụ (S5-03)
+            {currentOpp.product_items && currentOpp.product_items.length > 0 && (
+              <span className="tab-pill">{currentOpp.product_items.length}</span>
+            )}
+          </button>
+          <button
+            type="button"
             className={`opp-tab-btn ${activeTab === 'ACTIVITIES' ? 'active' : ''}`}
             onClick={() => setActiveTab('ACTIVITIES')}
             id="tab-btn-activities"
@@ -479,7 +531,19 @@ export default function OpportunityDetailModal({
 
         {/* ── Tab Content ── */}
         <div className="opp-modal-tab-content">
-          {/* TAB 1: Lịch sử hoạt động (S5-03) */}
+          {/* TAB 0: Sản phẩm & Bảng giá niêm yết (S5-03) */}
+          {activeTab === 'PRODUCTS' && (
+            <OpportunityProductManager
+              opportunity={currentOpp}
+              readOnly={isClosed}
+              onOpportunityUpdated={(updated) => {
+                setCurrentOpp(updated)
+                onOpportunityUpdated(updated)
+              }}
+            />
+          )}
+
+          {/* TAB 1: Lịch sử hoạt động */}
           {activeTab === 'ACTIVITIES' && (
             <OpportunityActivityTimeline
               opportunityId={currentOpp.id}
@@ -490,7 +554,7 @@ export default function OpportunityDetailModal({
             />
           )}
 
-          {/* TAB 2: Công việc & Lịch nhắc (S5-04) */}
+          {/* TAB 2: Công việc & Lịch nhắc */}
           {activeTab === 'TASKS' && (
             <OpportunityTaskManager
               opportunityId={currentOpp.id}
@@ -680,6 +744,45 @@ export default function OpportunityDetailModal({
                   </div>
                 )
               })()}
+
+              {/* Lịch sử ghi đè điều kiện giai đoạn bởi Trưởng nhóm (S5-04 AC3) */}
+              {currentOpp.stage_override_history && currentOpp.stage_override_history.length > 0 && (
+                <div className="details-card full-width" style={{ borderLeft: '4px solid #ea580c', background: '#fffaf5' }}>
+                  <h4 style={{ color: '#c2410c' }}>Lịch sử phê duyệt ghi đè giai đoạn (Stage Gate Override)</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+                    {currentOpp.stage_override_history.map((ovr) => (
+                      <div
+                        key={ovr.id}
+                        style={{
+                          background: '#ffffff',
+                          border: '1px solid #fed7aa',
+                          borderRadius: '8px',
+                          padding: '12px 14px',
+                          fontSize: '0.85rem',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 700, color: '#9a3412' }}>
+                            Chuyển ngoại lệ: "{ovr.from_stage_name}" ➜ "{ovr.to_stage_name}"
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: '#78716c' }}>
+                            {new Date(ovr.created_at).toLocaleString('vi-VN')}
+                          </span>
+                        </div>
+                        <div style={{ color: '#44403c', marginBottom: '4px' }}>
+                          <strong>Người phê duyệt:</strong> {ovr.overridden_by_name} ({ovr.overridden_by_role})
+                        </div>
+                        <div style={{ color: '#1c1917', marginBottom: '6px' }}>
+                          <strong>Lý do ghi đè:</strong> <em>"{ovr.reason}"</em>
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#b45309', background: '#ffedd5', padding: '4px 8px', borderRadius: '4px' }}>
+                          ⚠️ Điều kiện chưa thỏa mãn tại thời điểm duyệt: {ovr.unmet_conditions.join('; ')}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {currentOpp.description && (
                 <div className="details-card full-width">
@@ -965,6 +1068,29 @@ export default function OpportunityDetailModal({
             onOpportunityUpdated(updated)
             showNotice(`Đã bàn giao cơ hội ${updated.code} cho ${updated.owner_name} thành công!`)
           }}
+        />
+      )}
+
+      {/* ── MODAL: RÀNG BUỘC ĐIỀU KIỆN RỜI GIAI ĐOẠN (S5-04) ── */}
+      {isStageGateModalOpen && targetStageToGate && stageGateEvaluation && (
+        <StageGateEnforcementModal
+          isOpen={isStageGateModalOpen}
+          opportunity={currentOpp}
+          targetStageId={targetStageToGate.id}
+          evaluation={stageGateEvaluation}
+          isManagerOrAdmin={isManagerOrAdmin}
+          currentUserId={user?.id ? Number(user.id) : 1}
+          currentUserName={user?.full_name || 'Trưởng nhóm kinh doanh'}
+          currentUserRole={user?.role === 'ADMIN' ? 'Giám đốc kinh doanh' : 'Trưởng nhóm kinh doanh'}
+          onClose={() => {
+            setIsStageGateModalOpen(false)
+            setTargetStageToGate(null)
+            setStageGateEvaluation(null)
+          }}
+          onConfirmedStageChange={() => {
+            executeStageChange(targetStageToGate)
+          }}
+          onOverrideApproved={handleOverrideApproved}
         />
       )}
     </div>

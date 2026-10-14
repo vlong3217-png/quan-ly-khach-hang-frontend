@@ -47,6 +47,12 @@ export interface Opportunity {
   team_name?: string
   description?: string
   lead_id?: string // ID Lead nguồn nếu được chuyển đổi từ Lead
+  // ── S5-03: Danh sách sản phẩm & dịch vụ trong cơ hội ──
+  product_items?: OpportunityProductItem[]
+  contract_term_years?: number // Thời hạn hợp đồng theo năm đối với dịch vụ thuê bao
+  annual_contract_value?: number // Giá trị hợp đồng hàng năm (ACV / ARR)
+  // ── S5-04: Lịch sử ghi đè điều kiện giai đoạn (Stage Gate Override) ──
+  stage_override_history?: StageGateOverrideRecord[]
   // ── S5-07: Cảnh báo cơ hội đình trệ (Stalled Opportunity Alert) ──
   last_activity_at?: string // Thời điểm hoạt động / tương tác gần nhất
   days_in_stage?: number // Số ngày nằm ở giai đoạn hiện tại mà chưa chuyển tiếp
@@ -54,6 +60,57 @@ export interface Opportunity {
   stalled_reason?: string // Lý do đình trệ (quá hạn giai đoạn, không có hoạt động, quá hạn chốt)
   created_at: string
   updated_at: string
+}
+
+/* ──────────── User Story S5-03: Sản phẩm dịch vụ trong cơ hội ──────────── */
+export type OpportunityBillingCycle = 'MONTHLY' | 'QUARTERLY' | 'ANNUAL' | 'ONE_TIME'
+
+export interface OpportunityProductItem {
+  id: string
+  product_id: string
+  product_code: string
+  product_name: string
+  product_type: 'ONE_TIME' | 'SUBSCRIPTION'
+  unit: string
+  list_price: number // Đơn giá niêm yết từ bảng giá
+  unit_price: number // Đơn giá áp dụng
+  quantity: number // Số lượng
+  // Dành riêng cho dịch vụ thuê bao:
+  billing_cycle?: OpportunityBillingCycle // Chu kỳ tính phí
+  billing_periods?: number // Số kỳ thuê bao (VD: 12 tháng, 4 quý, 2 năm)
+  annual_value?: number // Giá trị hợp đồng theo năm
+  total_amount: number // Thành tiền = unit_price * quantity * (billing_periods || 1)
+  discount_rate?: number // % Chiết khấu
+  notes?: string
+}
+
+/* ──────────── User Story S5-04: Điều kiện rời giai đoạn (Stage Gate) ──────────── */
+export interface StageConditionCheckResult {
+  condition: string
+  is_met: boolean
+  detail?: string
+}
+
+export interface StageGateEvaluation {
+  current_stage_name: string
+  target_stage_name: string
+  can_proceed: boolean
+  all_conditions: StageConditionCheckResult[]
+  unmet_conditions: StageConditionCheckResult[]
+}
+
+export interface StageGateOverrideRecord {
+  id: string
+  from_stage_id: string
+  from_stage_name: string
+  to_stage_id: string
+  to_stage_name: string
+  overridden_by_id: number
+  overridden_by_name: string
+  overridden_by_role: string
+  reason: string
+  unmet_conditions: string[]
+  created_at: string
 }
 
 export interface StalledOpportunityConfig {
