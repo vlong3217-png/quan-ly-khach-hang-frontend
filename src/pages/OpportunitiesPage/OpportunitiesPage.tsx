@@ -282,7 +282,6 @@ export default function OpportunitiesPage() {
           onClick={() => setMainNavTab('PIPELINE')}
         >
           <span className="tab-title">Danh sách Cơ hội & Pipeline</span>
-          <span className="tab-count-badge">{totalCount}</span>
         </button>
         <button
           type="button"
@@ -291,9 +290,6 @@ export default function OpportunitiesPage() {
           onClick={() => setMainNavTab('STALLED')}
         >
           <span className="tab-title"> Cảnh báo Đình trệ</span>
-          <span className="tab-tag-badge badge-stalled-count">
-            {opportunities.filter((o) => opportunityService.analyzeStalledOpportunity(o).isStalled).length}
-          </span>
         </button>
         <button
           type="button"
@@ -302,7 +298,6 @@ export default function OpportunitiesPage() {
           onClick={() => setMainNavTab('FORECAST')}
         >
           <span className="tab-title">Dự báo Doanh số</span>
-          <span className="tab-tag-badge">Forecast</span>
         </button>
         <button
           type="button"
@@ -310,7 +305,7 @@ export default function OpportunitiesPage() {
           id="tab-btn-opp-winloss"
           onClick={() => setMainNavTab('WIN_LOSS')}
         >
-          <span className="tab-title">Lý do Thắng / Thua & Đối thủ cạnh tranh</span>
+          <span className="tab-title">Lý do Thắng/Thua</span>
 
         </button>
       </div>
