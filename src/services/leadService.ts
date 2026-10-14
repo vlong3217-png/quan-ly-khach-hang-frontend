@@ -1005,5 +1005,285 @@ export const leadService = {
       }
     } catch {}
   },
+
+  /* ──────────── User Story S4-04: Cảnh báo & Gộp Lead Trùng ──────────── */
+  async findDuplicates(leadList?: import('../types/lead.ts').Lead[]): Promise<import('../types/lead.ts').LeadDuplicateGroup[]> {
+    const currentLeads = leadList || (await this.getLeads())
+    const groups: import('../types/lead.ts').LeadDuplicateGroup[] = []
+    const processedIds = new Set<string>()
+
+    // Load danh sách khách hàng hiện có để đối soát (AC: Lead trùng với KH đã có)
+    let existingCustomers: Array<{ id: string; code: string; name: string; phone?: string; email?: string }> = []
+    try {
+      const { customerService } = await import('./customerService.ts')
+      const customers = await customerService.getCustomers()
+      existingCustomers = customers.map((c: any) => ({
+        id: String(c.id),
+        code: c.code || '',
+        name: c.company_name || c.name || '',
+        phone: c.phone || '',
+        email: c.email || '',
+      }))
+    } catch {}
+
+    for (let i = 0; i < currentLeads.length; i++) {
+      const leadA = currentLeads[i]
+      if (processedIds.has(leadA.id)) continue
+
+      const matches: import('../types/lead.ts').LeadDuplicateGroup['duplicate_matches'] = []
+
+      for (let j = i + 1; j < currentLeads.length; j++) {
+        const leadB = currentLeads[j]
+        if (processedIds.has(leadB.id)) continue
+
+        const matchedBy: ('email' | 'phone' | 'company')[] = []
+        let score = 0
+
+        // 1. So khớp Email (chính xác tuyệt đối)
+        if (
+          leadA.email &&
+          leadB.email &&
+          leadA.email.trim().toLowerCase() === leadB.email.trim().toLowerCase()
+        ) {
+          matchedBy.push('email')
+          score += 50
+        }
+
+        // 2. So khớp Số điện thoại (bỏ ký tự đặc biệt)
+        const phoneA = (leadA.phone || '').replace(/\D/g, '')
+        const phoneB = (leadB.phone || '').replace(/\D/g, '')
+        if (phoneA && phoneB && phoneA === phoneB) {
+          matchedBy.push('phone')
+          score += 40
+        }
+
+        // 3. So khớp Tên công ty (không phân biệt hoa thường)
+        const compA = (leadA.company || '').trim().toLowerCase()
+        const compB = (leadB.company || '').trim().toLowerCase()
+        if (compA && compB && (compA === compB || compA.includes(compB) || compB.includes(compA))) {
+          matchedBy.push('company')
+          score += 25
+        }
+
+        if (matchedBy.length > 0) {
+          matches.push({
+            target_lead: leadB,
+            matched_by: matchedBy,
+            match_score: Math.min(100, score),
+          })
+          processedIds.add(leadB.id)
+        }
+      }
+
+      // Đối soát xem Lead A có trùng với Khách hàng hiện có trong database không
+      const matchedCustomer = existingCustomers.find((c) => {
+        const cPhone = (c.phone || '').replace(/\D/g, '')
+        const lPhone = (leadA.phone || '').replace(/\D/g, '')
+        const isPhoneMatch = lPhone && cPhone && lPhone === cPhone
+        const isEmailMatch = leadA.email && c.email && leadA.email.trim().toLowerCase() === c.email.trim().toLowerCase()
+        const isCompMatch = leadA.company && c.name && leadA.company.trim().toLowerCase() === c.name.trim().toLowerCase()
+        return isPhoneMatch || isEmailMatch || isCompMatch
+      })
+
+      if (matches.length > 0 || matchedCustomer) {
+        processedIds.add(leadA.id)
+        groups.push({
+          lead: leadA,
+          duplicate_matches: matches,
+          matched_existing_customer: matchedCustomer,
+        })
+      }
+    }
+
+    return groups
+  },
+
+  async mergeLeads(payload: import('../types/lead.ts').MergeLeadsPayload): Promise<import('../types/lead.ts').Lead> {
+    const leads = await this.getLeads()
+    const primaryIndex = leads.findIndex((l) => l.id === payload.primary_lead_id)
+    if (primaryIndex === -1) {
+      throw new Error('Không tìm thấy Lead chính cần gộp!')
+    }
+
+    const primaryLead = leads[primaryIndex]
+    const updatedLead: import('../types/lead.ts').Lead = {
+      ...primaryLead,
+      ...payload.merged_data,
+      notes: `${primaryLead.notes || ''}\n[Đã gộp từ các lead ID: ${payload.secondary_lead_ids.join(', ')} vào ngày ${new Date().toLocaleDateString('vi-VN')}]`.trim(),
+      updated_at: new Date().toISOString(),
+    }
+
+    // Chuyển toàn bộ lịch sử tương tác từ các secondary lead sang primary lead (AC: Gộp giữ nguyên lịch sử)
+    try {
+      const { leadInteractionService } = await import('./leadInteractionService.ts')
+      for (const secId of payload.secondary_lead_ids) {
+        const secInteractions = await leadInteractionService.getInteractionsByLead(secId)
+        for (const inter of secInteractions) {
+          await leadInteractionService.createInteraction({
+            lead_id: primaryLead.id,
+            type: inter.type,
+            title: `[Lịch sử gộp từ Lead phụ] ${inter.title}`,
+            content: inter.content,
+            outcome: inter.outcome,
+            performed_by_name: inter.performed_by_name,
+          })
+        }
+      }
+
+      await leadInteractionService.createInteraction({
+        lead_id: primaryLead.id,
+        type: 'SYSTEM',
+        title: 'Gộp Lead trùng lặp thành công (S4-04)',
+        content: `Đã hoàn tất gộp ${payload.secondary_lead_ids.length} bản ghi trùng lặp vào Lead này. Toàn bộ lịch sử trao đổi được bảo toàn.`,
+        performed_by_name: 'Hệ thống CRM',
+      })
+    } catch {}
+
+    // Cập nhật và lưu vào LocalStorage
+    const secondarySet = new Set(payload.secondary_lead_ids)
+    const stored = getStoredLeads()
+    const updatedList = stored
+      .filter((l: Lead) => !secondarySet.has(l.id))
+      .map((l: Lead) => (l.id === updatedLead.id ? updatedLead : l))
+    saveStoredLeads(updatedList)
+
+    return updatedLead
+  },
+
+  /* ──────────── User Story S4-06: Quy tắc phân bổ Lead tự động ──────────── */
+  getDistributionRules(): import('../types/lead.ts').LeadDistributionRule[] {
+    const STORAGE_KEY = 'crm_lead_distribution_rules_v1'
+    const DEFAULT_RULES: import('../types/lead.ts').LeadDistributionRule[] = [
+      {
+        id: 'rule-1',
+        name: 'Phân bổ Lead Doanh nghiệp Công nghệ - Đội Kinh doanh 1',
+        type: 'INDUSTRY',
+        priority: 1,
+        is_active: true,
+        criteria: { industry: 'Công nghệ' },
+        assigned_team: 'Đội Kinh doanh 1',
+        assigned_user_ids: [1, 2],
+        assigned_user_names: ['Nguyễn Văn An', 'Trần Thị Bình'],
+        created_at: '2026-09-01T08:00:00Z',
+      },
+      {
+        id: 'rule-2',
+        name: 'Phân bổ Lead Khu vực Hà Nội & Miền Bắc',
+        type: 'TERRITORY',
+        priority: 2,
+        is_active: true,
+        criteria: { territory: 'Hà Nội' },
+        assigned_team: 'Đội Kinh doanh Miền Bắc',
+        assigned_user_ids: [2, 3],
+        assigned_user_names: ['Trần Thị Bình', 'Lê Hoàng Cường'],
+        created_at: '2026-09-05T09:30:00Z',
+      },
+      {
+        id: 'rule-3',
+        name: 'Phân bổ xoay vòng đều (Round-Robin) cho các NVKD còn lại',
+        type: 'ROUND_ROBIN',
+        priority: 3,
+        is_active: true,
+        criteria: {},
+        assigned_team: 'Toàn bộ phòng Kinh doanh',
+        assigned_user_ids: [1, 2, 3],
+        assigned_user_names: ['Nguyễn Văn An', 'Trần Thị Bình', 'Lê Hoàng Cường'],
+        created_at: '2026-09-10T10:00:00Z',
+      },
+    ]
+
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) return JSON.parse(raw)
+    } catch {}
+
+    return DEFAULT_RULES
+  },
+
+  saveDistributionRules(rules: import('../types/lead.ts').LeadDistributionRule[]): void {
+    const STORAGE_KEY = 'crm_lead_distribution_rules_v1'
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(rules))
+    } catch {}
+  },
+
+  createDistributionRule(payload: import('../types/lead.ts').CreateDistributionRulePayload): import('../types/lead.ts').LeadDistributionRule {
+    const rules = this.getDistributionRules()
+    const newRule: import('../types/lead.ts').LeadDistributionRule = {
+      id: `rule-${Date.now()}`,
+      name: payload.name,
+      type: payload.type,
+      priority: payload.priority || rules.length + 1,
+      is_active: payload.is_active,
+      criteria: payload.criteria,
+      assigned_user_ids: payload.assigned_user_ids,
+      assigned_user_names: payload.assigned_user_names,
+      created_at: new Date().toISOString(),
+    }
+    const updated = [...rules, newRule].sort((a, b) => a.priority - b.priority)
+    this.saveDistributionRules(updated)
+    return newRule
+  },
+
+  deleteDistributionRule(ruleId: string): void {
+    const rules = this.getDistributionRules()
+    const updated = rules.filter((r) => r.id !== ruleId)
+    this.saveDistributionRules(updated)
+  },
+
+  async runAutoDistribution(leads?: import('../types/lead.ts').Lead[]): Promise<{ distributedCount: number; unassignedCount: number }> {
+    const currentLeads = leads || (await this.getLeads())
+    const rules = this.getDistributionRules()
+      .filter((r) => r.is_active)
+      .sort((a, b) => a.priority - b.priority)
+
+    let distributedCount = 0
+    let unassignedCount = 0
+    let roundRobinPointer = 0
+
+    for (const lead of currentLeads) {
+      // Chỉ phân bổ cho lead chưa có người phụ trách hoặc đang ở hàng chờ
+      if (lead.owner_id && lead.assignment_status === 'ACCEPTED') continue
+
+      let matchedRule: import('../types/lead.ts').LeadDistributionRule | null = null
+
+      for (const rule of rules) {
+        if (rule.type === 'INDUSTRY' && rule.criteria.industry) {
+          if ((lead.industry || '').toLowerCase().includes(rule.criteria.industry.toLowerCase())) {
+            matchedRule = rule
+            break
+          }
+        } else if (rule.type === 'TERRITORY' && rule.criteria.territory) {
+          if ((lead.company || lead.full_name || '').toLowerCase().includes(rule.criteria.territory.toLowerCase())) {
+            matchedRule = rule
+            break
+          }
+        } else if (rule.type === 'ROUND_ROBIN') {
+          matchedRule = rule
+          break
+        }
+      }
+
+      if (matchedRule && matchedRule.assigned_user_ids.length > 0) {
+        const targetUserId = matchedRule.assigned_user_ids[roundRobinPointer % matchedRule.assigned_user_ids.length]
+        const targetUserName = matchedRule.assigned_user_names[roundRobinPointer % matchedRule.assigned_user_names.length]
+        roundRobinPointer++
+
+        lead.owner_id = targetUserId
+        lead.owner_name = targetUserName
+        lead.assignment_status = 'PENDING'
+        lead.assigned_at = new Date().toISOString()
+        lead.sla_hours = 24
+        lead.sla_deadline = new Date(Date.now() + 24 * 3600 * 1000).toISOString()
+        lead.sla_status = 'ON_TIME'
+        distributedCount++
+      } else {
+        lead.assignment_status = 'UNASSIGNED'
+        unassignedCount++
+      }
+    }
+
+    return { distributedCount, unassignedCount }
+  },
 }
 
