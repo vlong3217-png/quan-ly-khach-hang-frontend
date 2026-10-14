@@ -108,8 +108,10 @@ export default function OpportunitiesPage() {
   }, [loadData])
 
   // Format tiền tệ
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+  const formatCurrency = (val: number | undefined | null) => {
+    const num = Number(val)
+    if (isNaN(num)) return '0 ₫'
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num)
   }
 
   // Mở modal chi tiết
@@ -535,7 +537,7 @@ export default function OpportunitiesPage() {
                   <table className="opp-table" id="opportunities-table">
                   <thead>
                     <tr>
-                      <th style={{ width: '100px' }}>Mã OPP</th>
+                      <th style={{ width: '80px', textAlign: 'center' }}>Số thứ tự</th>
                       <th>Tên cơ hội & Khách hàng</th>
                       <th>Giai đoạn Pipeline</th>
                       <th>Xác suất</th>
@@ -547,10 +549,12 @@ export default function OpportunitiesPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedOpportunities.map((opp) => (
+                    {paginatedOpportunities.map((opp, idx) => (
                       <tr key={opp.id} className="opp-row-item">
-                        <td>
-                          <span className="code-pill">{opp.code}</span>
+                        <td style={{ textAlign: 'center' }}>
+                          <span className="order-num" style={{ fontWeight: 600, color: '#64748b' }}>
+                            {(currentPage - 1) * pageSize + idx + 1}
+                          </span>
                         </td>
                         <td>
                           <div className="opp-title-cell">
