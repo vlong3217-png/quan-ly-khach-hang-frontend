@@ -111,20 +111,6 @@ export default function PipelineStagesPage() {
     }
   }
 
-  const handleMoveUp = (idx: number) => {
-    if (idx <= 0) return
-    const updated = pipelineService.reorder(idx, idx - 1)
-    setStages(updated)
-    showToast('Đã cập nhật thứ tự chuỗi pipeline!', 'success')
-  }
-
-  const handleMoveDown = (idx: number) => {
-    if (idx >= stages.length - 1) return
-    const updated = pipelineService.reorder(idx, idx + 1)
-    setStages(updated)
-    showToast('Đã cập nhật thứ tự chuỗi pipeline!', 'success')
-  }
-
   return (
     <div className="pipeline-page-container">
       {toast && (
@@ -187,31 +173,10 @@ export default function PipelineStagesPage() {
           <tbody>
             {stages
               .slice((currentPage - 1) * pageSize, currentPage * pageSize)
-              .map((stage, idx) => {
-                const actualIdx = (currentPage - 1) * pageSize + idx
+              .map((stage) => {
                 return (
                   <tr key={stage.id}>
-                    <td>
-                      <div className="reorder-controls">
-                        <button
-                          type="button"
-                          className="order-btn"
-                          disabled={actualIdx === 0}
-                          onClick={() => handleMoveUp(actualIdx)}
-                        >
-                          ▲
-                        </button>
-                        <span className="order-num">{stage.order}</span>
-                        <button
-                          type="button"
-                          className="order-btn"
-                          disabled={actualIdx === stages.length - 1}
-                          onClick={() => handleMoveDown(actualIdx)}
-                        >
-                          ▼
-                        </button>
-                      </div>
-                    </td>
+                    <td><span className="order-num">{stage.order}</span></td>
                     <td><code>{stage.code}</code></td>
                     <td>
                       <strong style={{ color: stage.color }}>{stage.name}</strong>
