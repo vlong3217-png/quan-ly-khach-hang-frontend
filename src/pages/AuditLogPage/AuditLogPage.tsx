@@ -127,7 +127,11 @@ function getInitials(name?: string | null): string {
   return name.trim().substring(0, 2).toUpperCase() || 'AD'
 }
 
-export function AuditLogPage() {
+export interface AuditLogPageProps {
+  embeddedMode?: boolean
+}
+
+export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -232,67 +236,69 @@ export function AuditLogPage() {
     Boolean(searchKeyword.trim())
 
   return (
-    <div className="audit-log-page">
-      {/* ── Header Navbar ── */}
-      <header className="audit-log-header">
-        <div className="audit-log-header-inner">
-          <button
-            type="button"
-            className="audit-log-back-header-btn"
-            onClick={() => navigate('/dashboard')}
-            title="Quay lại Dashboard"
-            id="audit-back-dashboard-btn"
-          >
-            <IconArrowLeft />
-            <span>Quay lại Dashboard</span>
-          </button>
+    <div className={`audit-log-page ${embeddedMode ? 'audit-log-page-embedded' : ''}`}>
+      {/* ── Header Navbar (chỉ hiện khi mở độc lập ở route /admin/audit-logs) ── */}
+      {!embeddedMode && (
+        <header className="audit-log-header">
+          <div className="audit-log-header-inner">
+            <button
+              type="button"
+              className="audit-log-back-header-btn"
+              onClick={() => navigate('/dashboard')}
+              title="Quay lại Dashboard"
+              id="audit-back-dashboard-btn"
+            >
+              <IconArrowLeft />
+              <span>Quay lại Dashboard</span>
+            </button>
 
-          <div className="audit-log-header-user-area">
-            <div className="audit-log-header-user-info">
-              <div className="audit-log-header-avatar">
-                {user?.avatar ? (
-                  <img src={user.avatar} alt={user.full_name} className="audit-log-header-avatar-img" />
-                ) : (
-                  getInitials(user?.full_name || 'Admin')
-                )}
+            <div className="audit-log-header-user-area">
+              <div className="audit-log-header-user-info">
+                <div className="audit-log-header-avatar">
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt={user.full_name} className="audit-log-header-avatar-img" />
+                  ) : (
+                    getInitials(user?.full_name || 'Admin')
+                  )}
+                </div>
+
               </div>
 
+              <button
+                type="button"
+                className="audit-log-nav-btn"
+                onClick={() => navigate('/admin/users')}
+                title="Quản lý tài khoản"
+                id="audit-header-users-btn"
+              >
+                <IconUsers />
+                <span>Tài khoản</span>
+              </button>
+
+              <button
+                type="button"
+                className="audit-log-nav-btn"
+                onClick={() => navigate('/profile')}
+                title="Hồ sơ cá nhân"
+                id="audit-header-profile-btn"
+              >
+                <span>Hồ sơ</span>
+              </button>
+
+              <button
+                type="button"
+                className="audit-log-logout-btn"
+                onClick={handleLogout}
+                title="Đăng xuất"
+                id="audit-header-logout-btn"
+              >
+                <IconLogout />
+                <span>Đăng xuất</span>
+              </button>
             </div>
-
-            <button
-              type="button"
-              className="audit-log-nav-btn"
-              onClick={() => navigate('/admin/users')}
-              title="Quản lý tài khoản"
-              id="audit-header-users-btn"
-            >
-              <IconUsers />
-              <span>Tài khoản</span>
-            </button>
-
-            <button
-              type="button"
-              className="audit-log-nav-btn"
-              onClick={() => navigate('/profile')}
-              title="Hồ sơ cá nhân"
-              id="audit-header-profile-btn"
-            >
-              <span>Hồ sơ</span>
-            </button>
-
-            <button
-              type="button"
-              className="audit-log-logout-btn"
-              onClick={handleLogout}
-              title="Đăng xuất"
-              id="audit-header-logout-btn"
-            >
-              <IconLogout />
-              <span>Đăng xuất</span>
-            </button>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* ── Main Container ── */}
       <main className="audit-log-main">

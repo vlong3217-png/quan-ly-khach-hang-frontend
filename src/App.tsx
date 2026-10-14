@@ -7,7 +7,7 @@ import DashboardPage from './pages/DashboardPage/DashboardPage.tsx'
 import ForbiddenPage from './pages/ForbiddenPage/ForbiddenPage.tsx'
 import ImportUsersPage from './pages/ImportUsersPage/ImportUsersPage.tsx'
 import ProfilePage from './pages/ProfilePage/ProfilePage.tsx'
-import AuditLogPage from './pages/AuditLogPage/AuditLogPage.tsx'
+import PublicLeadFormPage from './pages/PublicLeadFormPage/PublicLeadFormPage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import AdminRoute from './components/AdminRoute.tsx'
 import { ROLES, PERMISSIONS } from './constants/permissions.ts'
@@ -15,6 +15,10 @@ import { ROLES, PERMISSIONS } from './constants/permissions.ts'
 function App() {
   return (
     <Routes>
+      {/* ── Public Web-to-Lead Form (S4-01) ── */}
+      <Route path="/lead-form/:formId" element={<PublicLeadFormPage />} />
+      <Route path="/forms/:formId" element={<PublicLeadFormPage />} />
+
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -84,6 +88,54 @@ function App() {
         }
       />
 
+      {/* 4b. S2-05: Quản lý Sản phẩm / Dịch vụ & Bảng giá */}
+      <Route
+        path="/dashboard/products/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* 4c. S4-01: Quản lý Biểu mẫu & Thu thập Lead */}
+      <Route
+        path="/dashboard/lead-forms/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/leads/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* 4d. S4-03: Quản lý & Theo dõi Lead theo Chiến dịch */}
+      <Route
+        path="/dashboard/campaigns/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* 4e. S5-03 & S5-04: Quản lý Cơ hội bán hàng, Hoạt động & Công việc */}
+      <Route
+        path="/dashboard/opportunities/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* 5. Quản lý tài khoản (S1-08 / S1-10) */}
       <Route
         path="/dashboard/users/*"
@@ -125,15 +177,11 @@ function App() {
       {/* ── S2-04: Nhật ký thay đổi dữ liệu nhạy cảm (Audit Logs) ── */}
       <Route
         path="/admin/audit-logs"
-        element={
-          <AdminRoute>
-            <AuditLogPage />
-          </AdminRoute>
-        }
+        element={<Navigate to="/dashboard/audit-logs" replace />}
       />
       <Route
         path="/audit-logs"
-        element={<Navigate to="/admin/audit-logs" replace />}
+        element={<Navigate to="/dashboard/audit-logs" replace />}
       />
 
       {/* 6. Route Dashboard tổng quan */}

@@ -52,6 +52,9 @@ export interface UserListResponse {
   success: boolean
   users: UserAccount[]
   total: number
+  page?: number
+  limit?: number
+  total_pages?: number
 }
 
 /* ──────────── S1-10 Lock Account & Data Handover Types ──────────── */

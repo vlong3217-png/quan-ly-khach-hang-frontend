@@ -110,8 +110,13 @@ const IconUserX = () => (
 )
 
 const IconShield = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="7" r="3.2" />
+    <path d="M6.5 19.5c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5" />
+    <circle cx="4.5" cy="9.5" r="2.2" />
+    <path d="M2 18.5c0-2 1.5-3.5 3.5-3.5" />
+    <circle cx="19.5" cy="9.5" r="2.2" />
+    <path d="M22 18.5c0-2-1.5-3.5-3.5-3.5" />
   </svg>
 )
 
@@ -141,7 +146,7 @@ const IconKey = () => (
 /* ──────────── Helpers ──────────── */
 const ROLE_LABELS: Record<UserRole, string> = {
   ADMIN: 'Admin',
-  MANAGER: 'Manager',
+  MANAGER: 'Quản lý',
   STAFF: 'Nhân viên',
   USER: 'Nhân viên',
 }
@@ -238,9 +243,16 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
   const [filterTeam, setFilterTeam] = useState('')
   const [teams, setTeams] = useState<string[]>([])
 
-  // Pagination (S1-08: Mặc định 20 dòng / trang)
-  const [currentPage, setCurrentPage] = useState(1)
-  const pageSize = 20
+  // Pagination (Phân trang tài khoản phía Frontend)
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(20)
+
+  // Reset trang về 1 khi số lượng bản ghi hoặc bộ lọc thay đổi
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [users.length, search, filterRole, filterStatus, filterTeam])
+
+  const totalUserPages = Math.max(1, Math.ceil(users.length / pageSize))
 
   // Modal create/edit
   const [modalOpen, setModalOpen] = useState(false)
@@ -592,16 +604,11 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
               type="button"
-              className="user-mgmt-add-btn"
+              className="btn btn-secondary"
               onClick={() => navigate('/import-users')}
               id="user-mgmt-import-btn"
-              style={{
-                background: '#f1f5f9',
-                color: '#334155',
-                border: '1px solid #cbd5e1',
-                boxShadow: 'none',
-              }}
-              title="Nhập danh sách người dùng từ file Excel (S2-01)"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}
+              title="Nhập danh sách người dùng từ file Excel"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
@@ -615,16 +622,11 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
             </button>
             <button
               type="button"
-              className="user-mgmt-add-btn"
-              onClick={() => navigate('/admin/audit-logs')}
+              className="btn btn-secondary"
+              onClick={() => navigate('/dashboard/audit-logs')}
               id="user-mgmt-audit-btn"
-              style={{
-                background: '#e0e7ff',
-                color: '#4338ca',
-                border: '1px solid #c7d2fe',
-                boxShadow: 'none',
-              }}
-              title="Xem nhật ký thay đổi dữ liệu nhạy cảm (S2-04)"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}
+              title="Xem nhật ký thay đổi dữ liệu nhạy cảm"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
@@ -667,8 +669,8 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
           >
             <option value="">Tất cả vai trò</option>
             <option value="ADMIN">Admin</option>
-            <option value="MANAGER">Manager</option>
-            <option value="STAFF">Nhân viên</option>
+            <option value="MANAGER">Quản lý</option>
+            <option value="USER">Nhân viên</option>
           </select>
           <select
             className="user-mgmt-filter-select"
@@ -828,31 +830,66 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
                 </tbody>
               </table>
 
-              {/* Thanh phân trang Pagination (S1-08) */}
+              {/* Thanh phân trang Pagination */}
               {users.length > 0 && (
-                <div className="user-mgmt-pagination" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderTop: '1px solid #e2e8f0', fontSize: '13px', color: '#64748b' }}>
-                  <span>
-                    Hiển thị {Math.min((currentPage - 1) * pageSize + 1, users.length)} - {Math.min(currentPage * pageSize, users.length)} trên tổng số {users.length} tài khoản (Mặc định {pageSize} dòng/trang)
-                  </span>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="user-mgmt-pagination">
+                  <div className="user-mgmt-pagination-info">
+                    <span>
+                      Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, users.length)}</strong> - <strong>{Math.min(currentPage * pageSize, users.length)}</strong> trên tổng số <strong>{users.length}</strong> tài khoản
+                    </span>
+                    <div className="user-mgmt-pagination-size">
+                      <label htmlFor="user-page-size-select">Hiển thị:</label>
+                      <select
+                        id="user-page-size-select"
+                        value={pageSize}
+                        onChange={(e) => {
+                          setPageSize(Number(e.target.value))
+                          setCurrentPage(1)
+                        }}
+                        className="user-mgmt-pagination-select"
+                      >
+                        <option value={5}>5 tài khoản / trang</option>
+                        <option value={10}>10 tài khoản / trang</option>
+                        <option value={20}>20 tài khoản / trang</option>
+                        <option value={50}>50 tài khoản / trang</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="user-mgmt-pagination-controls">
                     <button
                       type="button"
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                      style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+                      className="user-mgmt-page-btn nav-btn"
+                      title="Trang trước"
                     >
-                      Trang trước
+                      Trước
                     </button>
-                    <span style={{ padding: '6px 12px', fontWeight: 600, color: '#1e293b' }}>
-                      Trang {currentPage} / {Math.ceil(users.length / pageSize) || 1}
-                    </span>
+
+                    <div className="user-mgmt-page-numbers">
+                      {Array.from({ length: totalUserPages }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          className={`user-mgmt-page-btn number-btn ${
+                            pageNum === currentPage ? 'active' : ''
+                          }`}
+                          onClick={() => setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+                    </div>
+
                     <button
                       type="button"
-                      disabled={currentPage >= Math.ceil(users.length / pageSize)}
-                      onClick={() => setCurrentPage((p) => p + 1)}
-                      style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', cursor: currentPage >= Math.ceil(users.length / pageSize) ? 'not-allowed' : 'pointer', opacity: currentPage >= Math.ceil(users.length / pageSize) ? 0.5 : 1 }}
+                      disabled={currentPage >= totalUserPages}
+                      onClick={() => setCurrentPage((p) => Math.min(p + 1, totalUserPages))}
+                      className="user-mgmt-page-btn nav-btn"
+                      title="Trang sau"
                     >
-                      Trang sau
+                      Sau
                     </button>
                   </div>
                 </div>
@@ -959,8 +996,8 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
                   >
                     <option value="">-- Chọn vai trò --</option>
                     <option value="ADMIN">Admin</option>
-                    <option value="MANAGER">Manager</option>
-                    <option value="STAFF">Nhân viên</option>
+                    <option value="MANAGER">Quản lý</option>
+                    <option value="USER">Nhân viên</option>
                   </select>
                   {formErrors.role && (
                     <span className="user-mgmt-form-error">{formErrors.role}</span>
