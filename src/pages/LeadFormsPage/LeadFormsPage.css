@@ -1480,23 +1480,46 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
+  margin-bottom: 6px;
 }
 
 .scoring-stat-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 16px;
+  padding: 16px 18px;
   display: flex;
   align-items: center;
   gap: 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scoring-stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+}
+
+.scoring-stat-card.avg {
+  border-left: 4px solid #2563eb;
+}
+
+.scoring-stat-card.hot {
+  border-left: 4px solid #ef4444;
+  background: #fffcfc;
+}
+
+.scoring-stat-card.warm {
+  border-left: 4px solid #f59e0b;
+}
+
+.scoring-stat-card.cold {
+  border-left: 4px solid #64748b;
+}
+
+.scoring-stat-card.vip {
+  border-left: 4px solid #7e22ce;
+  background: #faf5ff;
 }
 
 .scoring-stat-icon {
@@ -1508,6 +1531,7 @@
   justify-content: center;
   font-size: 20px;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
 
 .scoring-stat-icon.avg {
@@ -1527,7 +1551,7 @@
 
 .scoring-stat-icon.cold {
   background: #f1f5f9;
-  color: #64748b;
+  color: #475569;
 }
 
 .scoring-stat-icon.vip {
@@ -1541,30 +1565,86 @@
 }
 
 .scoring-stat-value {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   color: #0f172a;
-  line-height: 1.2;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.scoring-stat-card.hot .scoring-stat-value {
+  color: #dc2626;
+}
+
+.scoring-stat-card.warm .scoring-stat-value {
+  color: #d97706;
+}
+
+.scoring-stat-card.vip .scoring-stat-value {
+  color: #7e22ce;
 }
 
 .scoring-stat-label {
-  font-size: 12px;
+  font-size: 13px;
   color: #64748b;
   font-weight: 500;
-  margin-top: 2px;
+  margin-top: 4px;
+}
+
+/* Wide Responsive Scoring Table */
+.scoring-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.scoring-data-table {
+  min-width: 1200px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.scoring-data-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 14px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.scoring-data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13.5px;
+  vertical-align: middle;
+}
+
+.scoring-data-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.scoring-data-table tbody tr:hover {
+  background-color: #fbfdff;
 }
 
 /* Progress bar inside score cell */
 .score-cell-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 100px;
+  gap: 6px;
+  min-width: 120px;
 }
 
 .score-progress-bar-bg {
   width: 100%;
-  height: 6px;
+  height: 7px;
   background: #e2e8f0;
   border-radius: 9999px;
   overflow: hidden;
@@ -2706,46 +2786,74 @@
 /* Grid SLA Metrics */
 .sla-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-  margin-bottom: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
 }
 
 .sla-metric-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 12px 16px;
+  border-radius: 12px;
+  padding: 16px 18px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  transition: all 0.15s ease;
+  gap: 14px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .sla-metric-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
 }
 
 .sla-metric-card.pending {
-  border-left: 3.5px solid #f59e0b;
+  border-left: 4px solid #f59e0b;
 }
 
 .sla-metric-card.overdue {
-  border-left: 3.5px solid #ef4444;
-  background: #fffafa;
+  border-left: 4px solid #ef4444;
+  background: #fffcfc;
 }
 
 .sla-metric-card.warning {
-  border-left: 3.5px solid #d97706;
+  border-left: 4px solid #d97706;
 }
 
 .sla-metric-card.queue {
-  border-left: 3.5px solid #64748b;
+  border-left: 4px solid #64748b;
 }
 
 .sla-metric-icon {
-  font-size: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.sla-metric-card.pending .sla-metric-icon {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.sla-metric-card.overdue .sla-metric-icon {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.sla-metric-card.warning .sla-metric-icon {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.sla-metric-card.queue .sla-metric-icon {
+  background: #f1f5f9;
+  color: #475569;
 }
 
 .sla-metric-body {
@@ -2754,16 +2862,26 @@
 }
 
 .sla-metric-num {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   color: #0f172a;
-  line-height: 1.2;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.sla-metric-card.overdue .sla-metric-num {
+  color: #dc2626;
+}
+
+.sla-metric-card.warning .sla-metric-num {
+  color: #d97706;
 }
 
 .sla-metric-lbl {
-  font-size: 12px;
+  font-size: 13px;
   color: #64748b;
-  margin-top: 2px;
+  font-weight: 500;
+  margin-top: 4px;
 }
 
 /* Badge SLA & Trạng thái phân bổ trong bảng */
@@ -2773,7 +2891,7 @@
   gap: 4px;
   font-size: 11px;
   font-weight: 600;
-  padding: 2px 7px;
+  padding: 3px 8px;
   border-radius: 6px;
   width: fit-content;
 }
@@ -2817,11 +2935,15 @@
 
 /* SLA Status Pill */
 .sla-status-pill {
-  display: inline-block;
-  font-size: 11.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .sla-status-pill.unassigned {
@@ -2850,13 +2972,16 @@
 
 /* SLA Flag Badge */
 .sla-flag-badge {
-  display: inline-block;
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11.5px;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 6px;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
 }
 
 .sla-flag-badge.overdue {
@@ -2942,17 +3067,50 @@
   background: #d1fae5;
 }
 
+/* Modern SLA Data Table */
+.sla-lead-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.sla-lead-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 14px 16px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.sla-lead-table td {
+  padding: 15px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13.5px;
+  vertical-align: middle;
+}
+
+.sla-lead-table tbody tr {
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sla-lead-table tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
 /* Nút hành động SLA trong tab chuyên dụng */
 .btn-sla-action {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  font-size: 11.5px;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
   font-weight: 600;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid transparent;
   white-space: nowrap;
 }
@@ -2961,11 +3119,13 @@
   background: #059669;
   color: #ffffff;
   border-color: #047857;
+  box-shadow: 0 1px 2px rgba(5, 150, 105, 0.2);
 }
 
 .btn-sla-accept:hover {
   background: #047857;
-  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
 }
 
 .btn-sla-reject {
@@ -2977,6 +3137,7 @@
 .btn-sla-reject:hover {
   background: #fee2e2;
   border-color: #ef4444;
+  transform: translateY(-1px);
 }
 
 .btn-sla-alert {
@@ -2988,6 +3149,7 @@
 .btn-sla-alert:hover {
   background: #fee2e2;
   color: #991b1b;
+  transform: translateY(-1px);
 }
 
 /* Preset Chips */
@@ -3010,11 +3172,19 @@
 
 /* Highlighting rows */
 .row-sla-overdue {
-  background-color: #fff9f9 !important;
+  background-color: #fff8f8 !important;
+}
+
+.row-sla-overdue td:first-child {
+  border-left: 3px solid #ef4444;
 }
 
 .row-sla-warning {
-  background-color: #fffef6 !important;
+  background-color: #fffdf5 !important;
+}
+
+.row-sla-warning td:first-child {
+  border-left: 3px solid #f59e0b;
 }
 
 /* ─────────────────────────────────────────────────────────────
