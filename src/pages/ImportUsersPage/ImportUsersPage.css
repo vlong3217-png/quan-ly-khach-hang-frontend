@@ -977,14 +977,22 @@
 .report-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
-  padding: 10px 24px;
+  padding: 10px 20px;
   font-size: 14px;
   font-weight: 600;
   font-family: var(--sans);
   border-radius: 10px;
   cursor: pointer;
+  white-space: nowrap;
   transition: all 0.2s ease;
+}
+
+.report-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .report-btn-primary {

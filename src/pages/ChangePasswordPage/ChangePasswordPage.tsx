@@ -340,7 +340,7 @@ function ChangePasswordPage() {
                     errors.newPassword ? 'input-field--error' : ''
                   }`}
                   type={showNewPassword ? 'text' : 'password'}
-                  placeholder="Tối thiểu 6 ký tự"
+                  placeholder="Tối thiểu 8 ký tự, có chữ và số"
                   value={newPassword}
                   onChange={(e) => handleFieldChange('newPassword', e.target.value)}
                   autoComplete="new-password"

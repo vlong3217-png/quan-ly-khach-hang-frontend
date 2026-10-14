@@ -38,22 +38,17 @@ const IconTeams = () => (
   </svg>
 )
 
-const IconSettings = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-  </svg>
-)
-
-const IconChevronDown = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
-)
-
-const IconShieldLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+const IconCrmLogo = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+    {/* Người dùng trung tâm */}
+    <circle cx="12" cy="7" r="3.2" />
+    <path d="M6.5 19.5c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5" />
+    {/* Khách hàng / thành viên kết nối bên trái */}
+    <circle cx="4.5" cy="9.5" r="2.2" />
+    <path d="M2 18.5c0-2 1.5-3.5 3.5-3.5" />
+    {/* Khách hàng / thành viên kết nối bên phải */}
+    <circle cx="19.5" cy="9.5" r="2.2" />
+    <path d="M22 18.5c0-2-1.5-3.5-3.5-3.5" />
   </svg>
 )
 
@@ -66,6 +61,86 @@ const IconUsers = () => (
   </svg>
 )
 
+const IconPackage = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m7.5 4.27 9 5.15" />
+    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+    <path d="m3.3 7 8.7 5 8.7-5" />
+    <path d="M12 22V12" />
+  </svg>
+)
+
+const IconPipeline = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 3v18h18" />
+    <path d="m19 9-5 5-4-4-3 3" />
+  </svg>
+)
+
+const IconCategories = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+    <path d="M6 6h10" />
+    <path d="M6 10h10" />
+  </svg>
+)
+
+const IconWinLoss = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
+  </svg>
+)
+
+const IconCustomFields = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2v4" />
+    <path d="M12 18v4" />
+    <path d="M4.93 4.93l2.83 2.83" />
+    <path d="M16.24 16.24l2.83 2.83" />
+    <path d="M2 12h4" />
+    <path d="M18 12h4" />
+    <path d="M4.93 19.07l2.83-2.83" />
+    <path d="M16.24 7.76l2.83-2.83" />
+  </svg>
+)
+
+const IconFileText = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="16" x2="8" y1="13" y2="13" />
+    <line x1="16" x2="8" y1="17" y2="17" />
+    <line x1="10" x2="8" y1="9" y2="9" />
+  </svg>
+)
+
+const IconMegaphone = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m3 11 18-5v12L3 13v-2z" />
+    <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+  </svg>
+)
+
+const IconTrendingUp = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+    <polyline points="17 6 23 6 23 12" />
+  </svg>
+)
+
+const IconClipboardList = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    <path d="M12 11h4" />
+    <path d="M12 16h4" />
+    <path d="M8 11h.01" />
+    <path d="M8 16h.01" />
+  </svg>
+)
+
 // Map icon theo id của menu item
 function getMenuIcon(id: string) {
   switch (id) {
@@ -73,14 +148,32 @@ function getMenuIcon(id: string) {
       return <IconDashboard />
     case 'menu-customers':
       return <IconCustomers />
+    case 'menu-lead-forms':
+      return <IconFileText />
+    case 'menu-campaigns':
+      return <IconMegaphone />
+    case 'menu-opportunities':
+      return <IconTrendingUp />
+    case 'menu-products':
+      return <IconPackage />
+    case 'menu-pipeline':
+      return <IconPipeline />
+    case 'menu-categories':
+      return <IconCategories />
+    case 'menu-win-loss':
+      return <IconWinLoss />
+    case 'menu-custom-fields':
+      return <IconCustomFields />
     case 'menu-reports':
       return <IconReports />
     case 'menu-teams':
       return <IconTeams />
     case 'menu-settings':
-      return <IconSettings />
+      return <IconClipboardList />
     case 'menu-users':
       return <IconUsers />
+    case 'menu-audit-logs':
+      return <IconClipboardList />
     default:
       return <IconDashboard />
   }
@@ -93,8 +186,6 @@ export interface SidebarProps {
   onSelectMenu: (item: MenuItem) => void
   /** Trạng thái thu gọn sidebar trên màn hình nhỏ */
   isCollapsed?: boolean
-  /** Callback bật/tắt thu gọn */
-  onToggleCollapse?: () => void
 }
 
 /**
@@ -104,7 +195,7 @@ export interface SidebarProps {
  * 1. Nhận thông tin Role (ADMIN, MANAGER, USER) từ AuthContext (session).
  * 2. Lọc bỏ hoàn toàn các menu không thuộc quyền hạn của user:
  *    - USER: Chỉ thấy Bảng điều khiển và Quản lý khách hàng.
- *    - MANAGER: Thấy thêm Báo cáo & Thống kê, Quản lý Đội nhóm.
+ *    - MANAGER: Thấy thêm Quản lý Đội nhóm, Pipeline, v.v.
  *    - ADMIN: Thấy toàn bộ, bao gồm menu Cấu hình hệ thống.
  * 3. Hỗ trợ nhóm menu (MenuGroup) và menu phân cấp (Submenu đa tầng).
  * 4. Xử lý an toàn khi chưa đăng nhập hoặc không có role.
@@ -113,7 +204,6 @@ export function Sidebar({
   activeMenuId,
   onSelectMenu,
   isCollapsed = false,
-  onToggleCollapse,
 }: SidebarProps) {
   const { user, role, isAuthenticated, menuGroups } = useRoleMenu()
 
@@ -138,51 +228,15 @@ export function Sidebar({
       <div className="sidebar-header">
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon" aria-hidden="true">
-            <IconShieldLogo />
+            <IconCrmLogo />
           </div>
           <div className="sidebar-brand-info">
-            <span className="sidebar-brand-name">CRM HỆ THỐNG</span>
-            <span className="sidebar-brand-sub">Quản lý khách hàng</span>
-          </div>
-        </div>
-        {onToggleCollapse && (
-          <button
-            type="button"
-            className="sidebar-collapse-btn"
-            onClick={onToggleCollapse}
-            title={isCollapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            aria-label="Thu gọn hoặc mở rộng menu"
-          >
-            <IconChevronDown />
-          </button>
-        )}
-      </div>
-
-      {/* ── 2. User Profile Area ── */}
-      <div className="sidebar-role-indicator">
-        <div className="sidebar-user-row">
-          <div className="sidebar-user-avatar" aria-hidden="true" style={{ overflow: 'hidden' }}>
-            {user.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.full_name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            ) : user.full_name ? (
-              user.full_name.charAt(0).toUpperCase()
-            ) : (
-              'U'
-            )}
-          </div>
-          <div className="sidebar-user-meta">
-            <div className="role-user-name" title={user.email}>
-              {user.full_name}
-            </div>
+            <span className="sidebar-brand-name">Quản lý khách hàng</span>
           </div>
         </div>
       </div>
 
-      {/* ── 3. Navigation Menu Groups ── */}
+      {/* ── 2. Navigation Menu Groups ── */}
       <nav className="sidebar-nav" role="navigation">
         {menuGroups.map((group) => (
           <div key={group.id} className="menu-group" id={`menu-group-${group.id}`}>
@@ -228,13 +282,7 @@ export function Sidebar({
         ))}
       </nav>
 
-      {/* ── 4. Sidebar Footer ── */}
-      <div className="sidebar-footer">
-        <div className="sidebar-footer-info">
-          <span>Phiên bản 1.0 (S1-06)</span>
-          <span className="sidebar-security-tag">Phân quyền RBAC</span>
-        </div>
-      </div>
+
     </aside>
   )
 }

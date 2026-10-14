@@ -295,7 +295,7 @@ export function ChangePasswordModal({ isOpen, onClose, onSuccess }: ChangePasswo
                 <input
                   id="modal-new-pwd"
                   type={showNewPassword ? 'text' : 'password'}
-                  placeholder="Tối thiểu 6 ký tự"
+                  placeholder="Tối thiểu 8 ký tự, có chữ và số"
                   value={newPassword}
                   onChange={(e) => handleFieldChange('newPassword', e.target.value)}
                   autoComplete="new-password"
