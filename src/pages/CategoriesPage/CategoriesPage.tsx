@@ -212,15 +212,29 @@ export default function CategoriesPage() {
                     >
                       Sửa
                     </button>
-                    <button
-                      type="button"
-                      className="cat-action-btn delete-btn"
-                      disabled={item.is_referenced}
-                      title={item.is_referenced ? 'Đang được tham chiếu - không thể xóa!' : 'Xóa danh mục'}
-                      onClick={() => handleDelete(item)}
-                    >
-                      Xóa
-                    </button>
+                    <details className="crm-more-actions">
+                      <summary className="crm-more-trigger" title="Thao tác khác" aria-label="Thao tác khác">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="5" r="1" />
+                          <circle cx="12" cy="12" r="1" />
+                          <circle cx="12" cy="19" r="1" />
+                        </svg>
+                      </summary>
+                      <div className="crm-more-menu">
+                        <button
+                          type="button"
+                          className="crm-more-item danger"
+                          disabled={item.is_referenced}
+                          title={item.is_referenced ? 'Đang được tham chiếu - không thể xóa!' : 'Xóa danh mục'}
+                          onClick={(event) => {
+                            event.currentTarget.closest('details')?.removeAttribute('open')
+                            handleDelete(item)
+                          }}
+                        >
+                          Xóa danh mục
+                        </button>
+                      </div>
+                    </details>
                   </td>
                 </tr>
               ))
