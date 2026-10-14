@@ -107,20 +107,6 @@ export default function PipelineStagesPage() {
     }
   }
 
-  const handleMoveUp = (idx: number) => {
-    if (idx <= 0) return
-    const updated = pipelineService.reorder(idx, idx - 1)
-    setStages(updated)
-    showToast('Đã cập nhật thứ tự chuỗi pipeline!', 'success')
-  }
-
-  const handleMoveDown = (idx: number) => {
-    if (idx >= stages.length - 1) return
-    const updated = pipelineService.reorder(idx, idx + 1)
-    setStages(updated)
-    showToast('Đã cập nhật thứ tự chuỗi pipeline!', 'success')
-  }
-
   return (
     <div className="pipeline-page-container">
       {toast && (
@@ -181,29 +167,9 @@ export default function PipelineStagesPage() {
             </tr>
           </thead>
           <tbody>
-            {stages.map((stage, idx) => (
+            {stages.map((stage) => (
               <tr key={stage.id}>
-                <td>
-                  <div className="reorder-controls">
-                    <button
-                      type="button"
-                      className="order-btn"
-                      disabled={idx === 0}
-                      onClick={() => handleMoveUp(idx)}
-                    >
-                      ▲
-                    </button>
-                    <span className="order-num">{stage.order}</span>
-                    <button
-                      type="button"
-                      className="order-btn"
-                      disabled={idx === stages.length - 1}
-                      onClick={() => handleMoveDown(idx)}
-                    >
-                      ▼
-                    </button>
-                  </div>
-                </td>
+                <td><span className="order-num">{stage.order}</span></td>
                 <td><code>{stage.code}</code></td>
                 <td>
                   <strong style={{ color: stage.color }}>{stage.name}</strong>
