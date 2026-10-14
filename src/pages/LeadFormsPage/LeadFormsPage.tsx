@@ -30,6 +30,10 @@ import type {
   LeadSlaStatus,
   SavedLeadFilter,
   FollowUpTiming,
+  LeadDuplicateGroup,
+  MergeLeadsPayload,
+  LeadDistributionRule,
+  LeadDistributionType,
 } from '../../types/lead.ts'
 import type { CustomerEnterprise } from '../../types/customer.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
@@ -304,6 +308,13 @@ const LEAD_ASSIGNMENT_LABELS: Record<LeadAssignmentStatus, { label: string; bg: 
   UNASSIGNED: { label: 'Hàng chờ phân bổ', bg: '#f1f5f9', color: '#475569' },
 }
 
+const MOCK_USERS_FOR_ASSIGN: { id: number; name: string; team: string }[] = [
+  { id: 1, name: 'Nguyễn Văn An', team: 'Đội Kinh doanh 1' },
+  { id: 2, name: 'Trần Thị Bình', team: 'Đội Kinh doanh 2' },
+  { id: 3, name: 'Lê Hoàng Cường', team: 'Đội Kinh doanh Miền Bắc' },
+  { id: 4, name: 'Lưu Quang Trường', team: 'Đội Kinh doanh Miền Nam' },
+]
+
 export default function LeadFormsPage() {
   const { user } = useAuth()
   const canManageScoring = user?.role === 'ADMIN' || user?.role === 'MANAGER'
@@ -417,6 +428,53 @@ export default function LeadFormsPage() {
   const [existingCustomers, setExistingCustomers] = useState<CustomerEnterprise[]>([])
   const [pipelineStages, setPipelineStages] = useState<PipelineStage[]>([])
 
+  // ── S4-04: Cảnh báo & Gộp Lead trùng lặp ──
+  const [duplicateGroups, setDuplicateGroups] = useState<LeadDuplicateGroup[]>([])
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false)
+  const [isScanningDuplicates, setIsScanningDuplicates] = useState(false)
+  const [selectedGroupToMerge, setSelectedGroupToMerge] = useState<LeadDuplicateGroup | null>(null)
+  const [isMergeModalOpen, setIsMergeModalOpen] = useState(false)
+  const [primaryLeadId, setPrimaryLeadId] = useState<string>('')
+  const [mergeForm, setMergeForm] = useState<{
+    full_name: string
+    email: string
+    phone: string
+    company: string
+    industry: string
+    requirement: string
+    notes: string
+  }>({
+    full_name: '',
+    email: '',
+    phone: '',
+    company: '',
+    industry: '',
+    requirement: '',
+    notes: '',
+  })
+  const [isMerging, setIsMerging] = useState(false)
+
+  // ── S4-06: Cấu hình quy tắc phân bổ tự động ──
+  const [distributionRules, setDistributionRules] = useState<LeadDistributionRule[]>([])
+  const [isRulesModalOpen, setIsRulesModalOpen] = useState(false)
+  const [isRuleFormOpen, setIsRuleFormOpen] = useState(false)
+  const [newRuleForm, setNewRuleForm] = useState<{
+    name: string
+    type: LeadDistributionType
+    priority: number
+    criteria_territory: string
+    criteria_industry: string
+    assigned_user_ids: number[]
+  }>({
+    name: '',
+    type: 'ROUND_ROBIN',
+    priority: 1,
+    criteria_territory: '',
+    criteria_industry: '',
+    assigned_user_ids: [1, 2],
+  })
+  const [isDistributingNow, setIsDistributingNow] = useState(false)
+
   // ── S4-06: State cho Lịch sử tương tác với Lead ──
   const [selectedLeadForInteraction, setSelectedLeadForInteraction] = useState<Lead | null>(null)
   const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false)
@@ -506,6 +564,9 @@ export default function LeadFormsPage() {
       setForms(fetchedForms)
       setSubmissions(fetchedSubs)
       setAllRecentInteractions(fetchedInteractions)
+      setDistributionRules(leadService.getDistributionRules())
+      // Quét tự động danh sách trùng lặp
+      leadService.findDuplicates(fetchedLeads).then((dups) => setDuplicateGroups(dups)).catch(() => {})
     } catch {
       showToast('Không thể tải danh sách dữ liệu Lead', true)
     } finally {
@@ -1393,6 +1454,182 @@ export default function LeadFormsPage() {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
+  // ── S4-04: Xử lý Cảnh báo & Gộp Lead trùng lặp ──
+  const handleScanDuplicates = async () => {
+    setIsScanningDuplicates(true)
+    try {
+      const dups = await leadService.findDuplicates(leads)
+      setDuplicateGroups(dups)
+      setIsDuplicateModalOpen(true)
+      if (dups.length === 0) {
+        showToast('Tuyệt vời! Không phát hiện Lead nào bị trùng thông tin.')
+      } else {
+        showToast(`Phát hiện ${dups.length} nhóm Lead có dấu hiệu trùng lặp thông tin!`)
+      }
+    } catch {
+      showToast('Có lỗi xảy ra khi quét trùng lặp', true)
+    } finally {
+      setIsScanningDuplicates(false)
+    }
+  }
+
+  const handleOpenMergeModal = (group: LeadDuplicateGroup) => {
+    setSelectedGroupToMerge(group)
+    const primary = group.lead
+    setPrimaryLeadId(primary.id)
+    setMergeForm({
+      full_name: primary.full_name || '',
+      email: primary.email || '',
+      phone: primary.phone || '',
+      company: primary.company || '',
+      industry: primary.industry || 'Công nghệ thông tin & Viễn thông',
+      requirement: primary.requirement || '',
+      notes: primary.notes || '',
+    })
+    setIsMergeModalOpen(true)
+  }
+
+  const handleSelectPrimaryLead = (leadId: string) => {
+    setPrimaryLeadId(leadId)
+    if (!selectedGroupToMerge) return
+    const allLeads = [selectedGroupToMerge.lead, ...selectedGroupToMerge.duplicate_matches.map((m) => m.target_lead)]
+    const target = allLeads.find((l) => l.id === leadId)
+    if (target) {
+      setMergeForm({
+        full_name: target.full_name || '',
+        email: target.email || '',
+        phone: target.phone || '',
+        company: target.company || '',
+        industry: target.industry || 'Công nghệ thông tin & Viễn thông',
+        requirement: target.requirement || '',
+        notes: target.notes || '',
+      })
+    }
+  }
+
+  const handleConfirmMerge = async () => {
+    if (!selectedGroupToMerge || !primaryLeadId) return
+    const allLeads = [selectedGroupToMerge.lead, ...selectedGroupToMerge.duplicate_matches.map((m) => m.target_lead)]
+    const secondaryIds = allLeads.filter((l) => l.id !== primaryLeadId).map((l) => l.id)
+    const primaryObj = allLeads.find((l) => l.id === primaryLeadId)
+
+    const payload: MergeLeadsPayload = {
+      primary_lead_id: primaryLeadId,
+      secondary_lead_ids: secondaryIds,
+      merged_data: {
+        full_name: mergeForm.full_name,
+        email: mergeForm.email,
+        phone: mergeForm.phone,
+        company: mergeForm.company,
+        industry: mergeForm.industry,
+        source: primaryObj?.source || 'MANUAL',
+        requirement: mergeForm.requirement,
+        notes: mergeForm.notes,
+        owner_id: primaryObj?.owner_id,
+        owner_name: primaryObj?.owner_name,
+      },
+    }
+
+    try {
+      setIsMerging(true)
+      const updated = await leadService.mergeLeads(payload)
+      // Cập nhật lại state leads
+      const secondarySet = new Set(secondaryIds)
+      setLeads((prev) => {
+        const filtered = prev.filter((l) => !secondarySet.has(l.id))
+        return filtered.map((l) => (l.id === updated.id ? updated : l))
+      })
+
+      // Cập nhật lại tương tác gần đây
+      try {
+        const recentInteractions = await leadInteractionService.getAllRecentInteractions()
+        setAllRecentInteractions(recentInteractions)
+      } catch {}
+
+      showToast(`Đã gộp thành công ${secondaryIds.length + 1} bản ghi vào Lead "${updated.full_name}"!`)
+      setIsMergeModalOpen(false)
+      setSelectedGroupToMerge(null)
+
+      // Cập nhật lại danh sách trùng lặp
+      const remainingDups = await leadService.findDuplicates()
+      setDuplicateGroups(remainingDups)
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Có lỗi khi gộp Lead', true)
+    } finally {
+      setIsMerging(false)
+    }
+  }
+
+  // ── S4-06: Xử lý Quy tắc phân bổ Lead tự động ──
+  const handleToggleRuleActive = (ruleId: string) => {
+    const updated = distributionRules.map((r) =>
+      r.id === ruleId ? { ...r, is_active: !r.is_active } : r
+    )
+    setDistributionRules(updated)
+    leadService.saveDistributionRules(updated)
+    showToast('Đã cập nhật trạng thái quy tắc phân bổ')
+  }
+
+  const handleDeleteRule = (ruleId: string) => {
+    leadService.deleteDistributionRule(ruleId)
+    setDistributionRules(leadService.getDistributionRules())
+    showToast('Đã xóa quy tắc phân bổ')
+  }
+
+  const handleCreateRuleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newRuleForm.name.trim()) {
+      showToast('Vui lòng nhập tên quy tắc phân bổ', true)
+      return
+    }
+
+    const assignedNames = newRuleForm.assigned_user_ids.map((id) => {
+      const u = MOCK_USERS_FOR_ASSIGN.find((mu) => mu.id === id)
+      return u ? u.name : `Nhân viên #${id}`
+    })
+
+    const created = leadService.createDistributionRule({
+      name: newRuleForm.name.trim(),
+      type: newRuleForm.type,
+      priority: Number(newRuleForm.priority) || 1,
+      is_active: true,
+      criteria: {
+        territory: newRuleForm.criteria_territory.trim() || undefined,
+        industry: newRuleForm.criteria_industry.trim() || undefined,
+      },
+      assigned_user_ids: newRuleForm.assigned_user_ids,
+      assigned_user_names: assignedNames,
+    })
+
+    setDistributionRules(leadService.getDistributionRules())
+    setIsRuleFormOpen(false)
+    setNewRuleForm({
+      name: '',
+      type: 'ROUND_ROBIN',
+      priority: distributionRules.length + 2,
+      criteria_territory: '',
+      criteria_industry: '',
+      assigned_user_ids: [1, 2],
+    })
+    showToast(`Đã tạo quy tắc phân bổ: "${created.name}"`)
+  }
+
+  const handleRunAutoDistributionNow = async () => {
+    try {
+      setIsDistributingNow(true)
+      const res = await leadService.runAutoDistribution(leads)
+      const updated = await leadService.getLeads()
+      setLeads(updated)
+      showToast(
+        `Phân bổ hoàn tất! Đã phân bổ tự động cho ${res.distributedCount} Lead (${res.unassignedCount} Lead không khớp quy tắc nằm ở hàng chờ).`
+      )
+    } catch {
+      showToast('Có lỗi xảy ra khi chạy phân bổ tự động', true)
+    } finally {
+      setIsDistributingNow(false)
+    }
+  }
+
   // ── S4-01: Modal & Form Functions ──
   const handleOpenCreateModal = () => {
     setEditingForm(null)
@@ -1562,6 +1799,36 @@ export default function LeadFormsPage() {
             id="btn-create-lead-manual"
           >
             <span>+ Tạo Lead thủ công</span>
+          </button>
+
+          {/* Nút Quét trùng lặp Lead (S4-04) */}
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleScanDuplicates}
+            id="btn-scan-duplicates"
+            title="Quét và phát hiện các Lead bị trùng Email, SĐT hoặc Tên công ty (S4-04)"
+            style={{ position: 'relative' }}
+          >
+            {isScanningDuplicates ? 'Đang quét...' : 'Quét trùng lặp Lead'}
+            {duplicateGroups.length > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '-7px',
+                  right: '-7px',
+                  background: '#ef4444',
+                  color: '#fff',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  borderRadius: '10px',
+                  padding: '1px 6px',
+                  boxShadow: '0 2px 5px rgba(239, 68, 68, 0.4)',
+                }}
+              >
+                {duplicateGroups.length}
+              </span>
+            )}
           </button>
 
           {/* Nút Xuất Excel */}
@@ -2240,7 +2507,32 @@ export default function LeadFormsPage() {
             <div style={{ display: 'none' }}>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+              {/* Nút S4-06: Cấu hình quy tắc phân bổ */}
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setIsRulesModalOpen(true)}
+                id="btn-open-distribution-rules"
+                title="Cấu hình các quy tắc phân bổ tự động theo ngành nghề, khu vực, round-robin (S4-06)"
+              >
+                <span>Cấu hình quy tắc phân bổ (S4-06)</span>
+                <span className="tab-badge" style={{ marginLeft: '6px' }}>{distributionRules.length}</span>
+              </button>
+
+              {/* Nút S4-06: Chạy phân bổ tự động ngay */}
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleRunAutoDistributionNow}
+                disabled={isDistributingNow}
+                id="btn-run-auto-distribution"
+                title="Kích hoạt phân bổ tự động cho các lead trong hàng chờ chưa tiếp nhận (S4-06)"
+              >
+                <IconRefreshCw />
+                <span>{isDistributingNow ? 'Đang phân bổ...' : 'Chạy phân bổ tự động'}</span>
+              </button>
+
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -5726,6 +6018,645 @@ export default function LeadFormsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          S4-04: MODAL DANH SÁCH TRÙNG LẶP LEAD
+          ───────────────────────────────────────────────────────────── */}
+      {isDuplicateModalOpen && (
+        <div className="lead-modal-overlay" onClick={() => setIsDuplicateModalOpen(false)}>
+          <div
+            className="lead-modal-card"
+            style={{ maxWidth: '850px', width: '95%' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="lead-modal-header">
+              <div>
+                <h3 className="lead-modal-title">Phát hiện Khách hàng Tiềm năng trùng lặp (S4-04)</h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
+                  Hệ thống tự động đối chiếu theo Email, Số điện thoại, Tên công ty và đối soát với Khách hàng hiện hữu.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="lead-modal-close-btn"
+                onClick={() => setIsDuplicateModalOpen(false)}
+              >
+                <IconX />
+              </button>
+            </div>
+
+            <div className="lead-modal-body" style={{ maxHeight: '65vh', overflowY: 'auto' }}>
+              {duplicateGroups.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
+                  <div style={{ fontSize: '36px', marginBottom: '12px' }}>✓</div>
+                  <h4 style={{ fontSize: '16px', fontWeight: 600, color: '#1e293b' }}>
+                    Không có bản ghi trùng lặp nào!
+                  </h4>
+                  <p style={{ fontSize: '13px', maxWidth: '400px', margin: '8px auto 0' }}>
+                    Tất cả các Lead trong hệ thống đều có Email, Số điện thoại và Tên công ty phân biệt, không trùng chéo.
+                  </p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '8px', padding: '12px 14px', fontSize: '13px', color: '#92400e' }}>
+                    <strong>Tìm thấy {duplicateGroups.length} nhóm Lead trùng lặp.</strong> Vui lòng xem xét gộp các bản ghi để đảm bảo tính toàn vẹn dữ liệu và tập trung chăm sóc.
+                  </div>
+
+                  {duplicateGroups.map((group, idx) => (
+                    <div
+                      key={`dup-group-${group.lead.id}-${idx}`}
+                      style={{
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '10px',
+                        padding: '16px',
+                        background: '#ffffff',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                      }}
+                    >
+                      {/* Tiêu đề nhóm trùng */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                        <div>
+                          <span style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>
+                            Nhóm #{idx + 1}: {group.lead.full_name} ({group.lead.company || 'Cá nhân'})
+                          </span>
+                          <span style={{ marginLeft: '8px', fontSize: '12px', padding: '2px 8px', borderRadius: '12px', background: '#fee2e2', color: '#dc2626', fontWeight: 600 }}>
+                            {group.duplicate_matches.length + 1} bản ghi trùng
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm"
+                          onClick={() => {
+                            setIsDuplicateModalOpen(false)
+                            handleOpenMergeModal(group)
+                          }}
+                          style={{ fontSize: '12px', padding: '6px 14px' }}
+                        >
+                          Xử lý gộp Lead
+                        </button>
+                      </div>
+
+                      {/* Gợi ý khách hàng đã tồn tại (nếu có) */}
+                      {group.matched_existing_customer && (
+                        <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', padding: '10px 12px', marginBottom: '12px', fontSize: '12px', color: '#1e40af' }}>
+                          <strong>Gợi ý gắn vào Khách hàng đã có:</strong> Trùng khớp với Khách hàng doanh nghiệp{' '}
+                          <strong>{group.matched_existing_customer.name}</strong> ({group.matched_existing_customer.code}). Bạn có thể chuyển đổi Lead này trực tiếp vào tài khoản khách hàng trên.
+                        </div>
+                      )}
+
+                      {/* Danh sách các Lead trong nhóm */}
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                        <thead>
+                          <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
+                            <th style={{ padding: '8px 10px' }}>Họ tên Lead</th>
+                            <th style={{ padding: '8px 10px' }}>Số điện thoại</th>
+                            <th style={{ padding: '8px 10px' }}>Email</th>
+                            <th style={{ padding: '8px 10px' }}>Công ty</th>
+                            <th style={{ padding: '8px 10px' }}>Trùng khớp do</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr style={{ borderBottom: '1px solid #f1f5f9', background: '#f8fafc', fontWeight: 600 }}>
+                            <td style={{ padding: '8px 10px' }}>
+                              {group.lead.full_name} <span style={{ color: '#2563eb', fontSize: '11px' }}>(Bản ghi gốc)</span>
+                            </td>
+                            <td style={{ padding: '8px 10px' }}>{group.lead.phone}</td>
+                            <td style={{ padding: '8px 10px' }}>{group.lead.email}</td>
+                            <td style={{ padding: '8px 10px' }}>{group.lead.company || '-'}</td>
+                            <td style={{ padding: '8px 10px', color: '#64748b' }}>-</td>
+                          </tr>
+                          {group.duplicate_matches.map((match, mIdx) => (
+                            <tr key={`match-${match.target_lead.id}-${mIdx}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              <td style={{ padding: '8px 10px' }}>{match.target_lead.full_name}</td>
+                              <td style={{ padding: '8px 10px' }}>
+                                <span style={{ color: match.matched_by.includes('phone') ? '#dc2626' : undefined, fontWeight: match.matched_by.includes('phone') ? 600 : 400 }}>
+                                  {match.target_lead.phone}
+                                </span>
+                              </td>
+                              <td style={{ padding: '8px 10px' }}>
+                                <span style={{ color: match.matched_by.includes('email') ? '#dc2626' : undefined, fontWeight: match.matched_by.includes('email') ? 600 : 400 }}>
+                                  {match.target_lead.email}
+                                </span>
+                              </td>
+                              <td style={{ padding: '8px 10px' }}>
+                                <span style={{ color: match.matched_by.includes('company') ? '#dc2626' : undefined, fontWeight: match.matched_by.includes('company') ? 600 : 400 }}>
+                                  {match.target_lead.company || '-'}
+                                </span>
+                              </td>
+                              <td style={{ padding: '8px 10px' }}>
+                                {match.matched_by.map((f) => (
+                                  <span
+                                    key={f}
+                                    style={{
+                                      display: 'inline-block',
+                                      padding: '1px 6px',
+                                      borderRadius: '4px',
+                                      background: '#fee2e2',
+                                      color: '#991b1b',
+                                      fontSize: '11px',
+                                      marginRight: '4px',
+                                    }}
+                                  >
+                                    Trùng {f === 'email' ? 'Email' : f === 'phone' ? 'SĐT' : 'Tên cty'}
+                                  </span>
+                                ))}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="lead-modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setIsDuplicateModalOpen(false)}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          S4-04: MODAL GỘP LEAD (MERGE LEADS)
+          ───────────────────────────────────────────────────────────── */}
+      {isMergeModalOpen && selectedGroupToMerge && (
+        <div className="lead-modal-overlay" onClick={() => setIsMergeModalOpen(false)}>
+          <div
+            className="lead-modal-card"
+            style={{ maxWidth: '850px', width: '95%' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="lead-modal-header">
+              <div>
+                <h3 className="lead-modal-title">Gộp Khách hàng Tiềm năng trùng lặp (S4-04)</h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
+                  Chọn bản ghi chính (Primary Lead) để giữ lại. Toàn bộ lịch sử trao đổi, cuộc gọi, ghi chú từ các bản ghi phụ sẽ được bảo toàn và chuyển sang bản ghi chính.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="lead-modal-close-btn"
+                onClick={() => setIsMergeModalOpen(false)}
+              >
+                <IconX />
+              </button>
+            </div>
+
+            <div className="lead-modal-body" style={{ maxHeight: '68vh', overflowY: 'auto' }}>
+              {/* Bước 1: Chọn bản ghi chính */}
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '13px', color: '#1e293b', marginBottom: '8px' }}>
+                  1. Chọn bản ghi chính (Giữ lại):
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {[selectedGroupToMerge.lead, ...selectedGroupToMerge.duplicate_matches.map((m) => m.target_lead)].map((cand) => {
+                    const isSelected = cand.id === primaryLeadId
+                    return (
+                      <div
+                        key={`cand-${cand.id}`}
+                        onClick={() => handleSelectPrimaryLead(cand.id)}
+                        style={{
+                          border: isSelected ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                          borderRadius: '8px',
+                          padding: '10px 14px',
+                          background: isSelected ? '#eff6ff' : '#ffffff',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '12px',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <input
+                            type="radio"
+                            name="primary_lead_radio"
+                            checked={isSelected}
+                            onChange={() => handleSelectPrimaryLead(cand.id)}
+                          />
+                          <div>
+                            <div style={{ fontWeight: 600, fontSize: '13px', color: '#0f172a' }}>
+                              {cand.full_name} — {cand.company || 'Khách lẻ'}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                              SĐT: {cand.phone} | Email: {cand.email} | NVKD: {cand.owner_name || 'Chưa giao'}
+                            </div>
+                          </div>
+                        </div>
+                        {isSelected && (
+                          <span style={{ fontSize: '11px', background: '#2563eb', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                            Bản ghi chính
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Bước 2: Xem trước và chỉnh sửa thông tin sau khi gộp */}
+              <div>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '13px', color: '#1e293b', marginBottom: '8px' }}>
+                  2. Thông tin tổng hợp sau khi gộp:
+                </label>
+                <div className="lead-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="lead-form-group">
+                    <label className="lead-form-label">Họ và tên *</label>
+                    <input
+                      type="text"
+                      className="lead-form-control"
+                      value={mergeForm.full_name}
+                      onChange={(e) => setMergeForm({ ...mergeForm, full_name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="lead-form-group">
+                    <label className="lead-form-label">Công ty / Tổ chức</label>
+                    <input
+                      type="text"
+                      className="lead-form-control"
+                      value={mergeForm.company}
+                      onChange={(e) => setMergeForm({ ...mergeForm, company: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="lead-form-group">
+                    <label className="lead-form-label">Số điện thoại *</label>
+                    <input
+                      type="text"
+                      className="lead-form-control"
+                      value={mergeForm.phone}
+                      onChange={(e) => setMergeForm({ ...mergeForm, phone: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="lead-form-group">
+                    <label className="lead-form-label">Email *</label>
+                    <input
+                      type="email"
+                      className="lead-form-control"
+                      value={mergeForm.email}
+                      onChange={(e) => setMergeForm({ ...mergeForm, email: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="lead-form-group" style={{ gridColumn: 'span 2' }}>
+                    <label className="lead-form-label">Nhu cầu tư vấn / Yêu cầu giải pháp</label>
+                    <textarea
+                      className="lead-form-control"
+                      rows={2}
+                      value={mergeForm.requirement}
+                      onChange={(e) => setMergeForm({ ...mergeForm, requirement: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="lead-form-group" style={{ gridColumn: 'span 2' }}>
+                    <label className="lead-form-label">Ghi chú nội bộ</label>
+                    <textarea
+                      className="lead-form-control"
+                      rows={2}
+                      value={mergeForm.notes}
+                      onChange={(e) => setMergeForm({ ...mergeForm, notes: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 14px', marginTop: '12px', fontSize: '12px', color: '#64748b' }}>
+                  ✓ <strong>Đảm bảo tính toàn vẹn:</strong> Tất cả các mốc lịch sử liên hệ, cuộc gọi, email và ghi chú từ các bản ghi bị gộp sẽ tự động gắn kết vào Lead chính này.
+                </div>
+              </div>
+            </div>
+
+            <div className="lead-modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={isMerging}
+                onClick={() => setIsMergeModalOpen(false)}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={isMerging}
+                onClick={handleConfirmMerge}
+                id="btn-confirm-merge-leads"
+              >
+                {isMerging ? 'Đang gộp...' : 'Xác nhận gộp Lead'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          S4-06: MODAL CẤU HÌNH QUY TẮC PHÂN BỔ LEAD TỰ ĐỘNG
+          ───────────────────────────────────────────────────────────── */}
+      {isRulesModalOpen && (
+        <div className="lead-modal-overlay" onClick={() => setIsRulesModalOpen(false)}>
+          <div
+            className="lead-modal-card"
+            style={{ maxWidth: '900px', width: '95%' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="lead-modal-header">
+              <div>
+                <h3 className="lead-modal-title">Cấu hình Quy tắc Phân bổ Lead tự động (S4-06)</h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
+                  Phân bổ Lead theo thứ tự ưu tiên (Ngành nghề, Khu vực hoặc Xoay vòng đều Round-Robin). Lead không khớp rơi vào Hàng chờ để Trưởng nhóm phân tay.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="lead-modal-close-btn"
+                onClick={() => setIsRulesModalOpen(false)}
+              >
+                <IconX />
+              </button>
+            </div>
+
+            <div className="lead-modal-body" style={{ maxHeight: '68vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                  Danh sách quy tắc hiện tại ({distributionRules.length})
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={() => setIsRuleFormOpen(!isRuleFormOpen)}
+                >
+                  {isRuleFormOpen ? 'Đóng form thêm' : '+ Thêm quy tắc mới'}
+                </button>
+              </div>
+
+              {/* Form tạo mới Rule nếu bật */}
+              {isRuleFormOpen && (
+                <form
+                  onSubmit={handleCreateRuleSubmit}
+                  style={{
+                    background: '#f8fafc',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    marginBottom: '16px',
+                  }}
+                >
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>
+                    Thêm quy tắc phân bổ mới
+                  </h4>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>
+                        Tên quy tắc *
+                      </label>
+                      <input
+                        type="text"
+                        className="lead-form-control"
+                        placeholder="VD: Phân bổ Lead Khu vực Miền Nam"
+                        value={newRuleForm.name}
+                        onChange={(e) => setNewRuleForm({ ...newRuleForm, name: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>
+                        Loại quy tắc
+                      </label>
+                      <select
+                        className="lead-form-control"
+                        value={newRuleForm.type}
+                        onChange={(e) =>
+                          setNewRuleForm({
+                            ...newRuleForm,
+                            type: e.target.value as LeadDistributionType,
+                          })
+                        }
+                      >
+                        <option value="INDUSTRY">Theo Ngành nghề</option>
+                        <option value="TERRITORY">Theo Khu vực / Vùng miền</option>
+                        <option value="ROUND_ROBIN">Xoay vòng đều (Round-Robin)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>
+                        Độ ưu tiên (1 = cao nhất)
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={99}
+                        className="lead-form-control"
+                        value={newRuleForm.priority}
+                        onChange={(e) =>
+                          setNewRuleForm({ ...newRuleForm, priority: Number(e.target.value) })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {newRuleForm.type === 'INDUSTRY' && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>
+                        Từ khóa ngành nghề (Khớp trong trường ngành nghề của Lead)
+                      </label>
+                      <input
+                        type="text"
+                        className="lead-form-control"
+                        placeholder="VD: Công nghệ, Tài chính, Y tế, Bất động sản"
+                        value={newRuleForm.criteria_industry}
+                        onChange={(e) =>
+                          setNewRuleForm({ ...newRuleForm, criteria_industry: e.target.value })
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {newRuleForm.type === 'TERRITORY' && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>
+                        Từ khóa khu vực / Tỉnh thành
+                      </label>
+                      <input
+                        type="text"
+                        className="lead-form-control"
+                        placeholder="VD: Hà Nội, TP.HCM, Đà Nẵng"
+                        value={newRuleForm.criteria_territory}
+                        onChange={(e) =>
+                          setNewRuleForm({ ...newRuleForm, criteria_territory: e.target.value })
+                        }
+                      />
+                    </div>
+                  )}
+
+                  <div style={{ marginBottom: '14px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>
+                      Nhân viên kinh doanh tiếp nhận (Chọn tối thiểu 1 người):
+                    </label>
+                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                      {MOCK_USERS_FOR_ASSIGN.map((u) => (
+                        <label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', cursor: 'pointer' }}>
+                          <input
+                            type="checkbox"
+                            checked={newRuleForm.assigned_user_ids.includes(u.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setNewRuleForm({
+                                  ...newRuleForm,
+                                  assigned_user_ids: [...newRuleForm.assigned_user_ids, u.id],
+                                })
+                              } else {
+                                setNewRuleForm({
+                                  ...newRuleForm,
+                                  assigned_user_ids: newRuleForm.assigned_user_ids.filter((id) => id !== u.id),
+                                })
+                              }
+                            }}
+                          />
+                          <span>{u.name} ({u.team})</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => setIsRuleFormOpen(false)}
+                    >
+                      Hủy
+                    </button>
+                    <button type="submit" className="btn btn-primary btn-sm">
+                      Lưu quy tắc
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Bảng danh sách các quy tắc */}
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #cbd5e1', textAlign: 'left', color: '#475569' }}>
+                    <th style={{ padding: '10px' }}>Ưu tiên</th>
+                    <th style={{ padding: '10px' }}>Tên quy tắc</th>
+                    <th style={{ padding: '10px' }}>Loại phân bổ</th>
+                    <th style={{ padding: '10px' }}>Điều kiện áp dụng</th>
+                    <th style={{ padding: '10px' }}>NVKD phụ trách</th>
+                    <th style={{ padding: '10px', textAlign: 'center' }}>Trạng thái</th>
+                    <th style={{ padding: '10px', textAlign: 'right' }}>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {distributionRules.map((r) => (
+                    <tr key={r.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '10px', fontWeight: 700, color: '#2563eb' }}>
+                        #{r.priority}
+                      </td>
+                      <td style={{ padding: '10px', fontWeight: 600 }}>{r.name}</td>
+                      <td style={{ padding: '10px' }}>
+                        <span
+                          style={{
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            background:
+                              r.type === 'INDUSTRY'
+                                ? '#ede9fe'
+                                : r.type === 'TERRITORY'
+                                ? '#e0f2fe'
+                                : '#fef3c7',
+                            color:
+                              r.type === 'INDUSTRY'
+                                ? '#6d28d9'
+                                : r.type === 'TERRITORY'
+                                ? '#0369a1'
+                                : '#b45309',
+                          }}
+                        >
+                          {r.type === 'INDUSTRY'
+                            ? 'Ngành nghề'
+                            : r.type === 'TERRITORY'
+                            ? 'Khu vực'
+                            : 'Round-Robin'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '10px', color: '#64748b' }}>
+                        {r.criteria.industry && `Ngành: "${r.criteria.industry}"`}
+                        {r.criteria.territory && `Khu vực: "${r.criteria.territory}"`}
+                        {!r.criteria.industry && !r.criteria.territory && 'Áp dụng xoay vòng tất cả'}
+                      </td>
+                      <td style={{ padding: '10px', fontSize: '12px' }}>
+                        {r.assigned_user_names.join(', ')}
+                      </td>
+                      <td style={{ padding: '10px', textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleRuleActive(r.id)}
+                          style={{
+                            border: 'none',
+                            background: r.is_active ? '#dcfce7' : '#f1f5f9',
+                            color: r.is_active ? '#15803d' : '#64748b',
+                            padding: '3px 8px',
+                            borderRadius: '12px',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {r.is_active ? 'Đang bật' : 'Đã tắt'}
+                        </button>
+                      </td>
+                      <td style={{ padding: '10px', textAlign: 'right' }}>
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm"
+                          style={{ padding: '2px 8px', fontSize: '11px' }}
+                          onClick={() => handleDeleteRule(r.id)}
+                        >
+                          Xóa
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="lead-modal-footer" style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  setIsRulesModalOpen(false)
+                  handleRunAutoDistributionNow()
+                }}
+              >
+                Chạy phân bổ ngay bây giờ
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setIsRulesModalOpen(false)}
+              >
+                Đóng
+              </button>
+            </div>
           </div>
         </div>
       )}

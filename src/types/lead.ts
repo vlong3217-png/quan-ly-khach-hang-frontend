@@ -298,5 +298,68 @@ export interface SavedLeadFilter {
   only_my_leads?: boolean
   is_preset?: boolean
 }
+/* ──────────── User Story S4-04: Cảnh báo & Gộp Lead trùng ──────────── */
+export interface LeadDuplicateGroup {
+  lead: Lead
+  duplicate_matches: {
+    target_lead: Lead
+    matched_by: ('email' | 'phone' | 'company')[]
+    match_score: number
+  }[]
+  matched_existing_customer?: {
+    id: string
+    code: string
+    name: string
+    phone?: string
+    email?: string
+  }
+}
 
+export interface MergeLeadsPayload {
+  primary_lead_id: string
+  secondary_lead_ids: string[]
+  merged_data: {
+    full_name: string
+    email: string
+    phone: string
+    company: string
+    industry?: string
+    source: LeadSource
+    requirement?: string
+    notes?: string
+    owner_id?: number
+    owner_name?: string
+  }
+}
 
+/* ──────────── User Story S4-06: Quy tắc phân bổ Lead tự động ──────────── */
+export type LeadDistributionType = 'ROUND_ROBIN' | 'TERRITORY' | 'INDUSTRY'
+
+export interface LeadDistributionRule {
+  id: string
+  name: string
+  type: LeadDistributionType
+  priority: number // Thứ tự ưu tiên, 1 là cao nhất
+  is_active: boolean
+  criteria: {
+    territory?: string // Vùng miền / Tỉnh thành: VD 'Hà Nội', 'TP.HCM', 'Miền Bắc'
+    industry?: string // Ngành nghề: VD 'Công nghệ', 'Tài chính', 'Sản xuất'
+  }
+  assigned_team?: string
+  assigned_user_ids: number[] // Các user được phân bổ
+  assigned_user_names: string[]
+  created_at: string
+}
+
+export interface CreateDistributionRulePayload {
+  name: string
+  type: LeadDistributionType
+  priority: number
+  is_active: boolean
+  criteria: {
+    territory?: string
+    industry?: string
+  }
+  assigned_user_ids: number[]
+  assigned_user_names: string[]
+}
