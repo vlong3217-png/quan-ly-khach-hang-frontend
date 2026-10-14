@@ -2237,15 +2237,7 @@ export default function LeadFormsPage() {
         <div className="lead-card-panel lead-sla-panel" id="lead-sla-panel">
           {/* Header Panel */}
           <div className="lead-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px', marginBottom: '18px' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>
-                  Phân bổ & Ràng buộc SLA Phản hồi Lead
-                </h3>
-              </div>
-              <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '13px' }}>
-                Nhân viên kinh doanh chủ động <strong>Nhận lead</strong> (chuyển sang <em>Đang chăm sóc</em>) hoặc <strong>Từ chối</strong> (bắt buộc lý do để quay lại hàng chờ phân bổ). Quá hạn SLA (24h/48h) sẽ kích hoạt cờ cảnh báo gửi Trưởng nhóm.
-              </p>
+            <div style={{ display: 'none' }}>
             </div>
 
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -2521,11 +2513,7 @@ export default function LeadFormsPage() {
         <div className="lead-card-panel lead-scoring-panel" id="lead-scoring-panel">
           {/* Header Panel */}
           <div className="lead-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>Phân loại & Chấm điểm Khách hàng Tiềm năng</h3>
-              <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '13px' }}>
-                Hệ thống đánh giá chất lượng Lead tự động theo 3 trụ cột (Hồ sơ Doanh nghiệp, Nhu cầu tư vấn, Kênh tiếp cận) và hỗ trợ Quản lý điều chỉnh điểm thủ công.
-              </p>
+            <div style={{ display: 'none' }}>
             </div>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               {canManageScoring && (
