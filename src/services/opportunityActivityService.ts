@@ -28,102 +28,21 @@ function getAuthHeaders(): Record<string, string> {
   return headers
 }
 
-// Dữ liệu mẫu ban đầu cho lịch sử hoạt động cơ hội
-const INITIAL_ACTIVITIES: OpportunityActivity[] = [
-  {
-    id: 'opp-act-1',
-    opportunity_id: 'opp-001',
-    opportunity_title: 'Hợp đồng Nâng cấp CRM Toàn diện - AlphaTech',
-    type: 'SYSTEM',
-    title: 'Khởi tạo Cơ hội bán hàng từ Lead chuyển đổi',
-    content: 'Cơ hội được tạo tự động sau khi chuyển đổi Lead "Nguyễn Văn An" thành công.',
-    performed_by_name: 'Hệ thống tự động',
-    created_at: '2026-10-01T09:00:00Z',
-  },
-  {
-    id: 'opp-act-2',
-    opportunity_id: 'opp-001',
-    opportunity_title: 'Hợp đồng Nâng cấp CRM Toàn diện - AlphaTech',
-    type: 'CALL',
-    title: 'Cuộc gọi thẩm định yêu cầu mở rộng 50 users',
-    content: 'Trao đổi qua điện thoại với anh An về cấu trúc phòng ban và nhu cầu tích hợp Zalo ZNS / SMS Brandname. Khách phản hồi rất tích cực.',
-    outcome: 'Thành công - Đã gửi form khảo sát',
-    duration_minutes: 25,
-    performed_by_id: 1,
-    performed_by_name: 'Nguyễn Văn An',
-    next_action: 'Gửi tài liệu giải pháp kỹ thuật và đặt lịch demo',
-    next_action_due: '2026-10-03T10:00:00Z',
-    created_at: '2026-10-02T10:30:00Z',
-  },
-  {
-    id: 'opp-act-3',
-    opportunity_id: 'opp-001',
-    opportunity_title: 'Hợp đồng Nâng cấp CRM Toàn diện - AlphaTech',
-    type: 'STAGE_CHANGE',
-    title: 'Chuyển giai đoạn: Tiếp cận → Xác định nhu cầu (BANT)',
-    content: 'Xác nhận ngân sách dự kiến 120-150 triệu VNĐ. Thời gian triển khai mục tiêu trong tháng 11/2026.',
-    performed_by_id: 1,
-    performed_by_name: 'Nguyễn Văn An',
-    created_at: '2026-10-03T11:00:00Z',
-  },
-  {
-    id: 'opp-act-4',
-    opportunity_id: 'opp-001',
-    opportunity_title: 'Hợp đồng Nâng cấp CRM Toàn diện - AlphaTech',
-    type: 'MEETING',
-    title: 'Họp Demo trực tiếp giải pháp tại văn phòng AlphaTech',
-    content: 'Trình diễn tính năng quản lý pipeline bán hàng, phân quyền dữ liệu đội nhóm và báo cáo doanh thu dự báo. Giám đốc điều hành AlphaTech đánh giá cao giao diện trực quan.',
-    outcome: 'Rất hài lòng - Khách yêu cầu gửi báo giá chính thức kèm phương án thanh toán 3 đợt',
-    duration_minutes: 90,
-    performed_by_id: 1,
-    performed_by_name: 'Nguyễn Văn An',
-    next_action: 'Soạn thảo báo giá chính thức và dự thảo hợp đồng',
-    next_action_due: '2026-10-06T17:00:00Z',
-    created_at: '2026-10-05T14:30:00Z',
-  },
-  {
-    id: 'opp-act-5',
-    opportunity_id: 'opp-001',
-    opportunity_title: 'Hợp đồng Nâng cấp CRM Toàn diện - AlphaTech',
-    type: 'EMAIL',
-    title: 'Gửi bảng chào giá chính thức gói CRM Enterprise 50 Users',
-    content: 'Đã gửi file PDF Báo giá BG-2026-089 tổng trị giá 120,000,000 VNĐ kèm bảng phân tích hiệu quả ROI.',
-    outcome: 'Đã gửi qua email - Khách đã mở xem',
-    performed_by_id: 1,
-    performed_by_name: 'Nguyễn Văn An',
-    next_action: 'Follow up qua điện thoại sau 2 ngày',
-    next_action_due: '2026-10-08T09:00:00Z',
-    created_at: '2026-10-06T09:15:00Z',
-  },
-  {
-    id: 'opp-act-6',
-    opportunity_id: 'opp-002',
-    opportunity_title: 'Gói Chuyển đổi số Quản trị Xây dựng - Hòa Bình Group',
-    type: 'SYSTEM',
-    title: 'Khởi tạo Cơ hội bán hàng từ sự kiện Triển lãm VietBuild',
-    content: 'Cơ hội tiếp nhận từ gian hàng triển lãm VietBuild Q3.',
-    performed_by_name: 'Trần Thị Bình',
-    created_at: '2026-10-02T10:15:00Z',
-  },
-  {
-    id: 'opp-act-7',
-    opportunity_id: 'opp-002',
-    opportunity_title: 'Gói Chuyển đổi số Quản trị Xây dựng - Hòa Bình Group',
-    type: 'MEETING',
-    title: 'Họp trao đổi yêu cầu với Ban Giám đốc Hòa Bình Group',
-    content: 'Khách hàng quan tâm mô hình CRM tích hợp phân hệ quản lý tiến độ và nhà thầu phụ. Giá trị dự kiến 350,000,000 VNĐ.',
-    outcome: 'Thành công - Chốt gửi dự thảo hợp đồng',
-    duration_minutes: 60,
-    performed_by_id: 2,
-    performed_by_name: 'Trần Thị Bình',
-    created_at: '2026-10-07T16:00:00Z',
-  },
-]
+// Dữ liệu ban đầu rỗng cho lịch sử hoạt động cơ hội
+const INITIAL_ACTIVITIES: OpportunityActivity[] = []
 
 function getStoredActivities(): OpportunityActivity[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      // Dọn dẹp nếu còn tàn dư mock data opp-act-
+      if (Array.isArray(parsed) && parsed.some((a: any) => typeof a.id === 'string' && a.id.startsWith('opp-act-'))) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([]))
+        return []
+      }
+      return parsed
+    }
   } catch {}
   localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_ACTIVITIES))
   return INITIAL_ACTIVITIES

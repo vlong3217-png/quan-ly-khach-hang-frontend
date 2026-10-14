@@ -29,128 +29,21 @@ function getAuthHeaders(): Record<string, string> {
   return headers
 }
 
-const INITIAL_OPPORTUNITIES: Opportunity[] = [
-  {
-    id: 'opp-001',
-    code: 'OPP-001',
-    title: 'Hợp đồng Nâng cấp CRM Toàn diện - AlphaTech',
-    customer_id: 'cust-001',
-    customer_name: 'Công ty Cổ phần Công Nghệ Alpha',
-    contact_name: 'Nguyễn Văn An',
-    contact_phone: '024 3768 9999',
-    contact_email: 'contact@alphatech.vn',
-    stage_id: 'stage-3',
-    stage_name: 'Đề xuất giải pháp & Demo',
-    stage_order: 3,
-    stage_color: '#2563eb',
-    win_probability: 50,
-    expected_revenue: 120000000,
-    expected_close_date: '2026-11-15',
-    source: 'Website',
-    status: 'OPEN',
-    owner_id: 4,
-    owner_name: 'Lưu Quang Trường',
-    team_id: 1,
-    team_name: 'Đội Kinh Doanh 1',
-    description: 'Khách hàng có nhu cầu mở rộng gói cho 50 users kinh doanh và CSKH.',
-    last_activity_at: '2026-10-09T14:30:00Z',
-    days_in_stage: 2,
-    created_at: '2026-10-01T09:00:00Z',
-    updated_at: '2026-10-09T14:30:00Z',
-  },
-  {
-    id: 'opp-002',
-    code: 'OPP-002',
-    title: 'Gói Chuyển đổi số Quản trị Xây dựng - Hòa Bình Group',
-    customer_id: 'cust-002',
-    customer_name: 'Tập đoàn Xây dựng & Bất động sản Hòa Bình',
-    contact_name: 'Trần Thị Bình',
-    contact_phone: '028 3822 4567',
-    contact_email: 'info@hoabinhgroup.vn',
-    stage_id: 'stage-4',
-    stage_name: 'Gửi báo giá chính thức',
-    stage_order: 4,
-    stage_color: '#7c3aed',
-    win_probability: 70,
-    expected_revenue: 350000000,
-    expected_close_date: '2026-11-30',
-    source: 'Hội thảo / Triển lãm',
-    status: 'OPEN',
-    owner_id: 2,
-    owner_name: 'Trần Thị Bình',
-    team_id: 1,
-    team_name: 'Đội Kinh Doanh 1',
-    description: 'Đã gửi dự thảo báo giá và bảng tính ROI chi tiết.',
-    last_activity_at: '2026-10-08T16:00:00Z',
-    days_in_stage: 4,
-    created_at: '2026-10-02T10:15:00Z',
-    updated_at: '2026-10-08T16:00:00Z',
-  },
-  {
-    id: 'opp-003',
-    code: 'OPP-003',
-    title: 'Phần mềm CRM Chuỗi Bán Lẻ Thời Trang - NEM Fashion',
-    customer_id: 'cust-003',
-    customer_name: 'Công ty Cổ phần Thời Trang NEM',
-    contact_name: 'Vũ Hải Đăng',
-    contact_phone: '0934 112 233',
-    contact_email: 'dang.vu@nemfashion.vn',
-    stage_id: 'stage-2',
-    stage_name: 'Tìm hiểu nhu cầu',
-    stage_order: 2,
-    stage_color: '#f59e0b',
-    win_probability: 30,
-    expected_revenue: 280000000,
-    expected_close_date: '2026-10-05',
-    source: 'Quảng cáo Facebook',
-    status: 'OPEN',
-    owner_id: 3,
-    owner_name: 'Lê Hoàng Cường',
-    team_id: 1,
-    team_name: 'Đội Kinh Doanh 1',
-    description: 'Khách hàng quan tâm mô-đun tích hợp loyalty và thẻ tích điểm cho chuỗi showroom.',
-    last_activity_at: '2026-09-28T10:00:00Z', // 12 ngày không có hoạt động
-    days_in_stage: 14, // 14 ngày ở stage-2
-    created_at: '2026-09-25T08:00:00Z',
-    updated_at: '2026-09-28T10:00:00Z',
-  },
-  {
-    id: 'opp-004',
-    code: 'OPP-004',
-    title: 'Giải pháp CRM Quản lý Logistics Vận tải - Delta Express',
-    customer_id: 'cust-004',
-    customer_name: 'Công ty TNHH Tiếp Vận Quốc Tế Delta',
-    contact_name: 'Nguyễn Phương Thảo',
-    contact_phone: '0908 776 543',
-    contact_email: 'thao.nguyen@deltaexpress.vn',
-    stage_id: 'stage-5',
-    stage_name: 'Đàm phán & Thương lượng hợp đồng',
-    stage_order: 5,
-    stage_color: '#06b6d4',
-    win_probability: 85,
-    expected_revenue: 450000000,
-    expected_close_date: '2026-10-08',
-    source: 'Giới thiệu (Referral)',
-    status: 'OPEN',
-    owner_id: 4,
-    owner_name: 'Lưu Quang Trường',
-    team_id: 1,
-    team_name: 'Đội Kinh Doanh 1',
-    description: 'Hợp đồng lớn đang trong giai đoạn rà soát điều khoản pháp lý, nhưng nhân viên phụ trách đang nghỉ ốm dài ngày.',
-    last_activity_at: '2026-09-30T15:30:00Z', // 10 ngày không có tương tác
-    days_in_stage: 11,
-    created_at: '2026-09-20T09:30:00Z',
-    updated_at: '2026-09-30T15:30:00Z',
-  },
-]
-
 function getStoredOpportunities(): Opportunity[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_OPPORTUNITIES)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      // Nếu là dữ liệu mẫu cũ (opp-001 ... opp-004), tự động dọn sạch
+      if (Array.isArray(parsed) && parsed.some((p: any) => p.id === 'opp-001' || p.id === 'opp-002')) {
+        localStorage.setItem(STORAGE_KEY_OPPORTUNITIES, JSON.stringify([]))
+        return []
+      }
+      return parsed
+    }
   } catch {}
-  localStorage.setItem(STORAGE_KEY_OPPORTUNITIES, JSON.stringify(INITIAL_OPPORTUNITIES))
-  return INITIAL_OPPORTUNITIES
+  localStorage.setItem(STORAGE_KEY_OPPORTUNITIES, JSON.stringify([]))
+  return []
 }
 
 function saveStoredOpportunities(opps: Opportunity[]): void {
