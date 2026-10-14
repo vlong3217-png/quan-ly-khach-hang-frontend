@@ -67,13 +67,6 @@ const IconUpload = () => (
   </svg>
 )
 
-const IconEye = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-)
-
 const IconLink = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -1011,36 +1004,51 @@ export default function CustomerManagementPage() {
                             <div className="cust-action-group">
                               <button
                                 type="button"
-                                className="cust-btn-icon view"
+                                className="cust-action-btn"
                                 onClick={() => setSelected360Customer(cust)}
-                                title="Mở trang 360 độ"
                               >
-                                <IconEye />
+                                Xem
                               </button>
                               <button
                                 type="button"
-                                className="cust-btn-icon link"
-                                onClick={() => handleOpenParentModal(cust)}
-                                title={parentRel ? `Đang thuộc: ${parentRel.parent_name} (Nhấn để sửa/gỡ)` : 'Khai báo công ty mẹ'}
-                              >
-                                <IconLink />
-                              </button>
-                              <button
-                                type="button"
-                                className="cust-btn-icon edit"
+                                className="cust-action-btn"
                                 onClick={() => handleOpenEditModal(cust)}
-                                title="Chỉnh sửa hồ sơ"
                               >
-                                <IconEdit />
+                                Sửa
                               </button>
-                              <button
-                                type="button"
-                                className="cust-btn-icon delete"
-                                onClick={() => setDeletingCustomer(cust)}
-                                title="Xóa khách hàng"
-                              >
-                                <IconTrash />
-                              </button>
+                              <details className="cust-action-menu">
+                                <summary className="cust-more-btn" title="Thao tác khác" aria-label="Thao tác khác">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="5" r="1" />
+                                    <circle cx="12" cy="12" r="1" />
+                                    <circle cx="12" cy="19" r="1" />
+                                  </svg>
+                                </summary>
+                                <div className="cust-more-menu">
+                                  <button
+                                    type="button"
+                                    className="cust-more-menu-item"
+                                    onClick={(event) => {
+                                      event.currentTarget.closest('details')?.removeAttribute('open')
+                                      handleOpenParentModal(cust)
+                                    }}
+                                  >
+                                    <IconLink />
+                                    <span>{parentRel ? 'Sửa/gỡ liên kết công ty mẹ' : 'Liên kết công ty mẹ'}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="cust-more-menu-item danger"
+                                    onClick={(event) => {
+                                      event.currentTarget.closest('details')?.removeAttribute('open')
+                                      setDeletingCustomer(cust)
+                                    }}
+                                  >
+                                    <IconTrash />
+                                    <span>Xóa khách hàng</span>
+                                  </button>
+                                </div>
+                              </details>
                             </div>
                           </td>
                         </tr>
