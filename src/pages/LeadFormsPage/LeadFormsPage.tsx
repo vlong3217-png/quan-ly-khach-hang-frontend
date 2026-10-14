@@ -233,6 +233,48 @@ const IconUserCheck = () => (
   </svg>
 )
 
+const IconClock = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+)
+
+const IconFlame = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+  </svg>
+)
+
+const IconHourglass = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 22h14" />
+    <path d="M5 2h14" />
+    <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" />
+    <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" />
+  </svg>
+)
+
+const IconInbox = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+    <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+  </svg>
+)
+
+const IconAward = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="8" r="7" />
+    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+  </svg>
+)
+
+const IconThermometer = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+  </svg>
+)
+
 
 const LEAD_TIER_CONFIG: Record<LeadScoreTier, { label: string; emoji: string; className: string }> = {
   HOT: { label: 'Nóng (Hot)', emoji: '', className: 'hot' },
@@ -1588,9 +1630,6 @@ export default function LeadFormsPage() {
           className={`lead-tab-btn ${activeTab === 'LEAD_SLA_DISTRIBUTION' ? 'active' : ''}`}
           onClick={() => setActiveTab('LEAD_SLA_DISTRIBUTION')}
           id="tab-btn-lead-sla-distribution"
-          style={{
-            borderColor: activeTab === 'LEAD_SLA_DISTRIBUTION' ? '#f59e0b' : undefined,
-          }}
         >
           <span>Phân bổ & SLA</span>
           {stats.overdueSlaLeads > 0 ? (
@@ -2250,6 +2289,9 @@ export default function LeadFormsPage() {
           {/* SLA Metric Cards */}
           <div className="sla-metrics-grid">
             <div className="sla-metric-card pending">
+              <div className="sla-metric-icon">
+                <IconClock />
+              </div>
               <div className="sla-metric-body">
                 <span className="sla-metric-num">{stats.pendingAssignmentLeads}</span>
                 <span className="sla-metric-lbl">Chờ nhân viên nhận</span>
@@ -2257,22 +2299,31 @@ export default function LeadFormsPage() {
             </div>
 
             <div className="sla-metric-card overdue">
+              <div className="sla-metric-icon">
+                <IconFlame />
+              </div>
               <div className="sla-metric-body">
-                <span className="sla-metric-num" style={{ color: '#b91c1c' }}>{stats.overdueSlaLeads}</span>
+                <span className="sla-metric-num">{stats.overdueSlaLeads}</span>
                 <span className="sla-metric-lbl">Quá hạn cam kết SLA</span>
               </div>
             </div>
 
             <div className="sla-metric-card warning">
+              <div className="sla-metric-icon">
+                <IconHourglass />
+              </div>
               <div className="sla-metric-body">
-                <span className="sla-metric-num" style={{ color: '#d97706' }}>{stats.warningSlaLeads}</span>
+                <span className="sla-metric-num">{stats.warningSlaLeads}</span>
                 <span className="sla-metric-lbl">Sắp hết hạn (&lt; 4 giờ)</span>
               </div>
             </div>
 
             <div className="sla-metric-card queue">
+              <div className="sla-metric-icon">
+                <IconInbox />
+              </div>
               <div className="sla-metric-body">
-                <span className="sla-metric-num" style={{ color: '#475569' }}>{stats.unassignedLeads}</span>
+                <span className="sla-metric-num">{stats.unassignedLeads}</span>
                 <span className="sla-metric-lbl">Hàng chờ phân bổ lại</span>
               </div>
             </div>
@@ -2280,17 +2331,17 @@ export default function LeadFormsPage() {
 
           {/* Bảng Danh sách Phân bổ SLA */}
           <div className="lead-table-responsive" style={{ marginTop: '16px' }}>
-            <table className="lead-data-table">
+            <table className="lead-data-table sla-lead-table">
               <thead>
                 <tr>
-                  <th style={{ width: '100px' }}>Mã Lead</th>
+                  <th style={{ width: '90px' }}>Mã Lead</th>
                   <th>Họ và tên & Liên hệ</th>
-                  <th>Công ty & Nhu cầu</th>
-                  <th style={{ width: '160px' }}>Nhân viên phụ trách</th>
-                  <th style={{ width: '140px', textAlign: 'center' }}>Trạng thái tiếp nhận</th>
-                  <th style={{ width: '160px', textAlign: 'center' }}>Hạn chót SLA</th>
-                  <th style={{ width: '150px', textAlign: 'center' }}>Cảnh báo SLA</th>
-                  <th style={{ width: '190px', textAlign: 'center' }}>Hành động NVKD (S4-07)</th>
+                  <th>Doanh nghiệp & Nhu cầu</th>
+                  <th style={{ width: '160px' }}>Chuyên viên phụ trách</th>
+                  <th style={{ width: '150px', textAlign: 'center' }}>Trạng thái tiếp nhận</th>
+                  <th style={{ width: '150px', textAlign: 'center' }}>Hạn chót SLA</th>
+                  <th style={{ width: '130px', textAlign: 'center' }}>Cảnh báo SLA</th>
+                  <th style={{ width: '180px', textAlign: 'center' }}>Thao tác xử lý</th>
                 </tr>
               </thead>
               <tbody>
@@ -2495,37 +2546,52 @@ export default function LeadFormsPage() {
 
           {/* KPI Dashboard Cards */}
           <div className="scoring-summary-cards">
-            <div className="scoring-stat-card">
+            <div className="scoring-stat-card avg">
+              <div className="scoring-stat-icon avg">
+                <IconAward />
+              </div>
               <div className="scoring-stat-info">
                 <span className="scoring-stat-value">{scoringStats.averageScore} / 100</span>
-                <span className="scoring-stat-label">Điểm trung bình hệ thống</span>
+                <span className="scoring-stat-label">Điểm trung bình</span>
               </div>
             </div>
 
-            <div className="scoring-stat-card">
+            <div className="scoring-stat-card hot">
+              <div className="scoring-stat-icon hot">
+                <IconFlame />
+              </div>
               <div className="scoring-stat-info">
-                <span className="scoring-stat-value" style={{ color: '#dc2626' }}>{scoringStats.hotCount}</span>
-                <span className="scoring-stat-label">Khách Nóng (Hot &ge; 70đ)</span>
+                <span className="scoring-stat-value">{scoringStats.hotCount}</span>
+                <span className="scoring-stat-label">Khách Nóng (&ge; 70đ)</span>
               </div>
             </div>
 
-            <div className="scoring-stat-card">
+            <div className="scoring-stat-card warm">
+              <div className="scoring-stat-icon warm">
+                <IconThermometer />
+              </div>
               <div className="scoring-stat-info">
-                <span className="scoring-stat-value" style={{ color: '#d97706' }}>{scoringStats.warmCount}</span>
-                <span className="scoring-stat-label">Khách Ấm (Warm 40-69đ)</span>
+                <span className="scoring-stat-value">{scoringStats.warmCount}</span>
+                <span className="scoring-stat-label">Khách Ấm (40-69đ)</span>
               </div>
             </div>
 
-            <div className="scoring-stat-card">
+            <div className="scoring-stat-card cold">
+              <div className="scoring-stat-icon cold">
+                <IconHourglass />
+              </div>
               <div className="scoring-stat-info">
-                <span className="scoring-stat-value" style={{ color: '#64748b' }}>{scoringStats.coldCount}</span>
-                <span className="scoring-stat-label">Khách Lạnh (Cold &lt; 40đ)</span>
+                <span className="scoring-stat-value">{scoringStats.coldCount}</span>
+                <span className="scoring-stat-label">Khách Lạnh (&lt; 40đ)</span>
               </div>
             </div>
 
-            <div className="scoring-stat-card">
+            <div className="scoring-stat-card vip">
+              <div className="scoring-stat-icon vip">
+                <IconTarget />
+              </div>
               <div className="scoring-stat-info">
-                <span className="scoring-stat-value" style={{ color: '#7e22ce' }}>{scoringStats.vipCount}</span>
+                <span className="scoring-stat-value">{scoringStats.vipCount}</span>
                 <span className="scoring-stat-label">Doanh nghiệp VIP</span>
               </div>
             </div>
@@ -2584,19 +2650,19 @@ export default function LeadFormsPage() {
               <p>Thử điều chỉnh từ khóa tìm kiếm hoặc bỏ chọn các bộ lọc phân hạng/nhóm.</p>
             </div>
           ) : (
-            <div className="lead-table-responsive">
-              <table className="lead-data-table" id="table-lead-scoring">
+            <div className="lead-table-responsive scoring-table-responsive">
+              <table className="lead-data-table scoring-data-table" id="table-lead-scoring">
                 <thead>
                   <tr>
-                    <th style={{ width: '90px', textAlign: 'center' }}>Số thứ tự</th>
-                    <th>Họ và tên & Liên hệ</th>
-                    <th>Công ty & Ngành</th>
-                    <th style={{ width: '165px', minWidth: '155px' }}>Nguồn Lead</th>
-                    <th style={{ width: '160px' }}>Điểm số & Mức độ</th>
-                    <th style={{ width: '120px', textAlign: 'center' }}>Phân hạng</th>
-                    <th style={{ width: '140px', textAlign: 'center' }}>Phân nhóm</th>
-                    <th style={{ width: '120px', textAlign: 'center' }}>Cách chấm</th>
-                    <th style={{ width: '195px', textAlign: 'center' }}>Thao tác</th>
+                    <th style={{ width: '70px', minWidth: '60px', textAlign: 'center' }}>STT</th>
+                    <th style={{ minWidth: '200px' }}>Họ và tên & Liên hệ</th>
+                    <th style={{ minWidth: '220px' }}>Doanh nghiệp & Ngành nghề</th>
+                    <th style={{ width: '150px', minWidth: '140px' }}>Nguồn Lead</th>
+                    <th style={{ width: '160px', minWidth: '150px' }}>Điểm số & Mức độ</th>
+                    <th style={{ width: '130px', minWidth: '120px', textAlign: 'center' }}>Phân hạng</th>
+                    <th style={{ width: '150px', minWidth: '140px', textAlign: 'center' }}>Phân nhóm</th>
+                    <th style={{ width: '120px', minWidth: '110px', textAlign: 'center' }}>Cách chấm</th>
+                    <th style={{ width: '170px', minWidth: '160px', textAlign: 'center' }}>Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
