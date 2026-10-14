@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import {
   getAuditLogs,
-  getDistinctPerformers,
   formatAuditDate,
   formatAuditEntity,
   formatAuditAction,
@@ -12,8 +11,9 @@ import {
 import {
   ENTITY_TYPE_LABELS,
   type AuditLogEntry,
-  type AuditEntityType,
 } from '../../types/auditLog.ts'
+import { userService } from '../../services/userService.ts'
+import type { UserAccount } from '../../types/user.ts'
 import './AuditLogPage.css'
 
 
@@ -144,9 +144,12 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
 
+  // Danh sách users từ hệ thống để lọc theo user_id
+  const [usersList, setUsersList] = useState<UserAccount[]>([])
+
   // Bộ lọc
-  const [selectedPerformer, setSelectedPerformer] = useState<string>('ALL')
-  const [selectedEntityType, setSelectedEntityType] = useState<AuditEntityType | 'ALL'>('ALL')
+  const [selectedUserId, setSelectedUserId] = useState<string>('ALL')
+  const [selectedEntityType, setSelectedEntityType] = useState<string>('ALL')
   const [fromDate, setFromDate] = useState<string>('')
   const [toDate, setToDate] = useState<string>('')
   const [searchKeyword, setSearchKeyword] = useState<string>('')
@@ -157,8 +160,19 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
   const [totalRecords, setTotalRecords] = useState<number>(0)
   const [totalPages, setTotalPages] = useState<number>(1)
 
-  // Danh sách người thực hiện độc nhất cho bộ lọc dropdown
-  const performersList = useMemo(() => getDistinctPerformers(), [])
+  // Tải danh sách users cho dropdown bộ lọc
+  useEffect(() => {
+    userService
+      .getUsers()
+      .then((res) => {
+        if (res && Array.isArray(res.users)) {
+          setUsersList(res.users)
+        }
+      })
+      .catch(() => {
+        // bỏ qua nếu lỗi
+      })
+  }, [])
 
   // Thống kê nhanh theo từng loại đối tượng
   const stats = useMemo(() => {
@@ -168,10 +182,11 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
     let roles = 0
     if (Array.isArray(logs)) {
       logs.forEach((log) => {
-        if (log.entity_type === 'DISCOUNT') discounts++
-        else if (log.entity_type === 'TARGET') targets++
-        else if (log.entity_type === 'OWNERSHIP') ownerships++
-        else if (log.entity_type === 'USER_ROLE') roles++
+        const et = String(log.entity_type || '').toUpperCase()
+        if (et === 'DISCOUNT') discounts++
+        else if (et === 'TARGET') targets++
+        else if (et === 'DATA_OWNERSHIP' || et === 'OWNERSHIP') ownerships++
+        else if (et === 'ROLE' || et === 'USER_ROLE' || et === 'USER') roles++
       })
     }
     return { discounts, targets, ownerships, roles, total: totalRecords }
@@ -183,13 +198,13 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
     setFetchError(null)
     try {
       const response = await getAuditLogs({
-        performer_name: selectedPerformer !== 'ALL' ? selectedPerformer : undefined,
+        user_id: selectedUserId !== 'ALL' ? selectedUserId : undefined,
         entity_type: selectedEntityType !== 'ALL' ? selectedEntityType : undefined,
-        from_date: fromDate || undefined,
-        to_date: toDate || undefined,
+        from_date: fromDate ? `${fromDate}T00:00:00` : undefined,
+        to_date: toDate ? `${toDate}T23:59:59` : undefined,
         search_keyword: searchKeyword || undefined,
         page: currentPage,
-        pageSize,
+        limit: pageSize,
       })
 
       if (response.success) {
@@ -205,7 +220,7 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [selectedPerformer, selectedEntityType, fromDate, toDate, searchKeyword, currentPage, pageSize])
+  }, [selectedUserId, selectedEntityType, fromDate, toDate, searchKeyword, currentPage, pageSize])
 
   useEffect(() => {
     fetchLogs()
@@ -213,7 +228,7 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
 
   // Xóa bộ lọc (Reset toàn bộ về mặc định)
   const handleResetFilters = () => {
-    setSelectedPerformer('ALL')
+    setSelectedUserId('ALL')
     setSelectedEntityType('ALL')
     setFromDate('')
     setToDate('')
@@ -229,7 +244,7 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
 
   // Kiểm tra có đang áp dụng bộ lọc nào không
   const hasActiveFilters =
-    selectedPerformer !== 'ALL' ||
+    selectedUserId !== 'ALL' ||
     selectedEntityType !== 'ALL' ||
     Boolean(fromDate) ||
     Boolean(toDate) ||
@@ -429,16 +444,16 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
               <select
                 id="audit-filter-performer"
                 className="audit-filter-select"
-                value={selectedPerformer}
+                value={selectedUserId}
                 onChange={(e) => {
-                  setSelectedPerformer(e.target.value)
+                  setSelectedUserId(e.target.value)
                   setCurrentPage(1)
                 }}
               >
                 <option value="ALL">-- Tất cả người dùng --</option>
-                {performersList.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
+                {usersList.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.full_name} ({u.email || u.role})
                   </option>
                 ))}
               </select>
@@ -454,15 +469,16 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
                 className="audit-filter-select"
                 value={selectedEntityType}
                 onChange={(e) => {
-                  setSelectedEntityType(e.target.value as AuditEntityType | 'ALL')
+                  setSelectedEntityType(e.target.value)
                   setCurrentPage(1)
                 }}
               >
                 <option value="ALL">-- Tất cả loại đối tượng --</option>
+                <option value="ROLE">Vai trò (ROLE)</option>
                 <option value="DISCOUNT">Chiết khấu (DISCOUNT)</option>
                 <option value="TARGET">Chỉ tiêu (TARGET)</option>
-                <option value="OWNERSHIP">Quyền sở hữu dữ liệu (OWNERSHIP)</option>
-                <option value="USER_ROLE">Vai trò người dùng (USER_ROLE)</option>
+                <option value="DATA_OWNERSHIP">Quyền sở hữu dữ liệu (DATA_OWNERSHIP)</option>
+                <option value="USER">Người dùng (USER)</option>
               </select>
             </div>
 
@@ -505,11 +521,16 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
           {hasActiveFilters && (
             <div className="audit-active-filters-bar" id="audit-active-filters">
               <span>Đang lọc theo:</span>
-              {selectedPerformer !== 'ALL' && (
-                <span className="audit-filter-chip">Người thực hiện: {selectedPerformer}</span>
+              {selectedUserId !== 'ALL' && (
+                <span className="audit-filter-chip">
+                  Người thực hiện:{' '}
+                  {usersList.find((u) => String(u.id) === String(selectedUserId))?.full_name || `ID #${selectedUserId}`}
+                </span>
               )}
               {selectedEntityType !== 'ALL' && (
-                <span className="audit-filter-chip">Loại: {ENTITY_TYPE_LABELS[selectedEntityType]}</span>
+                <span className="audit-filter-chip">
+                  Loại: {ENTITY_TYPE_LABELS[selectedEntityType] || selectedEntityType}
+                </span>
               )}
               {fromDate && <span className="audit-filter-chip">Từ: {fromDate}</span>}
               {toDate && <span className="audit-filter-chip">Đến: {toDate}</span>}
@@ -616,10 +637,17 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
                             </span>
                           </td>
 
-                          {/* 5. Đối tượng (ID & Tên) */}
+                          {/* 5. Đối tượng (ID & Tên / Trường) */}
                           <td>
                             <div className="cell-target-entity">
-                              <span className="target-id">{log.entity_id}</span>
+                              <span className="target-id">
+                                {log.entity_id ? `#${log.entity_id}` : '—'}
+                              </span>
+                              {log.field_name && (
+                                <span className="target-field-badge" style={{ fontSize: '0.78rem', color: '#2563eb', fontWeight: 600 }}>
+                                  Trường: {log.field_name}
+                                </span>
+                              )}
                               {log.entity_name && (
                                 <span className="target-name" title={log.entity_name}>
                                   {log.entity_name}
@@ -630,7 +658,7 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
 
                           {/* 6. Hành động */}
                           <td>
-                            <span className={`badge-action badge-action-${log.action.toLowerCase()}`}>
+                            <span className={`badge-action badge-action-${String(log.action).toLowerCase()}`}>
                               {formatAuditAction(log.action)}
                             </span>
                           </td>
@@ -650,9 +678,14 @@ export function AuditLogPage({ embeddedMode = false }: AuditLogPageProps) {
                             </div>
                           </td>
 
-                          {/* 8. Lý do / Ghi chú */}
+                          {/* 8. Lý do / Ghi chú & IP */}
                           <td className="cell-reason" title={log.reason || ''}>
-                            {log.reason || '—'}
+                            <div>{log.reason || '—'}</div>
+                            {log.ip_address && (
+                              <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>
+                                IP: {log.ip_address}
+                              </div>
+                            )}
                           </td>
                         </tr>
                       )
