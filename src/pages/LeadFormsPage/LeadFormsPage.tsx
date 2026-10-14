@@ -2654,15 +2654,15 @@ export default function LeadFormsPage() {
               <table className="lead-data-table scoring-data-table" id="table-lead-scoring">
                 <thead>
                   <tr>
-                    <th style={{ width: '70px', minWidth: '60px', textAlign: 'center' }}>STT</th>
-                    <th style={{ minWidth: '200px' }}>Họ và tên & Liên hệ</th>
-                    <th style={{ minWidth: '220px' }}>Doanh nghiệp & Ngành nghề</th>
-                    <th style={{ width: '150px', minWidth: '140px' }}>Nguồn Lead</th>
-                    <th style={{ width: '160px', minWidth: '150px' }}>Điểm số & Mức độ</th>
-                    <th style={{ width: '130px', minWidth: '120px', textAlign: 'center' }}>Phân hạng</th>
-                    <th style={{ width: '150px', minWidth: '140px', textAlign: 'center' }}>Phân nhóm</th>
-                    <th style={{ width: '120px', minWidth: '110px', textAlign: 'center' }}>Cách chấm</th>
-                    <th style={{ width: '170px', minWidth: '160px', textAlign: 'center' }}>Thao tác</th>
+                    <th style={{ width: '40px', textAlign: 'center' }}>STT</th>
+                    <th>Họ tên & Liên hệ</th>
+                    <th>Doanh nghiệp & Ngành</th>
+                    <th style={{ width: '130px' }}>Nguồn Lead</th>
+                    <th style={{ width: '130px' }}>Điểm số</th>
+                    <th style={{ width: '100px', textAlign: 'center' }}>Phân hạng</th>
+                    <th style={{ width: '120px', textAlign: 'center' }}>Phân nhóm</th>
+                    <th style={{ width: '90px', textAlign: 'center' }}>Cách chấm</th>
+                    <th style={{ width: '110px', textAlign: 'center' }}>Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
