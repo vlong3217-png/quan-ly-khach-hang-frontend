@@ -824,5 +824,155 @@ export const opportunityService = {
     } catch {}
     return []
   },
+
+  /* ──────────── User Story S5-04: Đánh giá điều kiện chuyển/rời giai đoạn (Stage Gate) ──────────── */
+  async evaluateStageGate(
+    opportunity: Opportunity,
+    targetStageId: string
+  ): Promise<import('../types/opportunity.ts').StageGateEvaluation> {
+    const { pipelineService } = await import('./pipelineService.ts')
+    const stages = pipelineService.getStages()
+    const currentStage = stages.find((s) => s.id === opportunity.stage_id)
+    const targetStage = stages.find((s) => s.id === targetStageId)
+
+    const currentStageName = currentStage?.name || opportunity.stage_name || 'Giai đoạn hiện tại'
+    const targetStageName = targetStage?.name || 'Giai đoạn đích'
+
+    // Nếu quay lui giai đoạn thì không bắt buộc điều kiện tiến
+    if (currentStage && targetStage && targetStage.order <= currentStage.order) {
+      return {
+        current_stage_name: currentStageName,
+        target_stage_name: targetStageName,
+        can_proceed: true,
+        all_conditions: [],
+        unmet_conditions: [],
+      }
+    }
+
+    // Lấy các điều kiện bắt buộc của giai đoạn hiện tại cần rời đi
+    const requiredConditions = currentStage?.required_conditions || []
+    if (requiredConditions.length === 0) {
+      return {
+        current_stage_name: currentStageName,
+        target_stage_name: targetStageName,
+        can_proceed: true,
+        all_conditions: [],
+        unmet_conditions: [],
+      }
+    }
+
+    // Lấy lịch sử hoạt động để kiểm tra thực tế (ví dụ: đã có cuộc gặp, đã gửi tài liệu, đã có cuộc gọi...)
+    let activities: any[] = []
+    try {
+      const { opportunityActivityService } = await import('./opportunityActivityService.ts')
+      activities = await opportunityActivityService.getActivities(opportunity.id)
+    } catch {}
+
+    const hasMeeting = activities.some((a) => a.type === 'MEETING')
+    const hasCall = activities.some((a) => a.type === 'CALL')
+    const hasProductsOrQuote = (opportunity.product_items && opportunity.product_items.length > 0) || opportunity.expected_revenue > 0
+
+    const conditionResults: import('../types/opportunity.ts').StageConditionCheckResult[] = []
+
+    for (const cond of requiredConditions) {
+      const condLower = cond.toLowerCase()
+      let isMet = false
+      let detail = ''
+
+      if (condLower.includes('cuộc gặp') || condLower.includes('demo')) {
+        isMet = hasMeeting
+        detail = hasMeeting ? 'Đã ghi nhận ít nhất 1 cuộc gặp / demo trực tiếp' : 'Chưa có cuộc gặp hoặc Demo Online nào được ghi nhận trên timeline'
+      } else if (condLower.includes('cuộc gọi') || condLower.includes('liên hệ')) {
+        isMet = hasCall || Boolean(opportunity.contact_phone || opportunity.contact_email)
+        detail = isMet ? 'Đã xác thực thông tin liên hệ và có lịch sử liên lạc' : 'Chưa thực hiện cuộc gọi hoặc chưa có thông tin liên hệ'
+      } else if (condLower.includes('báo giá') || condLower.includes('giá niêm yết')) {
+        isMet = hasProductsOrQuote
+        detail = hasProductsOrQuote ? 'Đã cấu hình các dòng sản phẩm hoặc xuất báo giá' : 'Chưa thêm danh mục sản phẩm/dịch vụ vào cơ hội'
+      } else if (condLower.includes('hợp đồng') || condLower.includes('tạm ứng')) {
+        isMet = opportunity.actual_revenue ? opportunity.actual_revenue > 0 : false
+        detail = isMet ? 'Đã ghi nhận giá trị hợp đồng / tạm ứng' : 'Chưa hoàn tất xác nhận tạm ứng hoặc ký hợp đồng pháp lý'
+      } else {
+        // Mặc định kiểm tra qua tương tác hoặc cho qua nếu cơ hội đã có hoạt động
+        isMet = activities.length >= 2
+        detail = isMet ? 'Đã có các hoạt động trao đổi thực tế ghi nhận' : 'Cần ghi nhận đầy đủ biên bản / tiến độ thực tế'
+      }
+
+      conditionResults.push({
+        condition: cond,
+        is_met: isMet,
+        detail,
+      })
+    }
+
+    const unmet = conditionResults.filter((c) => !c.is_met)
+
+    return {
+      current_stage_name: currentStageName,
+      target_stage_name: targetStageName,
+      can_proceed: unmet.length === 0,
+      all_conditions: conditionResults,
+      unmet_conditions: unmet,
+    }
+  },
+
+  /* ──────────── User Story S5-04: Trưởng nhóm Ghi đè điều kiện giai đoạn (Stage Override) ──────────── */
+  async overrideAndChangeStage(
+    opportunityId: string,
+    targetStageId: string,
+    overrideInfo: {
+      user_id: number
+      user_name: string
+      user_role: string
+      reason: string
+      unmet_conditions: string[]
+    }
+  ): Promise<Opportunity> {
+    const { pipelineService } = await import('./pipelineService.ts')
+    const stages = pipelineService.getStages()
+    const targetStage = stages.find((s) => s.id === targetStageId)
+    if (!targetStage) throw new Error('Không tìm thấy giai đoạn đích!')
+
+    const opp = await this.getOpportunityById(opportunityId)
+    if (!opp) throw new Error('Không tìm thấy cơ hội bán hàng!')
+
+    const overrideRecord: import('../types/opportunity.ts').StageGateOverrideRecord = {
+      id: `ovr-${Date.now()}`,
+      from_stage_id: opp.stage_id,
+      from_stage_name: opp.stage_name,
+      to_stage_id: targetStage.id,
+      to_stage_name: targetStage.name,
+      overridden_by_id: overrideInfo.user_id,
+      overridden_by_name: overrideInfo.user_name,
+      overridden_by_role: overrideInfo.user_role,
+      reason: overrideInfo.reason.trim(),
+      unmet_conditions: overrideInfo.unmet_conditions,
+      created_at: new Date().toISOString(),
+    }
+
+    const updatedHistory = [overrideRecord, ...(opp.stage_override_history || [])]
+
+    const updated = await this.updateOpportunity(opportunityId, {
+      stage_id: targetStage.id,
+      stage_name: targetStage.name,
+      stage_color: targetStage.color,
+      win_probability: targetStage.win_probability,
+      stage_override_history: updatedHistory,
+    })
+
+    // Ghi nhận vào timeline hoạt động
+    try {
+      const { opportunityActivityService } = await import('./opportunityActivityService.ts')
+      await opportunityActivityService.createActivity({
+        opportunity_id: opportunityId,
+        type: 'SYSTEM',
+        title: `[Ghi đè quy trình] Chuyển sang ${targetStage.name} bởi ${overrideInfo.user_role}`,
+        content: `Được duyệt ngoại lệ bởi ${overrideInfo.user_name} (${overrideInfo.user_role}). Lý do ghi đè: "${overrideInfo.reason}". Các điều kiện chưa đạt: ${overrideInfo.unmet_conditions.join('; ')}`,
+        performed_by_id: overrideInfo.user_id,
+        performed_by_name: overrideInfo.user_name,
+      })
+    } catch {}
+
+    return updated
+  },
 }
 

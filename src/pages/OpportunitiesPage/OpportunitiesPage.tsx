@@ -11,6 +11,7 @@ import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitors
 import SalesForecastView from '../../components/SalesForecastView/SalesForecastView.tsx'
 import StalledOpportunityAlerts from '../../components/StalledOpportunityAlerts/StalledOpportunityAlerts.tsx'
 import ReassignOpportunityModal from '../../components/ReassignOpportunityModal/ReassignOpportunityModal.tsx'
+import StageGateEnforcementModal from '../../components/StageGateEnforcementModal/StageGateEnforcementModal.tsx'
 import { opportunityActivityService } from '../../services/opportunityActivityService.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import TableActionMenu from '../../components/TableActionMenu/TableActionMenu.tsx'
@@ -142,10 +143,31 @@ export default function OpportunitiesPage() {
     }
   }
 
-  // Đổi nhanh giai đoạn (Hỗ trợ kéo thả Pipeline & chọn giai đoạn)
+  // ── S5-04: State kiểm tra điều kiện rời giai đoạn trên Kanban ──
+  const [isStageGateModalOpen, setIsStageGateModalOpen] = useState(false)
+  const [gateOpp, setGateOpp] = useState<Opportunity | null>(null)
+  const [targetGateStageId, setTargetGateStageId] = useState<string | null>(null)
+  const [stageGateEvaluation, setStageGateEvaluation] = useState<import('../../types/opportunity.ts').StageGateEvaluation | null>(null)
+
+  // Đổi nhanh giai đoạn (Hỗ trợ kéo thả Pipeline & chọn giai đoạn - S5-04 Ràng buộc điều kiện)
   const handleQuickChangeStage = async (opp: Opportunity, targetStageId: string) => {
     const targetStage = stages.find((s) => s.id === targetStageId)
     if (!targetStage || targetStage.id === opp.stage_id) return
+
+    // S5-04: Đánh giá điều kiện rời giai đoạn trước khi cho phép chuyển
+    const evaluation = await opportunityService.evaluateStageGate(opp, targetStageId)
+    if (!evaluation.can_proceed) {
+      setGateOpp(opp)
+      setTargetGateStageId(targetStageId)
+      setStageGateEvaluation(evaluation)
+      setIsStageGateModalOpen(true)
+      return
+    }
+
+    await executeQuickStageChange(opp, targetStage)
+  }
+
+  const executeQuickStageChange = async (opp: Opportunity, targetStage: PipelineStage) => {
     setIsUpdatingStage(true)
     try {
       const oldStageName = opp.stage_name
@@ -173,6 +195,25 @@ export default function OpportunitiesPage() {
     } finally {
       setIsUpdatingStage(false)
     }
+  }
+
+  // Quản lý phê duyệt ghi đè từ Kanban (S5-04 AC3)
+  const handleKanbanOverrideApproved = async (reason: string) => {
+    if (!gateOpp || !targetGateStageId || !stageGateEvaluation) return
+    const targetStage = stages.find((s) => s.id === targetGateStageId)
+    const updated = await opportunityService.overrideAndChangeStage(
+      gateOpp.id,
+      targetGateStageId,
+      {
+        user_id: user?.id ? Number(user.id) : 1,
+        user_name: user?.full_name || 'Trưởng nhóm kinh doanh',
+        user_role: user?.role === 'ADMIN' ? 'Giám đốc kinh doanh' : 'Trưởng nhóm kinh doanh',
+        reason,
+        unmet_conditions: stageGateEvaluation.unmet_conditions.map((c) => c.condition),
+      }
+    )
+    handleOppUpdated(updated)
+    showToast(`Đã ghi đè và chuyển cơ hội sang "${targetStage?.name || 'Giai đoạn mới'}" thành công!`, 'success')
   }
 
   // Xử lý kéo thả Kanban (Drag & Drop)
@@ -980,6 +1021,9 @@ export default function OpportunitiesPage() {
                         setNewOppForm({ ...newOppForm, expected_revenue: e.target.value })
                       }
                     />
+                    <small style={{ fontSize: '11px', color: '#64748b', marginTop: '3px', display: 'block' }}>
+                      💡 S5-03: Sau khi tạo, bạn có thể vào tab <strong>"Sản phẩm & Dịch vụ"</strong> để chọn mặt hàng từ Bảng giá niêm yết và tự động tính lại giá trị hợp đồng chính xác.
+                    </small>
                   </div>
                 </div>
 
@@ -1048,6 +1092,31 @@ export default function OpportunitiesPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* ── MODAL: RÀNG BUỘC ĐIỀU KIỆN RỜI GIAI ĐOẠN TRÊN PIPELINE (S5-04) ── */}
+      {isStageGateModalOpen && gateOpp && stageGateEvaluation && targetGateStageId && (
+        <StageGateEnforcementModal
+          isOpen={isStageGateModalOpen}
+          opportunity={gateOpp}
+          targetStageId={targetGateStageId}
+          evaluation={stageGateEvaluation}
+          isManagerOrAdmin={isManagerOrAdmin}
+          currentUserId={user?.id ? Number(user.id) : 1}
+          currentUserName={user?.full_name || 'Trưởng nhóm kinh doanh'}
+          currentUserRole={user?.role === 'ADMIN' ? 'Giám đốc kinh doanh' : 'Trưởng nhóm kinh doanh'}
+          onClose={() => {
+            setIsStageGateModalOpen(false)
+            setGateOpp(null)
+            setTargetGateStageId(null)
+            setStageGateEvaluation(null)
+          }}
+          onConfirmedStageChange={() => {
+            const stg = stages.find((s) => s.id === targetGateStageId)
+            if (stg) executeQuickStageChange(gateOpp, stg)
+          }}
+          onOverrideApproved={handleKanbanOverrideApproved}
+        />
       )}
     </div>
   )
