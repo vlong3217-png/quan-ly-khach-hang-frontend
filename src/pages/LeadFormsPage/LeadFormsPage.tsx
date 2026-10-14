@@ -76,19 +76,6 @@ const IconCode = () => (
   </svg>
 )
 
-const IconEye = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-)
-
-const IconEdit = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-  </svg>
-)
-
 const IconTrash = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="3 6 5 6 21 6" />
@@ -2064,13 +2051,11 @@ export default function LeadFormsPage() {
                             {/* Quick Action: Xem lịch sử tương tác */}
                             <button
                               type="button"
-                              className="btn-action-icon"
-                              style={{ color: '#0284c7', borderColor: '#bae6fd', background: '#f0f9ff' }}
+                              className="lead-action-text-btn"
                               onClick={() => handleOpenInteractionModal(l)}
-                              title="Lịch sử tương tác & Chăm sóc Lead (S4-06)"
                               id={`btn-interactions-lead-${l.id}`}
                             >
-                              <IconHistory />
+                              Lịch sử
                             </button>
 
                             {/* More Actions Dropdown Menu */}
@@ -2691,27 +2676,13 @@ export default function LeadFormsPage() {
                             ) : (
                               <button
                                 type="button"
-                                className="btn-action-icon"
-                                style={{ color: '#2563eb', borderColor: '#bfdbfe', background: '#eff6ff' }}
+                                className="lead-action-text-btn"
                                 onClick={() => handleOpenConvertModal(l)}
-                                title="Chuyển đổi thành Khách hàng & Cơ hội (S4-08)"
                                 id={`btn-convert-score-lead-${l.id}`}
                               >
-                                <IconUserCheck />
+                                Chuyển đổi
                               </button>
                             )}
-
-                            {/* Nút Xem lịch sử tương tác (S4-06) */}
-                            <button
-                              type="button"
-                              className="btn-action-icon"
-                              style={{ color: '#0284c7', borderColor: '#bae6fd', background: '#f0f9ff' }}
-                              onClick={() => handleOpenInteractionModal(l)}
-                              title="Lịch sử tương tác & Chăm sóc Lead (S4-06)"
-                              id={`btn-interactions-score-lead-${l.id}`}
-                            >
-                              <IconHistory />
-                            </button>
 
                             <button
                               type="button"
@@ -2724,15 +2695,40 @@ export default function LeadFormsPage() {
                               <IconSliders />
                               <span>Chi tiết</span>
                             </button>
-                            <button
-                              type="button"
-                              className="btn-action-icon edit"
-                              onClick={() => handleRecalculateSingleLead(l.id)}
-                              title="Chấm lại điểm theo quy tắc"
-                              id={`btn-recalc-score-${l.id}`}
-                            >
-                              <IconRefreshCw />
-                            </button>
+                            <details className="crm-more-actions">
+                              <summary className="crm-more-trigger" title="Thao tác khác" aria-label="Thao tác khác">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <circle cx="12" cy="5" r="1" />
+                                  <circle cx="12" cy="12" r="1" />
+                                  <circle cx="12" cy="19" r="1" />
+                                </svg>
+                              </summary>
+                              <div className="crm-more-menu">
+                                <button
+                                  type="button"
+                                  className="crm-more-item"
+                                  onClick={(event) => {
+                                    event.currentTarget.closest('details')?.removeAttribute('open')
+                                    handleOpenInteractionModal(l)
+                                  }}
+                                  id={`btn-interactions-score-lead-${l.id}`}
+                                >
+                                  Lịch sử tương tác
+                                </button>
+                                <button
+                                  type="button"
+                                  className="crm-more-item"
+                                  onClick={(event) => {
+                                    event.currentTarget.closest('details')?.removeAttribute('open')
+                                    handleRecalculateSingleLead(l.id)
+                                  }}
+                                  title="Chấm lại điểm theo quy tắc"
+                                  id={`btn-recalc-score-${l.id}`}
+                                >
+                                  Chấm lại điểm
+                                </button>
+                              </div>
+                            </details>
                           </div>
                         </td>
                       </tr>
@@ -3478,29 +3474,42 @@ export default function LeadFormsPage() {
                             href={getPublicFormUrl(f.id)}
                             target="_blank"
                             rel="noreferrer"
-                            className="btn-action-icon preview"
-                            title="Mở trang biểu mẫu trực tiếp trên tab mới"
+                            className="lead-action-text-btn"
                           >
-                            <IconEye />
+                            Xem
                           </a>
 
-                          <button
-                            type="button"
-                            className="btn-action-icon edit"
-                            onClick={() => handleOpenEditModal(f)}
-                            title="Chỉnh sửa thông tin biểu mẫu"
-                          >
-                            <IconEdit />
-                          </button>
-
-                          <button
-                            type="button"
-                            className="btn-action-icon delete"
-                            onClick={() => setDeletingForm(f)}
-                            title="Xóa biểu mẫu"
-                          >
-                            <IconTrash />
-                          </button>
+                          <details className="crm-more-actions">
+                            <summary className="crm-more-trigger" title="Thao tác khác" aria-label="Thao tác khác">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="5" r="1" />
+                                <circle cx="12" cy="12" r="1" />
+                                <circle cx="12" cy="19" r="1" />
+                              </svg>
+                            </summary>
+                            <div className="crm-more-menu">
+                              <button
+                                type="button"
+                                className="crm-more-item"
+                                onClick={(event) => {
+                                  event.currentTarget.closest('details')?.removeAttribute('open')
+                                  handleOpenEditModal(f)
+                                }}
+                              >
+                                Sửa biểu mẫu
+                              </button>
+                              <button
+                                type="button"
+                                className="crm-more-item danger"
+                                onClick={(event) => {
+                                  event.currentTarget.closest('details')?.removeAttribute('open')
+                                  setDeletingForm(f)
+                                }}
+                              >
+                                Xóa biểu mẫu
+                              </button>
+                            </div>
+                          </details>
                         </div>
                       </td>
                     </tr>
