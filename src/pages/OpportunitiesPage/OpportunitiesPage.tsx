@@ -27,19 +27,6 @@ const IconSearch = () => (
   </svg>
 )
 
-const IconEdit = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-  </svg>
-)
-
-const IconTrash = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-  </svg>
-)
-
 const IconDownload = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -640,23 +627,35 @@ export default function OpportunitiesPage() {
                         <div className="opp-actions-cluster">
                           <button
                             type="button"
-                            className="btn-action-icon edit"
+                            className="opp-action-text-btn"
                             onClick={() => handleOpenEditModal(opp)}
-                            title="Chỉnh sửa thông tin cơ hội"
                             id={`btn-edit-opp-${opp.id}`}
                           >
-                            <IconEdit />
+                            Sửa
                           </button>
 
-                          <button
-                            type="button"
-                            className="btn-action-icon delete"
-                            onClick={() => setDeletingOpp(opp)}
-                            title="Xóa cơ hội bán hàng"
-                            id={`btn-delete-opp-${opp.id}`}
-                          >
-                            <IconTrash />
-                          </button>
+                          <details className="crm-more-actions">
+                            <summary className="crm-more-trigger" title="Thao tác khác" aria-label="Thao tác khác">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="5" r="1" />
+                                <circle cx="12" cy="12" r="1" />
+                                <circle cx="12" cy="19" r="1" />
+                              </svg>
+                            </summary>
+                            <div className="crm-more-menu">
+                              <button
+                                type="button"
+                                className="crm-more-item danger"
+                                onClick={(event) => {
+                                  event.currentTarget.closest('details')?.removeAttribute('open')
+                                  setDeletingOpp(opp)
+                                }}
+                                id={`btn-delete-opp-${opp.id}`}
+                              >
+                                Xóa cơ hội
+                              </button>
+                            </div>
+                          </details>
                         </div>
                       </td>
                     </tr>
