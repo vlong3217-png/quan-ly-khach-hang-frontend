@@ -99,20 +99,6 @@ export default function CategoriesPage() {
     }
   }
 
-  const handleMoveUp = (idx: number) => {
-    if (idx <= 0) return
-    const updated = categoryService.reorder(activeTab, idx, idx - 1)
-    setCategories(updated)
-    showToast('Đã thay đổi thứ tự hiển thị!', 'success')
-  }
-
-  const handleMoveDown = (idx: number) => {
-    if (idx >= categories.length - 1) return
-    const updated = categoryService.reorder(activeTab, idx, idx + 1)
-    setCategories(updated)
-    showToast('Đã thay đổi thứ tự hiển thị!', 'success')
-  }
-
   return (
     <div className="categories-page-container">
       {toast && (
@@ -167,31 +153,9 @@ export default function CategoriesPage() {
                 <td colSpan={6} className="empty-cell">Chưa có danh mục nào trong nhóm này.</td>
               </tr>
             ) : (
-              categories.map((item, idx) => (
+              categories.map((item) => (
                 <tr key={item.id}>
-                  <td>
-                    <div className="reorder-controls">
-                      <button
-                        type="button"
-                        className="order-btn"
-                        disabled={idx === 0}
-                        onClick={() => handleMoveUp(idx)}
-                        title="Di chuyển lên trên"
-                      >
-                        ▲
-                      </button>
-                      <span className="order-num">{item.sort_order}</span>
-                      <button
-                        type="button"
-                        className="order-btn"
-                        disabled={idx === categories.length - 1}
-                        onClick={() => handleMoveDown(idx)}
-                        title="Di chuyển xuống dưới"
-                      >
-                        ▼
-                      </button>
-                    </div>
-                  </td>
+                  <td><span className="order-num">{item.sort_order}</span></td>
                   <td className="cat-code">{item.code}</td>
                   <td><strong>{item.name}</strong></td>
                   <td>
