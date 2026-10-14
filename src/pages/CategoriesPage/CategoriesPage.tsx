@@ -104,20 +104,6 @@ export default function CategoriesPage() {
     }
   }
 
-  const handleMoveUp = (idx: number) => {
-    if (idx <= 0) return
-    const updated = categoryService.reorder(activeTab, idx, idx - 1)
-    setCategories(updated)
-    showToast('Đã thay đổi thứ tự hiển thị!', 'success')
-  }
-
-  const handleMoveDown = (idx: number) => {
-    if (idx >= categories.length - 1) return
-    const updated = categoryService.reorder(activeTab, idx, idx + 1)
-    setCategories(updated)
-    showToast('Đã thay đổi thứ tự hiển thị!', 'success')
-  }
-
   return (
     <div className="categories-page-container">
       {toast && (
@@ -170,33 +156,10 @@ export default function CategoriesPage() {
             ) : (
               categories
                 .slice((currentPage - 1) * pageSize, currentPage * pageSize)
-                .map((item, idx) => {
-                  const actualIdx = (currentPage - 1) * pageSize + idx
+                .map((item) => {
                   return (
                     <tr key={item.id}>
-                      <td>
-                        <div className="reorder-controls">
-                          <button
-                            type="button"
-                            className="order-btn"
-                            disabled={actualIdx === 0}
-                            onClick={() => handleMoveUp(actualIdx)}
-                            title="Di chuyển lên trên"
-                          >
-                            ▲
-                          </button>
-                          <span className="order-num">{item.sort_order}</span>
-                          <button
-                            type="button"
-                            className="order-btn"
-                            disabled={actualIdx === categories.length - 1}
-                            onClick={() => handleMoveDown(actualIdx)}
-                            title="Di chuyển xuống dưới"
-                          >
-                            ▼
-                          </button>
-                        </div>
-                      </td>
+                      <td><span className="order-num">{item.sort_order}</span></td>
                       <td className="cat-code">{item.code}</td>
                       <td><strong>{item.name}</strong></td>
                       <td>
