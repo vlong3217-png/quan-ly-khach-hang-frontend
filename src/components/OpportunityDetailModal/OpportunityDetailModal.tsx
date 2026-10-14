@@ -267,7 +267,7 @@ export default function OpportunityDetailModal({
   return (
     <div className="modal-overlay opp-detail-modal-overlay" onClick={onClose}>
       <div
-        className="modal-content opp-detail-modal-card"
+        className="opp-detail-modal-card"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
