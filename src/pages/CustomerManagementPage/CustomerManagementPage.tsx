@@ -20,6 +20,7 @@ import {
   BUYING_ROLE_BADGES,
 } from '../../types/customer.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
+import Customer360Timeline from '../../components/Customer360Timeline/Customer360Timeline.tsx'
 import './CustomerManagementPage.css'
 
 /* ──────────── Icons ──────────── */
@@ -1042,21 +1043,11 @@ export default function CustomerManagementPage() {
             )}
 
             {c360ActiveTab === 'ACTIVITIES' && (
-              <div className="c360-timeline">
-                {customerService.getActivities(selected360Customer.id).map((act) => (
-                  <div key={act.id} className="c360-timeline-item">
-                    <div className="c360-timeline-dot" />
-                    <div className="c360-timeline-content">
-                      <div className="c360-timeline-title">
-                        [{act.type}] {act.title}
-                        <span className="c360-timeline-time">{new Date(act.performed_at).toLocaleString('vi-VN')}</span>
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#475569', marginTop: '4px' }}>{act.description}</div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>Bởi: {act.performed_by_name}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Customer360Timeline
+                customerId={selected360Customer.id}
+                customerName={selected360Customer.name}
+                customerOwnerName={selected360Customer.owner_name}
+              />
             )}
 
             {c360ActiveTab === 'ATTACHMENTS' && (

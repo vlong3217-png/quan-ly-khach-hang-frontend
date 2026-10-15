@@ -110,6 +110,13 @@ export const opportunityHistoryService = {
   },
 
   /**
+   * Lấy toàn bộ lịch sử thay đổi của tất cả cơ hội (phục vụ Customer 360 timeline S6-08)
+   */
+  getAllHistory(): OpportunityFieldChange[] {
+    return getStoredHistory()
+  },
+
+  /**
    * Tự động so sánh cơ hội trước và sau thay đổi để ghi nhật ký chi tiết (S6-01)
    */
   async recordOpportunityDiff(
