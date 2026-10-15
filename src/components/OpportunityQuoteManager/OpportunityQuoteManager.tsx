@@ -5,6 +5,7 @@ import { quoteService } from '../../services/quoteService.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import QuoteComposerModal from './QuoteComposerModal.tsx'
+import QuoteComparisonModal from './QuoteComparisonModal.tsx'
 import './OpportunityQuoteManager.css'
 
 interface OpportunityQuoteManagerProps {
@@ -26,6 +27,11 @@ export default function OpportunityQuoteManager({
   const [isComposerOpen, setIsComposerOpen] = useState<boolean>(false)
   const [editingQuote, setEditingQuote] = useState<Quote | null>(null)
   const [selectedQuoteDetail, setSelectedQuoteDetail] = useState<Quote | null>(null)
+
+  // S7-03: Quote Version Comparison State
+  const [isComparisonOpen, setIsComparisonOpen] = useState<boolean>(false)
+  const [compareQuoteA, setCompareQuoteA] = useState<Quote | null>(null)
+  const [compareQuoteB, setCompareQuoteB] = useState<Quote | null>(null)
 
   // S7-02: Approval Modal State
   const [approvalModalQuote, setApprovalModalQuote] = useState<Quote | null>(null)
@@ -135,6 +141,30 @@ export default function OpportunityQuoteManager({
     }
   }
 
+  // S7-03 AC: Mỗi lần sửa sau khi đã gửi sẽ tạo phiên bản mới, bản cũ giữ nguyên
+  const handleCreateNewVersion = (q: Quote) => {
+    if (window.confirm(`Tạo phiên bản sửa đổi mới (v${q.version + 1}) cho báo giá "${q.quote_number}"? Bản cũ (v${q.version}) sẽ được giữ nguyên trạng.`)) {
+      try {
+        const newVer = quoteService.createNewVersion(q.id, user)
+        loadQuotes()
+        setEditingQuote(newVer)
+        setIsComposerOpen(true)
+      } catch (err: any) {
+        alert(err.message || 'Không thể tạo phiên bản mới.')
+      }
+    }
+  }
+
+  // S7-03 AC: Chỉ một phiên bản ở trạng thái đang hiệu lực tại một thời điểm
+  const handleSetActiveVersion = (quoteId: string) => {
+    try {
+      quoteService.setActiveVersion(quoteId)
+      loadQuotes()
+    } catch (err: any) {
+      alert(err.message || 'Không thể chuyển đổi phiên bản hiệu lực.')
+    }
+  }
+
   return (
     <div className="opportunity-quote-manager-container" id="opportunity-quote-manager">
       {/* Header bar */}
@@ -142,22 +172,38 @@ export default function OpportunityQuoteManager({
         <div>
           <h4>Danh sách báo giá ({quotes.length})</h4>
           <span className="sub-hint">
-            Soạn thảo, kiểm soát chiết khấu theo ngưỡng và phê duyệt đa cấp (S7-01, S7-02)
+            Soạn thảo, kiểm soát chiết khấu theo ngưỡng, đa phiên bản & phê duyệt (S7-01, S7-02, S7-03)
           </span>
         </div>
-        {!readOnly && (
-          <button
-            type="button"
-            className="btn btn-primary btn-sm btn-create-quote"
-            id="btn-create-quote-s701"
-            onClick={() => {
-              setEditingQuote(null)
-              setIsComposerOpen(true)
-            }}
-          >
-            + Soạn báo giá mới (S7-01)
-          </button>
-        )}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {quotes.length >= 2 && (
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-sm"
+              id="btn-compare-quotes-s703"
+              onClick={() => {
+                setCompareQuoteA(quotes[1] || quotes[0])
+                setCompareQuoteB(quotes[0])
+                setIsComparisonOpen(true)
+              }}
+            >
+              ⚖️ So sánh phiên bản (S7-03)
+            </button>
+          )}
+          {!readOnly && (
+            <button
+              type="button"
+              className="btn btn-primary btn-sm btn-create-quote"
+              id="btn-create-quote-s701"
+              onClick={() => {
+                setEditingQuote(null)
+                setIsComposerOpen(true)
+              }}
+            >
+              + Soạn báo giá mới (S7-01)
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Quotes List Table */}
@@ -286,6 +332,48 @@ export default function OpportunityQuoteManager({
                           title="Chỉ báo giá đã duyệt mới gửi được cho khách (S7-02 AC)"
                         >
                           🔒 Chờ duyệt
+                        </button>
+                      )}
+
+                      {/* S7-03: Quick button to compare this version */}
+                      {quotes.length >= 2 && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-secondary"
+                          onClick={() => {
+                            setCompareQuoteA(q)
+                            const other = quotes.find((o) => o.id !== q.id)
+                            setCompareQuoteB(other || q)
+                            setIsComparisonOpen(true)
+                          }}
+                          title="So sánh phiên bản này với bản khác"
+                        >
+                          ⚖️ So sánh
+                        </button>
+                      )}
+
+                      {/* S7-03 AC: Mỗi lần sửa sau khi đã gửi tạo phiên bản mới */}
+                      {(q.status === 'SENT' || q.status === 'APPROVED' || q.status === 'ACCEPTED' || q.status === 'DECLINED') && !readOnly && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-info"
+                          onClick={() => handleCreateNewVersion(q)}
+                          title="Tạo phiên bản sửa đổi mới v[N+1] (S7-03 AC)"
+                        >
+                          ➕ Bản mới (v{q.version + 1})
+                        </button>
+                      )}
+
+                      {/* S7-03 AC: Chỉ một phiên bản đang hiệu lực tại một thời điểm */}
+                      {!q.is_active_version && !readOnly && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-link"
+                          style={{ fontSize: '11px', padding: '2px 4px' }}
+                          onClick={() => handleSetActiveVersion(q.id)}
+                          title="Đặt làm phiên bản hiệu lực (S7-03 AC)"
+                        >
+                          Kích hoạt
                         </button>
                       )}
 
@@ -609,6 +697,20 @@ export default function OpportunityQuoteManager({
           onClose={() => setIsComposerOpen(false)}
           onSaved={() => {
             loadQuotes()
+          }}
+        />
+      )}
+
+      {/* Quote Comparison Modal (S7-03) */}
+      {isComparisonOpen && (
+        <QuoteComparisonModal
+          isOpen={isComparisonOpen}
+          allVersions={quotes}
+          initialQuoteA={compareQuoteA}
+          initialQuoteB={compareQuoteB}
+          onClose={() => setIsComparisonOpen(false)}
+          onSetActiveVersion={(qId) => {
+            handleSetActiveVersion(qId)
           }}
         />
       )}
