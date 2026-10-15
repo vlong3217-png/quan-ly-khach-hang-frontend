@@ -58,8 +58,23 @@ export interface Opportunity {
   days_in_stage?: number // Số ngày nằm ở giai đoạn hiện tại mà chưa chuyển tiếp
   is_stalled?: boolean // Đang bị đình trệ
   stalled_reason?: string // Lý do đình trệ (quá hạn giai đoạn, không có hoạt động, quá hạn chốt)
+  // ── S6-03: Chia sẻ cơ hội cho nhiều người cùng theo ──
+  shared_members?: OpportunitySharedMember[]
   created_at: string
   updated_at: string
+}
+
+/* ──────────── User Story S6-03: Chia sẻ cơ hội cho nhiều người cùng theo ──────────── */
+export interface OpportunitySharedMember {
+  id: string
+  user_id: number
+  user_name: string
+  user_email?: string
+  role_in_deal: string // 'Đồng phụ trách' | 'Pre-sales / Kỹ thuật' | 'Báo giá & Hợp đồng' | 'Theo dõi'
+  can_log_activity: boolean // Có quyền ghi nhận hoạt động (luôn true)
+  can_reassign_owner: boolean // Không được đổi người sở hữu (luôn false)
+  added_by_name: string
+  added_at: string
 }
 
 /* ──────────── User Story S5-03: Sản phẩm dịch vụ trong cơ hội ──────────── */
