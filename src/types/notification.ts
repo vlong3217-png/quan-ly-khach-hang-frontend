@@ -28,3 +28,12 @@ export interface CreateNotificationPayload {
   link_path: string
   data_payload?: Record<string, any>
 }
+
+export interface NotificationChannelConfig {
+  type: NotificationType
+  label: string
+  description: string
+  is_mandatory: boolean // Thông báo bắt buộc như báo giá chờ duyệt thì không tắt được (S8-02 AC)
+  in_app: boolean // Kênh trong ứng dụng
+  email: boolean // Kênh email
+}

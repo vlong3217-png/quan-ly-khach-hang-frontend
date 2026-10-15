@@ -11,6 +11,7 @@ import {
 } from '../../services/avatarService.ts'
 import { AvatarCropModal } from '../../components/AvatarCropModal/AvatarCropModal.tsx'
 import { ChangePasswordModal } from '../../components/ChangePasswordModal/ChangePasswordModal.tsx'
+import NotificationPreferencesCard from '../../components/NotificationPreferences/NotificationPreferencesCard.tsx'
 import { ROLE_LABELS } from '../../constants/permissions.ts'
 import type { UserProfile, ProfileFormErrors } from '../../types/profile.ts'
 import './ProfilePage.css'
@@ -890,6 +891,11 @@ export function ProfilePage() {
                   </div>
                 </div>
               </form>
+
+              {/* 5. CẤU HÌNH KÊNH NHẬN THÔNG BÁO (User Story S8-02) */}
+              <div style={{ marginTop: 24 }}>
+                <NotificationPreferencesCard />
+              </div>
             </section>
           </div>
         )}

@@ -202,6 +202,20 @@ export default function NotificationBell() {
               ))
             )}
           </div>
+
+          <div className="notif-popover-footer">
+            <button
+              type="button"
+              className="notif-pref-link-btn"
+              onClick={() => {
+                setIsOpen(false)
+                navigate('/profile')
+              }}
+              title="Cấu hình kênh nhận thông báo cá nhân (S8-02)"
+            >
+              ⚙️ Cài đặt kênh thông báo (S8-02)
+            </button>
+          </div>
         </div>
       )}
     </div>
