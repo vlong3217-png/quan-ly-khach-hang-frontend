@@ -154,6 +154,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Chỉ tiêu doanh số theo tháng/quý, cảnh báo lệch và khoá kỳ (S8-03)',
       },
       {
+        id: 'menu-pipeline-funnel',
+        title: 'Phễu bán hàng & Chuyển đổi',
+        path: '/dashboard/pipeline-funnel',
+        roles: [ROLES.ADMIN, ROLES.MANAGER],
+        description: 'Phân tích tỷ lệ chuyển đổi, điểm rơi rụng nhiều nhất và điểm nghẽn (S8-05)',
+      },
+      {
         id: 'menu-teams',
         title: 'Quản lý Đội nhóm',
         path: '/dashboard/teams',
