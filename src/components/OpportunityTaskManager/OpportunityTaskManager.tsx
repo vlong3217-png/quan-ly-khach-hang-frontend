@@ -8,12 +8,16 @@ import type {
   UpdateOpportunityTaskPayload,
 } from '../../types/opportunity.ts'
 import { opportunityTaskService } from '../../services/opportunityTaskService.ts'
+import { userService } from '../../services/userService.ts'
+import type { User } from '../../types/auth.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import './OpportunityTaskManager.css'
 
 interface OpportunityTaskManagerProps {
-  opportunityId: string
+  opportunityId?: string
   opportunityTitle?: string
+  customerId?: string
+  customerName?: string
   onTasksChanged?: () => void
 }
 
@@ -70,12 +74,15 @@ const IconAlertCircle = () => (
 export default function OpportunityTaskManager({
   opportunityId,
   opportunityTitle,
+  customerId,
+  customerName,
   onTasksChanged,
 }: OpportunityTaskManagerProps) {
   const { user } = useAuth()
 
   // State
   const [tasks, setTasks] = useState<OpportunityTask[]>([])
+  const [teamUsers, setTeamUsers] = useState<User[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('ALL')
@@ -87,11 +94,20 @@ export default function OpportunityTaskManager({
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [formError, setFormError] = useState<string | null>(null)
 
+  // Postpone Modal State (S6-06)
+  const [isPostponeModalOpen, setIsPostponeModalOpen] = useState<boolean>(false)
+  const [postponingTask, setPostponingTask] = useState<OpportunityTask | null>(null)
+  const [postponeDueDate, setPostponeDueDate] = useState<string>('')
+  const [postponeReason, setPostponeReason] = useState<string>('')
+  const [postponeError, setPostponeError] = useState<string | null>(null)
+
   // Form State
   const [formData, setFormData] = useState<{
     title: string
     description: string
+    assigned_to_id?: number
     assigned_to_name: string
+    customer_name: string
     due_date: string
     due_time: string
     priority: OpportunityTaskPriority
@@ -100,7 +116,9 @@ export default function OpportunityTaskManager({
   }>({
     title: '',
     description: '',
-    assigned_to_name: '',
+    assigned_to_id: user?.id ? Number(user.id) : undefined,
+    assigned_to_name: user?.full_name || 'Người dùng',
+    customer_name: customerName || '',
     due_date: '',
     due_time: '17:00',
     priority: 'MEDIUM',
@@ -108,20 +126,35 @@ export default function OpportunityTaskManager({
     reminder_type: '1_DAY_BEFORE',
   })
 
+  // Load team users for assignment (Trưởng nhóm giao việc)
+  useEffect(() => {
+    userService
+      .getUsers()
+      .then((res) => {
+        if (res && res.users) {
+          setTeamUsers(res.users)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   // Load tasks
   const loadTasks = useCallback(async () => {
-    if (!opportunityId) return
     setLoading(true)
     setError(null)
     try {
       const data = await opportunityTaskService.getTasks(opportunityId)
-      setTasks(data)
+      // Filter by customer if opportunityId is not specified
+      const filtered = customerId && !opportunityId
+        ? data.filter((t) => t.customer_id === customerId)
+        : data
+      setTasks(filtered)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không thể tải danh sách công việc.')
     } finally {
       setLoading(false)
     }
-  }, [opportunityId])
+  }, [opportunityId, customerId])
 
   useEffect(() => {
     loadTasks()
@@ -135,7 +168,9 @@ export default function OpportunityTaskManager({
     setFormData({
       title: '',
       description: '',
-      assigned_to_name: user?.full_name || 'Nguyễn Văn An',
+      assigned_to_id: user?.id ? Number(user.id) : undefined,
+      assigned_to_name: user?.full_name || 'Người dùng',
+      customer_name: customerName || '',
       due_date: nextWeek.toISOString().split('T')[0],
       due_time: '17:00',
       priority: 'MEDIUM',
@@ -152,7 +187,9 @@ export default function OpportunityTaskManager({
     setFormData({
       title: task.title,
       description: task.description || '',
+      assigned_to_id: task.assigned_to_id,
       assigned_to_name: task.assigned_to_name,
+      customer_name: task.customer_name || customerName || '',
       due_date: task.due_date,
       due_time: task.due_time || '17:00',
       priority: task.priority,
@@ -161,6 +198,44 @@ export default function OpportunityTaskManager({
     })
     setFormError(null)
     setIsModalOpen(true)
+  }
+
+  // Open Postpone Modal (S6-06: Hoãn kèm lý do)
+  const handleOpenPostpone = (task: OpportunityTask) => {
+    setPostponingTask(task)
+    const curDue = task.due_date ? new Date(task.due_date) : new Date()
+    const newDate = new Date(curDue.getTime() + 3 * 24 * 60 * 60 * 1000)
+    setPostponeDueDate(newDate.toISOString().split('T')[0])
+    setPostponeReason(task.postponed_reason || '')
+    setPostponeError(null)
+    setIsPostponeModalOpen(true)
+  }
+
+  // Submit Postpone
+  const handlePostponeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!postponingTask) return
+    if (!postponeDueDate) {
+      setPostponeError('Vui lòng chọn thời hạn mới sau khi hoãn.')
+      return
+    }
+    if (!postponeReason.trim()) {
+      setPostponeError('Vui lòng nhập lý do hoãn công việc này (AC: Hoãn kèm lý do).')
+      return
+    }
+
+    try {
+      await opportunityTaskService.postponeTask(
+        postponingTask.id,
+        postponeDueDate,
+        postponeReason.trim()
+      )
+      setIsPostponeModalOpen(false)
+      await loadTasks()
+      if (onTasksChanged) onTasksChanged()
+    } catch (err) {
+      setPostponeError(err instanceof Error ? err.message : 'Không thể hoãn công việc.')
+    }
   }
 
   // Toggle complete nhanh
@@ -207,7 +282,9 @@ export default function OpportunityTaskManager({
         const updatePayload: UpdateOpportunityTaskPayload = {
           title: formData.title.trim(),
           description: formData.description.trim(),
+          assigned_to_id: formData.assigned_to_id,
           assigned_to_name: formData.assigned_to_name.trim(),
+          customer_name: formData.customer_name.trim() || undefined,
           due_date: formData.due_date,
           due_time: formData.due_time,
           priority: formData.priority,
@@ -220,8 +297,12 @@ export default function OpportunityTaskManager({
         // Tạo mới công việc
         const createPayload: CreateOpportunityTaskPayload = {
           opportunity_id: opportunityId,
+          opportunity_title: opportunityTitle,
+          customer_id: customerId,
+          customer_name: formData.customer_name.trim() || customerName,
           title: formData.title.trim(),
           description: formData.description.trim(),
+          assigned_to_id: formData.assigned_to_id,
           assigned_to_name: formData.assigned_to_name.trim() || user?.full_name || 'Người dùng',
           due_date: formData.due_date,
           due_time: formData.due_time,
@@ -244,14 +325,15 @@ export default function OpportunityTaskManager({
   // Kiểm tra quá hạn
   const todayStr = new Date().toISOString().split('T')[0]
   const isOverdue = (task: OpportunityTask) => {
-    return !task.is_completed && task.due_date < todayStr
+    return !task.is_completed && task.status !== 'POSTPONED' && task.due_date < todayStr
   }
 
   // Lọc công việc
   const filteredTasks = tasks.filter((task) => {
-    if (statusFilter === 'TODO' && (task.is_completed || task.status === 'COMPLETED')) return false
+    if (statusFilter === 'TODO' && (task.is_completed || task.status === 'COMPLETED' || task.status === 'POSTPONED')) return false
     if (statusFilter === 'IN_PROGRESS' && (task.is_completed || task.status !== 'IN_PROGRESS')) return false
     if (statusFilter === 'COMPLETED' && !task.is_completed) return false
+    if (statusFilter === 'POSTPONED' && task.status !== 'POSTPONED') return false
     if (statusFilter === 'OVERDUE' && !isOverdue(task)) return false
 
     if (searchKeyword.trim()) {
@@ -259,7 +341,8 @@ export default function OpportunityTaskManager({
       const matchTitle = task.title.toLowerCase().includes(q)
       const matchDesc = task.description ? task.description.toLowerCase().includes(q) : false
       const matchAssignee = task.assigned_to_name.toLowerCase().includes(q)
-      if (!matchTitle && !matchDesc && !matchAssignee) return false
+      const matchCustomer = task.customer_name ? task.customer_name.toLowerCase().includes(q) : false
+      if (!matchTitle && !matchDesc && !matchAssignee && !matchCustomer) return false
     }
 
     return true
@@ -268,8 +351,9 @@ export default function OpportunityTaskManager({
   // Thống kê nhanh
   const totalCount = tasks.length
   const completedCount = tasks.filter((t) => t.is_completed).length
+  const postponedCount = tasks.filter((t) => t.status === 'POSTPONED').length
   const overdueCount = tasks.filter((t) => isOverdue(t)).length
-  const pendingCount = totalCount - completedCount
+  const pendingCount = totalCount - completedCount - postponedCount
 
   // Helper nhãn nhắc nhở
   const getReminderLabel = (type: OpportunityReminderType) => {
@@ -374,6 +458,13 @@ export default function OpportunityTaskManager({
           >
             Đã xong ({completedCount})
           </button>
+          <button
+            type="button"
+            className={`task-pill ${statusFilter === 'POSTPONED' ? 'active' : ''}`}
+            onClick={() => setStatusFilter('POSTPONED')}
+          >
+            ⏳ Đã hoãn ({postponedCount})
+          </button>
           {overdueCount > 0 && (
             <button
               type="button"
@@ -388,7 +479,7 @@ export default function OpportunityTaskManager({
         <div className="task-search-box">
           <input
             type="text"
-            placeholder="Tìm theo tiêu đề, người phụ trách..."
+            placeholder="Tìm theo tiêu đề, người phụ trách, khách hàng..."
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             className="task-search-input"
@@ -423,11 +514,11 @@ export default function OpportunityTaskManager({
       ) : filteredTasks.length === 0 ? (
         <div className="task-state-box empty-state" id="task-empty-state">
           <div className="empty-illustration">📝</div>
-          <h4>Chưa có công việc nào liên quan</h4>
+          <h4>Chưa có công việc nào</h4>
           <p>
             {searchKeyword || statusFilter !== 'ALL'
               ? 'Không tìm thấy công việc nào phù hợp với bộ lọc hiện tại.'
-              : 'Hãy tạo công việc cần làm, phân công người phụ trách và đặt lịch nhắc nhở để không bỏ lỡ cơ hội chốt deal.'}
+              : 'Hãy tạo công việc cần làm, phân công người phụ trách và đặt hạn chót để không bỏ lỡ tiến độ.'}
           </p>
           <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
             + Thêm công việc đầu tiên
@@ -437,12 +528,13 @@ export default function OpportunityTaskManager({
         <div className="task-list-stream" id="task-list-stream">
           {filteredTasks.map((task) => {
             const overdue = isOverdue(task)
+            const isPostponed = task.status === 'POSTPONED'
             return (
               <div
                 key={task.id}
                 className={`task-card-item ${task.is_completed ? 'completed' : ''} ${
                   overdue ? 'overdue' : ''
-                }`}
+                } ${isPostponed ? 'postponed' : ''}`}
                 data-testid={`task-item-${task.id}`}
               >
                 {/* Checkbox hoàn thành */}
@@ -471,6 +563,12 @@ export default function OpportunityTaskManager({
                         {getPriorityLabel(task.priority)}
                       </span>
 
+                      {isPostponed && (
+                        <span className="postponed-badge" style={{ background: '#fef3c7', color: '#b45309', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+                          ⏳ Đã hoãn
+                        </span>
+                      )}
+
                       {overdue && (
                         <span className="overdue-badge">
                           <IconAlertCircle /> Quá hạn
@@ -485,8 +583,24 @@ export default function OpportunityTaskManager({
                     </div>
                   </div>
 
+                  {/* S6-06: Gắn với Khách hàng hoặc Cơ hội */}
+                  {(task.customer_name || task.opportunity_title) && (
+                    <div style={{ fontSize: '0.8rem', color: '#6366f1', margin: '2px 0 6px 0', display: 'flex', gap: '8px' }}>
+                      {task.customer_name && <span>🏢 Khách: <strong>{task.customer_name}</strong></span>}
+                      {task.opportunity_title && <span>🎯 Deal: <strong>{task.opportunity_title}</strong></span>}
+                    </div>
+                  )}
+
                   {task.description && (
                     <p className="task-desc-text">{task.description}</p>
+                  )}
+
+                  {/* Lý do hoãn (S6-06) */}
+                  {isPostponed && task.postponed_reason && (
+                    <div style={{ background: '#fffbeb', borderLeft: '3px solid #f59e0b', padding: '6px 10px', fontSize: '0.8rem', color: '#92400e', margin: '4px 0 8px 0', borderRadius: '0 4px 4px 0' }}>
+                      <strong>Lý do hoãn:</strong> {task.postponed_reason}
+                      {task.postponed_at && <span style={{ marginLeft: '8px', opacity: 0.8 }}>({task.postponed_at.slice(0, 10)})</span>}
+                    </div>
                   )}
 
                   {/* Metadata: Người phụ trách & Hạn chót */}
@@ -509,6 +623,8 @@ export default function OpportunityTaskManager({
                       <span className={`status-pill status-${task.status.toLowerCase()}`}>
                         {task.status === 'COMPLETED'
                           ? 'Đã xong'
+                          : task.status === 'POSTPONED'
+                          ? 'Đã hoãn'
                           : task.status === 'IN_PROGRESS'
                           ? 'Đang làm'
                           : 'Cần làm'}
@@ -517,8 +633,19 @@ export default function OpportunityTaskManager({
                   </div>
                 </div>
 
-                {/* Thao tác Sửa / Xóa */}
+                {/* Thao tác Sửa / Hoãn / Xóa */}
                 <div className="task-actions-col">
+                  {!task.is_completed && (
+                    <button
+                      type="button"
+                      className="task-action-btn postpone"
+                      style={{ padding: '4px 8px', fontSize: '0.75rem', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', borderRadius: '4px', cursor: 'pointer' }}
+                      onClick={() => handleOpenPostpone(task)}
+                      title="Hoãn công việc kèm lý do (S6-06)"
+                    >
+                      ⏳ Hoãn
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="task-action-btn edit"
@@ -584,20 +711,57 @@ export default function OpportunityTaskManager({
                   />
                 </div>
 
-                {/* Người phụ trách & Mức độ ưu tiên */}
+                {/* S6-06: Gắn với Khách hàng */}
+                <div className="form-group">
+                  <label htmlFor="task-customer-input">Gắn với Khách hàng liên quan</label>
+                  <input
+                    id="task-customer-input"
+                    type="text"
+                    className="form-control"
+                    placeholder="Tên khách hàng hoặc doanh nghiệp..."
+                    value={formData.customer_name}
+                    onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                  />
+                </div>
+
+                {/* S6-06: Người phụ trách (Trưởng nhóm giao việc cho thành viên) & Mức độ ưu tiên */}
                 <div className="form-row-2">
                   <div className="form-group">
-                    <label htmlFor="task-assignee-input">Người phụ trách *</label>
-                    <input
-                      id="task-assignee-input"
-                      type="text"
-                      required
-                      className="form-control"
-                      value={formData.assigned_to_name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, assigned_to_name: e.target.value })
-                      }
-                    />
+                    <label htmlFor="task-assignee-select">Người thực hiện (Trưởng nhóm giao việc) *</label>
+                    {teamUsers.length > 0 ? (
+                      <select
+                        id="task-assignee-select"
+                        className="form-control"
+                        value={formData.assigned_to_id || ''}
+                        onChange={(e) => {
+                          const uid = Number(e.target.value)
+                          const u = teamUsers.find((x) => x.id === uid)
+                          setFormData({
+                            ...formData,
+                            assigned_to_id: uid,
+                            assigned_to_name: u ? (u.full_name || u.email) : formData.assigned_to_name,
+                          })
+                        }}
+                      >
+                        <option value="">-- Chọn thành viên phụ trách --</option>
+                        {teamUsers.map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {u.full_name || u.email} ({u.role || 'Thành viên'})
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        id="task-assignee-input"
+                        type="text"
+                        required
+                        className="form-control"
+                        value={formData.assigned_to_name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, assigned_to_name: e.target.value })
+                        }
+                      />
+                    )}
                   </div>
 
                   <div className="form-group">
@@ -691,6 +855,7 @@ export default function OpportunityTaskManager({
                       <option value="TODO">Cần làm (TODO)</option>
                       <option value="IN_PROGRESS">Đang thực hiện (In Progress)</option>
                       <option value="COMPLETED">Đã hoàn thành (Completed)</option>
+                      <option value="POSTPONED">Đã hoãn (Postponed)</option>
                     </select>
                   </div>
                 </div>
@@ -729,6 +894,87 @@ export default function OpportunityTaskManager({
                     : editingTask
                     ? 'Cập nhật công việc'
                     : 'Tạo công việc'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL HOÃN CÔNG VIỆC KÈM LÝ DO (S6-06) ── */}
+      {isPostponeModalOpen && postponingTask && (
+        <div className="opp-task-modal-overlay" onClick={() => setIsPostponeModalOpen(false)}>
+          <div
+            className="opp-task-modal-card"
+            style={{ maxWidth: '500px' }}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="modal-header">
+              <h3>⏳ Hoãn công việc (S6-06)</h3>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setIsPostponeModalOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handlePostponeSubmit} id="postpone-task-form">
+              <div className="modal-body">
+                {postponeError && (
+                  <div className="modal-alert-error" role="alert">
+                    <span>⚠️ {postponeError}</span>
+                  </div>
+                )}
+
+                <div style={{ marginBottom: '12px', fontSize: '0.9rem' }}>
+                  Đang hoãn công việc: <strong>{postponingTask.title}</strong>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="postpone-due-date-input">Hạn chót mới sau khi hoãn *</label>
+                  <input
+                    id="postpone-due-date-input"
+                    type="date"
+                    required
+                    className="form-control"
+                    value={postponeDueDate}
+                    onChange={(e) => setPostponeDueDate(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="postpone-reason-textarea">Lý do hoãn công việc (Bắt buộc) *</label>
+                  <textarea
+                    id="postpone-reason-textarea"
+                    required
+                    rows={3}
+                    className="form-control"
+                    placeholder="VD: Khách hàng đi công tác nước ngoài, hẹn lại vào thứ Năm tuần tới..."
+                    value={postponeReason}
+                    onChange={(e) => setPostponeReason(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setIsPostponeModalOpen(false)}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-warning"
+                  id="confirm-postpone-btn"
+                  style={{ background: '#f59e0b', color: '#fff', border: 'none' }}
+                >
+                  Xác nhận hoãn công việc
                 </button>
               </div>
             </form>

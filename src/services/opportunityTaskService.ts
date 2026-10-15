@@ -129,6 +129,9 @@ export const opportunityTaskService = {
     const newTask: OpportunityTask = {
       id: `task-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       opportunity_id: payload.opportunity_id,
+      opportunity_title: payload.opportunity_title,
+      customer_id: payload.customer_id,
+      customer_name: payload.customer_name,
       title: payload.title.trim(),
       description: payload.description?.trim() || '',
       assigned_to_id: payload.assigned_to_id,
@@ -145,7 +148,10 @@ export const opportunityTaskService = {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/opportunities/${payload.opportunity_id}/tasks`, {
+      const endpoint = payload.opportunity_id
+        ? `${API_BASE_URL}/opportunities/${payload.opportunity_id}/tasks`
+        : `${API_BASE_URL}/opportunity-tasks`
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(newTask),
@@ -164,6 +170,19 @@ export const opportunityTaskService = {
     const updated = [newTask, ...list]
     saveStoredTasks(updated)
     return newTask
+  },
+
+  /**
+   * Hoãn công việc kèm lý do và hạn mới (S6-06)
+   */
+  async postponeTask(id: string, newDueDate: string, reason: string): Promise<OpportunityTask> {
+    return this.updateTask(id, {
+      due_date: newDueDate,
+      status: 'POSTPONED',
+      postponed_reason: reason.trim(),
+      postponed_at: new Date().toISOString(),
+      is_completed: false,
+    })
   },
 
   /**

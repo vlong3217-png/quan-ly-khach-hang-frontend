@@ -313,7 +313,7 @@ export interface CreateOpportunityActivityPayload {
 /**
  * Kiểu dữ liệu cho S5-04: Quản lý công việc và lịch nhắc liên quan đến cơ hội
  */
-export type OpportunityTaskStatus = 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+export type OpportunityTaskStatus = 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'POSTPONED'
 
 export type OpportunityTaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 
@@ -327,8 +327,10 @@ export type OpportunityReminderType =
 
 export interface OpportunityTask {
   id: string
-  opportunity_id: string
+  opportunity_id?: string
   opportunity_title?: string
+  customer_id?: string
+  customer_name?: string
   title: string
   description?: string
   assigned_to_id?: number
@@ -341,12 +343,17 @@ export interface OpportunityTask {
   reminder_at?: string // ISO date hoặc thông báo
   is_completed: boolean
   completed_at?: string
+  postponed_reason?: string
+  postponed_at?: string
   created_at: string
   updated_at?: string
 }
 
 export interface CreateOpportunityTaskPayload {
-  opportunity_id: string
+  opportunity_id?: string
+  opportunity_title?: string
+  customer_id?: string
+  customer_name?: string
   title: string
   description?: string
   assigned_to_id?: number
@@ -361,6 +368,8 @@ export interface CreateOpportunityTaskPayload {
 export interface UpdateOpportunityTaskPayload {
   title?: string
   description?: string
+  customer_id?: string
+  customer_name?: string
   assigned_to_id?: number
   assigned_to_name?: string
   due_date?: string
@@ -370,6 +379,8 @@ export interface UpdateOpportunityTaskPayload {
   reminder_type?: OpportunityReminderType
   reminder_at?: string
   is_completed?: boolean
+  postponed_reason?: string
+  postponed_at?: string
 }
 
 

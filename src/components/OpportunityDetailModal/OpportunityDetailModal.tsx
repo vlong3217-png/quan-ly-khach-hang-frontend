@@ -639,6 +639,8 @@ export default function OpportunityDetailModal({
             <OpportunityTaskManager
               opportunityId={currentOpp.id}
               opportunityTitle={currentOpp.title}
+              customerId={currentOpp.customer_id ? String(currentOpp.customer_id) : undefined}
+              customerName={currentOpp.customer_name}
             />
           )}
 
