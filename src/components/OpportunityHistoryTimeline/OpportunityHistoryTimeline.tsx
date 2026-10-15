@@ -116,6 +116,7 @@ export default function OpportunityHistoryTimeline({
         expected_close_date: 'Ngày chốt dự kiến',
         owner: 'Người phụ trách',
         win_probability: 'Xác suất thắng',
+        quote: 'Báo giá & Chiết khấu',
         other: 'Thông tin khác',
       }
 

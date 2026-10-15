@@ -11,6 +11,7 @@ import OpportunityProductManager from '../OpportunityProductManager/OpportunityP
 import OpportunityHistoryTimeline from '../OpportunityHistoryTimeline/OpportunityHistoryTimeline.tsx'
 import OpportunityTeamSharing from '../OpportunityTeamSharing/OpportunityTeamSharing.tsx'
 import OpportunityAttachments from '../OpportunityAttachments/OpportunityAttachments.tsx'
+import OpportunityQuoteManager from '../OpportunityQuoteManager/OpportunityQuoteManager.tsx'
 import StageGateEnforcementModal from '../StageGateEnforcementModal/StageGateEnforcementModal.tsx'
 import ReassignOpportunityModal from '../ReassignOpportunityModal/ReassignOpportunityModal.tsx'
 import type { StageGateEvaluation } from '../../types/opportunity.ts'
@@ -21,7 +22,7 @@ import './OpportunityDetailModal.css'
 interface OpportunityDetailModalProps {
   opportunity: Opportunity
   isOpen: boolean
-  initialTab?: 'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS' | 'HISTORY' | 'TEAM' | 'ATTACHMENTS'
+  initialTab?: 'PRODUCTS' | 'QUOTES' | 'ACTIVITIES' | 'DETAILS' | 'TASKS' | 'HISTORY' | 'TEAM' | 'ATTACHMENTS'
   onClose: () => void
   onOpportunityUpdated: (updated: Opportunity) => void
   isPageView?: boolean
@@ -36,7 +37,7 @@ export default function OpportunityDetailModal({
   isPageView = false,
 }: OpportunityDetailModalProps) {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState<'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS' | 'HISTORY' | 'TEAM' | 'ATTACHMENTS'>(initialTab)
+  const [activeTab, setActiveTab] = useState<'PRODUCTS' | 'QUOTES' | 'ACTIVITIES' | 'DETAILS' | 'TASKS' | 'HISTORY' | 'TEAM' | 'ATTACHMENTS'>(initialTab)
   const [stages] = useState<PipelineStage[]>(() => pipelineService.getStages())
   const [currentOpp, setCurrentOpp] = useState<Opportunity>(opportunity)
   const [isChangingStage, setIsChangingStage] = useState<boolean>(false)
@@ -554,6 +555,14 @@ export default function OpportunityDetailModal({
           </button>
           <button
             type="button"
+            className={`opp-tab-btn ${activeTab === 'QUOTES' ? 'active' : ''}`}
+            onClick={() => setActiveTab('QUOTES')}
+            id="tab-btn-quotes"
+          >
+            📑 Báo giá & Chiết khấu
+          </button>
+          <button
+            type="button"
             className={`opp-tab-btn ${activeTab === 'ACTIVITIES' ? 'active' : ''}`}
             onClick={() => setActiveTab('ACTIVITIES')}
             id="tab-btn-activities"
@@ -610,6 +619,18 @@ export default function OpportunityDetailModal({
           {/* TAB 0: Sản phẩm & Bảng giá niêm yết (S5-03) */}
           {activeTab === 'PRODUCTS' && (
             <OpportunityProductManager
+              opportunity={currentOpp}
+              readOnly={isClosed}
+              onOpportunityUpdated={(updated) => {
+                setCurrentOpp(updated)
+                onOpportunityUpdated(updated)
+              }}
+            />
+          )}
+
+          {/* TAB 0.5: Báo giá & Chiết khấu (S7-01) */}
+          {activeTab === 'QUOTES' && (
+            <OpportunityQuoteManager
               opportunity={currentOpp}
               readOnly={isClosed}
               onOpportunityUpdated={(updated) => {

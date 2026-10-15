@@ -4,6 +4,7 @@ export type OpportunityChangeField =
   | 'expected_close_date'
   | 'owner'
   | 'win_probability'
+  | 'quote'
   | 'other'
 
 export interface OpportunityFieldChange {
