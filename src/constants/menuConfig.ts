@@ -111,6 +111,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Cấu hình các giai đoạn pipeline và xác suất thắng',
       },
       {
+        id: 'menu-automation',
+        title: 'Tự động hoá quy trình',
+        path: '/dashboard/automation',
+        roles: [ROLES.ADMIN, ROLES.MANAGER],
+        description: 'Thiết lập quy tắc tự động khi-thì, tạo việc và phân bổ phụ trách (S7-09)',
+      },
+      {
         id: 'menu-categories',
         title: 'Danh mục bán hàng',
         path: '/dashboard/categories',

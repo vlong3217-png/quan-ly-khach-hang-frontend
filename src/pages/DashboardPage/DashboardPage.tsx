@@ -19,6 +19,7 @@ import OpportunitiesPage from '../OpportunitiesPage/OpportunitiesPage.tsx'
 import CalendarPage from '../CalendarPage/CalendarPage.tsx'
 import ContractsPage from '../ContractsPage/ContractsPage.tsx'
 import AuditLogPage from '../AuditLogPage/AuditLogPage.tsx'
+import WorkflowAutomationPage from '../WorkflowAutomationPage/WorkflowAutomationPage.tsx'
 import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
 import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
 import NotificationBell from '../../components/NotificationBell/NotificationBell.tsx'
@@ -114,6 +115,8 @@ function DashboardPage() {
       setActiveMenuId('menu-calendar')
     } else if (path.startsWith('/dashboard/contracts')) {
       setActiveMenuId('menu-contracts')
+    } else if (path.startsWith('/dashboard/automation')) {
+      setActiveMenuId('menu-automation')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -173,6 +176,9 @@ function DashboardPage() {
   const isPipelineView =
     activeMenuId === 'menu-pipeline' ||
     activeMenuId.startsWith('menu-pipeline-')
+  const isAutomationView =
+    activeMenuId === 'menu-automation' ||
+    activeMenuId.startsWith('menu-automation-')
   const isCategoryView =
     activeMenuId === 'menu-categories' ||
     activeMenuId.startsWith('menu-categories-')
@@ -430,6 +436,45 @@ function DashboardPage() {
             <section className="dashboard-section pipeline-section">
               <PipelineStagesPage />
             </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: TỰ ĐỘNG HOÁ QUY TRÌNH (S7-09)
+              ───────────────────────────────────────────────────────────── */}
+          {isAutomationView && (
+            <PermissionGate
+              role={[ROLES.ADMIN, ROLES.MANAGER]}
+              fallback={
+                <div className="access-denied-card" id="forbidden-automation-card">
+                  <IconLock />
+                  <h3>Không có quyền truy cập Tự động hoá quy trình (Mã lỗi 403)</h3>
+                  <p>Chức năng thiết lập quy tắc tự động khi-thì chỉ dành cho Quản lý hoặc Quản trị viên.</p>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => navigate('/forbidden', { state: { from: '/dashboard/automation' } })}
+                    >
+                      Mở trang lỗi 403
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setActiveMenuId('menu-dashboard')
+                        navigate('/dashboard')
+                      }}
+                    >
+                      Về trang chủ
+                    </button>
+                  </div>
+                </div>
+              }
+            >
+              <section className="dashboard-section automation-section">
+                <WorkflowAutomationPage />
+              </section>
+            </PermissionGate>
           )}
 
           {/* ─────────────────────────────────────────────────────────────
