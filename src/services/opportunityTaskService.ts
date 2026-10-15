@@ -74,18 +74,16 @@ export const opportunityTaskService = {
       if (response.ok) {
         const data = await response.json()
         const paginated = normalizePaginatedResponse<OpportunityTask>(data, params?.page || 1, params?.limit || 10)
-        if (paginated.items.length > 0 || data.items || Array.isArray(data)) {
-          const all = getStoredTasks()
-          if (opportunityId) {
-            const others = all.filter((t) => t.opportunity_id !== opportunityId)
-            saveStoredTasks([...paginated.items, ...others])
-          } else {
-            saveStoredTasks(paginated.items)
-          }
-          return paginated.items.sort(
-            (a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
-          )
+        const all = getStoredTasks()
+        if (opportunityId) {
+          const others = all.filter((t) => t.opportunity_id !== opportunityId)
+          saveStoredTasks([...paginated.items, ...others])
+        } else {
+          saveStoredTasks(paginated.items)
         }
+        return paginated.items.sort(
+          (a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+        )
       }
     } catch {
       // Backend offline hoặc chưa có route -> fallback local

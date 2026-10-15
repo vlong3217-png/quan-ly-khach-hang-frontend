@@ -71,14 +71,12 @@ export const opportunityActivityService = {
       if (response.ok) {
         const data = await response.json()
         const paginated = normalizePaginatedResponse<OpportunityActivity>(data, params?.page || 1, params?.limit || 10)
-        if (paginated.items.length > 0 || data.items || Array.isArray(data)) {
-          // Lưu vào local cache và trả về
-          const all = getStoredActivities().filter((a) => a.opportunity_id !== opportunityId)
-          saveStoredActivities([...paginated.items, ...all])
-          return paginated.items.sort(
-            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          )
-        }
+        // Lưu vào local cache và trả về
+        const all = getStoredActivities().filter((a) => a.opportunity_id !== opportunityId)
+        saveStoredActivities([...paginated.items, ...all])
+        return paginated.items.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
       }
     } catch {
       // Backend offline hoặc chưa có route -> Dùng LocalStorage fallback
