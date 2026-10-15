@@ -67,12 +67,10 @@ export const opportunityService = {
       if (response.ok) {
         const raw = await response.json()
         const paginated = normalizePaginatedResponse<Opportunity>(raw, params?.page || 1, params?.limit || 10)
-        if (paginated.items.length > 0 || raw.items || Array.isArray(raw)) {
-          if (!params?.page || params.page === 1) {
-            saveStoredOpportunities(paginated.items)
-          }
-          return paginated.items
+        if (!params?.page || params.page === 1) {
+          saveStoredOpportunities(paginated.items)
         }
+        return paginated.items
       }
     } catch {}
 
@@ -109,7 +107,11 @@ export const opportunityService = {
       })
       if (response.ok) {
         const raw = await response.json()
-        return normalizePaginatedResponse<Opportunity>(raw, page, limit)
+        const paginated = normalizePaginatedResponse<Opportunity>(raw, page, limit)
+        if (page === 1) {
+          saveStoredOpportunities(paginated.items)
+        }
+        return paginated
       }
     } catch {}
 
