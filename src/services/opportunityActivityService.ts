@@ -91,6 +91,29 @@ export const opportunityActivityService = {
   },
 
   /**
+   * Lấy tất cả hoạt động trên toàn hệ thống (phục vụ Lịch làm việc S6-07 & Customer 360 S6-08)
+   */
+  async getAllActivities(): Promise<OpportunityActivity[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/opportunity-activities`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        const items = Array.isArray(data) ? data : data.items || []
+        if (items.length > 0) {
+          saveStoredActivities(items)
+          return items
+        }
+      }
+    } catch {}
+    return getStoredActivities().sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+  },
+
+  /**
    * Ghi nhận một hoạt động mới cho cơ hội (User Story S5-03)
    */
   async createActivity(

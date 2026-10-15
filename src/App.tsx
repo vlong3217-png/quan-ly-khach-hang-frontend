@@ -136,6 +136,16 @@ function App() {
         }
       />
 
+      {/* 4f. S6-07: Lịch làm việc & Bố trí gặp mặt */}
+      <Route
+        path="/dashboard/calendar/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* 5. Quản lý tài khoản (S1-08 / S1-10) */}
       <Route
         path="/dashboard/users/*"
