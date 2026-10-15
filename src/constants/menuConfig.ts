@@ -182,6 +182,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Xếp hạng doanh số đã chốt trong kỳ, tiến độ so với chỉ tiêu cá nhân và bảo mật nội bộ nhóm (S8-08)',
       },
       {
+        id: 'menu-marketing-roi',
+        title: 'Báo cáo ROI Nguồn & Chiến dịch',
+        path: '/dashboard/marketing-roi',
+        roles: [ROLES.ADMIN, ROLES.MANAGER],
+        description: 'Phân tích số lead, tỷ lệ tiếp nhận, chuyển đổi thành cơ hội theo nguồn và chiến dịch (S8-09)',
+      },
+      {
         id: 'menu-teams',
         title: 'Quản lý Đội nhóm',
         path: '/dashboard/teams',
