@@ -60,6 +60,11 @@ export interface Opportunity {
   stalled_reason?: string // Lý do đình trệ (quá hạn giai đoạn, không có hoạt động, quá hạn chốt)
   // ── S6-03: Chia sẻ cơ hội cho nhiều người cùng theo ──
   shared_members?: OpportunitySharedMember[]
+  // ── S8-10: Xuất Excel trường tuỳ chỉnh & phân quyền giá vốn / biên lợi nhuận ──
+  cost_price?: number // Giá vốn (Chỉ hiển thị / xuất với người có thẩm quyền tài chính)
+  profit_margin?: number // Biên lợi nhuận
+  profit_margin_rate?: number // Tỷ suất biên lợi nhuận (%)
+  custom_fields?: Record<string, string | number | boolean> // Trường tuỳ chỉnh động (S8-10)
   created_at: string
   updated_at: string
 }
