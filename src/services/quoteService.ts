@@ -624,6 +624,86 @@ export const quoteService = {
     return getStoredQuotes().filter((q) => q.status === 'PENDING_APPROVAL')
   },
 
+  /**
+   * Tạo phiên bản mới khi sửa báo giá đã gửi (S7-03 AC: Mỗi lần sửa sau khi đã gửi tạo version mới, giữ nguyên bản cũ)
+   */
+  createNewVersion(quoteId: string, currentUser?: User | null): Quote {
+    const all = getStoredQuotes()
+    const current = all.find((q) => q.id === quoteId)
+    if (!current) throw new Error('Không tìm thấy báo giá')
+
+    // Tìm version cao nhất hiện tại của số báo giá này
+    const relatedVersions = all.filter((q) => q.quote_number === current.quote_number)
+    const maxVersion = Math.max(...relatedVersions.map((q) => q.version || 1))
+    const nextVersion = maxVersion + 1
+
+    // AC S7-03: Chỉ một phiên bản ở trạng thái đang hiệu lực tại một thời điểm
+    relatedVersions.forEach((q) => {
+      q.is_active_version = false
+    })
+
+    const now = new Date().toISOString()
+    const newQuote: Quote = {
+      ...current,
+      id: `quote-${Date.now()}`,
+      version: nextVersion,
+      is_active_version: true,
+      parent_quote_id: current.id,
+      status: 'DRAFT', // Cho phép sửa tiếp
+      items: current.items.map((it, idx) => ({ ...it, id: `q-it-${Date.now()}-${idx}` })),
+      created_by_id: currentUser?.id ?? current.created_by_id,
+      created_by_name: currentUser?.full_name || currentUser?.email || current.created_by_name,
+      access_token: `token-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+      approval_history: [
+        {
+          id: `hist-${Date.now()}`,
+          action: 'SUBMITTED',
+          performed_by_name: currentUser?.full_name || currentUser?.email || 'Nhân viên kinh doanh',
+          performed_by_role: currentUser?.role || 'SALES_REP',
+          comments: `Khởi tạo phiên bản sửa đổi mới v${nextVersion} từ phiên bản v${current.version}. Bản cũ v${current.version} được lưu giữ nguyên trạng.`,
+          timestamp: now,
+        },
+      ],
+      created_at: now,
+      updated_at: now,
+    }
+
+    all.unshift(newQuote)
+    saveStoredQuotes(all)
+
+    opportunityActivityService.createActivity({
+      opportunity_id: current.opportunity_id,
+      opportunity_title: current.opportunity_title,
+      customer_id: current.customer_id,
+      customer_name: current.customer_name,
+      type: 'STAGE_CHANGE',
+      title: `[Báo giá] Tạo phiên bản mới ${newQuote.quote_number} (v${newQuote.version})`,
+      content: `Phiên bản cũ v${current.version} được lưu trữ nguyên trạng. Bản v${newQuote.version} đang có hiệu lực.`,
+      performed_by_name: newQuote.created_by_name,
+    }).catch(() => {})
+
+    return newQuote
+  },
+
+  /**
+   * Đặt một phiên bản làm phiên bản hiệu lực (S7-03 AC: Chỉ một phiên bản ở trạng thái đang hiệu lực)
+   */
+  setActiveVersion(quoteId: string): Quote {
+    const all = getStoredQuotes()
+    const target = all.find((q) => q.id === quoteId)
+    if (!target) throw new Error('Không tìm thấy báo giá')
+
+    // Tắt is_active_version của tất cả phiên bản cùng số báo giá
+    all.forEach((q) => {
+      if (q.quote_number === target.quote_number) {
+        q.is_active_version = q.id === target.id
+      }
+    })
+
+    saveStoredQuotes(all)
+    return target
+  },
+
   deleteQuote(id: string): void {
     const all = getStoredQuotes().filter((q) => q.id !== id)
     saveStoredQuotes(all)
