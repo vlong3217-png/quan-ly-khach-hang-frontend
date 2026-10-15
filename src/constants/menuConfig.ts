@@ -76,6 +76,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Quản lý chiến dịch tiếp thị, ngân sách và theo dõi nguồn lead',
       },
       {
+        id: 'menu-email-marketing',
+        title: 'Email & Mẫu tiếp thị',
+        path: '/dashboard/email-marketing',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Soạn mẫu email chèn biến, gửi bất đồng bộ và ghi dòng thời gian khách hàng (S8-01)',
+      },
+      {
         id: 'menu-opportunities',
         title: 'Cơ hội bán hàng',
         path: '/dashboard/opportunities',

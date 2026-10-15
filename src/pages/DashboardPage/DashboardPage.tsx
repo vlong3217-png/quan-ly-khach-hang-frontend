@@ -15,6 +15,7 @@ import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitors
 import CustomerManagementPage from '../CustomerManagementPage/CustomerManagementPage.tsx'
 import LeadFormsPage from '../LeadFormsPage/LeadFormsPage.tsx'
 import CampaignsPage from '../CampaignsPage/CampaignsPage.tsx'
+import EmailMarketingPage from '../EmailMarketingPage/EmailMarketingPage.tsx'
 import OpportunitiesPage from '../OpportunitiesPage/OpportunitiesPage.tsx'
 import CalendarPage from '../CalendarPage/CalendarPage.tsx'
 import ContractsPage from '../ContractsPage/ContractsPage.tsx'
@@ -109,6 +110,8 @@ function DashboardPage() {
       setActiveMenuId('menu-lead-forms')
     } else if (path.startsWith('/dashboard/campaigns')) {
       setActiveMenuId('menu-campaigns')
+    } else if (path.startsWith('/dashboard/email-marketing')) {
+      setActiveMenuId('menu-email-marketing')
     } else if (path.startsWith('/dashboard/opportunities')) {
       setActiveMenuId('menu-opportunities')
     } else if (path.startsWith('/dashboard/calendar')) {
@@ -161,6 +164,9 @@ function DashboardPage() {
   const isCampaignView =
     activeMenuId === 'menu-campaigns' ||
     activeMenuId.startsWith('menu-campaigns-')
+  const isEmailMarketingView =
+    activeMenuId === 'menu-email-marketing' ||
+    activeMenuId.startsWith('menu-email-marketing-')
   const isOpportunityView =
     activeMenuId === 'menu-opportunities' ||
     activeMenuId.startsWith('menu-opportunities-')
@@ -350,6 +356,15 @@ function DashboardPage() {
           {isCampaignView && (
             <section className="dashboard-section campaigns-section">
               <CampaignsPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: TIẾP THỊ EMAIL & MẪU THƯ (S8-01)
+              ───────────────────────────────────────────────────────────── */}
+          {isEmailMarketingView && (
+            <section className="dashboard-section email-marketing-section">
+              <EmailMarketingPage />
             </section>
           )}
 
