@@ -99,6 +99,12 @@ export const opportunityActivityService = {
     const newActivity: OpportunityActivity = {
       id: `act-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       opportunity_id: payload.opportunity_id,
+      opportunity_title: payload.opportunity_title,
+      customer_id: payload.customer_id,
+      customer_name: payload.customer_name,
+      contact_id: payload.contact_id,
+      contact_name: payload.contact_name,
+      occurred_at: payload.occurred_at || new Date().toISOString(),
       type: payload.type,
       title: payload.title.trim(),
       content: payload.content.trim(),
