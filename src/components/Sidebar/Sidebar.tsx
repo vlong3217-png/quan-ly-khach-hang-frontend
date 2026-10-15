@@ -199,6 +199,8 @@ function getMenuIcon(id: string) {
       return <IconCustomFields />
     case 'menu-reports':
       return <IconReports />
+    case 'menu-quotas':
+      return <IconWinLoss />
     case 'menu-teams':
       return <IconTeams />
     case 'menu-settings':
