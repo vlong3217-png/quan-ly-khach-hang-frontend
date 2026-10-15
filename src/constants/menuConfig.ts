@@ -168,6 +168,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Dự báo doanh thu so với chỉ tiêu (3 con số), phân tích thắng/thua và xuất báo cáo Excel (S8-06)',
       },
       {
+        id: 'menu-team-productivity',
+        title: 'Năng suất & Hoạt động',
+        path: '/dashboard/team-productivity',
+        roles: [ROLES.ADMIN, ROLES.MANAGER],
+        description: 'Báo cáo số cuộc gọi, cuộc gặp, báo giá gửi đi theo thành viên/tuần và tỷ lệ phản hồi lead trong SLA (S8-07)',
+      },
+      {
         id: 'menu-teams',
         title: 'Quản lý Đội nhóm',
         path: '/dashboard/teams',
