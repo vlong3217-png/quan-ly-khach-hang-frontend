@@ -59,6 +59,36 @@ function saveStoredOpportunities(opps: Opportunity[]): void {
   } catch {}
 }
 
+function mapBackendToOpportunity(b: any): Opportunity {
+  if (!b) return b
+  return {
+    id: String(b.id || ''),
+    code: b.code || `OPP-${String(b.id || '').padStart(3, '0')}`,
+    title: b.title || '',
+    customer_id: b.customer_id != null ? String(b.customer_id) : '',
+    customer_name: b.customer_name || 'Khách hàng',
+    contact_id: b.contact_id != null ? String(b.contact_id) : undefined,
+    contact_name: b.contact_person || b.contact_name || undefined,
+    contact_phone: b.contact_phone || undefined,
+    contact_email: b.contact_email || undefined,
+    stage_id: b.stage_id || b.stage || 'stage-1',
+    stage_name: b.stage_name || b.stage || 'Tiếp cận & Đánh giá',
+    win_probability: typeof b.win_probability === 'number' ? b.win_probability : 20,
+    expected_revenue: Number(b.expected_revenue ?? b.value ?? 0),
+    expected_close_date: typeof b.expected_close_date === 'string' ? b.expected_close_date.split('T')[0] : (b.expected_close_date || ''),
+    source: b.source || 'Website',
+    status: b.status || 'OPEN',
+    owner_id: b.owner_id || 1,
+    owner_name: b.owner_name || 'Nguyễn Văn An',
+    team_id: b.team_id || 1,
+    team_name: b.team_name || 'Đội Kinh Doanh 1',
+    description: b.description || '',
+    lead_id: b.lead_id != null ? String(b.lead_id) : undefined,
+    created_at: b.created_at || new Date().toISOString(),
+    updated_at: b.updated_at || new Date().toISOString(),
+  }
+}
+
 export const opportunityService = {
   async getOpportunities(params?: OpportunityFilterParams & PaginationParams): Promise<Opportunity[]> {
     try {
@@ -75,13 +105,14 @@ export const opportunityService = {
       })
       if (response.ok) {
         const raw = await response.json()
-        const paginated = normalizePaginatedResponse<Opportunity>(raw, params?.page || 1, params?.limit || 10)
+        const paginated = normalizePaginatedResponse<any>(raw, params?.page || 1, params?.limit || 10)
+        const mappedItems = paginated.items.map(mapBackendToOpportunity)
         // Nếu Backend trả về dữ liệu (kể cả rỗng), lưu vào cache
-        if (paginated.items.length > 0 || Array.isArray(raw)) {
+        if (paginated.items.length > 0 || Array.isArray(raw) || Array.isArray(raw?.opportunities)) {
           if (!params?.page || params.page === 1) {
-            saveStoredOpportunities(paginated.items)
+            saveStoredOpportunities(mappedItems)
           }
-          return paginated.items
+          return mappedItems
         }
       }
     } catch {}
@@ -121,12 +152,16 @@ export const opportunityService = {
       })
       if (response.ok) {
         const raw = await response.json()
-        const paginated = normalizePaginatedResponse<Opportunity>(raw, page, limit)
-        if (paginated.items.length > 0 || Array.isArray(raw)) {
+        const paginated = normalizePaginatedResponse<any>(raw, page, limit)
+        const mappedPaginated: PaginatedResponse<Opportunity> = {
+          ...paginated,
+          items: paginated.items.map(mapBackendToOpportunity),
+        }
+        if (paginated.items.length > 0 || Array.isArray(raw) || Array.isArray(raw?.opportunities)) {
           if (page === 1) {
-            saveStoredOpportunities(paginated.items)
+            saveStoredOpportunities(mappedPaginated.items)
           }
-          return paginated
+          return mappedPaginated
         }
       }
     } catch {}
@@ -173,17 +208,39 @@ export const opportunityService = {
       updated_at: new Date().toISOString(),
     }
 
+    // Chuẩn hóa payload đúng kiểu dữ liệu schema Backend yêu cầu:
+    // Backend OpportunityCreate: customer_id (integer | null), value (number), stage (string), contact_person (string)
+    const parsedCustomerId = Number(payload.customer_id)
+    const parsedContactId = Number(payload.contact_id)
+    const parsedLeadId = Number(payload.lead_id)
+
+    const backendPayload: Record<string, any> = {
+      title: payload.title.trim(),
+      value: Number(payload.expected_revenue) || 0,
+      stage: payload.stage_id || 'PROSPECTING',
+      customer_id: !isNaN(parsedCustomerId) && parsedCustomerId > 0 ? parsedCustomerId : null,
+      contact_person: payload.contact_name?.trim() || null,
+      contact_id: !isNaN(parsedContactId) && parsedContactId > 0 ? parsedContactId : null,
+      source: payload.source || 'Website',
+      expected_close_date: payload.expected_close_date || null,
+      win_probability: typeof payload.win_probability === 'number' ? payload.win_probability : 20,
+      lead_id: !isNaN(parsedLeadId) && parsedLeadId > 0 ? parsedLeadId : null,
+      team_id: payload.team_id || 1,
+      description: payload.description || '',
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/opportunities`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(newOpp),
+        body: JSON.stringify(backendPayload),
       })
       if (response.ok) {
         const data = await response.json()
         if (data && data.id) {
-          saveStoredOpportunities([data, ...list])
-          return data
+          const mappedCreated = mapBackendToOpportunity(data)
+          saveStoredOpportunities([mappedCreated, ...list])
+          return mappedCreated
         }
       } else {
         const errorMsg = await parseErrorResponse(response, 'Lỗi khi lưu cơ hội bán hàng lên máy chủ Backend.')
