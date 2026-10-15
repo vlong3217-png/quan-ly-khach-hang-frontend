@@ -8,6 +8,7 @@ import ForbiddenPage from './pages/ForbiddenPage/ForbiddenPage.tsx'
 import ImportUsersPage from './pages/ImportUsersPage/ImportUsersPage.tsx'
 import ProfilePage from './pages/ProfilePage/ProfilePage.tsx'
 import PublicLeadFormPage from './pages/PublicLeadFormPage/PublicLeadFormPage.tsx'
+import PublicQuoteViewPage from './pages/PublicQuoteViewPage/PublicQuoteViewPage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import AdminRoute from './components/AdminRoute.tsx'
 import { ROLES, PERMISSIONS } from './constants/permissions.ts'
@@ -18,6 +19,10 @@ function App() {
       {/* ── Public Web-to-Lead Form (S4-01) ── */}
       <Route path="/lead-form/:formId" element={<PublicLeadFormPage />} />
       <Route path="/forms/:formId" element={<PublicLeadFormPage />} />
+
+      {/* ── Public Online Quote View & Customer Acceptance (S7-06) ── */}
+      <Route path="/quote-view/:quoteId" element={<PublicQuoteViewPage />} />
+      <Route path="/quote-view/:quoteId/:token" element={<PublicQuoteViewPage />} />
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />

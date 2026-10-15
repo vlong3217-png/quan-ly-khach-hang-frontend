@@ -43,6 +43,11 @@ export default function OpportunityQuoteManager({
   // S7-05: PDF Export State
   const [pdfExportQuote, setPdfExportQuote] = useState<Quote | null>(null)
 
+  // S7-06: Send Email & Customer Acceptance Link Modal State
+  const [sendEmailModalQuote, setSendEmailModalQuote] = useState<Quote | null>(null)
+  const [customerEmailInput, setCustomerEmailInput] = useState<string>('')
+  const [isSendingEmail, setIsSendingEmail] = useState<boolean>(false)
+
   // S7-02: Approval Modal State
   const [approvalModalQuote, setApprovalModalQuote] = useState<Quote | null>(null)
   const [approvalActionType, setApprovalActionType] = useState<ApprovalActionType>('APPROVE')
@@ -126,22 +131,14 @@ export default function OpportunityQuoteManager({
     }
   }
 
-  // S7-02 AC: Chỉ báo giá đã duyệt mới gửi được cho khách
+  // S7-02 & S7-06 AC: Chỉ báo giá đã duyệt mới gửi được cho khách kèm liên kết xem trực tuyến
   const handleSendToCustomer = (q: Quote) => {
     if (q.status !== 'APPROVED') {
       alert('Chỉ báo giá đã được phê duyệt mới được phép gửi cho khách hàng (S7-02 AC)!')
       return
     }
-
-    if (window.confirm(`Xác nhận gửi báo giá ${q.quote_number} (Giá trị: ${formatCurrencyVND(q.grand_total)}) đến khách hàng?`)) {
-      try {
-        quoteService.sendQuoteToCustomer(q.id, user)
-        loadQuotes()
-        alert(`Đã gửi báo giá ${q.quote_number} thành công! Khách hàng có thể mở liên kết để xem và quyết định trực tuyến.`)
-      } catch (err: any) {
-        alert(err.message || 'Không thể gửi báo giá.')
-      }
-    }
+    setSendEmailModalQuote(q)
+    setCustomerEmailInput(q.customer_contact_email || 'khachhang@doanhnghiep.vn')
   }
 
   const handleDelete = (id: string, number: string) => {
@@ -342,6 +339,23 @@ export default function OpportunityQuoteManager({
                           title="Gửi báo giá kèm liên kết cho khách"
                         >
                           📤 Gửi khách
+                        </button>
+                      )}
+
+                      {/* S7-06: Quick copy or open online link */}
+                      {(q.status === 'SENT' || q.status === 'ACCEPTED' || q.status === 'DECLINED' || q.status === 'APPROVED') && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-info"
+                          id={`btn-copy-quote-link-${q.id}`}
+                          onClick={() => {
+                            const link = `${window.location.origin}/quote-view/${q.id}?token=${q.access_token}`
+                            navigator.clipboard?.writeText(link)
+                            alert(`Đã sao chép liên kết xem và phản hồi báo giá trực tuyến của khách:\n${link}`)
+                          }}
+                          title="Sao chép liên kết xem và phản hồi báo giá trực tuyến (S7-06 AC)"
+                        >
+                          🔗 Link
                         </button>
                       )}
 
@@ -795,6 +809,126 @@ export default function OpportunityQuoteManager({
           quote={pdfExportQuote}
           onClose={() => setPdfExportQuote(null)}
         />
+      )}
+
+      {/* S7-06: Send Email with Online Acceptance Link Modal */}
+      {sendEmailModalQuote && (
+        <div className="approval-dialog-overlay" onClick={() => setSendEmailModalQuote(null)}>
+          <div
+            className="approval-dialog-card"
+            style={{ maxWidth: '580px' }}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="dialog-header">
+              <h3>📧 Gửi email kèm liên kết xem báo giá (S7-06)</h3>
+              <button
+                type="button"
+                className="close-btn"
+                onClick={() => setSendEmailModalQuote(null)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="dialog-body">
+              <div className="dialog-quote-summary">
+                <div>Số báo giá: <strong>{sendEmailModalQuote.quote_number} (v{sendEmailModalQuote.version})</strong></div>
+                <div>Khách hàng: <strong>{sendEmailModalQuote.customer_name}</strong></div>
+                <div>Tổng tiền: <strong>{formatCurrencyVND(sendEmailModalQuote.grand_total)}</strong></div>
+                <div>Hiệu lực đến: <strong>{sendEmailModalQuote.valid_until}</strong></div>
+              </div>
+
+              <div className="form-group" style={{ marginTop: '14px' }}>
+                <label htmlFor="send-email-to">Email người nhận (*):</label>
+                <input
+                  type="email"
+                  id="send-email-to"
+                  className="form-control"
+                  value={customerEmailInput}
+                  onChange={(e) => setCustomerEmailInput(e.target.value)}
+                  placeholder="name@company.com"
+                  required
+                />
+              </div>
+
+              <div className="form-group" style={{ marginTop: '12px' }}>
+                <label>Liên kết trực tuyến độc quyền (Chỉ dùng cho đúng báo giá này):</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    className="form-control"
+                    readOnly
+                    value={`${window.location.origin}/quote-view/${sendEmailModalQuote.id}?token=${sendEmailModalQuote.access_token}`}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => {
+                      const link = `${window.location.origin}/quote-view/${sendEmailModalQuote.id}?token=${sendEmailModalQuote.access_token}`
+                      navigator.clipboard?.writeText(link)
+                      alert('Đã sao chép liên kết vào bộ nhớ tạm!')
+                    }}
+                  >
+                    Sao chép
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary btn-sm"
+                    onClick={() => {
+                      const link = `${window.location.origin}/quote-view/${sendEmailModalQuote.id}?token=${sendEmailModalQuote.access_token}`
+                      window.open(link, '_blank')
+                    }}
+                  >
+                    Xem trước
+                  </button>
+                </div>
+                <small className="text-muted" style={{ display: 'block', marginTop: '4px' }}>
+                  Khách hàng có thể mở liên kết để xem chi tiết và bấm Chấp thuận hoặc Từ chối trực tuyến.
+                </small>
+              </div>
+            </div>
+
+            <div className="preview-modal-footer" style={{ padding: '12px 20px' }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setSendEmailModalQuote(null)}
+                disabled={isSendingEmail}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                id="btn-confirm-send-quote-email"
+                disabled={isSendingEmail}
+                onClick={async () => {
+                  if (!customerEmailInput.trim()) {
+                    alert('Vui lòng nhập email khách hàng.')
+                    return
+                  }
+                  setIsSendingEmail(true)
+                  try {
+                    quoteService.sendQuoteToCustomer(sendEmailModalQuote.id, user)
+                    loadQuotes()
+                    alert(
+                      `Đã gửi email thành công đến ${customerEmailInput} kèm liên kết xem báo giá trực tuyến!`
+                    )
+                    setSendEmailModalQuote(null)
+                  } catch (err: any) {
+                    alert(err.message || 'Không thể gửi email.')
+                  } finally {
+                    setIsSendingEmail(false)
+                  }
+                }}
+              >
+                {isSendingEmail ? 'Đang gửi...' : '📤 Gửi email cho khách'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
