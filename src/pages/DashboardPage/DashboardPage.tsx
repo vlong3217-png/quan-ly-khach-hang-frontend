@@ -25,6 +25,7 @@ import SalesQuotasPage from '../SalesQuotasPage/SalesQuotasPage.tsx'
 import PipelineFunnelPage from '../PipelineFunnelPage/PipelineFunnelPage.tsx'
 import RevenueForecastPage from '../RevenueForecastPage/RevenueForecastPage.tsx'
 import TeamProductivityReportPage from '../TeamProductivityReportPage/TeamProductivityReportPage.tsx'
+import SalesLeaderboardPage from '../SalesLeaderboardPage/SalesLeaderboardPage.tsx'
 import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
 import ExecutiveDashboard from '../../components/ExecutiveDashboard/ExecutiveDashboard.tsx'
 import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
@@ -133,6 +134,8 @@ function DashboardPage() {
       setActiveMenuId('menu-forecast')
     } else if (path.startsWith('/dashboard/team-productivity')) {
       setActiveMenuId('menu-team-productivity')
+    } else if (path.startsWith('/dashboard/leaderboard')) {
+      setActiveMenuId('menu-sales-leaderboard')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -222,6 +225,9 @@ function DashboardPage() {
   const isTeamProductivityView =
     activeMenuId === 'menu-team-productivity' ||
     activeMenuId.startsWith('menu-team-productivity-')
+  const isLeaderboardView =
+    activeMenuId === 'menu-sales-leaderboard' ||
+    activeMenuId.startsWith('menu-sales-leaderboard-')
   const isSettingView =
     activeMenuId === 'menu-settings' ||
     activeMenuId.startsWith('menu-settings-')
@@ -466,6 +472,15 @@ function DashboardPage() {
           {isTeamProductivityView && (
             <section className="dashboard-section team-productivity-section">
               <TeamProductivityReportPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: BẢNG XẾP HẠNG DOANH SỐ ĐỘI NHÓM (S8-08)
+              ───────────────────────────────────────────────────────────── */}
+          {isLeaderboardView && (
+            <section className="dashboard-section leaderboard-section">
+              <SalesLeaderboardPage />
             </section>
           )}
 

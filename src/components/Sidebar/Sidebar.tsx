@@ -207,6 +207,8 @@ function getMenuIcon(id: string) {
       return <IconTrendingUp />
     case 'menu-team-productivity':
       return <IconReports />
+    case 'menu-sales-leaderboard':
+      return <IconWinLoss />
     case 'menu-teams':
       return <IconTeams />
     case 'menu-settings':
