@@ -83,6 +83,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Quản lý cơ hội bán hàng, dòng thời gian hoạt động và công việc',
       },
       {
+        id: 'menu-calendar',
+        title: 'Lịch làm việc',
+        path: '/dashboard/calendar',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Xem lịch cuộc gặp, công việc và phát hiện trùng lịch (S6-07)',
+      },
+      {
         id: 'menu-products',
         title: 'Sản phẩm & Bảng giá',
         path: '/dashboard/products',

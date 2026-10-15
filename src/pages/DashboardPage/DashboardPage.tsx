@@ -16,6 +16,7 @@ import CustomerManagementPage from '../CustomerManagementPage/CustomerManagement
 import LeadFormsPage from '../LeadFormsPage/LeadFormsPage.tsx'
 import CampaignsPage from '../CampaignsPage/CampaignsPage.tsx'
 import OpportunitiesPage from '../OpportunitiesPage/OpportunitiesPage.tsx'
+import CalendarPage from '../CalendarPage/CalendarPage.tsx'
 import AuditLogPage from '../AuditLogPage/AuditLogPage.tsx'
 import {
   ROLES,
@@ -105,6 +106,8 @@ function DashboardPage() {
       setActiveMenuId('menu-campaigns')
     } else if (path.startsWith('/dashboard/opportunities')) {
       setActiveMenuId('menu-opportunities')
+    } else if (path.startsWith('/dashboard/calendar')) {
+      setActiveMenuId('menu-calendar')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -151,6 +154,9 @@ function DashboardPage() {
   const isOpportunityView =
     activeMenuId === 'menu-opportunities' ||
     activeMenuId.startsWith('menu-opportunities-')
+  const isCalendarView =
+    activeMenuId === 'menu-calendar' ||
+    activeMenuId.startsWith('menu-calendar-')
   const isProductView =
     activeMenuId === 'menu-products' ||
     activeMenuId.startsWith('menu-products-')
@@ -331,6 +337,15 @@ function DashboardPage() {
           {isOpportunityView && (
             <section className="dashboard-section opportunities-section">
               <OpportunitiesPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: LỊCH LÀM VIỆC & BỐ TRÍ GẶP MẶT (S6-07)
+              ───────────────────────────────────────────────────────────── */}
+          {isCalendarView && (
+            <section className="dashboard-section calendar-section">
+              <CalendarPage />
             </section>
           )}
 
