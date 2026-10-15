@@ -24,6 +24,7 @@ import WorkflowAutomationPage from '../WorkflowAutomationPage/WorkflowAutomation
 import SalesQuotasPage from '../SalesQuotasPage/SalesQuotasPage.tsx'
 import PipelineFunnelPage from '../PipelineFunnelPage/PipelineFunnelPage.tsx'
 import RevenueForecastPage from '../RevenueForecastPage/RevenueForecastPage.tsx'
+import TeamProductivityReportPage from '../TeamProductivityReportPage/TeamProductivityReportPage.tsx'
 import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
 import ExecutiveDashboard from '../../components/ExecutiveDashboard/ExecutiveDashboard.tsx'
 import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
@@ -130,6 +131,8 @@ function DashboardPage() {
       setActiveMenuId('menu-pipeline-funnel')
     } else if (path.startsWith('/dashboard/forecast')) {
       setActiveMenuId('menu-forecast')
+    } else if (path.startsWith('/dashboard/team-productivity')) {
+      setActiveMenuId('menu-team-productivity')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -216,6 +219,9 @@ function DashboardPage() {
   const isForecastView =
     activeMenuId === 'menu-forecast' ||
     activeMenuId.startsWith('menu-forecast-')
+  const isTeamProductivityView =
+    activeMenuId === 'menu-team-productivity' ||
+    activeMenuId.startsWith('menu-team-productivity-')
   const isSettingView =
     activeMenuId === 'menu-settings' ||
     activeMenuId.startsWith('menu-settings-')
@@ -451,6 +457,15 @@ function DashboardPage() {
           {isForecastView && (
             <section className="dashboard-section forecast-section">
               <RevenueForecastPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: NĂNG SUẤT & HOẠT ĐỘNG ĐỘI NGŨ (S8-07)
+              ───────────────────────────────────────────────────────────── */}
+          {isTeamProductivityView && (
+            <section className="dashboard-section team-productivity-section">
+              <TeamProductivityReportPage />
             </section>
           )}
 
