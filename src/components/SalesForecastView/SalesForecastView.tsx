@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import type { Opportunity } from '../../types/opportunity.ts'
+import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import './SalesForecastView.css'
 
 interface SalesForecastViewProps {
@@ -221,7 +222,7 @@ export default function SalesForecastView({
   }, [filteredOpps, selectedGroupKey, groupBy])
 
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+    return formatCurrencyVND(val)
   }
 
   const getPeriodLabel = () => {

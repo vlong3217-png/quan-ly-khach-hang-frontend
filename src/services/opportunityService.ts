@@ -6,6 +6,71 @@ import type {
 import { API_BASE_URL } from './authService.ts'
 import type { PaginatedResponse, PaginationParams } from '../types/pagination.ts'
 import { normalizePaginatedResponse } from '../types/pagination.ts'
+import type { PipelineStage } from '../types/pipeline.ts'
+
+export function isOppInStage(opp: Opportunity, stage: PipelineStage): boolean {
+  if (!opp || !stage) return false
+  const sId = String(stage.id || '').toLowerCase().trim()
+  const sCode = String(stage.code || '').toLowerCase().trim()
+  const sName = String(stage.name || '').toLowerCase().trim()
+  const sOrder = String(stage.order || '')
+
+  const oppStageId = String(opp.stage_id || '').toLowerCase().trim()
+  const oppStageName = String(opp.stage_name || '').toLowerCase().trim()
+
+  if (oppStageId === sId) return true
+
+  const oppNum = oppStageId.replace('stage-', '')
+  const stageNum = sId.replace('stage-', '')
+  if (oppNum && oppNum === stageNum) return true
+  if (oppNum && oppNum === sOrder) return true
+  if (oppStageId && oppStageId === sOrder) return true
+
+  if (sCode && (oppStageId === sCode || oppStageName === sCode)) return true
+
+  if (
+    (sCode.includes('contact') || sCode.includes('prospect')) &&
+    (oppStageId.includes('contact') || oppStageId.includes('prospect') || oppStageId === 'stage-1' || oppStageId === '1')
+  ) {
+    return true
+  }
+  if (
+    sCode.includes('qualif') &&
+    (oppStageId.includes('qualif') || oppStageId === 'stage-2' || oppStageId === '2')
+  ) {
+    return true
+  }
+  if (
+    (sCode.includes('propos') || sCode.includes('demo')) &&
+    (oppStageId.includes('propos') || oppStageId.includes('demo') || oppStageId === 'stage-3' || oppStageId === '3')
+  ) {
+    return true
+  }
+  if (
+    (sCode.includes('quote') || sCode.includes('price')) &&
+    (oppStageId.includes('quote') || oppStageId === 'stage-4' || oppStageId === '4')
+  ) {
+    return true
+  }
+  if (
+    sCode.includes('negotiat') &&
+    (oppStageId.includes('negotiat') || oppStageId === 'stage-5' || oppStageId === '5')
+  ) {
+    return true
+  }
+  if (
+    (sCode.includes('won') || sCode.includes('close')) &&
+    (oppStageId.includes('won') || oppStageId.includes('close') || oppStageId === 'stage-6' || oppStageId === '6')
+  ) {
+    return true
+  }
+
+  if (oppStageName && sName && (oppStageName === sName || sName.includes(oppStageName) || oppStageName.includes(sName))) {
+    return true
+  }
+
+  return false
+}
 
 const STORAGE_KEY_OPPORTUNITIES = 'crm_opportunities_master_data'
 

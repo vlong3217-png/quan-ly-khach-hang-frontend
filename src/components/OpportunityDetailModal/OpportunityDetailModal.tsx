@@ -12,6 +12,7 @@ import StageGateEnforcementModal from '../StageGateEnforcementModal/StageGateEnf
 import ReassignOpportunityModal from '../ReassignOpportunityModal/ReassignOpportunityModal.tsx'
 import type { StageGateEvaluation } from '../../types/opportunity.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
+import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import './OpportunityDetailModal.css'
 
 interface OpportunityDetailModalProps {
@@ -20,6 +21,7 @@ interface OpportunityDetailModalProps {
   initialTab?: 'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS'
   onClose: () => void
   onOpportunityUpdated: (updated: Opportunity) => void
+  isPageView?: boolean
 }
 
 export default function OpportunityDetailModal({
@@ -28,6 +30,7 @@ export default function OpportunityDetailModal({
   initialTab = 'PRODUCTS',
   onClose,
   onOpportunityUpdated,
+  isPageView = false,
 }: OpportunityDetailModalProps) {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS'>(initialTab)
@@ -56,11 +59,9 @@ export default function OpportunityDetailModal({
     setTimeout(() => setNotice(null), 3000)
   }
 
-  // Format tiền tệ VNĐ
+  // Format tiền tệ VNĐ có dấu phẩy phân cách hàng nghìn
   const formatCurrency = (val: number | undefined | null) => {
-    const num = Number(val)
-    if (isNaN(num)) return '0 ₫'
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num)
+    return formatCurrencyVND(val)
   }
 
   // Chuyển giai đoạn Pipeline (S5-04: Kiểm tra điều kiện bắt buộc trước khi chuyển)
@@ -306,12 +307,31 @@ export default function OpportunityDetailModal({
 
 
   return (
-    <div className="modal-overlay opp-detail-modal-overlay" onClick={onClose}>
+    <div
+      className={isPageView ? 'opp-detail-page-container' : 'modal-overlay opp-detail-modal-overlay'}
+      onClick={isPageView ? undefined : onClose}
+    >
+      {isPageView && (
+        <div className="opp-page-breadcrumb-nav">
+          <button
+            type="button"
+            className="opp-back-btn"
+            onClick={onClose}
+            title="Quay lại danh sách cơ hội bán hàng"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Quay lại danh sách Cơ hội / Pipeline</span>
+          </button>
+        </div>
+      )}
       <div
-        className="opp-detail-modal-card"
+        className={isPageView ? 'opp-detail-page-card' : 'opp-detail-modal-card'}
         onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
+        role={isPageView ? undefined : 'dialog'}
+        aria-modal={isPageView ? undefined : 'true'}
       >
         {/* Toast thông báo */}
         {notice && (

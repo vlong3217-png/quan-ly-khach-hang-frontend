@@ -145,30 +145,48 @@ export default function PublicLeadFormPage() {
   return (
     <div className="lead-embed-container">
       <div className="lead-embed-card">
-        {/* Header form */}
+        {/* Brand Badge & Header */}
         <div className="lead-embed-header">
+          <div className="lead-badge-pill">
+            <span className="badge-sparkle">✨</span>
+            <span>Biểu mẫu Tư vấn Trực tuyến</span>
+          </div>
           <h2 className="lead-embed-title">{form.title}</h2>
-          {form.description && <p className="lead-embed-desc">{form.description}</p>}
+          {form.description ? (
+            <p className="lead-embed-desc">{form.description}</p>
+          ) : (
+            <p className="lead-embed-desc">
+              Vui lòng để lại thông tin liên hệ. Chuyên viên tư vấn giải pháp sẽ liên hệ hỗ trợ bạn trong vòng 15 phút làm việc!
+            </p>
+          )}
         </div>
 
         {/* Thông báo thành công */}
         {submitSuccess ? (
           <div className="lead-embed-success">
-            <div className="lead-state-icon success">✓</div>
-            <h3>Gửi thành công!</h3>
-            <p>{submitSuccess}</p>
+            <div className="lead-state-icon success">
+              <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3>Gửi thông tin thành công!</h3>
+            <p className="success-msg-text">{submitSuccess}</p>
+            <div className="success-timeline-hint">
+              <span>Đội ngũ tư vấn đã nhận được thông tin và sẽ liên hệ lại với bạn sớm nhất.</span>
+            </div>
             <button
               type="button"
               className="lead-embed-btn secondary"
               onClick={() => setSubmitSuccess(null)}
             >
-              Gửi biểu mẫu khác
+              ← Gửi thêm biểu mẫu khác
             </button>
           </div>
         ) : (
           <form className="lead-embed-form" onSubmit={handleSubmit} noValidate>
             {submitError && (
               <div className="lead-form-alert error">
+                <span className="alert-icon">⚠️</span>
                 <span>{submitError}</span>
               </div>
             )}
@@ -176,19 +194,22 @@ export default function PublicLeadFormPage() {
             {/* Họ và tên */}
             <div className="lead-field-group">
               <label className="lead-field-label">
-                Họ và tên <span className="required-star">*</span>
+                Họ và tên của bạn <span className="required-star">*</span>
               </label>
-              <input
-                type="text"
-                className={`lead-field-input ${errors.full_name ? 'is-invalid' : ''}`}
-                placeholder="Ví dụ: Nguyễn Văn An"
-                value={formData.full_name}
-                onChange={(e) => {
-                  setFormData({ ...formData, full_name: e.target.value })
-                  if (errors.full_name) setErrors({ ...errors, full_name: '' })
-                }}
-                disabled={isSubmitting}
-              />
+              <div className="lead-input-wrap">
+                <span className="lead-input-icon">👤</span>
+                <input
+                  type="text"
+                  className={`lead-field-input ${errors.full_name ? 'is-invalid' : ''}`}
+                  placeholder="Ví dụ: Nguyễn Văn An"
+                  value={formData.full_name}
+                  onChange={(e) => {
+                    setFormData({ ...formData, full_name: e.target.value })
+                    if (errors.full_name) setErrors({ ...errors, full_name: '' })
+                  }}
+                  disabled={isSubmitting}
+                />
+              </div>
               {errors.full_name && <span className="lead-field-error">{errors.full_name}</span>}
             </div>
 
@@ -198,17 +219,20 @@ export default function PublicLeadFormPage() {
                 <label className="lead-field-label">
                   Email làm việc <span className="required-star">*</span>
                 </label>
-                <input
-                  type="email"
-                  className={`lead-field-input ${errors.email ? 'is-invalid' : ''}`}
-                  placeholder="contact@company.vn"
-                  value={formData.email}
-                  onChange={(e) => {
-                    setFormData({ ...formData, email: e.target.value })
-                    if (errors.email) setErrors({ ...errors, email: '' })
-                  }}
-                  disabled={isSubmitting}
-                />
+                <div className="lead-input-wrap">
+                  <span className="lead-input-icon">✉️</span>
+                  <input
+                    type="email"
+                    className={`lead-field-input ${errors.email ? 'is-invalid' : ''}`}
+                    placeholder="name@company.com"
+                    value={formData.email}
+                    onChange={(e) => {
+                      setFormData({ ...formData, email: e.target.value })
+                      if (errors.email) setErrors({ ...errors, email: '' })
+                    }}
+                    disabled={isSubmitting}
+                  />
+                </div>
                 {errors.email && <span className="lead-field-error">{errors.email}</span>}
               </div>
 
@@ -216,45 +240,53 @@ export default function PublicLeadFormPage() {
                 <label className="lead-field-label">
                   Số điện thoại <span className="required-star">*</span>
                 </label>
-                <input
-                  type="tel"
-                  className={`lead-field-input ${errors.phone ? 'is-invalid' : ''}`}
-                  placeholder="0912 345 678"
-                  value={formData.phone}
-                  onChange={(e) => {
-                    setFormData({ ...formData, phone: e.target.value })
-                    if (errors.phone) setErrors({ ...errors, phone: '' })
-                  }}
-                  disabled={isSubmitting}
-                />
+                <div className="lead-input-wrap">
+                  <span className="lead-input-icon">📞</span>
+                  <input
+                    type="tel"
+                    className={`lead-field-input ${errors.phone ? 'is-invalid' : ''}`}
+                    placeholder="0912 345 678"
+                    value={formData.phone}
+                    onChange={(e) => {
+                      setFormData({ ...formData, phone: e.target.value })
+                      if (errors.phone) setErrors({ ...errors, phone: '' })
+                    }}
+                    disabled={isSubmitting}
+                  />
+                </div>
                 {errors.phone && <span className="lead-field-error">{errors.phone}</span>}
               </div>
             </div>
 
             {/* Tên công ty / Doanh nghiệp */}
             <div className="lead-field-group">
-              <label className="lead-field-label">Tên công ty / Doanh nghiệp</label>
-              <input
-                type="text"
-                className="lead-field-input"
-                placeholder="Ví dụ: Công ty Cổ phần Công nghệ Alpha"
-                value={formData.company}
-                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                disabled={isSubmitting}
-              />
+              <label className="lead-field-label">Tên cơ quan / Công ty / Doanh nghiệp</label>
+              <div className="lead-input-wrap">
+                <span className="lead-input-icon">🏢</span>
+                <input
+                  type="text"
+                  className="lead-field-input"
+                  placeholder="Ví dụ: Công ty Cổ phần Công nghệ Alpha"
+                  value={formData.company}
+                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                  disabled={isSubmitting}
+                />
+              </div>
             </div>
 
             {/* Nhu cầu tư vấn / Ghi chú */}
             <div className="lead-field-group">
               <label className="lead-field-label">Nhu cầu tư vấn & Bài toán cần giải quyết</label>
-              <textarea
-                className="lead-field-textarea"
-                rows={3}
-                placeholder="Mô tả sơ lược về quy mô đội ngũ, phần mềm đang dùng hoặc nhu cầu tính năng cần tìm..."
-                value={formData.requirement}
-                onChange={(e) => setFormData({ ...formData, requirement: e.target.value })}
-                disabled={isSubmitting}
-              />
+              <div className="lead-input-wrap">
+                <textarea
+                  className="lead-field-textarea"
+                  rows={3}
+                  placeholder="Mô tả sơ lược về quy mô nhân sự, hệ thống CRM đang dùng hoặc các tính năng mong muốn được triển khai..."
+                  value={formData.requirement}
+                  onChange={(e) => setFormData({ ...formData, requirement: e.target.value })}
+                  disabled={isSubmitting}
+                />
+              </div>
             </div>
 
             {/* Nút gửi form */}
@@ -270,13 +302,28 @@ export default function PublicLeadFormPage() {
                     <span>Đang gửi thông tin...</span>
                   </>
                 ) : (
-                  <span>{form.submit_button_text || 'Gửi thông tin tư vấn'}</span>
+                  <>
+                    <span>{form.submit_button_text || 'Gửi yêu cầu tư vấn & Nhận báo giá'}</span>
+                    <span className="btn-arrow">→</span>
+                  </>
                 )}
               </button>
             </div>
 
-            <div className="lead-embed-footer-privacy">
-              🔒 Thông tin của bạn được cam kết bảo mật theo chính sách bảo vệ dữ liệu.
+            {/* Trust Badges */}
+            <div className="lead-trust-row">
+              <div className="trust-item">
+                <span className="trust-icon">🔒</span>
+                <span>Bảo mật 100%</span>
+              </div>
+              <div className="trust-item">
+                <span className="trust-icon">⚡</span>
+                <span>Phản hồi &lt; 15 phút</span>
+              </div>
+              <div className="trust-item">
+                <span className="trust-icon">🎯</span>
+                <span>Tư vấn miễn phí</span>
+              </div>
             </div>
           </form>
         )}

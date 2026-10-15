@@ -3,6 +3,7 @@ import type { Opportunity, OpportunityProductItem, OpportunityBillingCycle } fro
 import type { Product } from '../../types/product.ts'
 import { productService } from '../../services/productService.ts'
 import { opportunityService } from '../../services/opportunityService.ts'
+import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import './OpportunityProductManager.css'
 
 interface OpportunityProductManagerProps {
@@ -41,7 +42,7 @@ export default function OpportunityProductManager({
   }, [opportunity.product_items])
 
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+    return formatCurrencyVND(val)
   }
 
   // Khi chọn một sản phẩm từ danh mục, tự động điền đơn giá từ bảng giá niêm yết

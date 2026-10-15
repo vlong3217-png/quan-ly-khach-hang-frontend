@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { pipelineService } from '../../services/pipelineService.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
@@ -9,9 +9,22 @@ export default function PipelineStagesPage() {
   const [stages, setStages] = useState<PipelineStage[]>(() => pipelineService.getStages())
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  // Phân trang
+  // Phân trang & Tìm kiếm
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(5)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const filteredStages = useMemo(() => {
+    if (!searchQuery.trim()) return stages
+    const q = searchQuery.toLowerCase().trim()
+    return stages.filter(
+      (s) =>
+        (s.name || '').toLowerCase().includes(q) ||
+        (s.code || '').toLowerCase().includes(q) ||
+        (s.description || '').toLowerCase().includes(q) ||
+        (s.required_conditions || []).some((c) => c.toLowerCase().includes(q))
+    )
+  }, [stages, searchQuery])
 
   // Modal Thêm / Chỉnh sửa
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -24,6 +37,52 @@ export default function PipelineStagesPage() {
     description: '',
     color: '#2563eb',
   })
+
+  // Modal Thêm quy tắc bổ sung (Exit Criteria Rules)
+  const [isRuleModalOpen, setIsRuleModalOpen] = useState(false)
+  const [selectedStageForRule, setSelectedStageForRule] = useState<PipelineStage | null>(null)
+  const [newRuleText, setNewRuleText] = useState('')
+
+  const RULE_TEMPLATES: { label: string; text: string }[] = [
+    { label: 'Bắt buộc có Báo giá xuất cho khách', text: 'Phải xuất và gửi bảng báo giá chính thức từ bảng giá niêm yết' },
+    { label: 'Bắt buộc Demo giải pháp trực tiếp', text: 'Đã hoàn thành ít nhất 1 buổi Demo giải pháp hoặc gặp mặt trực tiếp' },
+    { label: 'Xác định Người quyết định mua', text: 'Hồ sơ cơ hội phải gắn với ít nhất 1 người liên hệ có vai trò Người quyết định (Decision Maker)' },
+    { label: 'Đàm phán điều khoản hợp đồng', text: 'Đã thống nhất dự thảo hợp đồng và các điều khoản thanh toán thương mại' },
+    { label: 'Doanh thu kỳ vọng hợp lệ (>0)', text: 'Doanh thu kỳ vọng của thương vụ phải được cập nhật lớn hơn 0 đồng' },
+  ]
+
+  const handleOpenAddRule = (stage?: PipelineStage) => {
+    const targetStage = stage || stages[0] || null
+    setSelectedStageForRule(targetStage)
+    setNewRuleText('')
+    setIsRuleModalOpen(true)
+  }
+
+  const handleSaveAdditionalRule = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedStageForRule) {
+      showToast('Vui lòng chọn giai đoạn áp dụng quy tắc!', 'error')
+      return
+    }
+    const ruleContent = newRuleText.trim()
+    if (!ruleContent) {
+      showToast('Vui lòng nhập nội dung quy tắc bổ sung!', 'error')
+      return
+    }
+
+    try {
+      const updatedConditions = [...selectedStageForRule.required_conditions, ruleContent]
+      pipelineService.updateStage(selectedStageForRule.id, {
+        required_conditions: updatedConditions,
+      })
+      showToast(`Đã thêm quy tắc bổ sung vào giai đoạn "${selectedStageForRule.name}" thành công!`, 'success')
+      setIsRuleModalOpen(false)
+      setNewRuleText('')
+      reloadData()
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Có lỗi khi thêm quy tắc', 'error')
+    }
+  }
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type })
@@ -132,6 +191,14 @@ export default function PipelineStagesPage() {
           >
             <span>Quản lý Cơ hội bán hàng</span>
           </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => handleOpenAddRule()}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', borderColor: '#2563eb', color: '#2563eb' }}
+          >
+            <span>+ Thêm quy tắc bổ sung</span>
+          </button>
           <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
             Thêm giai đoạn mới
           </button>
@@ -156,7 +223,46 @@ export default function PipelineStagesPage() {
         ))}
       </div>
 
-      {/* Bảng cấu hình chi tiết */}
+      {/* Bảng cấu hình chi tiết & Tìm kiếm */}
+      <div className="pipeline-search-bar" style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '20px 0 12px' }}>
+        <input
+          type="text"
+          placeholder="Tìm kiếm giai đoạn theo tên, mã hoặc quy tắc điều kiện..."
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value)
+            setCurrentPage(1)
+          }}
+          style={{
+            flex: 1,
+            maxWidth: '420px',
+            padding: '8px 14px',
+            borderRadius: '8px',
+            border: '1px solid #cbd5e1',
+            fontSize: '13px',
+          }}
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery('')
+              setCurrentPage(1)
+            }}
+            style={{
+              padding: '6px 12px',
+              fontSize: '12px',
+              borderRadius: '6px',
+              border: '1px solid #e2e8f0',
+              background: '#f8fafc',
+              cursor: 'pointer',
+            }}
+          >
+            ✕ Xóa lọc
+          </button>
+        )}
+      </div>
+
       <div className="pipe-table-wrapper">
         <table className="pipe-table">
           <thead>
@@ -170,7 +276,7 @@ export default function PipelineStagesPage() {
             </tr>
           </thead>
           <tbody>
-            {stages
+            {filteredStages
               .slice((currentPage - 1) * pageSize, currentPage * pageSize)
               .map((stage) => {
                 return (
@@ -192,6 +298,26 @@ export default function PipelineStagesPage() {
                           <li key={cIdx}>{cond}</li>
                         ))}
                       </ul>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenAddRule(stage)}
+                        style={{
+                          marginTop: '6px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '11px',
+                          padding: '3px 8px',
+                          borderRadius: '4px',
+                          border: '1px dashed #2563eb',
+                          background: '#eff6ff',
+                          color: '#2563eb',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                        }}
+                      >
+                        + Thêm quy tắc bổ sung
+                      </button>
                     </td>
                     <td>
                       <span className="active-deals-badge">
@@ -241,13 +367,13 @@ export default function PipelineStagesPage() {
         </table>
 
         {/* Thanh phân trang Pagination */}
-        {stages.length > 0 && (
+        {filteredStages.length > 0 && (
           <div className="customer-pagination" style={{ margin: '16px 20px 20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
             <div className="customer-pagination-info">
               <span>
-                Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, stages.length)}</strong> -{' '}
-                <strong>{Math.min(currentPage * pageSize, stages.length)}</strong> trên tổng số{' '}
-                <strong>{stages.length}</strong> giai đoạn
+                Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, filteredStages.length)}</strong> -{' '}
+                <strong>{Math.min(currentPage * pageSize, filteredStages.length)}</strong> trên tổng số{' '}
+                <strong>{filteredStages.length}</strong> giai đoạn
               </span>
               <div className="customer-pagination-size">
                 <label htmlFor="stage-page-size-select">Hiển thị:</label>
@@ -278,7 +404,7 @@ export default function PipelineStagesPage() {
               </button>
 
               <div className="customer-page-numbers">
-                {Array.from({ length: Math.max(1, Math.ceil(stages.length / pageSize)) }, (_, i) => i + 1).map((p) => (
+                {Array.from({ length: Math.max(1, Math.ceil(filteredStages.length / pageSize)) }, (_, i) => i + 1).map((p) => (
                   <button
                     key={p}
                     type="button"
@@ -292,8 +418,8 @@ export default function PipelineStagesPage() {
 
               <button
                 type="button"
-                disabled={currentPage === Math.max(1, Math.ceil(stages.length / pageSize))}
-                onClick={() => setCurrentPage((p) => Math.min(p + 1, Math.max(1, Math.ceil(stages.length / pageSize))))}
+                disabled={currentPage === Math.max(1, Math.ceil(filteredStages.length / pageSize))}
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, Math.max(1, Math.ceil(filteredStages.length / pageSize))))}
                 className="customer-page-btn nav-btn"
               >
                 Sau
@@ -387,6 +513,103 @@ export default function PipelineStagesPage() {
                 </button>
                 <button type="submit" className="btn btn-primary">
                   {editingStage ? 'Lưu thay đổi' : 'Thêm giai đoạn'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Modal Thêm quy tắc bổ sung (Exit criteria rule) */}
+      {isRuleModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsRuleModalOpen(false)}>
+          <div className="modal-content pipe-modal" style={{ maxWidth: '560px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Thêm quy tắc bổ sung cho Giai đoạn Pipeline</h3>
+              <button type="button" className="modal-close-btn" onClick={() => setIsRuleModalOpen(false)}>
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleSaveAdditionalRule}>
+              <div className="modal-body">
+                <div className="modal-form-group">
+                  <label>Giai đoạn áp dụng quy tắc *</label>
+                  <select
+                    value={selectedStageForRule?.id || ''}
+                    onChange={(e) => {
+                      const st = stages.find((s) => s.id === e.target.value) || null
+                      setSelectedStageForRule(st)
+                    }}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '13.5px',
+                    }}
+                  >
+                    {stages.map((st) => (
+                      <option key={st.id} value={st.id}>
+                        {st.order}. {st.name} ({st.win_probability}%)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="modal-form-group">
+                  <label>Mẫu quy tắc nghiệp vụ gợi ý (Chọn nhanh)</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {RULE_TEMPLATES.map((tpl, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setNewRuleText(tpl.text)}
+                        style={{
+                          textAlign: 'left',
+                          padding: '7px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid #e2e8f0',
+                          background: newRuleText === tpl.text ? '#eff6ff' : '#f8fafc',
+                          borderColor: newRuleText === tpl.text ? '#93c5fd' : '#e2e8f0',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          color: '#334155',
+                        }}
+                      >
+                        <strong>{tpl.label}:</strong> {tpl.text}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="modal-form-group">
+                  <label>Nội dung quy tắc bổ sung bắt buộc *</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={newRuleText}
+                    onChange={(e) => setNewRuleText(e.target.value)}
+                    placeholder="Nhập nội dung quy tắc bắt buộc để rời giai đoạn..."
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '13.5px',
+                    }}
+                  />
+                  <small style={{ color: '#64748b' }}>
+                    Khi cơ hội được chuyển sang giai đoạn tiếp theo, hệ thống Stage Gate sẽ bắt buộc kiểm tra điều kiện này.
+                  </small>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setIsRuleModalOpen(false)}>
+                  Hủy
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Lưu quy tắc vào giai đoạn
                 </button>
               </div>
             </form>

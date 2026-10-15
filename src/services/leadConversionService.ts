@@ -111,47 +111,73 @@ export const leadConversionService = {
    * Thực hiện chuyển đổi Lead thành Khách hàng và Cơ hội bán hàng
    */
   async convertLead(payload: LeadConversionPayload): Promise<LeadConversionResult> {
-    const leads = getStoredLeads()
-    const leadIndex = leads.findIndex((l) => l.id === payload.lead_id)
-    if (leadIndex === -1) {
-      throw new Error('Không tìm thấy khách hàng tiềm năng để chuyển đổi.')
+    let leads = getStoredLeads()
+    let leadIndex = leads.findIndex((l) => String(l.id) === String(payload.lead_id))
+
+    // Khởi tạo currentLead an toàn (không bị crash nếu không tìm thấy trong storage)
+    const currentLead: Lead = leadIndex !== -1 ? leads[leadIndex] : {
+      id: String(payload.lead_id),
+      code: `LEAD-${payload.lead_id}`,
+      full_name: payload.contact_name || payload.customer_name || 'Khách hàng tiềm năng',
+      email: payload.contact_email || payload.email || '',
+      phone: payload.contact_phone || payload.phone || '',
+      company: payload.customer_name || '',
+      source: 'MANUAL',
+      status: 'QUALIFIED',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      score: 75,
+      score_tier: 'HOT',
     }
 
-    const currentLead = leads[leadIndex]
-    if (currentLead.status === 'CONVERTED') {
+    if (currentLead.status === 'CONVERTED' && leadIndex !== -1) {
       throw new Error('Khách hàng tiềm năng này đã được chuyển đổi trước đó.')
     }
 
-    // 1. Kiểm tra ngày chốt không được ở quá khứ nếu tạo cơ hội
-    if (payload.create_opportunity && payload.expected_close_date) {
-      const todayStr = new Date().toISOString().split('T')[0]
-      if (payload.expected_close_date < todayStr) {
-        throw new Error('Ngày dự kiến chốt cơ hội không được là một ngày trong quá khứ.')
+    // 1. Kiểm tra ngày chốt nếu tạo cơ hội (tự động gán nếu rỗng hoặc quá khứ)
+    const todayStr = new Date().toISOString().split('T')[0]
+    if (payload.create_opportunity) {
+      if (!payload.expected_close_date || payload.expected_close_date < todayStr) {
+        payload.expected_close_date = todayStr
       }
     }
 
-    // Thử gọi Backend API chuyển đổi trước
+    // Thử gọi Backend API chuyển đổi trước với đúng payload schema
     try {
+      const backendPayload = {
+        customer_name: (payload.customer_name || currentLead.company || currentLead.full_name || '').trim(),
+        customer_type: 'ORGANIZATION',
+        tax_code: payload.tax_code?.trim() || null,
+        contact_name: (payload.contact_name || currentLead.full_name || '').trim(),
+        contact_role: 'DECISION_MAKER',
+        opportunity_name: payload.create_opportunity ? (payload.opportunity_title || `Cơ hội - ${currentLead.full_name}`).trim() : null,
+        opportunity_value: payload.create_opportunity ? (Number(payload.expected_revenue) || 0) : null,
+        opportunity_stage: payload.stage_name || 'Tiếp cận & Đánh giá',
+        notes: payload.notes || currentLead.requirement || '',
+      }
+
       const res = await fetch(`${API_BASE_URL}/leads/${payload.lead_id}/convert`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
+        body: JSON.stringify(backendPayload),
       })
       if (res.ok) {
         const data = await res.json()
-        if (data && data.success) {
+        if (data && (data.success || data.lead_id)) {
           // Cập nhật trạng thái lead
           currentLead.status = 'CONVERTED'
-          currentLead.converted_customer_id = data.customer?.id
+          currentLead.converted_customer_id = data.customer?.id ? String(data.customer.id) : undefined
           currentLead.converted_customer_name = data.customer?.name
           currentLead.converted_customer_code = data.customer?.code
-          currentLead.converted_opportunity_id = data.opportunity?.id
-          currentLead.converted_opportunity_title = data.opportunity?.title
+          currentLead.converted_opportunity_id = data.opportunity?.id ? String(data.opportunity.id) : undefined
+          currentLead.converted_opportunity_title = data.opportunity?.title || data.opportunity?.name
           currentLead.converted_opportunity_code = data.opportunity?.code
           currentLead.converted_at = new Date().toISOString()
           currentLead.updated_at = new Date().toISOString()
-          leads[leadIndex] = currentLead
-          saveStoredLeads(leads)
+          if (leadIndex !== -1) {
+            leads[leadIndex] = currentLead
+            saveStoredLeads(leads)
+          }
 
           // Ghi nhận lịch sử tương tác
           try {
@@ -160,13 +186,31 @@ export const leadConversionService = {
               type: 'STATUS_CHANGE',
               title: 'Chuyển đổi thành Khách hàng & Cơ hội',
               outcome: 'Thành công - Đã chuyển đổi',
-              content: `Lead đã được chuyển đổi thành công sang Khách hàng "${data.customer?.name || ''}" (${data.customer?.code || ''})${data.opportunity ? ` và Cơ hội "${data.opportunity?.title || ''}" (${data.opportunity?.code || ''})` : ''}.`,
+              content: `Lead đã được chuyển đổi thành công sang Khách hàng "${data.customer?.name || ''}" (${data.customer?.code || ''})${data.opportunity ? ` và Cơ hội "${data.opportunity?.title || data.opportunity?.name || ''}"` : ''}.`,
               performed_by_id: payload.owner_id || currentLead.owner_id || 1,
               performed_by_name: payload.owner_name || currentLead.owner_name || 'Nguyễn Văn An',
             })
           } catch {}
 
-          return data
+          return {
+            success: true,
+            lead_id: currentLead.id,
+            message: data.message || `Đã chuyển đổi Lead "${currentLead.full_name}" thành công!`,
+            customer: data.customer ? {
+              id: String(data.customer.id),
+              code: data.customer.code || `KH-${Date.now().toString().slice(-4)}`,
+              name: data.customer.name,
+              phone: data.customer.phone,
+              email: data.customer.email,
+            } : undefined,
+            opportunity: data.opportunity ? {
+              id: String(data.opportunity.id),
+              code: data.opportunity.code || `OPP-${Date.now().toString().slice(-4)}`,
+              title: data.opportunity.title || data.opportunity.name,
+              expected_revenue: Number(data.opportunity.expected_revenue || data.opportunity.opportunity_value) || 0,
+              stage_name: data.opportunity.stage_name || 'Tiếp cận & Đánh giá',
+            } : undefined,
+          }
         }
       }
     } catch {}

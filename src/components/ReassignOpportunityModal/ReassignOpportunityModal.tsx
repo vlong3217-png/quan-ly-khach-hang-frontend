@@ -3,6 +3,7 @@ import type { Opportunity } from '../../types/opportunity.ts'
 import { opportunityService } from '../../services/opportunityService.ts'
 import { opportunityActivityService } from '../../services/opportunityActivityService.ts'
 import { opportunityTaskService } from '../../services/opportunityTaskService.ts'
+import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import './ReassignOpportunityModal.css'
 
 interface ReassignOpportunityModalProps {
@@ -59,9 +60,9 @@ export default function ReassignOpportunityModal({
 
   if (!isOpen) return null
 
-  // Format tiền tệ
+  // Format tiền tệ VNĐ có dấu phẩy phân cách hàng nghìn
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+    return formatCurrencyVND(val)
   }
 
   // Danh sách ứng viên loại trừ người hiện tại

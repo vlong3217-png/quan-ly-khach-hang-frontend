@@ -253,7 +253,7 @@ export const leadInteractionService = {
   ): Promise<LeadInteraction> {
     const STATUS_MAP: Record<string, string> = {
       NEW: 'Mới tiếp nhận',
-      CONTACTED: 'Đã liên hệ',
+      CONTACTED: 'Đang chăm sóc*',
       QUALIFIED: 'Đủ điều kiện BANT',
       UNQUALIFIED: 'Không tiềm năng',
       CONVERTED: 'Đã chuyển đổi',
