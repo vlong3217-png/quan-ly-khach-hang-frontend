@@ -18,6 +18,7 @@ import CampaignsPage from '../CampaignsPage/CampaignsPage.tsx'
 import OpportunitiesPage from '../OpportunitiesPage/OpportunitiesPage.tsx'
 import CalendarPage from '../CalendarPage/CalendarPage.tsx'
 import AuditLogPage from '../AuditLogPage/AuditLogPage.tsx'
+import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -301,6 +302,11 @@ function DashboardPage() {
                 </div>
               </div>
 
+              {/* Task SLA & Overdue Alerts (S6-09) */}
+              <TaskSlaAlerts
+                onNavigateToCalendar={() => navigate('/dashboard/calendar')}
+                onNavigateToOpportunities={() => navigate('/dashboard/opportunities')}
+              />
             </>
           )}
 
