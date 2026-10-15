@@ -22,6 +22,7 @@ import ContractsPage from '../ContractsPage/ContractsPage.tsx'
 import AuditLogPage from '../AuditLogPage/AuditLogPage.tsx'
 import WorkflowAutomationPage from '../WorkflowAutomationPage/WorkflowAutomationPage.tsx'
 import SalesQuotasPage from '../SalesQuotasPage/SalesQuotasPage.tsx'
+import PipelineFunnelPage from '../PipelineFunnelPage/PipelineFunnelPage.tsx'
 import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
 import ExecutiveDashboard from '../../components/ExecutiveDashboard/ExecutiveDashboard.tsx'
 import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
@@ -124,6 +125,8 @@ function DashboardPage() {
       setActiveMenuId('menu-automation')
     } else if (path.startsWith('/dashboard/quotas')) {
       setActiveMenuId('menu-quotas')
+    } else if (path.startsWith('/dashboard/pipeline-funnel')) {
+      setActiveMenuId('menu-pipeline-funnel')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -204,6 +207,9 @@ function DashboardPage() {
   const isQuotaView =
     activeMenuId === 'menu-quotas' ||
     activeMenuId.startsWith('menu-quotas-')
+  const isPipelineFunnelView =
+    activeMenuId === 'menu-pipeline-funnel' ||
+    activeMenuId.startsWith('menu-pipeline-funnel-')
   const isSettingView =
     activeMenuId === 'menu-settings' ||
     activeMenuId.startsWith('menu-settings-')
@@ -421,6 +427,15 @@ function DashboardPage() {
           {isQuotaView && (
             <section className="dashboard-section quotas-section">
               <SalesQuotasPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: PHỄU BÁN HÀNG & CHUYỂN ĐỔI (S8-05)
+              ───────────────────────────────────────────────────────────── */}
+          {isPipelineFunnelView && (
+            <section className="dashboard-section pipeline-funnel-section">
+              <PipelineFunnelPage />
             </section>
           )}
 

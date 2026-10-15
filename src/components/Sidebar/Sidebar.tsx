@@ -201,6 +201,8 @@ function getMenuIcon(id: string) {
       return <IconReports />
     case 'menu-quotas':
       return <IconWinLoss />
+    case 'menu-pipeline-funnel':
+      return <IconPipeline />
     case 'menu-teams':
       return <IconTeams />
     case 'menu-settings':
