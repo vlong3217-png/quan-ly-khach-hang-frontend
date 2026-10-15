@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext.tsx'
 import QuoteComposerModal from './QuoteComposerModal.tsx'
 import QuoteComparisonModal from './QuoteComparisonModal.tsx'
 import ConvertToContractModal from './ConvertToContractModal.tsx'
+import PdfExportModal from '../PdfExportModal/PdfExportModal.tsx'
 import { opportunityService } from '../../services/opportunityService.ts'
 import './OpportunityQuoteManager.css'
 
@@ -38,6 +39,9 @@ export default function OpportunityQuoteManager({
 
   // S7-04: Convert Quote to Contract State
   const [convertToContractQuote, setConvertToContractQuote] = useState<Quote | null>(null)
+
+  // S7-05: PDF Export State
+  const [pdfExportQuote, setPdfExportQuote] = useState<Quote | null>(null)
 
   // S7-02: Approval Modal State
   const [approvalModalQuote, setApprovalModalQuote] = useState<Quote | null>(null)
@@ -285,6 +289,17 @@ export default function OpportunityQuoteManager({
                         title="Xem chi tiết"
                       >
                         👁️ Xem
+                      </button>
+
+                      {/* S7-05: Export PDF Button */}
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-dark btn-pdf-export"
+                        id={`btn-export-pdf-${q.id}`}
+                        onClick={() => setPdfExportQuote(q)}
+                        title="Xuất báo giá ra PDF theo mẫu công ty (S7-05 AC)"
+                      >
+                        🖨️ PDF
                       </button>
 
                       {/* S7-02: Approval Action Buttons for Managers */}
@@ -603,6 +618,14 @@ export default function OpportunityQuoteManager({
             </div>
 
             <div className="preview-modal-footer">
+              <button
+                type="button"
+                className="btn btn-outline-dark"
+                id="btn-modal-export-pdf"
+                onClick={() => setPdfExportQuote(selectedQuoteDetail)}
+              >
+                🖨️ Xuất PDF theo mẫu (S7-05)
+              </button>
               {(selectedQuoteDetail.status === 'ACCEPTED' || selectedQuoteDetail.status === 'APPROVED') && !readOnly && (
                 <button
                   type="button"
@@ -761,6 +784,16 @@ export default function OpportunityQuoteManager({
               onOpportunityUpdated(refreshedOpp)
             }
           }}
+        />
+      )}
+
+      {/* S7-05: PDF Export Modal */}
+      {pdfExportQuote && (
+        <PdfExportModal
+          isOpen={true}
+          mode="QUOTE"
+          quote={pdfExportQuote}
+          onClose={() => setPdfExportQuote(null)}
         />
       )}
     </div>
