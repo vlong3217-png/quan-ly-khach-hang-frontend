@@ -161,6 +161,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Phân tích tỷ lệ chuyển đổi, điểm rơi rụng nhiều nhất và điểm nghẽn (S8-05)',
       },
       {
+        id: 'menu-forecast',
+        title: 'Dự báo doanh thu & Thắng thua',
+        path: '/dashboard/forecast',
+        roles: [ROLES.ADMIN, ROLES.MANAGER],
+        description: 'Dự báo doanh thu so với chỉ tiêu (3 con số), phân tích thắng/thua và xuất báo cáo Excel (S8-06)',
+      },
+      {
         id: 'menu-teams',
         title: 'Quản lý Đội nhóm',
         path: '/dashboard/teams',
