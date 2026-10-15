@@ -18,6 +18,7 @@ import StalledOpportunityAlerts from '../../components/StalledOpportunityAlerts/
 import ReassignOpportunityModal from '../../components/ReassignOpportunityModal/ReassignOpportunityModal.tsx'
 import StageGateEnforcementModal from '../../components/StageGateEnforcementModal/StageGateEnforcementModal.tsx'
 import { opportunityActivityService } from '../../services/opportunityActivityService.ts'
+import { opportunityExportService } from '../../services/opportunityExportService.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import TableActionMenu from '../../components/TableActionMenu/TableActionMenu.tsx'
 import './OpportunitiesPage.css'
@@ -578,6 +579,22 @@ export default function OpportunitiesPage() {
     showToast('Đã xóa bộ lọc đã lưu.', 'success')
   }
 
+  // ── S8-10: Xuất danh sách cơ hội theo bộ lọc đang áp dụng, bao gồm trường tuỳ chỉnh & phân quyền giá vốn / biên lợi nhuận ──
+  const handleExportExcel = () => {
+    if (filteredOpportunities.length === 0) {
+      showToast('Không có cơ hội nào khớp với bộ lọc hiện tại để xuất Excel.', 'error')
+      return
+    }
+
+    const result = opportunityExportService.exportToExcel(
+      filteredOpportunities,
+      user?.role || 'USER',
+      isManagerOrAdmin
+    )
+
+    showToast(result.message, 'success')
+  }
+
   // Reset về trang 1 khi lọc
   useEffect(() => {
     setCurrentPage(1)
@@ -626,6 +643,25 @@ export default function OpportunitiesPage() {
 
         {mainNavTab === 'PIPELINE' && (
           <div className="header-actions">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              id="btn-export-opportunities-excel"
+              onClick={handleExportExcel}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              title={
+                isManagerOrAdmin
+                  ? 'Xuất Excel theo bộ lọc (Bao gồm Giá vốn & Biên lợi nhuận)'
+                  : 'Xuất Excel theo bộ lọc (Không bao gồm Giá vốn & Biên lợi nhuận theo phân quyền)'
+              }
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" x2="12" y1="15" y2="3" />
+              </svg>
+              <span>Xuất Excel ({filteredOpportunities.length})</span>
+            </button>
             <button
               type="button"
               className="btn btn-primary"
