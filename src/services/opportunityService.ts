@@ -8,6 +8,9 @@ import type { PaginatedResponse, PaginationParams } from '../types/pagination.ts
 import { normalizePaginatedResponse } from '../types/pagination.ts'
 
 const STORAGE_KEY_OPPORTUNITIES = 'crm_opportunities_master_data'
+try {
+  localStorage.removeItem(STORAGE_KEY_OPPORTUNITIES)
+} catch {}
 
 function getAuthToken(): string | null {
   return (
@@ -30,24 +33,12 @@ function getAuthHeaders(): Record<string, string> {
 }
 
 function getStoredOpportunities(): Opportunity[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_OPPORTUNITIES)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      // Nếu là dữ liệu mẫu cũ (opp-001 ... opp-004), tự động dọn sạch
-      if (Array.isArray(parsed) && parsed.some((p: any) => p.id === 'opp-001' || p.id === 'opp-002')) {
-        localStorage.setItem(STORAGE_KEY_OPPORTUNITIES, JSON.stringify([]))
-        return []
-      }
-      return parsed
-    }
-  } catch {}
-  localStorage.setItem(STORAGE_KEY_OPPORTUNITIES, JSON.stringify([]))
+  // Không lưu hoặc đọc dữ liệu mock tĩnh
   return []
 }
 
-function saveStoredOpportunities(opps: Opportunity[]): void {
-  localStorage.setItem(STORAGE_KEY_OPPORTUNITIES, JSON.stringify(opps))
+function saveStoredOpportunities(_opps: Opportunity[]): void {
+  // Không lưu dữ liệu đè lên bộ nhớ local
 }
 
 export const opportunityService = {
@@ -67,33 +58,19 @@ export const opportunityService = {
       if (response.ok) {
         const raw = await response.json()
         const paginated = normalizePaginatedResponse<Opportunity>(raw, params?.page || 1, params?.limit || 10)
-        if (!params?.page || params.page === 1) {
-          saveStoredOpportunities(paginated.items)
-        }
         return paginated.items
       }
     } catch {}
 
-    let list = getStoredOpportunities()
-    if (params?.search) {
-      const q = params.search.toLowerCase().trim()
-      list = list.filter(
-        (o) =>
-          o.title.toLowerCase().includes(q) ||
-          o.code.toLowerCase().includes(q) ||
-          o.customer_name.toLowerCase().includes(q)
-      )
-    }
-    if (params?.stage_id) {
-      list = list.filter((o) => o.stage_id === params.stage_id)
-    }
-    return list
+    // Khi chưa có dữ liệu hoặc API trả về rỗng/lỗi, trả về mảng rỗng [] không hiển thị dữ liệu giả
+    return []
   },
 
   async getPaginatedOpportunities(params?: OpportunityFilterParams & PaginationParams): Promise<PaginatedResponse<Opportunity>> {
+    const page = params?.page || 1
+    const limit = params?.limit || 10
+
     try {
-      const page = params?.page || 1
-      const limit = params?.limit || 10
       const query = new URLSearchParams()
       query.set('page', String(page))
       query.set('limit', String(limit))
@@ -107,25 +84,16 @@ export const opportunityService = {
       })
       if (response.ok) {
         const raw = await response.json()
-        const paginated = normalizePaginatedResponse<Opportunity>(raw, page, limit)
-        if (page === 1) {
-          saveStoredOpportunities(paginated.items)
-        }
-        return paginated
+        return normalizePaginatedResponse<Opportunity>(raw, page, limit)
       }
     } catch {}
 
-    const all = await this.getOpportunities(params)
-    const page = params?.page || 1
-    const limit = params?.limit || 10
-    const start = (page - 1) * limit
-    const items = all.slice(start, start + limit)
     return {
-      items,
-      total: all.length,
+      items: [],
+      total: 0,
       page,
       limit,
-      total_pages: Math.max(1, Math.ceil(all.length / limit)),
+      total_pages: 0,
     }
   },
 
