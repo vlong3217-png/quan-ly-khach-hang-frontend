@@ -175,6 +175,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Báo cáo số cuộc gọi, cuộc gặp, báo giá gửi đi theo thành viên/tuần và tỷ lệ phản hồi lead trong SLA (S8-07)',
       },
       {
+        id: 'menu-sales-leaderboard',
+        title: 'Bảng xếp hạng Doanh số',
+        path: '/dashboard/leaderboard',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Xếp hạng doanh số đã chốt trong kỳ, tiến độ so với chỉ tiêu cá nhân và bảo mật nội bộ nhóm (S8-08)',
+      },
+      {
         id: 'menu-teams',
         title: 'Quản lý Đội nhóm',
         path: '/dashboard/teams',
