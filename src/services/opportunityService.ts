@@ -8,9 +8,6 @@ import type { PaginatedResponse, PaginationParams } from '../types/pagination.ts
 import { normalizePaginatedResponse } from '../types/pagination.ts'
 
 const STORAGE_KEY_OPPORTUNITIES = 'crm_opportunities_master_data'
-try {
-  localStorage.removeItem(STORAGE_KEY_OPPORTUNITIES)
-} catch {}
 
 function getAuthToken(): string | null {
   return (
@@ -32,13 +29,34 @@ function getAuthHeaders(): Record<string, string> {
   return headers
 }
 
+async function parseErrorResponse(response: Response, defaultMessage: string): Promise<string> {
+  try {
+    const data = await response.json()
+    if (typeof data.detail === 'string') return data.detail
+    if (Array.isArray(data.detail) && data.detail[0]?.msg) return data.detail[0].msg
+    if (data.message && typeof data.message === 'string') return data.message
+  } catch {}
+  return defaultMessage
+}
+
 function getStoredOpportunities(): Opportunity[] {
-  // Không lưu hoặc đọc dữ liệu mock tĩnh
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_OPPORTUNITIES)
+    if (raw) {
+      const list = JSON.parse(raw)
+      if (Array.isArray(list)) {
+        // Lọc bỏ 4 cơ hội mẫu cũ nếu còn sót lại, chỉ giữ cơ hội mới do người dùng tạo
+        return list.filter((o: any) => o && o.id !== 'opp-001' && o.id !== 'opp-002' && o.id !== 'opp-003' && o.id !== 'opp-004')
+      }
+    }
+  } catch {}
   return []
 }
 
-function saveStoredOpportunities(_opps: Opportunity[]): void {
-  // Không lưu dữ liệu đè lên bộ nhớ local
+function saveStoredOpportunities(opps: Opportunity[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEY_OPPORTUNITIES, JSON.stringify(opps))
+  } catch {}
 }
 
 export const opportunityService = {
@@ -58,12 +76,31 @@ export const opportunityService = {
       if (response.ok) {
         const raw = await response.json()
         const paginated = normalizePaginatedResponse<Opportunity>(raw, params?.page || 1, params?.limit || 10)
-        return paginated.items
+        // Nếu Backend trả về dữ liệu (kể cả rỗng), lưu vào cache
+        if (paginated.items.length > 0 || Array.isArray(raw)) {
+          if (!params?.page || params.page === 1) {
+            saveStoredOpportunities(paginated.items)
+          }
+          return paginated.items
+        }
       }
     } catch {}
 
-    // Khi chưa có dữ liệu hoặc API trả về rỗng/lỗi, trả về mảng rỗng [] không hiển thị dữ liệu giả
-    return []
+    // Fallback sang local storage (để giữ lại cơ hội vừa tạo nếu API chưa lưu kịp hoặc đang offline)
+    let list = getStoredOpportunities()
+    if (params?.search) {
+      const q = params.search.toLowerCase().trim()
+      list = list.filter(
+        (o) =>
+          o.title.toLowerCase().includes(q) ||
+          o.code.toLowerCase().includes(q) ||
+          o.customer_name.toLowerCase().includes(q)
+      )
+    }
+    if (params?.stage_id) {
+      list = list.filter((o) => o.stage_id === params.stage_id)
+    }
+    return list
   },
 
   async getPaginatedOpportunities(params?: OpportunityFilterParams & PaginationParams): Promise<PaginatedResponse<Opportunity>> {
@@ -84,16 +121,25 @@ export const opportunityService = {
       })
       if (response.ok) {
         const raw = await response.json()
-        return normalizePaginatedResponse<Opportunity>(raw, page, limit)
+        const paginated = normalizePaginatedResponse<Opportunity>(raw, page, limit)
+        if (paginated.items.length > 0 || Array.isArray(raw)) {
+          if (page === 1) {
+            saveStoredOpportunities(paginated.items)
+          }
+          return paginated
+        }
       }
     } catch {}
 
+    const all = await this.getOpportunities(params)
+    const start = (page - 1) * limit
+    const items = all.slice(start, start + limit)
     return {
-      items: [],
-      total: 0,
+      items,
+      total: all.length,
       page,
       limit,
-      total_pages: 0,
+      total_pages: Math.max(1, Math.ceil(all.length / limit)),
     }
   },
 
@@ -136,12 +182,19 @@ export const opportunityService = {
       if (response.ok) {
         const data = await response.json()
         if (data && data.id) {
-          const updated = [data, ...list]
-          saveStoredOpportunities(updated)
+          saveStoredOpportunities([data, ...list])
           return data
         }
+      } else {
+        const errorMsg = await parseErrorResponse(response, 'Lỗi khi lưu cơ hội bán hàng lên máy chủ Backend.')
+        throw new Error(errorMsg)
       }
-    } catch {}
+    } catch (err: any) {
+      if (err instanceof Error && !err.message.includes('Failed to fetch')) {
+        throw err
+      }
+      console.warn('Backend không phản hồi khi tạo cơ hội, sử dụng fallback tạm thời:', err)
+    }
 
     const updated = [newOpp, ...list]
     saveStoredOpportunities(updated)
