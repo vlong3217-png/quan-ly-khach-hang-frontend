@@ -262,3 +262,13 @@ button, input, select, textarea {
     transform: translateY(0);
   }
 }
+
+/* ── Chặn hiện tượng Double Scroll (Thanh cuộn kép / Lồng thanh cuộn) ── */
+body:has([class*="modal-backdrop"]),
+body:has([class*="modal-overlay"]),
+body:has(.opp-detail-modal-overlay),
+body:has(.lead-modal-overlay),
+body:has(.cust-modal-backdrop) {
+  overflow: hidden !important;
+}
+

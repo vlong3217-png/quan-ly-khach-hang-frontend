@@ -661,9 +661,427 @@ export default function CustomerManagementPage() {
     loadCustomers()
   }
 
+  // ── Render Trang 360 Độ Khách Hàng Riêng Biệt (Không Double Screen / Double Scroll) ──
+  const renderCustomer360View = () => {
+    if (!selected360Customer) return null
+    return (
+      <div className="c360-page-container">
+        <div className="c360-page-breadcrumb-nav">
+          <button
+            type="button"
+            className="c360-back-btn"
+            onClick={() => setSelected360Customer(null)}
+            title="Quay lại danh sách khách hàng"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Quay lại danh sách Khách hàng</span>
+          </button>
+        </div>
+        <div className="c360-modal-content c360-page-card" onClick={(e) => e.stopPropagation()}>
+          <div className="c360-header">
+            <div className="c360-header-info">
+              <h3>
+                <span>🏢</span>
+                <span>{selected360Customer.name}</span>
+              </h3>
+              <div className="c360-header-meta">
+                <span className="c360-meta-chip">🔖 Mã: <strong>{selected360Customer.code}</strong></span>
+                <span className="c360-meta-chip">📑 MST: {selected360Customer.tax_code || 'Chưa cập nhật'}</span>
+                <span className="c360-meta-chip">💼 Ngành: {selected360Customer.industry}</span>
+                <span className="c360-meta-chip">👤 Phụ trách: {selected360Customer.owner_name}</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="cust-modal-close-btn"
+              style={{ color: '#ffffff' }}
+              onClick={() => setSelected360Customer(null)}
+              title="Đóng cửa sổ"
+            >
+              &times;
+            </button>
+          </div>
+
+          {/* KPI Bar */}
+          {(() => {
+            const summary = customerService.getCustomer360Summary(selected360Customer.id)
+            const groupSummary = customerService.getGroupContractTotal(selected360Customer.id)
+            const parentRel = customerService.getParentRelation(selected360Customer.id)
+            return (
+              <div className="c360-kpi-bar">
+                <div className="c360-kpi-item">
+                  <span className="c360-kpi-label">Tổng đã ký (Won)</span>
+                  <span className="c360-kpi-val highlight">{formatCurrencyVND(summary.wonValue)}</span>
+                </div>
+                <div className="c360-kpi-item">
+                  <span className="c360-kpi-label">Cơ hội đang mở (Pipeline)</span>
+                  <span className="c360-kpi-val">{formatCurrencyVND(summary.openValue)}</span>
+                </div>
+                {groupSummary.childrenCount > 0 ? (
+                  <div className="c360-kpi-item" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
+                    <span className="c360-kpi-label" style={{ color: '#166534', fontWeight: 600 }}>Tổng HĐ Tập đoàn ({groupSummary.childrenCount} cty con)</span>
+                    <span className="c360-kpi-val highlight" style={{ color: '#166534' }}>
+                      {formatCurrencyVND(groupSummary.totalValue)}
+                    </span>
+                  </div>
+                ) : parentRel ? (
+                  <div className="c360-kpi-item">
+                    <span className="c360-kpi-label">Thuộc Tập đoàn</span>
+                    <div className="c360-parent-chip">
+                      <span className="c360-parent-name" title={parentRel.parent_name}>
+                        🏢 {parentRel.parent_name}
+                      </span>
+                      <button
+                        type="button"
+                        className="c360-parent-jump-btn"
+                        title="Xem trang 360 của công ty mẹ"
+                        onClick={() => {
+                          const pCust = customerService.getCustomerById(parentRel.parent_id)
+                          if (pCust) setSelected360Customer(pCust)
+                        }}
+                      >
+                        Xem ↗
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="c360-kpi-item">
+                    <span className="c360-kpi-label">Người liên hệ</span>
+                    <span className="c360-kpi-val">{summary.contactsCount}</span>
+                  </div>
+                )}
+                <div className="c360-kpi-item">
+                  <span className="c360-kpi-label">Tình trạng</span>
+                  <span className={`c360-kpi-val ${summary.isAtRisk ? 'risk' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: summary.isAtRisk ? '#ef4444' : '#10b981',
+                      display: 'inline-block'
+                    }} />
+                    {summary.isAtRisk ? 'Nguy cơ rời bỏ' : 'Ổn định'}
+                  </span>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* Tabs */}
+          <div className="c360-tabs">
+            <button
+              type="button"
+              className={`c360-tab-link ${c360ActiveTab === 'OVERVIEW' ? 'active' : ''}`}
+              onClick={() => setC360ActiveTab('OVERVIEW')}
+            >
+              Tổng quan & Cơ hội
+            </button>
+            <button
+              type="button"
+              className={`c360-tab-link ${c360ActiveTab === 'GROUP' ? 'active' : ''}`}
+              onClick={() => setC360ActiveTab('GROUP')}
+            >
+              Cơ cấu Tập đoàn ({(() => {
+                const g = customerService.getGroupContractTotal(selected360Customer.id)
+                const p = customerService.getParentRelation(selected360Customer.id)
+                return g.childrenCount > 0 ? `${g.childrenCount} cty con` : p ? 'Cty con' : 'Độc lập'
+              })()})
+            </button>
+            <button
+              type="button"
+              className={`c360-tab-link ${c360ActiveTab === 'CONTACTS' ? 'active' : ''}`}
+              onClick={() => setC360ActiveTab('CONTACTS')}
+            >
+              Người liên hệ ({customerService.getContacts(selected360Customer.id).length})
+            </button>
+            <button
+              type="button"
+              className={`c360-tab-link ${c360ActiveTab === 'ACTIVITIES' ? 'active' : ''}`}
+              onClick={() => setC360ActiveTab('ACTIVITIES')}
+            >
+              Dòng thời gian hoạt động ({customerService.getActivities(selected360Customer.id).length})
+            </button>
+            <button
+              type="button"
+              className={`c360-tab-link ${c360ActiveTab === 'ATTACHMENTS' ? 'active' : ''}`}
+              onClick={() => setC360ActiveTab('ATTACHMENTS')}
+            >
+              Tệp đính kèm ({customerService.getAttachments(selected360Customer.id).length})
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="c360-body">
+            {c360ActiveTab === 'GROUP' && (() => {
+              const groupSummary = customerService.getGroupContractTotal(selected360Customer.id)
+              const parentRel = customerService.getParentRelation(selected360Customer.id)
+              return (
+                <div>
+                  {groupSummary.childrenCount > 0 ? (
+                    <div>
+                      <div style={{ padding: '14px 16px', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '8px', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <h4 style={{ margin: 0, color: '#065f46', fontSize: '15px' }}>
+                              Cơ cấu Tập đoàn: {selected360Customer.name}
+                            </h4>
+                            <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#047857' }}>
+                              Đang quản lý <strong>{groupSummary.childrenCount}</strong> công ty thành viên trực thuộc
+                            </p>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: '12px', color: '#047857' }}>Tổng giá trị HĐ toàn tập đoàn</div>
+                            <div style={{ fontSize: '18px', fontWeight: 700, color: '#047857' }}>
+                              {formatCurrencyVND(groupSummary.totalValue)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                        <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>Hợp đồng riêng công ty mẹ</div>
+                          <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
+                            {formatCurrencyVND(groupSummary.parentWonValue)}
+                          </div>
+                        </div>
+                        <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>Đóng góp từ các cty con</div>
+                          <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
+                            {formatCurrencyVND(groupSummary.totalValue - groupSummary.parentWonValue)}
+                          </div>
+                        </div>
+                        <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>Số pháp nhân trực thuộc</div>
+                          <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
+                            {groupSummary.childrenCount} công ty con
+                          </div>
+                        </div>
+                      </div>
+
+                      <h5 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#334155' }}>
+                        Danh sách công ty con trực thuộc:
+                      </h5>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {groupSummary.childrenBreakdown.map((item) => (
+                          <div
+                            key={item.customer.id}
+                            style={{
+                              padding: '12px 14px',
+                              border: '1px solid #e2e8f0',
+                              borderRadius: '8px',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              background: '#ffffff',
+                            }}
+                          >
+                            <div>
+                              <div style={{ fontWeight: 600, color: '#1e293b' }}>
+                                {item.customer.name}
+                                <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '6px' }}>({item.customer.code})</span>
+                              </div>
+                              <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                                Mã số thuế: {item.customer.tax_code || 'Chưa cập nhật'} | Ngành: {item.customer.industry} | Phụ trách: {item.customer.owner_name}
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                              <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontSize: '11px', color: '#64748b' }}>HĐ đã ký ({item.dealsCount})</div>
+                                <div style={{ fontWeight: 700, color: '#059669', fontSize: '13.5px' }}>
+                                  {formatCurrencyVND(item.wonValue)}
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                className="btn btn-secondary"
+                                style={{ padding: '5px 10px', fontSize: '12px' }}
+                                onClick={() => setSelected360Customer(item.customer)}
+                              >
+                                Xem 360
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-secondary"
+                                style={{ padding: '5px 10px', fontSize: '12px', color: '#dc2626', borderColor: '#fca5a5' }}
+                                title="Gỡ công ty con khỏi tập đoàn"
+                                onClick={() => {
+                                  if (confirm(`Bạn có chắc muốn gỡ "${item.customer.name}" khỏi tập đoàn?`)) {
+                                    customerService.removeParentCompany(item.customer.id)
+                                    showToast(`Đã gỡ "${item.customer.name}" khỏi tập đoàn!`)
+                                    loadCustomers()
+                                  }
+                                }}
+                              >
+                                Gỡ
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : parentRel ? (
+                    <div style={{
+                      padding: '24px',
+                      background: 'linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%)',
+                      border: '1px solid #bfdbfe',
+                      borderRadius: '14px',
+                      boxShadow: '0 2px 6px rgba(37, 99, 235, 0.06)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '20px' }}>🏢</span>
+                        <h4 style={{ margin: 0, color: '#1e40af', fontSize: '16px', fontWeight: 700 }}>
+                          Công ty thành viên trực thuộc Tập đoàn
+                        </h4>
+                      </div>
+                      <p style={{ margin: '0 0 18px 30px', fontSize: '14px', color: '#334155', lineHeight: 1.5 }}>
+                        Doanh nghiệp này là công ty con trực thuộc tập đoàn:{' '}
+                        <span style={{ display: 'inline-block', background: '#dbeafe', color: '#1d4ed8', padding: '2px 10px', borderRadius: '6px', fontWeight: 600 }}>
+                          {parentRel.parent_name}
+                        </span>
+                      </p>
+                      <div style={{ display: 'flex', gap: '12px', marginLeft: '30px', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '9px 18px', borderRadius: '8px', fontWeight: 600 }}
+                          onClick={() => {
+                            const pCust = customerService.getCustomerById(parentRel.parent_id)
+                            if (pCust) setSelected360Customer(pCust)
+                          }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                            <polyline points="15 3 21 3 21 9" />
+                            <line x1="10" y1="14" x2="21" y2="3" />
+                          </svg>
+                          Mở xem Trang 360 của Công ty mẹ
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '9px 16px',
+                            borderRadius: '8px',
+                            color: '#dc2626',
+                            borderColor: '#fca5a5',
+                            background: '#fff'
+                          }}
+                          onClick={() => {
+                            if (confirm(`Bạn có chắc muốn gỡ liên kết công ty mẹ của "${selected360Customer.name}"?`)) {
+                              customerService.removeParentCompany(selected360Customer.id)
+                              showToast('Đã gỡ liên kết công ty mẹ!')
+                              loadCustomers()
+                            }
+                          }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                          Gỡ khỏi tập đoàn
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ padding: '28px 20px', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', textAlign: 'center' }}>
+                      <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: '#334155' }}>Doanh nghiệp độc lập</h4>
+                      <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#64748b' }}>
+                        Khách hàng này hiện chưa liên kết với công ty mẹ hoặc tập đoàn nào.
+                      </p>
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => handleOpenParentModal(selected360Customer)}
+                      >
+                        Khai báo Công ty mẹ / Gắn vào Tập đoàn
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
+            {c360ActiveTab === 'OVERVIEW' && (
+              <div>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '15px' }}>Danh sách Cơ hội bán hàng</h4>
+                {customerService.getDeals(selected360Customer.id).map((deal) => (
+                  <div key={deal.id} style={{ padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <strong>{deal.title}</strong>
+                      <div style={{ fontSize: '12px', color: '#64748b' }}>Giai đoạn: {deal.stage}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: 700, color: '#2563eb' }}>{deal.value.toLocaleString('vi-VN')} đ</div>
+                      <div style={{ fontSize: '11px', color: deal.status === 'CLOSED_WON' ? '#059669' : '#d97706' }}>
+                        {deal.status}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {c360ActiveTab === 'CONTACTS' && (
+              <div>
+                {customerService.getContacts(selected360Customer.id).map((ct) => (
+                  <div key={ct.id} style={{ padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                    <div>
+                      <strong>{ct.full_name}</strong> - <span>{ct.title}</span>
+                      <div style={{ fontSize: '12px', color: '#64748b' }}>{ct.phone} | {ct.email}</div>
+                    </div>
+                    <span style={{ fontSize: '12px', fontWeight: 600 }}>{BUYING_ROLE_LABELS[ct.buying_role]}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {c360ActiveTab === 'ACTIVITIES' && (
+              <div className="c360-timeline">
+                {customerService.getActivities(selected360Customer.id).map((act) => (
+                  <div key={act.id} className="c360-timeline-item">
+                    <div className="c360-timeline-dot" />
+                    <div className="c360-timeline-content">
+                      <div className="c360-timeline-title">
+                        [{act.type}] {act.title}
+                        <span className="c360-timeline-time">{new Date(act.performed_at).toLocaleString('vi-VN')}</span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#475569', marginTop: '4px' }}>{act.description}</div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>Bởi: {act.performed_by_name}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {c360ActiveTab === 'ATTACHMENTS' && (
+              <div>
+                {customerService.getAttachments(selected360Customer.id).map((att) => (
+                  <div key={att.id} style={{ padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                    <div>{att.file_name} ({att.file_size})</div>
+                    <div style={{ fontSize: '12px', color: '#64748b' }}>Tải lên bởi: {att.uploaded_by}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="customer-page" id="customer-management-page">
-      {/* ── 1. Page Header ── */}
+      {selected360Customer ? (
+        renderCustomer360View()
+      ) : (
+        <>
+          {/* ── 1. Page Header ── */}
       <div className="customer-header-bar">
         <div className="customer-header-info">
           <h2>
@@ -820,7 +1238,7 @@ export default function CustomerManagementPage() {
       </div>
 
       {/* ── TAB 1: DANH SÁCH DOANH NGHIỆP (S3-01, S3-05, S3-07) ── */}
-      {activeTab === 'CUSTOMERS' && !selected360Customer && (
+      {activeTab === 'CUSTOMERS' && (
         <>
           {/* Filters & Bộ lọc lưu sẵn (S3-07) */}
           <div className="customer-filters-panel">
@@ -1524,415 +1942,7 @@ export default function CustomerManagementPage() {
         </div>
       )}
 
-      {/* ── TRANG 360 ĐỘ KHÁCH HÀNG (PAGE VIEW - KHÔNG DÙNG POPUP) ── */}
-      {selected360Customer && (
-        <div className="c360-page-container">
-          <div className="c360-page-breadcrumb-nav">
-            <button
-              type="button"
-              className="c360-back-btn"
-              onClick={() => setSelected360Customer(null)}
-              title="Quay lại danh sách khách hàng"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-              </svg>
-              <span>Quay lại danh sách Khách hàng</span>
-            </button>
-          </div>
-          <div className="c360-modal-content c360-page-card" onClick={(e) => e.stopPropagation()}>
-            <div className="c360-header">
-              <div className="c360-header-info">
-                <h3>
-                  <span>🏢</span>
-                  <span>{selected360Customer.name}</span>
-                </h3>
-                <div className="c360-header-meta">
-                  <span className="c360-meta-chip">🔖 Mã: <strong>{selected360Customer.code}</strong></span>
-                  <span className="c360-meta-chip">📑 MST: {selected360Customer.tax_code || 'Chưa cập nhật'}</span>
-                  <span className="c360-meta-chip">💼 Ngành: {selected360Customer.industry}</span>
-                  <span className="c360-meta-chip">👤 Phụ trách: {selected360Customer.owner_name}</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="cust-modal-close-btn"
-                style={{ color: '#ffffff' }}
-                onClick={() => setSelected360Customer(null)}
-                title="Đóng cửa sổ"
-              >
-                &times;
-              </button>
-            </div>
-
-            {/* KPI Bar */}
-            {(() => {
-              const summary = customerService.getCustomer360Summary(selected360Customer.id)
-              const groupSummary = customerService.getGroupContractTotal(selected360Customer.id)
-              const parentRel = customerService.getParentRelation(selected360Customer.id)
-              return (
-                <div className="c360-kpi-bar">
-                  <div className="c360-kpi-item">
-                    <span className="c360-kpi-label">Tổng đã ký (Won)</span>
-                    <span className="c360-kpi-val highlight">{formatCurrencyVND(summary.wonValue)}</span>
-                  </div>
-                  <div className="c360-kpi-item">
-                    <span className="c360-kpi-label">Cơ hội đang mở (Pipeline)</span>
-                    <span className="c360-kpi-val">{formatCurrencyVND(summary.openValue)}</span>
-                  </div>
-                  {groupSummary.childrenCount > 0 ? (
-                    <div className="c360-kpi-item" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
-                      <span className="c360-kpi-label" style={{ color: '#166534', fontWeight: 600 }}>Tổng HĐ Tập đoàn ({groupSummary.childrenCount} cty con)</span>
-                      <span className="c360-kpi-val highlight" style={{ color: '#166534' }}>
-                        {formatCurrencyVND(groupSummary.totalValue)}
-                      </span>
-                    </div>
-                  ) : parentRel ? (
-                    <div className="c360-kpi-item">
-                      <span className="c360-kpi-label">Thuộc Tập đoàn</span>
-                      <div className="c360-parent-chip">
-                        <span className="c360-parent-name" title={parentRel.parent_name}>
-                          🏢 {parentRel.parent_name}
-                        </span>
-                        <button
-                          type="button"
-                          className="c360-parent-jump-btn"
-                          title="Xem trang 360 của công ty mẹ"
-                          onClick={() => {
-                            const pCust = customerService.getCustomerById(parentRel.parent_id)
-                            if (pCust) setSelected360Customer(pCust)
-                          }}
-                        >
-                          Xem ↗
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="c360-kpi-item">
-                      <span className="c360-kpi-label">Người liên hệ</span>
-                      <span className="c360-kpi-val">{summary.contactsCount}</span>
-                    </div>
-                  )}
-                  <div className="c360-kpi-item">
-                    <span className="c360-kpi-label">Tình trạng</span>
-                    <span className={`c360-kpi-val ${summary.isAtRisk ? 'risk' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        background: summary.isAtRisk ? '#ef4444' : '#10b981',
-                        display: 'inline-block'
-                      }} />
-                      {summary.isAtRisk ? 'Nguy cơ rời bỏ' : 'Ổn định'}
-                    </span>
-                  </div>
-                </div>
-              )
-            })()}
-
-            {/* Tabs */}
-            <div className="c360-tabs">
-              <button
-                type="button"
-                className={`c360-tab-link ${c360ActiveTab === 'OVERVIEW' ? 'active' : ''}`}
-                onClick={() => setC360ActiveTab('OVERVIEW')}
-              >
-                Tổng quan & Cơ hội
-              </button>
-              <button
-                type="button"
-                className={`c360-tab-link ${c360ActiveTab === 'GROUP' ? 'active' : ''}`}
-                onClick={() => setC360ActiveTab('GROUP')}
-              >
-                Cơ cấu Tập đoàn ({(() => {
-                  const g = customerService.getGroupContractTotal(selected360Customer.id)
-                  const p = customerService.getParentRelation(selected360Customer.id)
-                  return g.childrenCount > 0 ? `${g.childrenCount} cty con` : p ? 'Cty con' : 'Độc lập'
-                })()})
-              </button>
-              <button
-                type="button"
-                className={`c360-tab-link ${c360ActiveTab === 'CONTACTS' ? 'active' : ''}`}
-                onClick={() => setC360ActiveTab('CONTACTS')}
-              >
-                Người liên hệ ({customerService.getContacts(selected360Customer.id).length})
-              </button>
-              <button
-                type="button"
-                className={`c360-tab-link ${c360ActiveTab === 'ACTIVITIES' ? 'active' : ''}`}
-                onClick={() => setC360ActiveTab('ACTIVITIES')}
-              >
-                Dòng thời gian hoạt động ({customerService.getActivities(selected360Customer.id).length})
-              </button>
-              <button
-                type="button"
-                className={`c360-tab-link ${c360ActiveTab === 'ATTACHMENTS' ? 'active' : ''}`}
-                onClick={() => setC360ActiveTab('ATTACHMENTS')}
-              >
-                Tệp đính kèm ({customerService.getAttachments(selected360Customer.id).length})
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="c360-body">
-              {c360ActiveTab === 'GROUP' && (() => {
-                const groupSummary = customerService.getGroupContractTotal(selected360Customer.id)
-                const parentRel = customerService.getParentRelation(selected360Customer.id)
-                return (
-                  <div>
-                    {groupSummary.childrenCount > 0 ? (
-                      <div>
-                        <div style={{ padding: '14px 16px', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '8px', marginBottom: '16px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                              <h4 style={{ margin: 0, color: '#065f46', fontSize: '15px' }}>
-                                Cơ cấu Tập đoàn: {selected360Customer.name}
-                              </h4>
-                              <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#047857' }}>
-                                Đang quản lý <strong>{groupSummary.childrenCount}</strong> công ty thành viên trực thuộc
-                              </p>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontSize: '12px', color: '#047857' }}>Tổng giá trị HĐ toàn tập đoàn</div>
-                              <div style={{ fontSize: '18px', fontWeight: 700, color: '#047857' }}>
-                                {formatCurrencyVND(groupSummary.totalValue)}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
-                          <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>Hợp đồng riêng công ty mẹ</div>
-                            <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
-                              {formatCurrencyVND(groupSummary.parentWonValue)}
-                            </div>
-                          </div>
-                          <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>Đóng góp từ các cty con</div>
-                            <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
-                              {formatCurrencyVND(groupSummary.totalValue - groupSummary.parentWonValue)}
-                            </div>
-                          </div>
-                          <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>Số pháp nhân trực thuộc</div>
-                            <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
-                              {groupSummary.childrenCount} công ty con
-                            </div>
-                          </div>
-                        </div>
-
-                        <h5 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#334155' }}>
-                          Danh sách công ty con trực thuộc:
-                        </h5>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          {groupSummary.childrenBreakdown.map((item) => (
-                            <div
-                              key={item.customer.id}
-                              style={{
-                                padding: '12px 14px',
-                                border: '1px solid #e2e8f0',
-                                borderRadius: '8px',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                background: '#ffffff',
-                              }}
-                            >
-                              <div>
-                                <div style={{ fontWeight: 600, color: '#1e293b' }}>
-                                  {item.customer.name}
-                                  <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '6px' }}>({item.customer.code})</span>
-                                </div>
-                                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                                  Mã số thuế: {item.customer.tax_code || 'Chưa cập nhật'} | Ngành: {item.customer.industry} | Phụ trách: {item.customer.owner_name}
-                                </div>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                                <div style={{ textAlign: 'right' }}>
-                                  <div style={{ fontSize: '11px', color: '#64748b' }}>HĐ đã ký ({item.dealsCount})</div>
-                                  <div style={{ fontWeight: 700, color: '#059669', fontSize: '13.5px' }}>
-                                    {formatCurrencyVND(item.wonValue)}
-                                  </div>
-                                </div>
-                                <button
-                                  type="button"
-                                  className="btn btn-secondary"
-                                  style={{ padding: '5px 10px', fontSize: '12px' }}
-                                  onClick={() => setSelected360Customer(item.customer)}
-                                >
-                                  Xem 360
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn btn-secondary"
-                                  style={{ padding: '5px 10px', fontSize: '12px', color: '#dc2626', borderColor: '#fca5a5' }}
-                                  title="Gỡ công ty con khỏi tập đoàn"
-                                  onClick={() => {
-                                    if (confirm(`Bạn có chắc muốn gỡ "${item.customer.name}" khỏi tập đoàn?`)) {
-                                      customerService.removeParentCompany(item.customer.id)
-                                      showToast(`Đã gỡ "${item.customer.name}" khỏi tập đoàn!`)
-                                      loadCustomers()
-                                    }
-                                  }}
-                                >
-                                  Gỡ
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : parentRel ? (
-                      <div style={{
-                        padding: '24px',
-                        background: 'linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%)',
-                        border: '1px solid #bfdbfe',
-                        borderRadius: '14px',
-                        boxShadow: '0 2px 6px rgba(37, 99, 235, 0.06)'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                          <span style={{ fontSize: '20px' }}>🏢</span>
-                          <h4 style={{ margin: 0, color: '#1e40af', fontSize: '16px', fontWeight: 700 }}>
-                            Công ty thành viên trực thuộc Tập đoàn
-                          </h4>
-                        </div>
-                        <p style={{ margin: '0 0 18px 30px', fontSize: '14px', color: '#334155', lineHeight: 1.5 }}>
-                          Doanh nghiệp này là công ty con trực thuộc tập đoàn:{' '}
-                          <span style={{ display: 'inline-block', background: '#dbeafe', color: '#1d4ed8', padding: '2px 10px', borderRadius: '6px', fontWeight: 600 }}>
-                            {parentRel.parent_name}
-                          </span>
-                        </p>
-                        <div style={{ display: 'flex', gap: '12px', marginLeft: '30px', flexWrap: 'wrap' }}>
-                          <button
-                            type="button"
-                            className="btn btn-primary"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '9px 18px', borderRadius: '8px', fontWeight: 600 }}
-                            onClick={() => {
-                              const pCust = customerService.getCustomerById(parentRel.parent_id)
-                              if (pCust) setSelected360Customer(pCust)
-                            }}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                              <polyline points="15 3 21 3 21 9" />
-                              <line x1="10" y1="14" x2="21" y2="3" />
-                            </svg>
-                            Mở xem Trang 360 của Công ty mẹ
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-secondary"
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              padding: '9px 16px',
-                              borderRadius: '8px',
-                              color: '#dc2626',
-                              borderColor: '#fca5a5',
-                              background: '#fff'
-                            }}
-                            onClick={() => {
-                              if (confirm(`Bạn có chắc muốn gỡ liên kết công ty mẹ của "${selected360Customer.name}"?`)) {
-                                customerService.removeParentCompany(selected360Customer.id)
-                                showToast('Đã gỡ liên kết công ty mẹ!')
-                                loadCustomers()
-                              }
-                            }}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <line x1="18" y1="6" x2="6" y2="18" />
-                              <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                            Gỡ khỏi tập đoàn
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ padding: '28px 20px', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', textAlign: 'center' }}>
-                        <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: '#334155' }}>Doanh nghiệp độc lập</h4>
-                        <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#64748b' }}>
-                          Khách hàng này hiện chưa liên kết với công ty mẹ hoặc tập đoàn nào.
-                        </p>
-                        <button
-                          type="button"
-                          className="btn btn-primary"
-                          onClick={() => handleOpenParentModal(selected360Customer)}
-                        >
-                          Khai báo Công ty mẹ / Gắn vào Tập đoàn
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )
-              })()}
-              {c360ActiveTab === 'OVERVIEW' && (
-                <div>
-                  <h4 style={{ margin: '0 0 12px 0', fontSize: '15px' }}>Danh sách Cơ hội bán hàng</h4>
-                  {customerService.getDeals(selected360Customer.id).map((deal) => (
-                    <div key={deal.id} style={{ padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <strong>{deal.title}</strong>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>Giai đoạn: {deal.stage}</div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontWeight: 700, color: '#2563eb' }}>{deal.value.toLocaleString('vi-VN')} đ</div>
-                        <div style={{ fontSize: '11px', color: deal.status === 'CLOSED_WON' ? '#059669' : '#d97706' }}>
-                          {deal.status}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {c360ActiveTab === 'CONTACTS' && (
-                <div>
-                  {customerService.getContacts(selected360Customer.id).map((ct) => (
-                    <div key={ct.id} style={{ padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                      <div>
-                        <strong>{ct.full_name}</strong> - <span>{ct.title}</span>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>{ct.phone} | {ct.email}</div>
-                      </div>
-                      <span style={{ fontSize: '12px', fontWeight: 600 }}>{BUYING_ROLE_LABELS[ct.buying_role]}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {c360ActiveTab === 'ACTIVITIES' && (
-                <div className="c360-timeline">
-                  {customerService.getActivities(selected360Customer.id).map((act) => (
-                    <div key={act.id} className="c360-timeline-item">
-                      <div className="c360-timeline-dot" />
-                      <div className="c360-timeline-content">
-                        <div className="c360-timeline-title">
-                          [{act.type}] {act.title}
-                          <span className="c360-timeline-time">{new Date(act.performed_at).toLocaleString('vi-VN')}</span>
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#475569', marginTop: '4px' }}>{act.description}</div>
-                        <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>Bởi: {act.performed_by_name}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {c360ActiveTab === 'ATTACHMENTS' && (
-                <div>
-                  {customerService.getAttachments(selected360Customer.id).map((att) => (
-                    <div key={att.id} style={{ padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                      <div>{att.file_name} ({att.file_size})</div>
-                      <div style={{ fontSize: '12px', color: '#64748b' }}>Tải lên bởi: {att.uploaded_by}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        </>
       )}
 
       {/* ── MODAL THÊM / SỬA KHÁCH HÀNG (S3-01) ── */}
