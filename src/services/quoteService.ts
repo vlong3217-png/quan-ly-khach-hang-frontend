@@ -409,6 +409,221 @@ export const quoteService = {
     return updated
   },
 
+  /**
+   * Phê duyệt báo giá (S7-02)
+   */
+  approveQuote(quoteId: string, currentUser: User, comments?: string): Quote {
+    const all = getStoredQuotes()
+    const idx = all.findIndex((q) => q.id === quoteId)
+    if (idx === -1) throw new Error('Không tìm thấy báo giá')
+
+    const current = all[idx]
+    if (current.status !== 'PENDING_APPROVAL') {
+      throw new Error('Chỉ có thể duyệt báo giá đang ở trạng thái Chờ duyệt')
+    }
+
+    // Kiểm tra cấp duyệt
+    const userRole = currentUser.role || 'SALES_REP'
+    if (current.approval_level === 'DIRECTOR' && userRole !== 'ADMIN') {
+      throw new Error('Báo giá này có chiết khấu cao hoặc bán dưới giá sàn, bắt buộc cấp Giám đốc kinh doanh (ADMIN) duyệt')
+    }
+    if (current.approval_level === 'MANAGER' && userRole !== 'ADMIN' && userRole !== 'MANAGER') {
+      throw new Error('Chỉ Trưởng nhóm hoặc Giám đốc mới có quyền duyệt báo giá này')
+    }
+
+    const now = new Date().toISOString()
+    const updatedHistory: QuoteApprovalHistory = {
+      id: `hist-${Date.now()}`,
+      action: 'APPROVED',
+      performed_by_id: currentUser.id,
+      performed_by_name: currentUser.full_name || currentUser.email,
+      performed_by_role: currentUser.role,
+      comments: comments?.trim() || 'Đồng ý phê duyệt mức chiết khấu của báo giá.',
+      timestamp: now,
+    }
+
+    const updated: Quote = {
+      ...current,
+      status: 'APPROVED',
+      approval_history: [...current.approval_history, updatedHistory],
+      updated_at: now,
+    }
+
+    all[idx] = updated
+    saveStoredQuotes(all)
+
+    opportunityActivityService.createActivity({
+      opportunity_id: current.opportunity_id,
+      opportunity_title: current.opportunity_title,
+      customer_id: current.customer_id,
+      customer_name: current.customer_name,
+      type: 'STAGE_CHANGE',
+      title: `[Báo giá] Đã duyệt báo giá ${current.quote_number}`,
+      content: `Người duyệt: ${currentUser.full_name || currentUser.email} (${currentUser.role}). Ý kiến: ${updatedHistory.comments}`,
+      performed_by_name: currentUser.full_name || currentUser.email,
+    }).catch(() => {})
+
+    return updated
+  },
+
+  /**
+   * Từ chối duyệt báo giá (S7-02 AC: Bắt buộc nhập ý kiến)
+   */
+  rejectQuote(quoteId: string, currentUser: User, comments: string): Quote {
+    if (!comments || !comments.trim()) {
+      throw new Error('Bắt buộc nhập ý kiến khi từ chối duyệt báo giá (S7-02 AC)')
+    }
+
+    const all = getStoredQuotes()
+    const idx = all.findIndex((q) => q.id === quoteId)
+    if (idx === -1) throw new Error('Không tìm thấy báo giá')
+
+    const current = all[idx]
+    if (current.status !== 'PENDING_APPROVAL') {
+      throw new Error('Chỉ có thể từ chối báo giá đang ở trạng thái Chờ duyệt')
+    }
+
+    const now = new Date().toISOString()
+    const updatedHistory: QuoteApprovalHistory = {
+      id: `hist-${Date.now()}`,
+      action: 'REJECTED',
+      performed_by_id: currentUser.id,
+      performed_by_name: currentUser.full_name || currentUser.email,
+      performed_by_role: currentUser.role,
+      comments: comments.trim(),
+      timestamp: now,
+    }
+
+    const updated: Quote = {
+      ...current,
+      status: 'REJECTED',
+      approval_history: [...current.approval_history, updatedHistory],
+      updated_at: now,
+    }
+
+    all[idx] = updated
+    saveStoredQuotes(all)
+
+    opportunityActivityService.createActivity({
+      opportunity_id: current.opportunity_id,
+      opportunity_title: current.opportunity_title,
+      customer_id: current.customer_id,
+      customer_name: current.customer_name,
+      type: 'STAGE_CHANGE',
+      title: `[Báo giá] Từ chối duyệt báo giá ${current.quote_number}`,
+      content: `Lý do từ chối: ${comments.trim()}`,
+      performed_by_name: currentUser.full_name || currentUser.email,
+    }).catch(() => {})
+
+    return updated
+  },
+
+  /**
+   * Trả lại báo giá để nhân viên sửa lại (S7-02 AC: Bắt buộc nhập ý kiến)
+   */
+  returnQuote(quoteId: string, currentUser: User, comments: string): Quote {
+    if (!comments || !comments.trim()) {
+      throw new Error('Bắt buộc nhập ý kiến khi trả lại báo giá yêu cầu sửa (S7-02 AC)')
+    }
+
+    const all = getStoredQuotes()
+    const idx = all.findIndex((q) => q.id === quoteId)
+    if (idx === -1) throw new Error('Không tìm thấy báo giá')
+
+    const current = all[idx]
+    if (current.status !== 'PENDING_APPROVAL') {
+      throw new Error('Chỉ có thể trả lại báo giá đang ở trạng thái Chờ duyệt')
+    }
+
+    const now = new Date().toISOString()
+    const updatedHistory: QuoteApprovalHistory = {
+      id: `hist-${Date.now()}`,
+      action: 'RETURNED',
+      performed_by_id: currentUser.id,
+      performed_by_name: currentUser.full_name || currentUser.email,
+      performed_by_role: currentUser.role,
+      comments: comments.trim(),
+      timestamp: now,
+    }
+
+    const updated: Quote = {
+      ...current,
+      status: 'RETURNED',
+      approval_history: [...current.approval_history, updatedHistory],
+      updated_at: now,
+    }
+
+    all[idx] = updated
+    saveStoredQuotes(all)
+
+    opportunityActivityService.createActivity({
+      opportunity_id: current.opportunity_id,
+      opportunity_title: current.opportunity_title,
+      customer_id: current.customer_id,
+      customer_name: current.customer_name,
+      type: 'STAGE_CHANGE',
+      title: `[Báo giá] Yêu cầu chỉnh sửa báo giá ${current.quote_number}`,
+      content: `Ý kiến yêu cầu sửa: ${comments.trim()}`,
+      performed_by_name: currentUser.full_name || currentUser.email,
+    }).catch(() => {})
+
+    return updated
+  },
+
+  /**
+   * Gửi báo giá cho khách (S7-02 AC: Chỉ báo giá đã duyệt mới gửi được cho khách)
+   */
+  sendQuoteToCustomer(quoteId: string, currentUser?: User | null): Quote {
+    const all = getStoredQuotes()
+    const idx = all.findIndex((q) => q.id === quoteId)
+    if (idx === -1) throw new Error('Không tìm thấy báo giá')
+
+    const current = all[idx]
+    if (current.status !== 'APPROVED') {
+      throw new Error('Chỉ báo giá đã được phê duyệt mới được phép gửi cho khách hàng (S7-02 AC)')
+    }
+
+    const now = new Date().toISOString()
+    const updatedHistory: QuoteApprovalHistory = {
+      id: `hist-${Date.now()}`,
+      action: 'SUBMITTED',
+      performed_by_name: currentUser?.full_name || currentUser?.email || 'Nhân viên kinh doanh',
+      performed_by_role: currentUser?.role || 'SALES_REP',
+      comments: 'Đã gửi báo giá kèm liên kết trực tuyến cho khách hàng.',
+      timestamp: now,
+    }
+
+    const updated: Quote = {
+      ...current,
+      status: 'SENT',
+      approval_history: [...current.approval_history, updatedHistory],
+      updated_at: now,
+    }
+
+    all[idx] = updated
+    saveStoredQuotes(all)
+
+    opportunityActivityService.createActivity({
+      opportunity_id: current.opportunity_id,
+      opportunity_title: current.opportunity_title,
+      customer_id: current.customer_id,
+      customer_name: current.customer_name,
+      type: 'CALL',
+      title: `[Báo giá] Đã gửi báo giá ${current.quote_number} cho khách`,
+      content: `Gửi báo giá giá trị ${current.grand_total.toLocaleString('vi-VN')} đ (Hiệu lực: ${current.valid_until})`,
+      performed_by_name: currentUser?.full_name || currentUser?.email || 'Nhân viên kinh doanh',
+    }).catch(() => {})
+
+    return updated
+  },
+
+  /**
+   * Lấy danh sách báo giá chờ duyệt toàn hệ thống (Dành cho Trưởng nhóm & Giám đốc)
+   */
+  getPendingApprovalQuotes(): Quote[] {
+    return getStoredQuotes().filter((q) => q.status === 'PENDING_APPROVAL')
+  },
+
   deleteQuote(id: string): void {
     const all = getStoredQuotes().filter((q) => q.id !== id)
     saveStoredQuotes(all)
