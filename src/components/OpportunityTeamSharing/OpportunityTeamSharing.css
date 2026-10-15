@@ -1,0 +1,324 @@
+/* Style cho User Story S6-03: Chia sẻ cơ hội cho nhiều người cùng theo */
+.opportunity-team-sharing-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.team-role-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #1e40af;
+}
+
+.team-role-notice .notice-icon {
+  font-size: 20px;
+}
+
+.team-role-notice .notice-body strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.team-role-notice .notice-body p {
+  margin: 0;
+  font-size: 13px;
+  color: #1d4ed8;
+}
+
+.team-section-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.primary-owner-card {
+  border-left: 4px solid #f59e0b;
+}
+
+.collaborators-card {
+  border-left: 4px solid #3b82f6;
+}
+
+.section-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.header-badge-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge-crown {
+  font-size: 22px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.section-subtitle {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.btn-reassign-owner {
+  font-size: 13px;
+  padding: 6px 14px;
+  font-weight: 600;
+}
+
+.badge-locked {
+  font-size: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+
+.owner-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.owner-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+}
+
+.owner-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.owner-name-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.owner-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.badge-role {
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid #fde68a;
+}
+
+.owner-team {
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* Add member form */
+.add-member-form {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.permissions-hint {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.form-footer .actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Collaborators list */
+.collaborators-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.collaborator-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  transition: all 0.2s;
+}
+
+.collaborator-item:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.collab-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.collab-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.collab-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collab-name {
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.collab-role-badge {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid #bfdbfe;
+}
+
+.collab-meta {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.collab-rights {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.right-allowed {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.right-denied {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.btn-remove-collab {
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  color: #ef4444;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-remove-collab:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.empty-collaborators {
+  text-align: center;
+  padding: 28px 16px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+}
+
+.empty-collaborators .empty-icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.empty-collaborators p {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.empty-collaborators .empty-hint {
+  font-size: 12px;
+  color: #64748b;
+}
