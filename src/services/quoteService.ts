@@ -214,9 +214,31 @@ export const quoteService = {
     return all.find((q) => q.id === id) || null
   },
 
-  getQuoteByToken(token: string): Quote | null {
+  getQuoteByToken(quoteIdOrToken: string, token?: string): Quote | null {
     const all = getStoredQuotes()
-    return all.find((q) => q.access_token === token) || null
+    const quote = all.find(
+      (q) =>
+        q.id === quoteIdOrToken ||
+        q.access_token === quoteIdOrToken ||
+        (token && q.access_token === token)
+    )
+    if (!quote) return null
+
+    // S7-06 AC: Quá hạn hiệu lực mà không phản hồi thì tự động chuyển sang Hết hiệu lực
+    const today = new Date().toISOString().split('T')[0]
+    if (
+      quote.valid_until &&
+      quote.valid_until < today &&
+      quote.status !== 'ACCEPTED' &&
+      quote.status !== 'DECLINED' &&
+      quote.status !== 'EXPIRED'
+    ) {
+      quote.status = 'EXPIRED'
+      quote.updated_at = new Date().toISOString()
+      saveStoredQuotes(all)
+    }
+
+    return quote
   },
 
   /**
@@ -707,5 +729,114 @@ export const quoteService = {
   deleteQuote(id: string): void {
     const all = getStoredQuotes().filter((q) => q.id !== id)
     saveStoredQuotes(all)
+  },
+
+  /**
+   * S7-06 AC: Khách hàng Chấp nhận hoặc Từ chối báo giá trực tuyến kèm ý kiến phản hồi
+   */
+  async customerRespondQuote(
+    quoteId: string,
+    decision: 'ACCEPT' | 'DECLINE',
+    feedbackNotes: string,
+    contactName?: string
+  ): Promise<Quote> {
+    const all = getStoredQuotes()
+    const idx = all.findIndex((q) => q.id === quoteId)
+    if (idx === -1) throw new Error('Không tìm thấy thông tin báo giá')
+
+    const current = all[idx]
+    const today = new Date().toISOString().split('T')[0]
+
+    // Kiểm tra hết hạn hiệu lực
+    if (
+      (current.valid_until && current.valid_until < today) ||
+      current.status === 'EXPIRED'
+    ) {
+      current.status = 'EXPIRED'
+      saveStoredQuotes(all)
+      throw new Error('Báo giá này đã quá hạn hiệu lực, không thể tiếp nhận phản hồi.')
+    }
+
+    if (current.status === 'ACCEPTED' || current.status === 'DECLINED') {
+      throw new Error(
+        `Báo giá này đã được phản hồi trước đó (Trạng thái hiện tại: ${
+          current.status === 'ACCEPTED' ? 'Đã chấp thuận' : 'Đã từ chối'
+        }).`
+      )
+    }
+
+    const now = new Date().toISOString()
+    const newStatus: QuoteStatus = decision === 'ACCEPT' ? 'ACCEPTED' : 'DECLINED'
+    const respondentName = contactName?.trim() || current.customer_contact_name || current.customer_name
+
+    const updated: Quote = {
+      ...current,
+      status: newStatus,
+      customer_feedback: feedbackNotes.trim(),
+      customer_contact_name: respondentName,
+      customer_decided_at: now,
+      updated_at: now,
+      approval_history: [
+        ...current.approval_history,
+        {
+          id: `hist-cust-${Date.now()}`,
+          action: decision === 'ACCEPT' ? 'APPROVED' : 'REJECTED',
+          performed_by_name: `${respondentName} (Đại diện Khách hàng)`,
+          performed_by_role: 'CUSTOMER',
+          comments: feedbackNotes.trim()
+            ? `Phản hồi trực tuyến: "${feedbackNotes.trim()}"`
+            : decision === 'ACCEPT'
+            ? 'Khách hàng đã bấm Chấp thuận báo giá trực tuyến.'
+            : 'Khách hàng đã bấm Từ chối báo giá trực tuyến.',
+          timestamp: now,
+        },
+      ],
+    }
+
+    all[idx] = updated
+    saveStoredQuotes(all)
+
+    // S7-06 AC: Ghi phản hồi vào dòng thời gian của cơ hội (Opportunity Activity Timeline)
+    try {
+      await opportunityActivityService.createActivity({
+        opportunity_id: current.opportunity_id,
+        opportunity_title: current.opportunity_title,
+        customer_id: current.customer_id,
+        customer_name: current.customer_name,
+        type: 'NOTE',
+        title:
+          decision === 'ACCEPT'
+            ? `[Khách hàng phản hồi] Chấp nhận báo giá ${current.quote_number}`
+            : `[Khách hàng phản hồi] Từ chối báo giá ${current.quote_number}`,
+        content: feedbackNotes.trim()
+          ? `Người phản hồi: ${respondentName}. Ý kiến: "${feedbackNotes.trim()}"`
+          : `Người phản hồi: ${respondentName}. Trạng thái: ${
+              decision === 'ACCEPT' ? 'Đồng ý chốt báo giá' : 'Không đồng ý báo giá'
+            }`,
+        performed_by_name: respondentName,
+      })
+    } catch {
+      // Activity timeline recording fallback
+    }
+
+    // Ghi vào lịch sử thay đổi cơ hội
+    try {
+      await opportunityHistoryService.recordChange({
+        opportunity_id: current.opportunity_id,
+        field: 'quote',
+        field_label: 'Báo giá',
+        old_value: current.status,
+        new_value: newStatus,
+        old_display: `Báo giá ${current.quote_number}: ${current.status}`,
+        new_display: `Báo giá ${current.quote_number}: ${newStatus}`,
+        reason: feedbackNotes.trim() || 'Khách hàng phản hồi trực tuyến',
+        changed_by_id: current.created_by_id ?? 1,
+        changed_by_name: respondentName,
+      })
+    } catch {
+      // History recording fallback
+    }
+
+    return updated
   },
 }

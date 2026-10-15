@@ -1,0 +1,322 @@
+.public-quote-page-wrapper {
+  min-height: 100vh;
+  background: #f1f5f9;
+  padding: 40px 16px 80px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #1e293b;
+}
+
+.public-quote-container {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header branding bar */
+.public-portal-header {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.portal-brand-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.portal-logo-box {
+  width: 54px;
+  height: 54px;
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.portal-brand-left h2 {
+  margin: 0 0 4px 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.portal-brand-left p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* Status banner */
+.quote-status-banner {
+  padding: 16px 24px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.quote-status-banner.pending {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+}
+
+.quote-status-banner.accepted {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+}
+
+.quote-status-banner.declined {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.quote-status-banner.expired {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+}
+
+/* Main Document Card */
+.quote-document-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 36px 40px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.doc-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #0284c7;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.doc-top-bar h1 {
+  margin: 0 0 6px 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.doc-top-bar .meta-badge {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.doc-party-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  border: 1px solid #e2e8f0;
+}
+
+.party-col h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.party-col p {
+  margin: 3px 0;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+/* Products Table */
+.portal-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.portal-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.portal-items-table th {
+  background: #f1f5f9;
+  color: #334155;
+  font-weight: 600;
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 2px solid #cbd5e1;
+}
+
+.portal-items-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+/* Financial summary */
+.portal-totals-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding-top: 8px;
+}
+
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  width: 320px;
+  font-size: 0.925rem;
+  color: #475569;
+}
+
+.total-line.grand {
+  border-top: 2px solid #0284c7;
+  padding-top: 10px;
+  margin-top: 4px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.total-line.grand .val {
+  color: #0284c7;
+  font-size: 1.35rem;
+}
+
+.in-words-callout {
+  background: #fffbeb;
+  border: 1px dashed #f59e0b;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  color: #92400e;
+  margin-bottom: 24px;
+}
+
+/* Terms block */
+.portal-terms-card {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 20px;
+  font-size: 0.875rem;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.portal-terms-card h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.95rem;
+  color: #1e293b;
+}
+
+/* Customer Decision Card */
+.customer-decision-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  border: 2px solid #0284c7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.decision-actions-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-accept-quote {
+  background: #16a34a;
+  color: #ffffff;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-accept-quote:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+}
+
+.btn-decline-quote {
+  background: #ffffff;
+  color: #dc2626;
+  border: 2px solid #dc2626;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-decline-quote:hover {
+  background: #fef2f2;
+}
+
+/* Response Modal */
+.response-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.response-modal-card {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 520px;
+  padding: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.response-modal-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #0f172a;
+}
