@@ -19,6 +19,7 @@ import OpportunitiesPage from '../OpportunitiesPage/OpportunitiesPage.tsx'
 import CalendarPage from '../CalendarPage/CalendarPage.tsx'
 import AuditLogPage from '../AuditLogPage/AuditLogPage.tsx'
 import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
+import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -119,6 +120,7 @@ function DashboardPage() {
   // State cho thông báo tương tác nhanh
   const [actionNotice, setActionNotice] = useState<string | null>(null)
   const [isChangePwdModalOpen, setIsChangePwdModalOpen] = useState(false)
+  const [isQuickCallModalOpen, setIsQuickCallModalOpen] = useState(false)
 
   const handleLogout = () => {
     logout()
@@ -560,6 +562,25 @@ function DashboardPage() {
         onSuccess={() => {
           showNotice('Đổi mật khẩu thành công! Tài khoản của bạn đã được cập nhật.')
         }}
+      />
+
+      {/* ── FAB GHI NHANH CUỘC GỌI MOBILE 3 CHẠM (S6-10) ── */}
+      <button
+        type="button"
+        className="fab-quick-call"
+        id="fab-quick-call-mobile"
+        onClick={() => setIsQuickCallModalOpen(true)}
+        title="Ghi nhanh cuộc gọi 3 chạm trên điện thoại (S6-10)"
+      >
+        <span>📞</span>
+        <span>Ghi nhanh cuộc gọi</span>
+      </button>
+
+      {/* ── MODAL GHI NHANH CUỘC GỌI MOBILE (S6-10) ── */}
+      <QuickCallMobileModal
+        isOpen={isQuickCallModalOpen}
+        onClose={() => setIsQuickCallModalOpen(false)}
+        onSuccess={(msg) => showNotice(msg)}
       />
     </div>
   )

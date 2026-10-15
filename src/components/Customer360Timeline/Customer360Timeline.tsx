@@ -6,6 +6,7 @@ import { opportunityTaskService } from '../../services/opportunityTaskService.ts
 import { opportunityService } from '../../services/opportunityService.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import type { OpportunityActivityType } from '../../types/opportunity.ts'
+import QuickCallMobileModal from '../QuickCallMobile/QuickCallMobileModal.tsx'
 import './Customer360Timeline.css'
 
 export type UnifiedTimelineType =
@@ -106,6 +107,7 @@ export default function Customer360Timeline({
 
   // Quick log activity modal
   const [isLogModalOpen, setIsLogModalOpen] = useState<boolean>(false)
+  const [isQuickCallOpen, setIsQuickCallOpen] = useState<boolean>(false)
   const [logType, setLogType] = useState<OpportunityActivityType>('CALL')
   const [logTitle, setLogTitle] = useState<string>('')
   const [logContent, setLogContent] = useState<string>('')
@@ -393,14 +395,25 @@ export default function Customer360Timeline({
             <span className="badge-pill-5m">⚡ Tóm tắt tiếp nhận trong 5 phút</span>
             <h4>Bối cảnh khách hàng: {customerName}</h4>
           </div>
-          <button
-            type="button"
-            className="btn btn-sm btn-primary quick-log-btn"
-            id="btn-quick-log-activity"
-            onClick={() => setIsLogModalOpen(true)}
-          >
-            + Ghi nhận tương tác mới
-          </button>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-primary"
+              id="btn-customer-quick-call-3tap"
+              onClick={() => setIsQuickCallOpen(true)}
+              title="Ghi nhanh cuộc gọi 3 chạm"
+            >
+              📞 Ghi nhanh cuộc gọi (3 chạm)
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-primary quick-log-btn"
+              id="btn-quick-log-activity"
+              onClick={() => setIsLogModalOpen(true)}
+            >
+              + Ghi nhận tương tác mới
+            </button>
+          </div>
         </div>
 
         <div className="handover-stats-grid">
@@ -743,6 +756,15 @@ export default function Customer360Timeline({
           </div>
         </div>
       )}
+
+      {/* ── S6-10: Quick Call Mobile Modal ── */}
+      <QuickCallMobileModal
+        isOpen={isQuickCallOpen}
+        onClose={() => setIsQuickCallOpen(false)}
+        onSuccess={() => loadUnifiedTimeline()}
+        preselectedCustomerId={customerId}
+        preselectedCustomerName={customerName}
+      />
     </div>
   )
 }
