@@ -3,6 +3,7 @@ import type { Opportunity } from '../../types/opportunity.ts'
 import type { Quote, QuoteStatus } from '../../types/quote.ts'
 import { quoteService } from '../../services/quoteService.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
+import { useAuth } from '../../contexts/AuthContext.tsx'
 import QuoteComposerModal from './QuoteComposerModal.tsx'
 import './OpportunityQuoteManager.css'
 
@@ -12,18 +13,34 @@ interface OpportunityQuoteManagerProps {
   readOnly?: boolean
 }
 
+type ApprovalActionType = 'APPROVE' | 'RETURN' | 'REJECT'
+
 export default function OpportunityQuoteManager({
   opportunity,
   readOnly = false,
 }: OpportunityQuoteManagerProps) {
+  const { user } = useAuth()
+  const isManagerOrAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER'
+
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [isComposerOpen, setIsComposerOpen] = useState<boolean>(false)
   const [editingQuote, setEditingQuote] = useState<Quote | null>(null)
   const [selectedQuoteDetail, setSelectedQuoteDetail] = useState<Quote | null>(null)
 
+  // S7-02: Approval Modal State
+  const [approvalModalQuote, setApprovalModalQuote] = useState<Quote | null>(null)
+  const [approvalActionType, setApprovalActionType] = useState<ApprovalActionType>('APPROVE')
+  const [approvalComment, setApprovalComment] = useState<string>('')
+  const [approvalError, setApprovalError] = useState<string | null>(null)
+  const [isProcessingApproval, setIsProcessingApproval] = useState<boolean>(false)
+
   const loadQuotes = () => {
     const list = quoteService.getQuotes(opportunity.id)
     setQuotes(list)
+    if (selectedQuoteDetail) {
+      const refreshed = list.find((q) => q.id === selectedQuoteDetail.id)
+      setSelectedQuoteDetail(refreshed || null)
+    }
   }
 
   useEffect(() => {
@@ -55,6 +72,62 @@ export default function OpportunityQuoteManager({
     }
   }
 
+  // S7-02: Trigger Approval Action Dialog
+  const handleOpenApproval = (q: Quote, action: ApprovalActionType) => {
+    setApprovalModalQuote(q)
+    setApprovalActionType(action)
+    setApprovalComment('')
+    setApprovalError(null)
+  }
+
+  // S7-02: Submit Approval Action
+  const handleSubmitApproval = async () => {
+    if (!approvalModalQuote || !user) return
+
+    // S7-02 AC: Hai hành động Từ chối và Trả lại bắt buộc nhập ý kiến
+    if ((approvalActionType === 'RETURN' || approvalActionType === 'REJECT') && !approvalComment.trim()) {
+      setApprovalError('Bắt buộc phải nhập ý kiến lý do khi Từ chối hoặc Trả lại sửa.')
+      return
+    }
+
+    setIsProcessingApproval(true)
+    setApprovalError(null)
+    try {
+      if (approvalActionType === 'APPROVE') {
+        quoteService.approveQuote(approvalModalQuote.id, user, approvalComment)
+      } else if (approvalActionType === 'RETURN') {
+        quoteService.returnQuote(approvalModalQuote.id, user, approvalComment)
+      } else if (approvalActionType === 'REJECT') {
+        quoteService.rejectQuote(approvalModalQuote.id, user, approvalComment)
+      }
+
+      loadQuotes()
+      setApprovalModalQuote(null)
+    } catch (err: any) {
+      setApprovalError(err.message || 'Lỗi khi xử lý phê duyệt báo giá.')
+    } finally {
+      setIsProcessingApproval(false)
+    }
+  }
+
+  // S7-02 AC: Chỉ báo giá đã duyệt mới gửi được cho khách
+  const handleSendToCustomer = (q: Quote) => {
+    if (q.status !== 'APPROVED') {
+      alert('Chỉ báo giá đã được phê duyệt mới được phép gửi cho khách hàng (S7-02 AC)!')
+      return
+    }
+
+    if (window.confirm(`Xác nhận gửi báo giá ${q.quote_number} (Giá trị: ${formatCurrencyVND(q.grand_total)}) đến khách hàng?`)) {
+      try {
+        quoteService.sendQuoteToCustomer(q.id, user)
+        loadQuotes()
+        alert(`Đã gửi báo giá ${q.quote_number} thành công! Khách hàng có thể mở liên kết để xem và quyết định trực tuyến.`)
+      } catch (err: any) {
+        alert(err.message || 'Không thể gửi báo giá.')
+      }
+    }
+  }
+
   const handleDelete = (id: string, number: string) => {
     if (window.confirm(`Bạn có chắc chắn muốn xóa báo giá "${number}" không?`)) {
       quoteService.deleteQuote(id)
@@ -69,7 +142,7 @@ export default function OpportunityQuoteManager({
         <div>
           <h4>Danh sách báo giá ({quotes.length})</h4>
           <span className="sub-hint">
-            Soạn thảo, quản lý chiết khấu và phê duyệt báo giá liên kết trực tiếp với cơ hội này
+            Soạn thảo, kiểm soát chiết khấu theo ngưỡng và phê duyệt đa cấp (S7-01, S7-02)
           </span>
         </div>
         {!readOnly && (
@@ -128,9 +201,9 @@ export default function OpportunityQuoteManager({
                 <tr key={q.id}>
                   <td>
                     <strong className="quote-num-txt">{q.quote_number}</strong>
-                    {q.requires_approval && (
+                    {q.requires_approval && q.status === 'PENDING_APPROVAL' && (
                       <span className="approval-req-tag" title={q.approval_reason}>
-                        ⚠️ Cần duyệt ({q.approval_level})
+                        ⚠️ Cần duyệt ({q.approval_level === 'DIRECTOR' ? 'Giám đốc' : 'Trưởng nhóm'})
                       </span>
                     )}
                   </td>
@@ -161,6 +234,60 @@ export default function OpportunityQuoteManager({
                       >
                         👁️ Xem
                       </button>
+
+                      {/* S7-02: Approval Action Buttons for Managers */}
+                      {q.status === 'PENDING_APPROVAL' && isManagerOrAdmin && !readOnly && (
+                        <div className="approval-quick-btns">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-success btn-approve-quick"
+                            onClick={() => handleOpenApproval(q, 'APPROVE')}
+                            title="Phê duyệt báo giá"
+                          >
+                            ✓ Duyệt
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-warning"
+                            onClick={() => handleOpenApproval(q, 'RETURN')}
+                            title="Yêu cầu sửa lại"
+                          >
+                            ↩️ Trả lại
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => handleOpenApproval(q, 'REJECT')}
+                            title="Từ chối duyệt"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+
+                      {/* S7-02 AC: Chỉ báo giá đã duyệt mới gửi được cho khách */}
+                      {q.status === 'APPROVED' && !readOnly && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-primary btn-send-quote"
+                          id={`btn-send-quote-${q.id}`}
+                          onClick={() => handleSendToCustomer(q)}
+                          title="Gửi báo giá kèm liên kết cho khách"
+                        >
+                          📤 Gửi khách
+                        </button>
+                      )}
+
+                      {q.status === 'PENDING_APPROVAL' && !isManagerOrAdmin && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-secondary btn-locked"
+                          disabled
+                          title="Chỉ báo giá đã duyệt mới gửi được cho khách (S7-02 AC)"
+                        >
+                          🔒 Chờ duyệt
+                        </button>
+                      )}
 
                       {/* S7-01 AC: Lưu nháp và sửa tiếp được */}
                       {(q.status === 'DRAFT' || q.status === 'RETURNED') && !readOnly && (
@@ -196,7 +323,7 @@ export default function OpportunityQuoteManager({
         </div>
       )}
 
-      {/* Quote Detail Drawer / Modal Preview */}
+      {/* ── MODAL CHI TIẾT BÁO GIÁ & LỊCH SỬ DUYỆT BẤT BIẾN (S7-02) ── */}
       {selectedQuoteDetail && (
         <div className="quote-preview-modal-overlay" onClick={() => setSelectedQuoteDetail(null)}>
           <div
@@ -220,6 +347,44 @@ export default function OpportunityQuoteManager({
             </div>
 
             <div className="preview-modal-body">
+              {/* Approval alert if pending */}
+              {selectedQuoteDetail.status === 'PENDING_APPROVAL' && (
+                <div className="preview-pending-approval-card">
+                  <div className="alert-content">
+                    <span className="siren">⚠️</span>
+                    <div>
+                      <strong>BÁO GIÁ ĐANG CHỜ PHÊ DUYỆT ({selectedQuoteDetail.approval_level === 'DIRECTOR' ? 'CẤP GIÁM ĐỐC KINH DOANH' : 'CẤP TRƯỞNG NHÓM'})</strong>
+                      <p>{selectedQuoteDetail.approval_reason}</p>
+                    </div>
+                  </div>
+                  {isManagerOrAdmin && (
+                    <div className="approval-actions-toolbar">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-success"
+                        onClick={() => handleOpenApproval(selectedQuoteDetail, 'APPROVE')}
+                      >
+                        ✓ Duyệt báo giá
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-warning"
+                        onClick={() => handleOpenApproval(selectedQuoteDetail, 'RETURN')}
+                      >
+                        ↩️ Trả lại sửa
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-danger"
+                        onClick={() => handleOpenApproval(selectedQuoteDetail, 'REJECT')}
+                      >
+                        ✕ Từ chối
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="preview-info-grid">
                 <div>
                   <span className="lbl">Khách hàng:</span>
@@ -293,15 +458,142 @@ export default function OpportunityQuoteManager({
                 <span>Tổng cộng thanh toán:</span>
                 <span className="grand-val">{formatCurrencyVND(selectedQuoteDetail.grand_total)}</span>
               </div>
+
+              {/* ── S7-02 AC: LỊCH SỬ DUYỆT KHÔNG SỬA VÀ KHÔNG XÓA ĐƯỢC ── */}
+              <div className="preview-approval-history-section">
+                <div className="history-head">
+                  <h5>📜 Lịch sử phê duyệt & Kiểm soát chiết khấu (Bất biến)</h5>
+                  <span className="audit-lock-badge">🔒 Bất biến (Không sửa / không xóa)</span>
+                </div>
+
+                {selectedQuoteDetail.approval_history.length === 0 ? (
+                  <div className="history-empty text-muted">Chưa có bản ghi phê duyệt nào.</div>
+                ) : (
+                  <div className="approval-history-timeline">
+                    {selectedQuoteDetail.approval_history.map((hist, idx) => (
+                      <div key={hist.id || idx} className="history-log-row">
+                        <div className="log-action-col">
+                          <span className={`hist-action-tag ${hist.action.toLowerCase()}`}>
+                            {hist.action === 'APPROVED' && '✅ ĐÃ DUYỆT'}
+                            {hist.action === 'AUTO_APPROVED' && '⚡ TỰ ĐỘNG THÔNG QUA'}
+                            {hist.action === 'REJECTED' && '❌ TỪ CHỐI'}
+                            {hist.action === 'RETURNED' && '↩️ YÊU CẦU SỬA'}
+                            {hist.action === 'SUBMITTED' && '📤 GỬI DUYỆT'}
+                          </span>
+                        </div>
+                        <div className="log-details-col">
+                          <div className="log-user-time">
+                            <strong>{hist.performed_by_name}</strong> ({hist.performed_by_role})
+                            <span className="log-time"> lúc {new Date(hist.timestamp).toLocaleString('vi-VN')}</span>
+                          </div>
+                          {hist.comments && <p className="log-comment-text">"{hist.comments}"</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="preview-modal-footer">
+              {selectedQuoteDetail.status === 'APPROVED' && !readOnly && (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => handleSendToCustomer(selectedQuoteDetail)}
+                >
+                  📤 Gửi báo giá cho khách hàng
+                </button>
+              )}
               <button
                 type="button"
                 className="btn btn-secondary"
                 onClick={() => setSelectedQuoteDetail(null)}
               >
                 Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL NHẬP Ý KIẾN DUYỆT / TỪ CHỐI / TRẢ LẠI (S7-02) ── */}
+      {approvalModalQuote && (
+        <div className="approval-dialog-overlay" onClick={() => setApprovalModalQuote(null)}>
+          <div
+            className="approval-dialog-card"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="dialog-header">
+              <h3>
+                {approvalActionType === 'APPROVE' && '✅ Phê duyệt báo giá'}
+                {approvalActionType === 'RETURN' && '↩️ Yêu cầu sửa lại báo giá'}
+                {approvalActionType === 'REJECT' && '❌ Từ chối duyệt báo giá'}
+              </h3>
+              <button type="button" className="close-btn" onClick={() => setApprovalModalQuote(null)}>
+                ✕
+              </button>
+            </div>
+
+            <div className="dialog-body">
+              <div className="dialog-quote-summary">
+                <div>Số báo giá: <strong>{approvalModalQuote.quote_number}</strong></div>
+                <div>Khách hàng: <strong>{approvalModalQuote.customer_name}</strong></div>
+                <div>Tổng tiền: <strong>{formatCurrencyVND(approvalModalQuote.grand_total)}</strong></div>
+                <div>
+                  Mức chiết khấu: <strong style={{ color: '#dc2626' }}>{approvalModalQuote.discount_percentage}%</strong>
+                </div>
+                {approvalModalQuote.approval_reason && (
+                  <div className="reason-hint">Cảnh báo: {approvalModalQuote.approval_reason}</div>
+                )}
+              </div>
+
+              {approvalError && <div className="alert alert-danger">{approvalError}</div>}
+
+              <div className="form-group" style={{ marginTop: '12px' }}>
+                <label htmlFor="approval-comments">
+                  Ý kiến của người duyệt {approvalActionType !== 'APPROVE' ? '(* Bắt buộc)' : '(Không bắt buộc)'}:
+                </label>
+                <textarea
+                  id="approval-comments"
+                  className="form-control"
+                  rows={3}
+                  value={approvalComment}
+                  onChange={(e) => setApprovalComment(e.target.value)}
+                  placeholder={
+                    approvalActionType === 'APPROVE'
+                      ? 'Nhập ý kiến duyệt (VD: Đồng ý hỗ trợ giá cho khách hàng tiềm năng)...'
+                      : 'Nêu rõ lý do từ chối hoặc các điểm cần sửa lại...'
+                  }
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="dialog-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setApprovalModalQuote(null)}
+                disabled={isProcessingApproval}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                className={`btn ${
+                  approvalActionType === 'APPROVE'
+                    ? 'btn-success'
+                    : approvalActionType === 'RETURN'
+                    ? 'btn-warning'
+                    : 'btn-danger'
+                }`}
+                onClick={handleSubmitApproval}
+                disabled={isProcessingApproval}
+              >
+                {isProcessingApproval ? 'Đang lưu...' : 'Xác nhận thao tác'}
               </button>
             </div>
           </div>
