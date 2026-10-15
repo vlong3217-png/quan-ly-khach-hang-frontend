@@ -6,6 +6,8 @@ import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import QuoteComposerModal from './QuoteComposerModal.tsx'
 import QuoteComparisonModal from './QuoteComparisonModal.tsx'
+import ConvertToContractModal from './ConvertToContractModal.tsx'
+import { opportunityService } from '../../services/opportunityService.ts'
 import './OpportunityQuoteManager.css'
 
 interface OpportunityQuoteManagerProps {
@@ -18,6 +20,7 @@ type ApprovalActionType = 'APPROVE' | 'RETURN' | 'REJECT'
 
 export default function OpportunityQuoteManager({
   opportunity,
+  onOpportunityUpdated,
   readOnly = false,
 }: OpportunityQuoteManagerProps) {
   const { user } = useAuth()
@@ -32,6 +35,9 @@ export default function OpportunityQuoteManager({
   const [isComparisonOpen, setIsComparisonOpen] = useState<boolean>(false)
   const [compareQuoteA, setCompareQuoteA] = useState<Quote | null>(null)
   const [compareQuoteB, setCompareQuoteB] = useState<Quote | null>(null)
+
+  // S7-04: Convert Quote to Contract State
+  const [convertToContractQuote, setConvertToContractQuote] = useState<Quote | null>(null)
 
   // S7-02: Approval Modal State
   const [approvalModalQuote, setApprovalModalQuote] = useState<Quote | null>(null)
@@ -324,6 +330,19 @@ export default function OpportunityQuoteManager({
                         </button>
                       )}
 
+                      {/* S7-04 AC: Chuyển đổi báo giá đã duyệt / chấp thuận thành hợp đồng */}
+                      {(q.status === 'ACCEPTED' || q.status === 'APPROVED') && !readOnly && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-success btn-convert-contract"
+                          id={`btn-convert-contract-${q.id}`}
+                          onClick={() => setConvertToContractQuote(q)}
+                          title="Chuyển đổi báo giá thành Hợp đồng (S7-04 AC)"
+                        >
+                          📜 Tạo Hợp đồng
+                        </button>
+                      )}
+
                       {q.status === 'PENDING_APPROVAL' && !isManagerOrAdmin && (
                         <button
                           type="button"
@@ -584,6 +603,19 @@ export default function OpportunityQuoteManager({
             </div>
 
             <div className="preview-modal-footer">
+              {(selectedQuoteDetail.status === 'ACCEPTED' || selectedQuoteDetail.status === 'APPROVED') && !readOnly && (
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={() => {
+                    const target = selectedQuoteDetail
+                    setSelectedQuoteDetail(null)
+                    setConvertToContractQuote(target)
+                  }}
+                >
+                  📜 Chuyển thành Hợp đồng (S7-04)
+                </button>
+              )}
               {selectedQuoteDetail.status === 'APPROVED' && !readOnly && (
                 <button
                   type="button"
@@ -711,6 +743,23 @@ export default function OpportunityQuoteManager({
           onClose={() => setIsComparisonOpen(false)}
           onSetActiveVersion={(qId) => {
             handleSetActiveVersion(qId)
+          }}
+        />
+      )}
+
+      {/* S7-04: Convert to Contract Modal */}
+      {convertToContractQuote && (
+        <ConvertToContractModal
+          isOpen={true}
+          quote={convertToContractQuote}
+          onClose={() => setConvertToContractQuote(null)}
+          onSuccess={async (contractNumber) => {
+            alert(`🎉 Chúc mừng! Đã chuyển đổi thành công Hợp đồng số ${contractNumber}.\nCơ hội đã tự động chuyển sang Đóng Thắng (Closed Won)!`)
+            loadQuotes()
+            const refreshedOpp = await opportunityService.getOpportunityById(opportunity.id)
+            if (refreshedOpp && onOpportunityUpdated) {
+              onOpportunityUpdated(refreshedOpp)
+            }
           }}
         />
       )}
