@@ -8,6 +8,7 @@ import { winLossService } from '../../services/winLossService.ts'
 import OpportunityActivityTimeline from '../OpportunityActivityTimeline/OpportunityActivityTimeline.tsx'
 import OpportunityTaskManager from '../OpportunityTaskManager/OpportunityTaskManager.tsx'
 import OpportunityProductManager from '../OpportunityProductManager/OpportunityProductManager.tsx'
+import OpportunityHistoryTimeline from '../OpportunityHistoryTimeline/OpportunityHistoryTimeline.tsx'
 import StageGateEnforcementModal from '../StageGateEnforcementModal/StageGateEnforcementModal.tsx'
 import ReassignOpportunityModal from '../ReassignOpportunityModal/ReassignOpportunityModal.tsx'
 import type { StageGateEvaluation } from '../../types/opportunity.ts'
@@ -18,7 +19,7 @@ import './OpportunityDetailModal.css'
 interface OpportunityDetailModalProps {
   opportunity: Opportunity
   isOpen: boolean
-  initialTab?: 'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS'
+  initialTab?: 'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS' | 'HISTORY'
   onClose: () => void
   onOpportunityUpdated: (updated: Opportunity) => void
   isPageView?: boolean
@@ -33,7 +34,7 @@ export default function OpportunityDetailModal({
   isPageView = false,
 }: OpportunityDetailModalProps) {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState<'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS'>(initialTab)
+  const [activeTab, setActiveTab] = useState<'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS' | 'HISTORY'>(initialTab)
   const [stages] = useState<PipelineStage[]>(() => pipelineService.getStages())
   const [currentOpp, setCurrentOpp] = useState<Opportunity>(opportunity)
   const [isChangingStage, setIsChangingStage] = useState<boolean>(false)
@@ -573,6 +574,14 @@ export default function OpportunityDetailModal({
           >
             Thông tin chi tiết
           </button>
+          <button
+            type="button"
+            className={`opp-tab-btn ${activeTab === 'HISTORY' ? 'active' : ''}`}
+            onClick={() => setActiveTab('HISTORY')}
+            id="tab-btn-history"
+          >
+            📜 Lịch sử thay đổi
+          </button>
         </div>
 
         {/* ── Tab Content ── */}
@@ -837,6 +846,14 @@ export default function OpportunityDetailModal({
                 </div>
               )}
             </div>
+          )}
+
+          {/* TAB 4: Lịch sử thay đổi cơ hội (S6-01) */}
+          {activeTab === 'HISTORY' && (
+            <OpportunityHistoryTimeline
+              opportunityId={currentOpp.id}
+              opportunityTitle={currentOpp.title}
+            />
           )}
         </div>
       </div>

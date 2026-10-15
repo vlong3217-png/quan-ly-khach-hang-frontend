@@ -7,6 +7,7 @@ import { API_BASE_URL } from './authService.ts'
 import type { PaginatedResponse, PaginationParams } from '../types/pagination.ts'
 import { normalizePaginatedResponse } from '../types/pagination.ts'
 import type { PipelineStage } from '../types/pipeline.ts'
+import { opportunityHistoryService } from './opportunityHistoryService.ts'
 
 export function isOppInStage(opp: Opportunity, stage: PipelineStage): boolean {
   if (!opp || !stage) return false
@@ -346,11 +347,26 @@ export const opportunityService = {
       throw new Error('Không tìm thấy cơ hội bán hàng!')
     }
 
+    const oldOpp = { ...list[idx] }
     const updatedOpp: Opportunity = {
       ...list[idx],
       ...patch,
       updated_at: new Date().toISOString(),
     }
+
+    // Tự động ghi nhật ký thay đổi S6-01 (giai đoạn, giá trị, ngày chốt, người sở hữu)
+    try {
+      const userRaw = localStorage.getItem('user') || sessionStorage.getItem('user')
+      const currentUser = userRaw ? JSON.parse(userRaw) : null
+      opportunityHistoryService.recordOpportunityDiff(
+        oldOpp,
+        updatedOpp,
+        {
+          id: currentUser?.id ? Number(currentUser.id) : undefined,
+          name: currentUser?.full_name || 'Người dùng',
+        }
+      )
+    } catch {}
 
     try {
       const response = await fetch(`${API_BASE_URL}/opportunities/${id}`, {
