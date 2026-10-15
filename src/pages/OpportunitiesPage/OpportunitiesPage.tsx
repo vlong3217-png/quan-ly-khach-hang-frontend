@@ -1081,9 +1081,6 @@ export default function OpportunitiesPage() {
                         setNewOppForm({ ...newOppForm, expected_revenue: e.target.value })
                       }
                     />
-                    <small style={{ fontSize: '11px', color: '#64748b', marginTop: '3px', display: 'block' }}>
-                      💡 S5-03: Sau khi tạo, bạn có thể vào tab <strong>"Sản phẩm & Dịch vụ"</strong> để chọn mặt hàng từ Bảng giá niêm yết và tự động tính lại giá trị hợp đồng chính xác.
-                    </small>
                   </div>
                 </div>
 
