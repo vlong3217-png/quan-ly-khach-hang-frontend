@@ -21,6 +21,7 @@ import ContractsPage from '../ContractsPage/ContractsPage.tsx'
 import AuditLogPage from '../AuditLogPage/AuditLogPage.tsx'
 import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
 import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
+import NotificationBell from '../../components/NotificationBell/NotificationBell.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -222,6 +223,7 @@ function DashboardPage() {
             </div>
 
             <div className="dashboard-user-area">
+              <NotificationBell />
               <div
                 className="dashboard-user-info"
                 onClick={() => navigate('/profile')}
