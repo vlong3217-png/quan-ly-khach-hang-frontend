@@ -11,6 +11,10 @@ import './OpportunityActivityTimeline.css'
 interface OpportunityActivityTimelineProps {
   opportunityId: string
   opportunityTitle?: string
+  customerId?: string
+  customerName?: string
+  contactId?: string
+  contactName?: string
   onActivityAdded?: () => void
 }
 
@@ -95,6 +99,10 @@ const IconPlus = () => (
 export default function OpportunityActivityTimeline({
   opportunityId,
   opportunityTitle,
+  customerId,
+  customerName,
+  contactId,
+  contactName,
   onActivityAdded,
 }: OpportunityActivityTimelineProps) {
   const { user } = useAuth()
@@ -111,10 +119,18 @@ export default function OpportunityActivityTimeline({
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [formError, setFormError] = useState<string | null>(null)
 
+  const getNowLocalIso = () => {
+    const now = new Date()
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+  }
+
   // Form state
   const [formData, setFormData] = useState<{
     type: OpportunityActivityType
     title: string
+    customer_name: string
+    contact_name: string
+    occurred_at: string
     content: string
     outcome: string
     duration_minutes: string
@@ -123,6 +139,9 @@ export default function OpportunityActivityTimeline({
   }>({
     type: 'CALL',
     title: '',
+    customer_name: customerName || '',
+    contact_name: contactName || '',
+    occurred_at: getNowLocalIso(),
     content: '',
     outcome: '',
     duration_minutes: '15',
@@ -153,7 +172,17 @@ export default function OpportunityActivityTimeline({
   const handleOpenModal = (presetType: OpportunityActivityType = 'CALL') => {
     setFormData({
       type: presetType,
-      title: '',
+      title:
+        presetType === 'CALL'
+          ? 'Cuộc gọi trao đổi'
+          : presetType === 'MEETING'
+          ? 'Gặp mặt trao đổi trực tiếp'
+          : presetType === 'EMAIL'
+          ? 'Gửi email thông tin'
+          : 'Ghi chú nhanh',
+      customer_name: customerName || '',
+      contact_name: contactName || '',
+      occurred_at: getNowLocalIso(),
       content: '',
       outcome: '',
       duration_minutes: presetType === 'CALL' ? '15' : presetType === 'MEETING' ? '60' : '',
@@ -162,6 +191,17 @@ export default function OpportunityActivityTimeline({
     })
     setFormError(null)
     setIsModalOpen(true)
+  }
+
+  // Quick preset thời điểm diễn ra (Hỗ trợ hoạt động đã diễn ra trong quá khứ - S6-05)
+  const setQuickOccurredAt = (minutesAgo: number, customLabel?: string) => {
+    const d = new Date(Date.now() - minutesAgo * 60 * 1000)
+    const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+    setFormData((prev) => ({
+      ...prev,
+      occurred_at: iso,
+      title: prev.title || (customLabel ? `${prev.type === 'CALL' ? 'Cuộc gọi' : 'Gặp mặt'} (${customLabel})` : prev.title),
+    }))
   }
 
   // Xử lý gửi form ghi nhận hoạt động
@@ -182,6 +222,12 @@ export default function OpportunityActivityTimeline({
     try {
       const payload: CreateOpportunityActivityPayload = {
         opportunity_id: opportunityId,
+        opportunity_title: opportunityTitle,
+        customer_id: customerId,
+        customer_name: formData.customer_name.trim() || customerName,
+        contact_id: contactId,
+        contact_name: formData.contact_name.trim() || contactName,
+        occurred_at: formData.occurred_at ? new Date(formData.occurred_at).toISOString() : new Date().toISOString(),
         type: formData.type,
         title: formData.title.trim(),
         content: formData.content.trim(),
@@ -502,6 +548,21 @@ export default function OpportunityActivityTimeline({
 
                 <h4 className="card-activity-title">{activity.title}</h4>
 
+                {/* S6-05: Gắn hoạt động với Khách hàng, Người liên hệ & Thời điểm diễn ra */}
+                {(activity.occurred_at || activity.customer_name || activity.contact_name) && (
+                  <div className="activity-relation-strip" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '0.8rem', color: '#4b5563', margin: '4px 0 8px 0', background: '#f8fafc', padding: '4px 8px', borderRadius: '4px' }}>
+                    {activity.occurred_at && (
+                      <span><strong>🕒 Diễn ra:</strong> {formatDateTime(activity.occurred_at)}</span>
+                    )}
+                    {activity.customer_name && (
+                      <span><strong>🏢 Khách hàng:</strong> {activity.customer_name}</span>
+                    )}
+                    {activity.contact_name && (
+                      <span><strong>👤 Liên hệ:</strong> {activity.contact_name}</span>
+                    )}
+                  </div>
+                )}
+
                 <p className="card-activity-body">{activity.content}</p>
 
                 {/* Next Action Box nếu có */}
@@ -533,7 +594,7 @@ export default function OpportunityActivityTimeline({
         </div>
       )}
 
-      {/* ── MODAL GHI NHẬN HOẠT ĐỘNG MỚI ── */}
+      {/* ── MODAL GHI NHẬN HOẠT ĐỘNG MỚI (S6-05) ── */}
       {isModalOpen && (
         <div className="opp-timeline-modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div
@@ -544,7 +605,7 @@ export default function OpportunityActivityTimeline({
             aria-labelledby="activity-modal-title"
           >
             <div className="modal-header">
-              <h3 id="activity-modal-title">Ghi nhận hoạt động tương tác</h3>
+              <h3 id="activity-modal-title">Ghi nhận hoạt động với khách hàng (S6-05)</h3>
               <button
                 type="button"
                 className="modal-close-btn"
@@ -585,10 +646,106 @@ export default function OpportunityActivityTimeline({
                   >
                     <option value="CALL">Cuộc gọi điện thoại</option>
                     <option value="EMAIL">Gửi Email</option>
-                    <option value="MEETING">Cuộc họp / Thuyết trình Demo</option>
-                    <option value="NOTE">Ghi chú nội bộ</option>
+                    <option value="MEETING">Cuộc gặp / Thuyết trình Demo</option>
+                    <option value="NOTE">Ghi chú nhanh</option>
                     <option value="TASK">Công việc phát sinh</option>
                   </select>
+                </div>
+
+                {/* S6-05: Thời điểm diễn ra & Quick presets */}
+                <div className="form-group">
+                  <label htmlFor="activity-occurred-at">
+                    Thời điểm diễn ra (Hỗ trợ hoạt động đã qua hoặc sắp tới) *
+                  </label>
+                  <input
+                    id="activity-occurred-at"
+                    type="datetime-local"
+                    className="form-control"
+                    value={formData.occurred_at}
+                    onChange={(e) => setFormData({ ...formData, occurred_at: e.target.value })}
+                  />
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-secondary"
+                      style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                      onClick={() => setQuickOccurredAt(0)}
+                    >
+                      Vừa xong
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-secondary"
+                      style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                      onClick={() => setQuickOccurredAt(30, '30p trước')}
+                    >
+                      30 phút trước
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-secondary"
+                      style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                      onClick={() => setQuickOccurredAt(60, '1h trước')}
+                    >
+                      1 giờ trước
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-secondary"
+                      style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                      onClick={() => {
+                        const d = new Date()
+                        d.setHours(9, 0, 0, 0)
+                        setFormData((prev) => ({
+                          ...prev,
+                          occurred_at: new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16),
+                        }))
+                      }}
+                    >
+                      Sáng nay
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-secondary"
+                      style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                      onClick={() => {
+                        const d = new Date(Date.now() - 24 * 3600 * 1000)
+                        d.setHours(15, 0, 0, 0)
+                        setFormData((prev) => ({
+                          ...prev,
+                          occurred_at: new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16),
+                        }))
+                      }}
+                    >
+                      Hôm qua
+                    </button>
+                  </div>
+                </div>
+
+                {/* S6-05: Gắn hoạt động với Khách hàng & Người liên hệ */}
+                <div className="form-row-2">
+                  <div className="form-group">
+                    <label htmlFor="activity-customer-name">Khách hàng liên quan</label>
+                    <input
+                      id="activity-customer-name"
+                      type="text"
+                      className="form-control"
+                      placeholder="Tên khách hàng / doanh nghiệp..."
+                      value={formData.customer_name}
+                      onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="activity-contact-name">Người liên hệ</label>
+                    <input
+                      id="activity-contact-name"
+                      type="text"
+                      className="form-control"
+                      placeholder="VD: Anh Tuấn (Giám đốc CNTT)..."
+                      value={formData.contact_name}
+                      onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
+                    />
+                  </div>
                 </div>
 
                 {/* Tiêu đề hoạt động */}
@@ -613,10 +770,24 @@ export default function OpportunityActivityTimeline({
                       id="activity-outcome-input"
                       type="text"
                       className="form-control"
-                      placeholder="VD: Thành công, Đồng ý nhận báo giá, Cần suy nghĩ thêm..."
+                      placeholder="VD: Khách rất hài lòng, Xin báo giá chi tiết..."
                       value={formData.outcome}
                       onChange={(e) => setFormData({ ...formData, outcome: e.target.value })}
                     />
+                    {/* Quick Outcome Chips for Mobile 1-Tap */}
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+                      {['Đồng ý nhận báo giá', 'Hẹn demo tuần sau', 'Cần suy nghĩ thêm', 'Không nghe máy', 'Từ chối'].map((chip) => (
+                        <button
+                          key={chip}
+                          type="button"
+                          className="btn btn-sm btn-outline-primary"
+                          style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '12px' }}
+                          onClick={() => setFormData((prev) => ({ ...prev, outcome: chip }))}
+                        >
+                          + {chip}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {(formData.type === 'CALL' || formData.type === 'MEETING') && (

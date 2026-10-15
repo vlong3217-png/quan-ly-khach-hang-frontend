@@ -624,6 +624,10 @@ export default function OpportunityDetailModal({
             <OpportunityActivityTimeline
               opportunityId={currentOpp.id}
               opportunityTitle={currentOpp.title}
+              customerId={currentOpp.customer_id ? String(currentOpp.customer_id) : undefined}
+              customerName={currentOpp.customer_name}
+              contactId={currentOpp.contact_id ? String(currentOpp.contact_id) : undefined}
+              contactName={currentOpp.contact_name}
               onActivityAdded={() => {
                 // Refresh if needed
               }}

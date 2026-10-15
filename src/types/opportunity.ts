@@ -272,6 +272,11 @@ export interface OpportunityActivity {
   id: string
   opportunity_id: string
   opportunity_title?: string
+  customer_id?: string
+  customer_name?: string
+  contact_id?: string
+  contact_name?: string
+  occurred_at?: string // Thời điểm hoạt động diễn ra (hỗ trợ hoạt động trong quá khứ - S6-05)
   type: OpportunityActivityType
   title: string
   content: string
@@ -288,6 +293,12 @@ export interface OpportunityActivity {
 
 export interface CreateOpportunityActivityPayload {
   opportunity_id: string
+  opportunity_title?: string
+  customer_id?: string
+  customer_name?: string
+  contact_id?: string
+  contact_name?: string
+  occurred_at?: string
   type: OpportunityActivityType
   title: string
   content: string
