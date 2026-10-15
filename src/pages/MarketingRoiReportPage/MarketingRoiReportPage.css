@@ -1,0 +1,224 @@
+.marketing-roi-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  color: #1e293b;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Header */
+.marketing-roi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(241, 245, 249, 0.9));
+  padding: 1.5rem;
+  border-radius: 14px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.marketing-roi-header-title h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.4rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.marketing-roi-header-title p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* Filter bar */
+.marketing-roi-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #ffffff;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  flex-wrap: wrap;
+}
+
+/* Summary Grid */
+.marketing-roi-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+}
+
+.roi-stat-card {
+  background: #ffffff;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.roi-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.roi-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.roi-blue { background: rgba(59, 130, 246, 0.12); color: #2563eb; }
+.roi-emerald { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.roi-purple { background: rgba(168, 85, 247, 0.12); color: #9333ea; }
+.roi-amber { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+.roi-rose { background: rgba(244, 63, 94, 0.12); color: #e11d48; }
+
+.roi-stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.roi-stat-label {
+  font-size: 0.8125rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.roi-stat-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.roi-stat-sub {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* Tabs */
+.marketing-roi-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.25rem;
+}
+
+.roi-tab-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.roi-tab-btn:hover {
+  color: #2563eb;
+}
+
+.roi-tab-btn.active {
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.roi-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #2563eb;
+}
+
+/* Table Card */
+.roi-table-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.roi-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.roi-table th {
+  background: #f8fafc;
+  padding: 0.875rem 1rem;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.roi-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.roi-table tr:hover td {
+  background-color: #f8fafc;
+}
+
+/* Progress bar in table */
+.rate-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rate-bar-bg {
+  width: 70px;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.rate-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.fill-blue { background: #3b82f6; }
+.fill-emerald { background: #10b981; }
+
+.badge-roi-high {
+  display: inline-flex;
+  align-items: center;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+}

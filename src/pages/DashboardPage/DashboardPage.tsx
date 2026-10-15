@@ -26,6 +26,7 @@ import PipelineFunnelPage from '../PipelineFunnelPage/PipelineFunnelPage.tsx'
 import RevenueForecastPage from '../RevenueForecastPage/RevenueForecastPage.tsx'
 import TeamProductivityReportPage from '../TeamProductivityReportPage/TeamProductivityReportPage.tsx'
 import SalesLeaderboardPage from '../SalesLeaderboardPage/SalesLeaderboardPage.tsx'
+import MarketingRoiReportPage from '../MarketingRoiReportPage/MarketingRoiReportPage.tsx'
 import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
 import ExecutiveDashboard from '../../components/ExecutiveDashboard/ExecutiveDashboard.tsx'
 import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
@@ -136,6 +137,8 @@ function DashboardPage() {
       setActiveMenuId('menu-team-productivity')
     } else if (path.startsWith('/dashboard/leaderboard')) {
       setActiveMenuId('menu-sales-leaderboard')
+    } else if (path.startsWith('/dashboard/marketing-roi')) {
+      setActiveMenuId('menu-marketing-roi')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -228,6 +231,9 @@ function DashboardPage() {
   const isLeaderboardView =
     activeMenuId === 'menu-sales-leaderboard' ||
     activeMenuId.startsWith('menu-sales-leaderboard-')
+  const isMarketingRoiView =
+    activeMenuId === 'menu-marketing-roi' ||
+    activeMenuId.startsWith('menu-marketing-roi-')
   const isSettingView =
     activeMenuId === 'menu-settings' ||
     activeMenuId.startsWith('menu-settings-')
@@ -481,6 +487,15 @@ function DashboardPage() {
           {isLeaderboardView && (
             <section className="dashboard-section leaderboard-section">
               <SalesLeaderboardPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: BÁO CÁO ROI NGUỒN LEAD & CHIẾN DỊCH (S8-09)
+              ───────────────────────────────────────────────────────────── */}
+          {isMarketingRoiView && (
+            <section className="dashboard-section marketing-roi-section">
+              <MarketingRoiReportPage />
             </section>
           )}
 
