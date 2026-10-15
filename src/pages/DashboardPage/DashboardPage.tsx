@@ -23,6 +23,7 @@ import AuditLogPage from '../AuditLogPage/AuditLogPage.tsx'
 import WorkflowAutomationPage from '../WorkflowAutomationPage/WorkflowAutomationPage.tsx'
 import SalesQuotasPage from '../SalesQuotasPage/SalesQuotasPage.tsx'
 import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
+import ExecutiveDashboard from '../../components/ExecutiveDashboard/ExecutiveDashboard.tsx'
 import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
 import NotificationBell from '../../components/NotificationBell/NotificationBell.tsx'
 import {
@@ -335,6 +336,9 @@ function DashboardPage() {
                 onNavigateToCalendar={() => navigate('/dashboard/calendar')}
                 onNavigateToOpportunities={() => navigate('/dashboard/opportunities')}
               />
+
+              {/* Role-based Executive Dashboard (S8-04) */}
+              <ExecutiveDashboard />
             </>
           )}
 
