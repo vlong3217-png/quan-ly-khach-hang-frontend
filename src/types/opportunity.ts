@@ -216,6 +216,31 @@ export interface OpportunityFilterParams {
   close_date_to?: string
 }
 
+/* ──────────── User Story S6-02: Bộ lọc cơ hội nâng cao & Lưu bộ lọc ──────────── */
+export type OpportunityDatePreset =
+  | 'ALL'
+  | 'THIS_WEEK'
+  | 'THIS_MONTH'
+  | 'THIS_QUARTER'
+  | 'OVERDUE'
+  | 'CUSTOM'
+
+export interface SavedOpportunityFilter {
+  id: string
+  name: string
+  icon?: string
+  is_preset?: boolean
+  stage_id?: string
+  status?: string
+  revenue_range?: string
+  owner?: string
+  product_id?: string
+  date_preset?: OpportunityDatePreset
+  close_date_from?: string
+  close_date_to?: string
+  search_keyword?: string
+}
+
 /**
  * Kiểu dữ liệu cho S5-03: Ghi nhận hoạt động và lịch sử tương tác của cơ hội
  */

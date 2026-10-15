@@ -2,10 +2,14 @@ import { useState, useEffect, useCallback } from 'react'
 import type {
   Opportunity,
   CreateOpportunityPayload,
+  SavedOpportunityFilter,
+  OpportunityDatePreset,
 } from '../../types/opportunity.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
+import type { Product } from '../../types/product.ts'
 import { opportunityService, isOppInStage } from '../../services/opportunityService.ts'
 import { pipelineService } from '../../services/pipelineService.ts'
+import { productService } from '../../services/productService.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import OpportunityDetailModal from '../../components/OpportunityDetailModal/OpportunityDetailModal.tsx'
 import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
@@ -35,12 +39,26 @@ export default function OpportunitiesPage() {
   const [dragOverStageId, setDragOverStageId] = useState<string | null>(null)
   const [isUpdatingStage, setIsUpdatingStage] = useState<boolean>(false)
 
-  // Bộ lọc
+  // Bộ lọc cơ bản
   const [searchKeyword, setSearchKeyword] = useState<string>('')
   const [selectedStageId, setSelectedStageId] = useState<string>('ALL')
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL')
   const [selectedRevenueRange, setSelectedRevenueRange] = useState<string>('ALL')
   const [selectedOwner, setSelectedOwner] = useState<string>('ALL')
+
+  // ── S6-02: Lọc nâng cao theo Sản phẩm, Khoảng ngày chốt, và Bộ lọc đã lưu ──
+  const [selectedProductId, setSelectedProductId] = useState<string>('ALL')
+  const [closeDatePreset, setCloseDatePreset] = useState<OpportunityDatePreset>('ALL')
+  const [closeDateFrom, setCloseDateFrom] = useState<string>('')
+  const [closeDateTo, setCloseDateTo] = useState<string>('')
+  const [productsList, setProductsList] = useState<Product[]>([])
+  const [savedFilters, setSavedFilters] = useState<SavedOpportunityFilter[]>(() =>
+    opportunityService.getSavedFilters()
+  )
+  const [activeSavedFilterId, setActiveSavedFilterId] = useState<string | null>(null)
+  const [isSaveFilterModalOpen, setIsSaveFilterModalOpen] = useState<boolean>(false)
+  const [newFilterNameInput, setNewFilterNameInput] = useState<string>('')
+
   const [viewMode, setViewMode] = useState<'TABLE' | 'KANBAN'>('TABLE')
 
   // Phân trang cho Table view
@@ -109,6 +127,8 @@ export default function OpportunitiesPage() {
 
   useEffect(() => {
     loadData()
+    const prods = productService.getProducts()
+    if (Array.isArray(prods)) setProductsList(prods)
   }, [loadData])
 
   // Format tiền tệ VNĐ có dấu phẩy phân cách hàng nghìn
@@ -349,20 +369,78 @@ export default function OpportunitiesPage() {
   // Danh sách người phụ trách duy nhất để lọc
   const uniqueOwners = Array.from(new Set(opportunities.map((o) => o.owner_name).filter(Boolean)))
 
-  // Lọc danh sách nâng cao kết hợp Kanban & Bảng
+  // Helper tính toán ngày chốt cho các preset (S6-02)
+  const isDateInThisWeek = (dStr: string) => {
+    if (!dStr) return false
+    const target = new Date(dStr)
+    if (isNaN(target.getTime())) return false
+    const now = new Date()
+    const currentDay = now.getDay()
+    const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay
+    const monday = new Date(now)
+    monday.setDate(now.getDate() + diffToMonday)
+    monday.setHours(0, 0, 0, 0)
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    sunday.setHours(23, 59, 59, 999)
+    return target >= monday && target <= sunday
+  }
+
+  const isDateInThisMonth = (dStr: string) => {
+    if (!dStr) return false
+    const target = new Date(dStr)
+    if (isNaN(target.getTime())) return false
+    const now = new Date()
+    return target.getFullYear() === now.getFullYear() && target.getMonth() === now.getMonth()
+  }
+
+  const isDateInThisQuarter = (dStr: string) => {
+    if (!dStr) return false
+    const target = new Date(dStr)
+    if (isNaN(target.getTime())) return false
+    const now = new Date()
+    const qTarget = Math.floor(target.getMonth() / 3)
+    const qNow = Math.floor(now.getMonth() / 3)
+    return target.getFullYear() === now.getFullYear() && qTarget === qNow
+  }
+
+  const isDateOverdue = (dStr: string) => {
+    if (!dStr) return false
+    const target = new Date(dStr)
+    if (isNaN(target.getTime())) return false
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return target < today
+  }
+
+  // Lọc danh sách nâng cao kết hợp Kanban & Bảng (S6-02)
   const filteredOpportunities = opportunities.filter((opp) => {
+    // 1. Lọc theo giai đoạn
     if (selectedStageId !== 'ALL') {
       const targetStage = stages.find((s) => s.id === selectedStageId)
       if (targetStage && !isOppInStage(opp, targetStage)) {
         return false
       }
     }
+
+    // 2. Lọc theo trạng thái
     if (selectedStatus !== 'ALL' && opp.status !== selectedStatus) {
       return false
     }
-    if (selectedOwner !== 'ALL' && opp.owner_name !== selectedOwner) {
-      return false
+
+    // 3. Lọc theo người sở hữu
+    if (selectedOwner !== 'ALL') {
+      if (selectedOwner === 'CURRENT_USER') {
+        const matchesUser =
+          (user?.full_name && opp.owner_name?.toLowerCase().includes(user.full_name.toLowerCase())) ||
+          (user?.id && opp.owner_id === Number(user.id))
+        if (!matchesUser) return false
+      } else if (opp.owner_name !== selectedOwner) {
+        return false
+      }
     }
+
+    // 4. Lọc theo khoảng giá trị
     if (selectedRevenueRange !== 'ALL') {
       const rev = opp.expected_revenue || 0
       if (selectedRevenueRange === 'UNDER_50M' && rev >= 50000000) return false
@@ -370,6 +448,35 @@ export default function OpportunitiesPage() {
       if (selectedRevenueRange === '200M_500M' && (rev < 200000000 || rev > 500000000)) return false
       if (selectedRevenueRange === 'OVER_500M' && rev <= 500000000) return false
     }
+
+    // 5. Lọc theo sản phẩm (S6-02)
+    if (selectedProductId !== 'ALL') {
+      const selectedProd = productsList.find((p) => p.id === selectedProductId)
+      const hasProduct =
+        opp.product_items?.some((p) => p.product_id === selectedProductId) ||
+        (selectedProd && (
+          opp.title.toLowerCase().includes(selectedProd.name.toLowerCase()) ||
+          opp.title.toLowerCase().includes(selectedProd.code.toLowerCase()) ||
+          (opp.description || '').toLowerCase().includes(selectedProd.name.toLowerCase())
+        ))
+      if (!hasProduct) return false
+    }
+
+    // 6. Lọc theo khoảng ngày chốt (S6-02)
+    const closeDateStr = opp.expected_close_date || ''
+    if (closeDatePreset === 'THIS_WEEK' && !isDateInThisWeek(closeDateStr)) return false
+    if (closeDatePreset === 'THIS_MONTH' && !isDateInThisMonth(closeDateStr)) return false
+    if (closeDatePreset === 'THIS_QUARTER' && !isDateInThisQuarter(closeDateStr)) return false
+    if (closeDatePreset === 'OVERDUE') {
+      if (opp.status !== 'OPEN' || !isDateOverdue(closeDateStr)) return false
+    }
+    if (closeDatePreset === 'CUSTOM') {
+      const d = closeDateStr.split('T')[0]
+      if (closeDateFrom && d < closeDateFrom) return false
+      if (closeDateTo && d > closeDateTo) return false
+    }
+
+    // 7. Lọc theo từ khóa tìm kiếm
     if (searchKeyword.trim()) {
       const q = searchKeyword.toLowerCase().trim()
       const matchTitle = (opp.title || '').toLowerCase().includes(q)
@@ -401,7 +508,11 @@ export default function OpportunitiesPage() {
     selectedStageId !== 'ALL' ||
     selectedStatus !== 'ALL' ||
     selectedRevenueRange !== 'ALL' ||
-    selectedOwner !== 'ALL'
+    selectedOwner !== 'ALL' ||
+    selectedProductId !== 'ALL' ||
+    closeDatePreset !== 'ALL' ||
+    closeDateFrom !== '' ||
+    closeDateTo !== ''
 
   const handleResetFilters = () => {
     setSearchKeyword('')
@@ -409,12 +520,78 @@ export default function OpportunitiesPage() {
     setSelectedStatus('ALL')
     setSelectedRevenueRange('ALL')
     setSelectedOwner('ALL')
+    setSelectedProductId('ALL')
+    setCloseDatePreset('ALL')
+    setCloseDateFrom('')
+    setCloseDateTo('')
+    setActiveSavedFilterId(null)
+  }
+
+  // Áp dụng bộ lọc đã lưu (S6-02)
+  const handleApplySavedFilter = (filter: SavedOpportunityFilter) => {
+    if (activeSavedFilterId === filter.id) {
+      handleResetFilters()
+      return
+    }
+
+    setActiveSavedFilterId(filter.id)
+    setSelectedStageId(filter.stage_id || 'ALL')
+    setSelectedStatus(filter.status || 'ALL')
+    setSelectedRevenueRange(filter.revenue_range || 'ALL')
+    setSelectedOwner(filter.owner || 'ALL')
+    setSelectedProductId(filter.product_id || 'ALL')
+    setCloseDatePreset(filter.date_preset || 'ALL')
+    setCloseDateFrom(filter.close_date_from || '')
+    setCloseDateTo(filter.close_date_to || '')
+    setSearchKeyword(filter.search_keyword || '')
+  }
+
+  // Lưu bộ lọc hiện tại (S6-02)
+  const handleSaveFilter = () => {
+    if (!newFilterNameInput.trim()) return
+    const newFilter = opportunityService.saveCustomFilter(newFilterNameInput.trim(), {
+      stage_id: selectedStageId !== 'ALL' ? selectedStageId : undefined,
+      status: selectedStatus !== 'ALL' ? selectedStatus : undefined,
+      revenue_range: selectedRevenueRange !== 'ALL' ? selectedRevenueRange : undefined,
+      owner: selectedOwner !== 'ALL' ? selectedOwner : undefined,
+      product_id: selectedProductId !== 'ALL' ? selectedProductId : undefined,
+      date_preset: closeDatePreset !== 'ALL' ? closeDatePreset : undefined,
+      close_date_from: closeDateFrom || undefined,
+      close_date_to: closeDateTo || undefined,
+      search_keyword: searchKeyword.trim() || undefined,
+    })
+    setSavedFilters(opportunityService.getSavedFilters())
+    setActiveSavedFilterId(newFilter.id)
+    setIsSaveFilterModalOpen(false)
+    setNewFilterNameInput('')
+    showToast(`Đã lưu bộ lọc "${newFilter.name}" thành công!`, 'success')
+  }
+
+  // Xóa bộ lọc tự tạo
+  const handleDeleteSavedFilter = (filterId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    opportunityService.deleteCustomFilter(filterId)
+    setSavedFilters(opportunityService.getSavedFilters())
+    if (activeSavedFilterId === filterId) {
+      setActiveSavedFilterId(null)
+    }
+    showToast('Đã xóa bộ lọc đã lưu.', 'success')
   }
 
   // Reset về trang 1 khi lọc
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchKeyword, selectedStageId, selectedStatus, selectedRevenueRange, selectedOwner])
+  }, [
+    searchKeyword,
+    selectedStageId,
+    selectedStatus,
+    selectedRevenueRange,
+    selectedOwner,
+    selectedProductId,
+    closeDatePreset,
+    closeDateFrom,
+    closeDateTo,
+  ])
 
   // Phân trang cho Table view
   const totalPages = Math.max(1, Math.ceil(filteredOpportunities.length / pageSize))
@@ -564,6 +741,43 @@ export default function OpportunitiesPage() {
             </div>
           </div>
 
+          {/* ── S6-02: Dải Bộ lọc nhanh & Bộ lọc đã lưu ── */}
+          <div className="opp-saved-filters-bar" id="opp-saved-filters-bar">
+            <span className="saved-filter-label">🎯 Bộ lọc tiêu điểm:</span>
+            <div className="saved-filter-chips">
+              {savedFilters.map((sf) => (
+                <button
+                  key={sf.id}
+                  type="button"
+                  className={`saved-filter-chip ${activeSavedFilterId === sf.id ? 'active' : ''}`}
+                  onClick={() => handleApplySavedFilter(sf)}
+                >
+                  <span className="chip-icon">{sf.icon || '📌'}</span>
+                  <span className="chip-name">{sf.name}</span>
+                  {!sf.is_preset && (
+                    <span
+                      className="chip-remove"
+                      title="Xóa bộ lọc này"
+                      onClick={(e) => handleDeleteSavedFilter(sf.id, e)}
+                    >
+                      ✕
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+            {isAnyFilterActive && (
+              <button
+                type="button"
+                className="btn-save-current-filter"
+                onClick={() => setIsSaveFilterModalOpen(true)}
+                title="Lưu lại bộ lọc hiện tại để dùng lại sau"
+              >
+                💾 Lưu bộ lọc này
+              </button>
+            )}
+          </div>
+
           {/* ── Filter Bar ── */}
           <div className="opp-filter-bar">
             <div className="search-box">
@@ -628,6 +842,60 @@ export default function OpportunitiesPage() {
                 <option value="OVER_500M">Trên 500,000,000 VNĐ</option>
               </select>
 
+              {/* Lọc theo Sản phẩm (S6-02) */}
+              <select
+                value={selectedProductId}
+                onChange={(e) => setSelectedProductId(e.target.value)}
+                className="filter-select"
+                id="opp-product-filter"
+                title="Lọc theo sản phẩm trong cơ hội"
+              >
+                <option value="ALL">-- Tất cả sản phẩm --</option>
+                {productsList.map((prod) => (
+                  <option key={prod.id} value={prod.id}>
+                    {prod.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* Lọc theo Ngày chốt dự kiến (S6-02) */}
+              <select
+                value={closeDatePreset}
+                onChange={(e) => setCloseDatePreset(e.target.value as OpportunityDatePreset)}
+                className="filter-select"
+                id="opp-date-preset-filter"
+                title="Lọc theo ngày chốt dự kiến"
+              >
+                <option value="ALL">-- Mọi ngày chốt --</option>
+                <option value="THIS_WEEK">⚡ Chốt trong tuần này</option>
+                <option value="THIS_MONTH">🎯 Chốt trong tháng này</option>
+                <option value="THIS_QUARTER">📊 Chốt trong quý này</option>
+                <option value="OVERDUE">⏰ Đã quá hạn chốt</option>
+                <option value="CUSTOM">📅 Tùy chọn khoảng ngày...</option>
+              </select>
+
+              {closeDatePreset === 'CUSTOM' && (
+                <div className="custom-date-inputs" style={{ display: 'inline-flex', gap: '4px', alignItems: 'center' }}>
+                  <input
+                    type="date"
+                    className="filter-select"
+                    value={closeDateFrom}
+                    onChange={(e) => setCloseDateFrom(e.target.value)}
+                    title="Từ ngày"
+                    style={{ width: '135px' }}
+                  />
+                  <span>-</span>
+                  <input
+                    type="date"
+                    className="filter-select"
+                    value={closeDateTo}
+                    onChange={(e) => setCloseDateTo(e.target.value)}
+                    title="Đến ngày"
+                    style={{ width: '135px' }}
+                  />
+                </div>
+              )}
+
               {uniqueOwners.length > 0 && (
                 <select
                   value={selectedOwner}
@@ -637,6 +905,7 @@ export default function OpportunitiesPage() {
                   title="Lọc theo người phụ trách"
                 >
                   <option value="ALL">-- Tất cả người phụ trách --</option>
+                  <option value="CURRENT_USER">👤 Cơ hội của tôi</option>
                   {uniqueOwners.map((owner) => (
                     <option key={owner} value={owner}>
                       {owner}
@@ -1277,6 +1546,71 @@ export default function OpportunitiesPage() {
           }}
           onOverrideApproved={handleKanbanOverrideApproved}
         />
+      )}
+
+      {/* ── MODAL: LƯU BỘ LỌC TÌM KIẾM (S6-02) ── */}
+      {isSaveFilterModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsSaveFilterModalOpen(false)}>
+          <div className="modal-content" style={{ maxWidth: '480px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>💾 Lưu bộ lọc tìm kiếm cơ hội</h3>
+              <button
+                type="button"
+                className="close-btn"
+                onClick={() => setIsSaveFilterModalOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal-body">
+              <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '12px' }}>
+                Lưu lại các tiêu chí lọc đang chọn để lần sau áp dụng nhanh chỉ với một cú click chuột.
+              </p>
+              <div className="form-group">
+                <label>Tên bộ lọc *</label>
+                <input
+                  type="text"
+                  required
+                  className="form-control"
+                  placeholder="VD: Thương vụ Cloud cần chốt tuần này"
+                  value={newFilterNameInput}
+                  onChange={(e) => setNewFilterNameInput(e.target.value)}
+                  autoFocus
+                />
+              </div>
+
+              <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '6px', fontSize: '12px', color: '#475569', marginTop: '12px' }}>
+                <strong>Tiêu chí đang lưu:</strong>
+                <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
+                  {selectedStageId !== 'ALL' && <li>Giai đoạn: {stages.find(s => s.id === selectedStageId)?.name}</li>}
+                  {selectedStatus !== 'ALL' && <li>Trạng thái: {selectedStatus}</li>}
+                  {selectedRevenueRange !== 'ALL' && <li>Giá trị: {selectedRevenueRange}</li>}
+                  {selectedOwner !== 'ALL' && <li>Phụ trách: {selectedOwner === 'CURRENT_USER' ? 'Cơ hội của tôi' : selectedOwner}</li>}
+                  {selectedProductId !== 'ALL' && <li>Sản phẩm: {productsList.find(p => p.id === selectedProductId)?.name}</li>}
+                  {closeDatePreset !== 'ALL' && <li>Ngày chốt: {closeDatePreset}</li>}
+                  {searchKeyword && <li>Từ khóa: "{searchKeyword}"</li>}
+                </ul>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setIsSaveFilterModalOpen(false)}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleSaveFilter}
+                disabled={!newFilterNameInput.trim()}
+              >
+                Lưu bộ lọc
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
