@@ -189,6 +189,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Phân tích số lead, tỷ lệ tiếp nhận, chuyển đổi thành cơ hội theo nguồn và chiến dịch (S8-09)',
       },
       {
+        id: 'menu-rep-activity-audit',
+        title: 'Nhật ký & Khối lượng công việc',
+        path: '/dashboard/rep-activity-audit',
+        roles: [ROLES.ADMIN, ROLES.MANAGER],
+        description: 'Lọc theo thời gian, loại hoạt động, thành viên và thống kê tổng số hoạt động theo từng nhân sự (S8-11)',
+      },
+      {
         id: 'menu-teams',
         title: 'Quản lý Đội nhóm',
         path: '/dashboard/teams',
