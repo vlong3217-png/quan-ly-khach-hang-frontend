@@ -10,6 +10,7 @@ import OpportunityTaskManager from '../OpportunityTaskManager/OpportunityTaskMan
 import OpportunityProductManager from '../OpportunityProductManager/OpportunityProductManager.tsx'
 import OpportunityHistoryTimeline from '../OpportunityHistoryTimeline/OpportunityHistoryTimeline.tsx'
 import OpportunityTeamSharing from '../OpportunityTeamSharing/OpportunityTeamSharing.tsx'
+import OpportunityAttachments from '../OpportunityAttachments/OpportunityAttachments.tsx'
 import StageGateEnforcementModal from '../StageGateEnforcementModal/StageGateEnforcementModal.tsx'
 import ReassignOpportunityModal from '../ReassignOpportunityModal/ReassignOpportunityModal.tsx'
 import type { StageGateEvaluation } from '../../types/opportunity.ts'
@@ -20,7 +21,7 @@ import './OpportunityDetailModal.css'
 interface OpportunityDetailModalProps {
   opportunity: Opportunity
   isOpen: boolean
-  initialTab?: 'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS' | 'HISTORY' | 'TEAM'
+  initialTab?: 'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS' | 'HISTORY' | 'TEAM' | 'ATTACHMENTS'
   onClose: () => void
   onOpportunityUpdated: (updated: Opportunity) => void
   isPageView?: boolean
@@ -35,7 +36,7 @@ export default function OpportunityDetailModal({
   isPageView = false,
 }: OpportunityDetailModalProps) {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState<'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS' | 'HISTORY' | 'TEAM'>(initialTab)
+  const [activeTab, setActiveTab] = useState<'PRODUCTS' | 'ACTIVITIES' | 'DETAILS' | 'TASKS' | 'HISTORY' | 'TEAM' | 'ATTACHMENTS'>(initialTab)
   const [stages] = useState<PipelineStage[]>(() => pipelineService.getStages())
   const [currentOpp, setCurrentOpp] = useState<Opportunity>(opportunity)
   const [isChangingStage, setIsChangingStage] = useState<boolean>(false)
@@ -594,6 +595,14 @@ export default function OpportunityDetailModal({
               <span className="tab-pill">{currentOpp.shared_members.length + 1}</span>
             )}
           </button>
+          <button
+            type="button"
+            className={`opp-tab-btn ${activeTab === 'ATTACHMENTS' ? 'active' : ''}`}
+            onClick={() => setActiveTab('ATTACHMENTS')}
+            id="tab-btn-attachments"
+          >
+            📎 Tài liệu đính kèm
+          </button>
         </div>
 
         {/* ── Tab Content ── */}
@@ -878,6 +887,11 @@ export default function OpportunityDetailModal({
               }}
               onOpenReassignModal={() => setIsReassignModalOpen(true)}
             />
+          )}
+
+          {/* TAB 6: Tài liệu đính kèm cơ hội (S6-04) */}
+          {activeTab === 'ATTACHMENTS' && (
+            <OpportunityAttachments opportunity={currentOpp} />
           )}
         </div>
       </div>
