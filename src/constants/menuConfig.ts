@@ -147,6 +147,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
     description: 'Báo cáo thống kê số liệu và quản lý tổ chức',
     items: [
       {
+        id: 'menu-quotas',
+        title: 'Chỉ tiêu doanh số',
+        path: '/dashboard/quotas',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Chỉ tiêu doanh số theo tháng/quý, cảnh báo lệch và khoá kỳ (S8-03)',
+      },
+      {
         id: 'menu-teams',
         title: 'Quản lý Đội nhóm',
         path: '/dashboard/teams',

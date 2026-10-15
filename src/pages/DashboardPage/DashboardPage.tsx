@@ -21,6 +21,7 @@ import CalendarPage from '../CalendarPage/CalendarPage.tsx'
 import ContractsPage from '../ContractsPage/ContractsPage.tsx'
 import AuditLogPage from '../AuditLogPage/AuditLogPage.tsx'
 import WorkflowAutomationPage from '../WorkflowAutomationPage/WorkflowAutomationPage.tsx'
+import SalesQuotasPage from '../SalesQuotasPage/SalesQuotasPage.tsx'
 import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
 import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
 import NotificationBell from '../../components/NotificationBell/NotificationBell.tsx'
@@ -120,6 +121,8 @@ function DashboardPage() {
       setActiveMenuId('menu-contracts')
     } else if (path.startsWith('/dashboard/automation')) {
       setActiveMenuId('menu-automation')
+    } else if (path.startsWith('/dashboard/quotas')) {
+      setActiveMenuId('menu-quotas')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -197,6 +200,9 @@ function DashboardPage() {
   const isTeamView =
     activeMenuId === 'menu-teams' ||
     activeMenuId.startsWith('menu-teams-')
+  const isQuotaView =
+    activeMenuId === 'menu-quotas' ||
+    activeMenuId.startsWith('menu-quotas-')
   const isSettingView =
     activeMenuId === 'menu-settings' ||
     activeMenuId.startsWith('menu-settings-')
@@ -404,6 +410,15 @@ function DashboardPage() {
             </section>
           )}
 
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: CHỈ TIÊU DOANH SỐ (S8-03)
+              ───────────────────────────────────────────────────────────── */}
+          {isQuotaView && (
+            <section className="dashboard-section quotas-section">
+              <SalesQuotasPage />
+            </section>
+          )}
 
           {/* ─────────────────────────────────────────────────────────────
               VIEW 4: QUẢN LÝ ĐỘI NHÓM (TEAMS - ADMIN & MANAGER ONLY)
