@@ -211,6 +211,8 @@ function getMenuIcon(id: string) {
       return <IconWinLoss />
     case 'menu-marketing-roi':
       return <IconMegaphone />
+    case 'menu-rep-activity-audit':
+      return <IconClipboardList />
     case 'menu-teams':
       return <IconTeams />
     case 'menu-settings':

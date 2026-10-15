@@ -27,6 +27,7 @@ import RevenueForecastPage from '../RevenueForecastPage/RevenueForecastPage.tsx'
 import TeamProductivityReportPage from '../TeamProductivityReportPage/TeamProductivityReportPage.tsx'
 import SalesLeaderboardPage from '../SalesLeaderboardPage/SalesLeaderboardPage.tsx'
 import MarketingRoiReportPage from '../MarketingRoiReportPage/MarketingRoiReportPage.tsx'
+import RepActivityAuditPage from '../RepActivityAuditPage/RepActivityAuditPage.tsx'
 import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
 import ExecutiveDashboard from '../../components/ExecutiveDashboard/ExecutiveDashboard.tsx'
 import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
@@ -139,6 +140,8 @@ function DashboardPage() {
       setActiveMenuId('menu-sales-leaderboard')
     } else if (path.startsWith('/dashboard/marketing-roi')) {
       setActiveMenuId('menu-marketing-roi')
+    } else if (path.startsWith('/dashboard/rep-activity-audit')) {
+      setActiveMenuId('menu-rep-activity-audit')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -234,6 +237,9 @@ function DashboardPage() {
   const isMarketingRoiView =
     activeMenuId === 'menu-marketing-roi' ||
     activeMenuId.startsWith('menu-marketing-roi-')
+  const isRepActivityAuditView =
+    activeMenuId === 'menu-rep-activity-audit' ||
+    activeMenuId.startsWith('menu-rep-activity-audit-')
   const isSettingView =
     activeMenuId === 'menu-settings' ||
     activeMenuId.startsWith('menu-settings-')
@@ -496,6 +502,15 @@ function DashboardPage() {
           {isMarketingRoiView && (
             <section className="dashboard-section marketing-roi-section">
               <MarketingRoiReportPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: NHẬT KÝ & KHỐI LƯỢNG CÔNG VIỆC SALES (S8-11)
+              ───────────────────────────────────────────────────────────── */}
+          {isRepActivityAuditView && (
+            <section className="dashboard-section rep-activity-audit-section">
+              <RepActivityAuditPage />
             </section>
           )}
 
