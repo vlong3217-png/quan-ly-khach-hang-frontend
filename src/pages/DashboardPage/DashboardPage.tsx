@@ -17,6 +17,7 @@ import LeadFormsPage from '../LeadFormsPage/LeadFormsPage.tsx'
 import CampaignsPage from '../CampaignsPage/CampaignsPage.tsx'
 import OpportunitiesPage from '../OpportunitiesPage/OpportunitiesPage.tsx'
 import CalendarPage from '../CalendarPage/CalendarPage.tsx'
+import ContractsPage from '../ContractsPage/ContractsPage.tsx'
 import AuditLogPage from '../AuditLogPage/AuditLogPage.tsx'
 import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
 import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
@@ -110,6 +111,8 @@ function DashboardPage() {
       setActiveMenuId('menu-opportunities')
     } else if (path.startsWith('/dashboard/calendar')) {
       setActiveMenuId('menu-calendar')
+    } else if (path.startsWith('/dashboard/contracts')) {
+      setActiveMenuId('menu-contracts')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -160,6 +163,9 @@ function DashboardPage() {
   const isCalendarView =
     activeMenuId === 'menu-calendar' ||
     activeMenuId.startsWith('menu-calendar-')
+  const isContractsView =
+    activeMenuId === 'menu-contracts' ||
+    activeMenuId.startsWith('menu-contracts-')
   const isProductView =
     activeMenuId === 'menu-products' ||
     activeMenuId.startsWith('menu-products-')
@@ -354,6 +360,15 @@ function DashboardPage() {
           {isCalendarView && (
             <section className="dashboard-section calendar-section">
               <CalendarPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: HỢP ĐỒNG & THEO DÕI GIA HẠN (S7-07)
+              ───────────────────────────────────────────────────────────── */}
+          {isContractsView && (
+            <section className="dashboard-section contracts-section">
+              <ContractsPage />
             </section>
           )}
 
