@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import { productService } from '../../services/productService.ts'
 import type { Product, ProductType, ProductStatus } from '../../types/product.ts'
+import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import './ProductsPage.css'
 
 export default function ProductsPage() {
@@ -168,7 +169,7 @@ export default function ProductsPage() {
 
   const formatCurrency = (val?: number) => {
     if (val === undefined || val === null) return '—'
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+    return formatCurrencyVND(val)
   }
 
   return (

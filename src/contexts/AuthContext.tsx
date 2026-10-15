@@ -196,8 +196,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: true,
   })
 
-  /* --- Khôi phục session khi tải lại trang --- */
+  /* --- Khôi phục session khi tải lại trang & Tự động đăng xuất khi hết phiên --- */
   useEffect(() => {
+    const handleSessionExpired = () => {
+      clearAllStorage()
+      sessionStorage.setItem(
+        'session_expired_notice',
+        'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+      )
+      setState({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+      })
+      if (window.location.pathname !== '/login' && !window.location.pathname.startsWith('/lead-form') && !window.location.pathname.startsWith('/forms')) {
+        window.location.href = '/login'
+      }
+    }
+
     try {
       const token = loadTokenFromStorage()
       const rawUser = loadUserFromStorage()
@@ -213,21 +230,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         // Token hoặc user không hợp lệ / hết hạn → dọn dẹp storage
         if (token || rawUser) {
-          clearAllStorage()
-          sessionStorage.setItem(
-            'session_expired_notice',
-            'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
-          )
+          handleSessionExpired()
+        } else {
+          setState({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+          })
         }
-        setState({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          isLoading: false,
-        })
       }
     } catch {
-      // Đảm bảo không bị crash khi đọc session
       clearAllStorage()
       setState({
         user: null,
@@ -235,6 +248,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: false,
         isLoading: false,
       })
+    }
+
+    // 1. Quét định kỳ mỗi 10 giây: nếu phiên hết hạn trong khi đang mở tab -> tự out
+    const sessionTimer = setInterval(() => {
+      const token = loadTokenFromStorage()
+      if (token && !isTokenValid(token)) {
+        handleSessionExpired()
+      }
+    }, 10000)
+
+    // 2. Bắt lỗi 401 toàn cục khi gọi API backend
+    const originalFetch = window.fetch
+    window.fetch = async (...args) => {
+      const response = await originalFetch(...args)
+      const url = typeof args[0] === 'string' ? args[0] : (args[0] as Request)?.url || ''
+      
+      // Không can thiệp nếu là các API công khai hoặc login
+      const isPublicAuthApi = url.includes('/auth/login') || url.includes('/auth/forgot-password') || url.includes('/auth/reset-password')
+      if (response.status === 401 && !isPublicAuthApi) {
+        handleSessionExpired()
+      }
+      return response
+    }
+
+    // 3. Đồng bộ hóa giữa các tab trình duyệt
+    const handleStorageChange = () => {
+      const token = loadTokenFromStorage()
+      if (!token || !isTokenValid(token)) {
+        setState({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isLoading: false,
+        })
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+
+    return () => {
+      clearInterval(sessionTimer)
+      window.fetch = originalFetch
+      window.removeEventListener('storage', handleStorageChange)
     }
   }, [])
 

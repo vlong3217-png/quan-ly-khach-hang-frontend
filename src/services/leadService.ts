@@ -611,15 +611,32 @@ export const leadService = {
           }
 
           const existingLeads = getStoredLeads()
-          const existingEmails = new Set(existingLeads.map((l) => l.email.toLowerCase()))
-          const existingPhones = new Set(existingLeads.map((l) => l.phone.replace(/\D/g, '')))
+          const existingLeadEmails = new Map<string, string>()
+          const existingLeadPhones = new Map<string, string>()
+          existingLeads.forEach((l) => {
+            if (l.email) existingLeadEmails.set(l.email.toLowerCase().trim(), l.full_name)
+            if (l.phone) existingLeadPhones.set(l.phone.replace(/\D/g, ''), l.full_name)
+          })
+
+          // Đọc thêm danh sách khách hàng doanh nghiệp trong CRM để đối soát trùng email/SĐT toàn hệ thống
+          let existingCustomers: { name: string; email?: string; phone?: string }[] = []
+          try {
+            const rawCust = localStorage.getItem('crm_enterprise_customers_data')
+            if (rawCust) existingCustomers = JSON.parse(rawCust)
+          } catch {}
+          existingCustomers.forEach((c) => {
+            if (c.email) existingLeadEmails.set(c.email.toLowerCase().trim(), `Khách hàng: ${c.name}`)
+            if (c.phone) existingLeadPhones.set(c.phone.replace(/\D/g, ''), `Khách hàng: ${c.name}`)
+          })
 
           const seenEmailsInFile = new Set<string>()
           const seenPhonesInFile = new Set<string>()
 
           const validatedRows: ExcelLeadRow[] = rawRows.map((row, idx) => {
             const rowIndex = idx + 2 // dòng trong Excel tính từ header dòng 1
-            const errors: string[] = []
+            const formatErrors: string[] = []
+            const duplicateErrors: string[] = []
+            let isDuplicate = false
 
             // Tìm giá trị từ các tên cột có thể có
             const fullName = String(
@@ -644,51 +661,58 @@ export const leadService = {
               row['Nhu cầu tư vấn / Ghi chú'] || row['Nhu cầu'] || row['Ghi chú'] || row['Requirement'] || ''
             ).trim()
 
-            // 1. Kiểm tra Họ và tên
+            // 1. Kiểm tra định dạng Họ và tên
             if (!fullName) {
-              errors.push('Thiếu họ và tên khách hàng')
+              formatErrors.push('Thiếu họ và tên khách hàng')
             }
 
-            // 2. Kiểm tra Email
+            // 2. Kiểm tra định dạng Email
             if (!email) {
-              errors.push('Thiếu địa chỉ email')
+              formatErrors.push('Thiếu địa chỉ email')
             } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-              errors.push('Email không đúng định dạng')
+              formatErrors.push('Email không đúng định dạng')
             }
 
-            // 3. Kiểm tra Số điện thoại
+            // 3. Kiểm tra định dạng Số điện thoại
             const cleanPhone = phone.replace(/\D/g, '')
             if (!phone) {
-              errors.push('Thiếu số điện thoại liên hệ')
+              formatErrors.push('Thiếu số điện thoại liên hệ')
             } else if (cleanPhone.length < 9 || cleanPhone.length > 11) {
-              errors.push('Số điện thoại không hợp lệ (cần 9-11 chữ số)')
+              formatErrors.push('Số điện thoại không hợp lệ (cần 9-11 chữ số)')
             }
 
             // 4. Kiểm tra trùng lặp trong chính file Excel
-            let isDuplicate = false
             const normalizedEmail = email.toLowerCase()
             if (email && seenEmailsInFile.has(normalizedEmail)) {
-              errors.push('Email bị trùng lặp với một dòng khác trong file')
+              duplicateErrors.push('Trùng email với dòng khác trong file')
               isDuplicate = true
             } else if (email) {
               seenEmailsInFile.add(normalizedEmail)
             }
 
             if (cleanPhone && seenPhonesInFile.has(cleanPhone)) {
-              errors.push('Số điện thoại bị trùng lặp với một dòng khác trong file')
+              duplicateErrors.push('Trùng SĐT với dòng khác trong file')
               isDuplicate = true
             } else if (cleanPhone) {
               seenPhonesInFile.add(cleanPhone)
             }
 
-            // 5. Kiểm tra trùng lặp với dữ liệu đã có trong hệ thống CRM
-            if (email && existingEmails.has(normalizedEmail)) {
-              errors.push('Email đã tồn tại trên hệ thống CRM')
+            // 5. Kiểm tra trùng lặp với dữ liệu đã có trong hệ thống CRM (Leads + Customers)
+            if (email && existingLeadEmails.has(normalizedEmail)) {
+              duplicateErrors.push(`Email đã tồn tại trong hệ thống (${existingLeadEmails.get(normalizedEmail)})`)
               isDuplicate = true
             }
-            if (cleanPhone && existingPhones.has(cleanPhone)) {
-              errors.push('Số điện thoại đã tồn tại trên hệ thống CRM')
+            if (cleanPhone && existingLeadPhones.has(cleanPhone)) {
+              duplicateErrors.push(`SĐT đã tồn tại trong hệ thống (${existingLeadPhones.get(cleanPhone)})`)
               isDuplicate = true
+            }
+
+            const allErrors = [...formatErrors, ...duplicateErrors]
+            let rowStatus: 'VALID' | 'INVALID' | 'DUPLICATE' = 'VALID'
+            if (formatErrors.length > 0) {
+              rowStatus = 'INVALID'
+            } else if (isDuplicate) {
+              rowStatus = 'DUPLICATE'
             }
 
             return {
@@ -700,9 +724,11 @@ export const leadService = {
               industry: industry,
               source: source || 'Nhập từ file Excel',
               requirement: requirement,
-              is_valid: errors.length === 0,
-              errors: errors,
+              is_valid: allErrors.length === 0,
+              errors: allErrors,
               is_duplicate: isDuplicate,
+              row_status: rowStatus,
+              duplicate_reason: duplicateErrors.join('; '),
             }
           })
 

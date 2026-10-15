@@ -19,6 +19,7 @@ import {
   BUYING_ROLE_LABELS,
   BUYING_ROLE_BADGES,
 } from '../../types/customer.ts'
+import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import './CustomerManagementPage.css'
 
 /* ──────────── Icons ──────────── */
@@ -819,7 +820,7 @@ export default function CustomerManagementPage() {
       </div>
 
       {/* ── TAB 1: DANH SÁCH DOANH NGHIỆP (S3-01, S3-05, S3-07) ── */}
-      {activeTab === 'CUSTOMERS' && (
+      {activeTab === 'CUSTOMERS' && !selected360Customer && (
         <>
           {/* Filters & Bộ lọc lưu sẵn (S3-07) */}
           <div className="customer-filters-panel">
@@ -953,7 +954,7 @@ export default function CustomerManagementPage() {
                             {/* AC S3-05: Hiển thị tổng giá trị hợp đồng nếu là công ty mẹ */}
                             {groupSummary.childrenCount > 0 && (
                               <div className="cust-group-parent-tag">
-                                Tập đoàn ({groupSummary.childrenCount} cty con): {groupSummary.totalValue.toLocaleString('vi-VN')} đ
+                                Tập đoàn ({groupSummary.childrenCount} cty con): {formatCurrencyVND(groupSummary.totalValue)}
                               </div>
                             )}
                             {/* AC S3-05: Hiển thị nếu là công ty con trực thuộc */}
@@ -1523,10 +1524,24 @@ export default function CustomerManagementPage() {
         </div>
       )}
 
-      {/* ── MODAL TRANG 360 ĐỘ KHÁCH HÀNG ── */}
+      {/* ── TRANG 360 ĐỘ KHÁCH HÀNG (PAGE VIEW - KHÔNG DÙNG POPUP) ── */}
       {selected360Customer && (
-        <div className="cust-modal-backdrop" onClick={() => setSelected360Customer(null)}>
-          <div className="c360-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="c360-page-container">
+          <div className="c360-page-breadcrumb-nav">
+            <button
+              type="button"
+              className="c360-back-btn"
+              onClick={() => setSelected360Customer(null)}
+              title="Quay lại danh sách khách hàng"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>Quay lại danh sách Khách hàng</span>
+            </button>
+          </div>
+          <div className="c360-modal-content c360-page-card" onClick={(e) => e.stopPropagation()}>
             <div className="c360-header">
               <div className="c360-header-info">
                 <h3>
@@ -1560,17 +1575,17 @@ export default function CustomerManagementPage() {
                 <div className="c360-kpi-bar">
                   <div className="c360-kpi-item">
                     <span className="c360-kpi-label">Tổng đã ký (Won)</span>
-                    <span className="c360-kpi-val highlight">{summary.wonValue.toLocaleString('vi-VN')} đ</span>
+                    <span className="c360-kpi-val highlight">{formatCurrencyVND(summary.wonValue)}</span>
                   </div>
                   <div className="c360-kpi-item">
                     <span className="c360-kpi-label">Cơ hội đang mở (Pipeline)</span>
-                    <span className="c360-kpi-val">{summary.openValue.toLocaleString('vi-VN')} đ</span>
+                    <span className="c360-kpi-val">{formatCurrencyVND(summary.openValue)}</span>
                   </div>
                   {groupSummary.childrenCount > 0 ? (
                     <div className="c360-kpi-item" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
                       <span className="c360-kpi-label" style={{ color: '#166534', fontWeight: 600 }}>Tổng HĐ Tập đoàn ({groupSummary.childrenCount} cty con)</span>
                       <span className="c360-kpi-val highlight" style={{ color: '#166534' }}>
-                        {groupSummary.totalValue.toLocaleString('vi-VN')} đ
+                        {formatCurrencyVND(groupSummary.totalValue)}
                       </span>
                     </div>
                   ) : parentRel ? (
@@ -1681,7 +1696,7 @@ export default function CustomerManagementPage() {
                             <div style={{ textAlign: 'right' }}>
                               <div style={{ fontSize: '12px', color: '#047857' }}>Tổng giá trị HĐ toàn tập đoàn</div>
                               <div style={{ fontSize: '18px', fontWeight: 700, color: '#047857' }}>
-                                {groupSummary.totalValue.toLocaleString('vi-VN')} đ
+                                {formatCurrencyVND(groupSummary.totalValue)}
                               </div>
                             </div>
                           </div>
@@ -1691,13 +1706,13 @@ export default function CustomerManagementPage() {
                           <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
                             <div style={{ fontSize: '12px', color: '#64748b' }}>Hợp đồng riêng công ty mẹ</div>
                             <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
-                              {groupSummary.parentWonValue.toLocaleString('vi-VN')} đ
+                              {formatCurrencyVND(groupSummary.parentWonValue)}
                             </div>
                           </div>
                           <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
                             <div style={{ fontSize: '12px', color: '#64748b' }}>Đóng góp từ các cty con</div>
                             <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
-                              {(groupSummary.totalValue - groupSummary.parentWonValue).toLocaleString('vi-VN')} đ
+                              {formatCurrencyVND(groupSummary.totalValue - groupSummary.parentWonValue)}
                             </div>
                           </div>
                           <div style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
@@ -1738,7 +1753,7 @@ export default function CustomerManagementPage() {
                                 <div style={{ textAlign: 'right' }}>
                                   <div style={{ fontSize: '11px', color: '#64748b' }}>HĐ đã ký ({item.dealsCount})</div>
                                   <div style={{ fontWeight: 700, color: '#059669', fontSize: '13.5px' }}>
-                                    {item.wonValue.toLocaleString('vi-VN')} đ
+                                    {formatCurrencyVND(item.wonValue)}
                                   </div>
                                 </div>
                                 <button

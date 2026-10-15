@@ -745,7 +745,52 @@
   border-color: #fecaca;
 }
 
-/* ── 5. Customer 360 View Modal (S3-03) ── */
+/* ── 5. Customer 360 View Modal & Page (S3-03) ── */
+.c360-page-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 0 24px;
+}
+
+.c360-page-breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.c360-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.c360-back-btn:hover {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #93c5fd;
+  transform: translateX(-2px);
+}
+
+.c360-page-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08) !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
 .c360-modal-content {
   background: #ffffff;
   border-radius: 20px;

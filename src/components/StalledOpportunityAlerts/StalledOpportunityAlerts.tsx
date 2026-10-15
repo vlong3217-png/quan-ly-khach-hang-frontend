@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import type { Opportunity } from '../../types/opportunity.ts'
 import { opportunityService } from '../../services/opportunityService.ts'
 import { opportunityActivityService } from '../../services/opportunityActivityService.ts'
+import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import './StalledOpportunityAlerts.css'
 
 interface StalledOpportunityAlertsProps {
@@ -55,9 +56,9 @@ export default function StalledOpportunityAlerts({
   const warningCount = stalledAlerts.filter((a) => a.severity === 'WARNING').length
   const totalStalledRevenue = stalledAlerts.reduce((acc, a) => acc + (a.opp.expected_revenue || 0), 0)
 
-  // Format tiền tệ
+  // Format tiền tệ VNĐ có dấu phẩy phân cách hàng nghìn
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+    return formatCurrencyVND(val)
   }
 
   // Mở modal can thiệp

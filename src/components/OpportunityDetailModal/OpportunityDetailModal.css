@@ -15,6 +15,56 @@
   padding: 1.25rem;
 }
 
+/* ── Chế độ Trang riêng biệt (Không dùng popup modal) ── */
+.opp-detail-page-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 0 24px;
+}
+
+.opp-page-breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.opp-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.opp-back-btn:hover {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #93c5fd;
+  transform: translateX(-2px);
+}
+
+.opp-detail-page-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  padding: 0;
+}
+
 .opp-detail-modal-card {
   max-width: 1140px !important;
   min-width: min(94vw, 980px);

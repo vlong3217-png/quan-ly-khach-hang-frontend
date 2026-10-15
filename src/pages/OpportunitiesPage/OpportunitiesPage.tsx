@@ -4,8 +4,9 @@ import type {
   CreateOpportunityPayload,
 } from '../../types/opportunity.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
-import { opportunityService } from '../../services/opportunityService.ts'
+import { opportunityService, isOppInStage } from '../../services/opportunityService.ts'
 import { pipelineService } from '../../services/pipelineService.ts'
+import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import OpportunityDetailModal from '../../components/OpportunityDetailModal/OpportunityDetailModal.tsx'
 import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
 import SalesForecastView from '../../components/SalesForecastView/SalesForecastView.tsx'
@@ -38,6 +39,8 @@ export default function OpportunitiesPage() {
   const [searchKeyword, setSearchKeyword] = useState<string>('')
   const [selectedStageId, setSelectedStageId] = useState<string>('ALL')
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL')
+  const [selectedRevenueRange, setSelectedRevenueRange] = useState<string>('ALL')
+  const [selectedOwner, setSelectedOwner] = useState<string>('ALL')
   const [viewMode, setViewMode] = useState<'TABLE' | 'KANBAN'>('TABLE')
 
   // Phân trang cho Table view
@@ -108,11 +111,9 @@ export default function OpportunitiesPage() {
     loadData()
   }, [loadData])
 
-  // Format tiền tệ
+  // Format tiền tệ VNĐ có dấu phẩy phân cách hàng nghìn
   const formatCurrency = (val: number | undefined | null) => {
-    const num = Number(val)
-    if (isNaN(num)) return '0 ₫'
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num)
+    return formatCurrencyVND(val)
   }
 
   // Mở modal chi tiết
@@ -345,31 +346,75 @@ export default function OpportunitiesPage() {
     }
   }
 
-  // Lọc danh sách
+  // Danh sách người phụ trách duy nhất để lọc
+  const uniqueOwners = Array.from(new Set(opportunities.map((o) => o.owner_name).filter(Boolean)))
+
+  // Lọc danh sách nâng cao kết hợp Kanban & Bảng
   const filteredOpportunities = opportunities.filter((opp) => {
-    if (selectedStageId !== 'ALL' && opp.stage_id !== selectedStageId) {
-      return false
+    if (selectedStageId !== 'ALL') {
+      const targetStage = stages.find((s) => s.id === selectedStageId)
+      if (targetStage && !isOppInStage(opp, targetStage)) {
+        return false
+      }
     }
     if (selectedStatus !== 'ALL' && opp.status !== selectedStatus) {
       return false
     }
+    if (selectedOwner !== 'ALL' && opp.owner_name !== selectedOwner) {
+      return false
+    }
+    if (selectedRevenueRange !== 'ALL') {
+      const rev = opp.expected_revenue || 0
+      if (selectedRevenueRange === 'UNDER_50M' && rev >= 50000000) return false
+      if (selectedRevenueRange === '50M_200M' && (rev < 50000000 || rev > 200000000)) return false
+      if (selectedRevenueRange === '200M_500M' && (rev < 200000000 || rev > 500000000)) return false
+      if (selectedRevenueRange === 'OVER_500M' && rev <= 500000000) return false
+    }
     if (searchKeyword.trim()) {
       const q = searchKeyword.toLowerCase().trim()
-      const matchTitle = opp.title.toLowerCase().includes(q)
-      const matchCode = opp.code.toLowerCase().includes(q)
-      const matchCust = opp.customer_name.toLowerCase().includes(q)
-      const matchOwner = opp.owner_name.toLowerCase().includes(q)
-      if (!matchTitle && !matchCode && !matchCust && !matchOwner) {
+      const matchTitle = (opp.title || '').toLowerCase().includes(q)
+      const matchCode = (opp.code || '').toLowerCase().includes(q)
+      const matchCust = (opp.customer_name || '').toLowerCase().includes(q)
+      const matchOwner = (opp.owner_name || '').toLowerCase().includes(q)
+      const matchContact = (opp.contact_name || '').toLowerCase().includes(q)
+      const matchPhone = (opp.contact_phone || '').toLowerCase().includes(q)
+      const matchEmail = (opp.contact_email || '').toLowerCase().includes(q)
+      const matchDesc = (opp.description || '').toLowerCase().includes(q)
+      if (
+        !matchTitle &&
+        !matchCode &&
+        !matchCust &&
+        !matchOwner &&
+        !matchContact &&
+        !matchPhone &&
+        !matchEmail &&
+        !matchDesc
+      ) {
         return false
       }
     }
     return true
   })
 
+  const isAnyFilterActive =
+    searchKeyword.trim() !== '' ||
+    selectedStageId !== 'ALL' ||
+    selectedStatus !== 'ALL' ||
+    selectedRevenueRange !== 'ALL' ||
+    selectedOwner !== 'ALL'
+
+  const handleResetFilters = () => {
+    setSearchKeyword('')
+    setSelectedStageId('ALL')
+    setSelectedStatus('ALL')
+    setSelectedRevenueRange('ALL')
+    setSelectedOwner('ALL')
+  }
+
   // Reset về trang 1 khi lọc
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchKeyword, selectedStageId, selectedStatus])
+  }, [searchKeyword, selectedStageId, selectedStatus, selectedRevenueRange, selectedOwner])
 
   // Phân trang cho Table view
   const totalPages = Math.max(1, Math.ceil(filteredOpportunities.length / pageSize))
@@ -479,6 +524,18 @@ export default function OpportunitiesPage() {
         <div className="opp-winloss-container">
           <WinLossCompetitorsPage />
         </div>
+      ) : selectedOpp && isDetailModalOpen ? (
+        <OpportunityDetailModal
+          opportunity={selectedOpp}
+          isOpen={isDetailModalOpen}
+          initialTab={detailTab}
+          isPageView={true}
+          onClose={() => {
+            setIsDetailModalOpen(false)
+            setSelectedOpp(null)
+          }}
+          onOpportunityUpdated={handleOppUpdated}
+        />
       ) : (
         <>
           {/* ── KPI Stat Cards ── */}
@@ -512,7 +569,7 @@ export default function OpportunitiesPage() {
             <div className="search-box">
               <input
                 type="text"
-                placeholder="Tìm theo mã cơ hội, tên deal, khách hàng..."
+                placeholder="Tìm kiếm theo mã, tên cơ hội, khách hàng, người liên hệ, SĐT, email..."
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
                 id="opp-search-input"
@@ -534,6 +591,7 @@ export default function OpportunitiesPage() {
                 onChange={(e) => setSelectedStageId(e.target.value)}
                 className="filter-select"
                 id="opp-stage-filter"
+                title="Lọc theo giai đoạn Pipeline"
               >
                 <option value="ALL">-- Tất cả giai đoạn --</option>
                 {stages.map((stg) => (
@@ -548,12 +606,66 @@ export default function OpportunitiesPage() {
                 onChange={(e) => setSelectedStatus(e.target.value)}
                 className="filter-select"
                 id="opp-status-filter"
+                title="Lọc theo trạng thái cơ hội"
               >
                 <option value="ALL">-- Tất cả trạng thái --</option>
                 <option value="OPEN">Đang mở (OPEN)</option>
                 <option value="WON">Thắng deal (WON)</option>
                 <option value="LOST">Thua deal (LOST)</option>
               </select>
+
+              <select
+                value={selectedRevenueRange}
+                onChange={(e) => setSelectedRevenueRange(e.target.value)}
+                className="filter-select"
+                id="opp-revenue-filter"
+                title="Lọc theo khoảng giá trị cơ hội"
+              >
+                <option value="ALL">-- Tất cả giá trị --</option>
+                <option value="UNDER_50M">Dưới 50,000,000 VNĐ</option>
+                <option value="50M_200M">50,000,000 - 200,000,000 VNĐ</option>
+                <option value="200M_500M">200,000,000 - 500,000,000 VNĐ</option>
+                <option value="OVER_500M">Trên 500,000,000 VNĐ</option>
+              </select>
+
+              {uniqueOwners.length > 0 && (
+                <select
+                  value={selectedOwner}
+                  onChange={(e) => setSelectedOwner(e.target.value)}
+                  className="filter-select"
+                  id="opp-owner-filter"
+                  title="Lọc theo người phụ trách"
+                >
+                  <option value="ALL">-- Tất cả người phụ trách --</option>
+                  {uniqueOwners.map((owner) => (
+                    <option key={owner} value={owner}>
+                      {owner}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {isAnyFilterActive && (
+                <button
+                  type="button"
+                  className="btn-clear-filters"
+                  onClick={handleResetFilters}
+                  title="Xóa tất cả bộ lọc hiện tại"
+                  style={{
+                    padding: '7px 12px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#ef4444',
+                    background: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  ✕ Xóa lọc
+                </button>
+              )}
             </div>
 
             <div className="view-mode-toggle">
@@ -810,8 +922,8 @@ export default function OpportunitiesPage() {
             /* ── Opportunities Pipeline Kanban View ── */
             <div className="opp-kanban-board">
               {stages.map((stage) => {
-                const stageOpps = filteredOpportunities.filter((o) => o.stage_id === stage.id)
-                const stageTotal = stageOpps.reduce((acc, o) => acc + o.expected_revenue, 0)
+                const stageOpps = filteredOpportunities.filter((o) => isOppInStage(o, stage))
+                const stageTotal = stageOpps.reduce((acc, o) => acc + (o.expected_revenue || 0), 0)
                 const isDragOver = dragOverStageId === stage.id
 
                 return (
@@ -928,16 +1040,7 @@ export default function OpportunitiesPage() {
         </>
       )}
 
-      {/* ── MODAL CHI TIẾT CƠ HỘI & LỊCH SỬ HOẠT ĐỘNG (S5-03) ── */}
-      {selectedOpp && isDetailModalOpen && (
-        <OpportunityDetailModal
-          opportunity={selectedOpp}
-          isOpen={isDetailModalOpen}
-          initialTab={detailTab}
-          onClose={() => setIsDetailModalOpen(false)}
-          onOpportunityUpdated={handleOppUpdated}
-        />
-      )}
+      {/* ── CHI TIẾT CƠ HỘI & LỊCH SỬ HOẠT ĐỘNG (S5-03) ĐÃ ĐƯỢC CHUYỂN SANG DẠNG TRANG RIÊNG (PAGE VIEW) KHÔNG DÙNG POPUP ── */}
 
       {/* ── MODAL PHÂN BỔ LẠI CƠ HỘI (S5-08) ── */}
       {oppToReassign && isReassignModalOpen && (

@@ -181,7 +181,7 @@ const LEAD_STATUS_CONFIG: Record<
   { label: string; bg: string; color: string; border: string }
 > = {
   NEW: { label: 'Mới tiếp nhận', bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' },
-  CONTACTED: { label: 'Đã liên hệ', bg: '#fef3c7', color: '#b45309', border: '#fde68a' },
+  CONTACTED: { label: 'Đang chăm sóc*', bg: '#fef3c7', color: '#b45309', border: '#fde68a' },
   QUALIFIED: { label: 'Đủ điều kiện BANT', bg: '#ecfdf5', color: '#047857', border: '#a7f3d0' },
   UNQUALIFIED: { label: 'Không tiềm năng', bg: '#f1f5f9', color: '#64748b', border: '#cbd5e1' },
   CONVERTED: { label: 'Đã chuyển đổi', bg: '#f0fdf4', color: '#15803d', border: '#bbf7d0' },
@@ -513,7 +513,7 @@ export default function LeadFormsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [excelFile, setExcelFile] = useState<File | null>(null)
   const [excelRows, setExcelRows] = useState<ExcelLeadRow[]>([])
-  const [previewFilter, setPreviewFilter] = useState<'ALL' | 'VALID' | 'INVALID'>('ALL')
+  const [previewFilter, setPreviewFilter] = useState<'ALL' | 'VALID' | 'INVALID' | 'DUPLICATE'>('ALL')
   const [isParsingExcel, setIsParsingExcel] = useState(false)
   const [isCommittingImport, setIsCommittingImport] = useState(false)
   const [importResult, setImportResult] = useState<ImportLeadResult | null>(null)
@@ -1414,19 +1414,20 @@ export default function LeadFormsPage() {
     }
   }
 
-  // Lọc dòng xem trước trong Excel
+  // Lọc dòng xem trước trong Excel theo 3 trạng thái rõ ràng
   const filteredExcelRows = useMemo(() => {
-    if (previewFilter === 'VALID') return excelRows.filter((r) => r.is_valid)
-    if (previewFilter === 'INVALID') return excelRows.filter((r) => !r.is_valid)
+    if (previewFilter === 'VALID') return excelRows.filter((r) => r.is_valid && !r.is_duplicate)
+    if (previewFilter === 'DUPLICATE') return excelRows.filter((r) => r.is_duplicate)
+    if (previewFilter === 'INVALID') return excelRows.filter((r) => !r.is_valid && !r.is_duplicate)
     return excelRows
   }, [excelRows, previewFilter])
 
   // Tiến hành Import Excel vào hệ thống
   const handleCommitExcelImport = async () => {
     if (excelRows.length === 0) return
-    const validCount = excelRows.filter((r) => r.is_valid).length
+    const validCount = excelRows.filter((r) => r.is_valid && !r.is_duplicate).length
     if (validCount === 0) {
-      showToast('File không có bất kỳ dòng hợp lệ nào để nhập.', true)
+      showToast('File không có bất kỳ dòng hợp lệ nào (không lỗi/trùng) để nhập.', true)
       return
     }
 
@@ -2001,7 +2002,7 @@ export default function LeadFormsPage() {
               >
                 <option value="ALL">Tất cả trạng thái</option>
                 <option value="NEW">Mới tiếp nhận</option>
-                <option value="CONTACTED">Đã liên hệ</option>
+                <option value="CONTACTED">Đang chăm sóc*</option>
                 <option value="QUALIFIED">Đủ điều kiện BANT</option>
                 <option value="UNQUALIFIED">Không tiềm năng</option>
                 <option value="CONVERTED">Đã chuyển đổi</option>
@@ -2311,7 +2312,7 @@ export default function LeadFormsPage() {
                             onChange={(e) => handleUpdateLeadStatus(l.id, e.target.value as LeadStatus)}
                           >
                             <option value="NEW">Mới tiếp nhận</option>
-                            <option value="CONTACTED">Đã liên hệ</option>
+                            <option value="CONTACTED">Đang chăm sóc*</option>
                             <option value="QUALIFIED">Đủ điều kiện BANT</option>
                             <option value="UNQUALIFIED">Không tiềm năng</option>
                             <option value="CONVERTED">Đã chuyển đổi</option>
@@ -3590,10 +3591,13 @@ export default function LeadFormsPage() {
                 <div className="preview-stats-badges">
                   <span className="badge-stat total">Tổng: {excelRows.length} dòng</span>
                   <span className="badge-stat valid">
-                    Hợp lệ: {excelRows.filter((r) => r.is_valid).length} dòng
+                    Hợp lệ: {excelRows.filter((r) => r.is_valid && !r.is_duplicate).length} dòng
+                  </span>
+                  <span className="badge-stat duplicate" style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a' }}>
+                    Trùng lặp: {excelRows.filter((r) => r.is_duplicate).length} dòng
                   </span>
                   <span className="badge-stat invalid">
-                    Lỗi / Trùng: {excelRows.filter((r) => !r.is_valid).length} dòng
+                    Lỗi dữ liệu: {excelRows.filter((r) => !r.is_valid && !r.is_duplicate).length} dòng
                   </span>
                 </div>
 
@@ -3610,14 +3614,21 @@ export default function LeadFormsPage() {
                     className={`btn-filter-pill ${previewFilter === 'VALID' ? 'active' : ''}`}
                     onClick={() => setPreviewFilter('VALID')}
                   >
-                    Hợp lệ ({excelRows.filter((r) => r.is_valid).length})
+                    Hợp lệ ({excelRows.filter((r) => r.is_valid && !r.is_duplicate).length})
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn-filter-pill ${previewFilter === 'DUPLICATE' ? 'active' : ''}`}
+                    onClick={() => setPreviewFilter('DUPLICATE')}
+                  >
+                    Trùng lặp ({excelRows.filter((r) => r.is_duplicate).length})
                   </button>
                   <button
                     type="button"
                     className={`btn-filter-pill ${previewFilter === 'INVALID' ? 'active' : ''}`}
                     onClick={() => setPreviewFilter('INVALID')}
                   >
-                    Có lỗi ({excelRows.filter((r) => !r.is_valid).length})
+                    Có lỗi ({excelRows.filter((r) => !r.is_valid && !r.is_duplicate).length})
                   </button>
                 </div>
               </div>
@@ -3632,14 +3643,20 @@ export default function LeadFormsPage() {
                       <th>Số điện thoại</th>
                       <th>Công ty / Doanh nghiệp</th>
                       <th>Nhu cầu</th>
-                      <th style={{ width: '220px' }}>Kiểm tra tính hợp lệ</th>
+                      <th style={{ width: '240px' }}>Trạng thái & Kiểm tra</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredExcelRows.map((row) => (
                       <tr
                         key={row.row_index}
-                        className={row.is_valid ? 'row-valid' : 'row-invalid'}
+                        className={
+                          row.is_valid && !row.is_duplicate
+                            ? 'row-valid'
+                            : row.is_duplicate
+                            ? 'row-duplicate'
+                            : 'row-invalid'
+                        }
                       >
                         <td style={{ textAlign: 'center' }}>
                           <span className="row-num-badge">{row.row_index}</span>
@@ -3656,10 +3673,26 @@ export default function LeadFormsPage() {
                           </span>
                         </td>
                         <td>
-                          {row.is_valid ? (
-                            <span className="valid-check-tag">Hợp lệ</span>
+                          {row.is_valid && !row.is_duplicate ? (
+                            <span className="valid-check-tag" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0' }}>
+                              Hợp lệ
+                            </span>
+                          ) : row.is_duplicate ? (
+                            <div className="invalid-errors-box">
+                              <span className="valid-check-tag" style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', display: 'inline-block', marginBottom: '4px' }}>
+                                Trùng lặp
+                              </span>
+                              {row.errors.map((e, idx) => (
+                                <span key={idx} className="error-pill" style={{ background: '#fffbeb', color: '#92400e', borderColor: '#fef08a' }}>
+                                  {e}
+                                </span>
+                              ))}
+                            </div>
                           ) : (
                             <div className="invalid-errors-box">
+                              <span className="valid-check-tag" style={{ background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', display: 'inline-block', marginBottom: '4px' }}>
+                                Không hợp lệ
+                              </span>
                               {row.errors.map((e, idx) => (
                                 <span key={idx} className="error-pill">
                                   {e}
@@ -3688,7 +3721,7 @@ export default function LeadFormsPage() {
                   type="button"
                   className="btn btn-primary btn-commit-import"
                   onClick={handleCommitExcelImport}
-                  disabled={isCommittingImport || excelRows.filter((r) => r.is_valid).length === 0}
+                  disabled={isCommittingImport || excelRows.filter((r) => r.is_valid && !r.is_duplicate).length === 0}
                 >
                   {isCommittingImport ? (
                     <>
@@ -3699,7 +3732,7 @@ export default function LeadFormsPage() {
                     <>
                       <IconCheck />
                       <span>
-                        Xác nhận nhập ({excelRows.filter((r) => r.is_valid).length} dòng hợp lệ)
+                        Xác nhận nhập ({excelRows.filter((r) => r.is_valid && !r.is_duplicate).length} dòng hợp lệ)
                       </span>
                     </>
                   )}
@@ -3920,7 +3953,7 @@ export default function LeadFormsPage() {
               >
                 <option value="ALL">Tất cả trạng thái</option>
                 <option value="NEW">Mới tiếp nhận</option>
-                <option value="CONTACTED">Đã liên hệ</option>
+                <option value="CONTACTED">Đang chăm sóc*</option>
                 <option value="QUALIFIED">Đủ điều kiện</option>
                 <option value="CONVERTED">Đã chuyển đổi</option>
                 <option value="SPAM">Rác / Sai số</option>
@@ -4161,7 +4194,7 @@ export default function LeadFormsPage() {
                       }
                     >
                       <option value="NEW">Mới tiếp nhận (Chưa gọi)</option>
-                      <option value="CONTACTED">Đã liên hệ</option>
+                      <option value="CONTACTED">Đang chăm sóc*</option>
                       <option value="QUALIFIED">Đủ điều kiện BANT</option>
                     </select>
                   </div>

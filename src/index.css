@@ -149,12 +149,21 @@ button, input, select, textarea {
 }
 
 /* ── Modern Table Action Menu & Utilities ── */
-.table-actions-container {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  white-space: nowrap;
+.table-actions-container,
+.cust-action-group,
+.lead-actions-cluster {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  min-width: 140px;
+  white-space: nowrap !important;
+}
+
+.table-actions-container > *,
+.cust-action-group > *,
+.lead-actions-cluster > * {
+  flex-shrink: 0 !important;
 }
 
 /* Action dropdown popover */

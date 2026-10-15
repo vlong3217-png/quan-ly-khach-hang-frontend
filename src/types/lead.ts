@@ -229,6 +229,8 @@ export interface ExcelLeadRow {
   is_valid: boolean
   errors: string[]
   is_duplicate?: boolean
+  row_status?: 'VALID' | 'INVALID' | 'DUPLICATE'
+  duplicate_reason?: string
 }
 
 export interface ImportLeadResult {
