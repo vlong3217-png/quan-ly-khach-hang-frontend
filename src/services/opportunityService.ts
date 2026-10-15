@@ -2,6 +2,7 @@ import type {
   Opportunity,
   CreateOpportunityPayload,
   OpportunityFilterParams,
+  SavedOpportunityFilter,
 } from '../types/opportunity.ts'
 import { API_BASE_URL } from './authService.ts'
 import type { PaginatedResponse, PaginationParams } from '../types/pagination.ts'
@@ -1027,6 +1028,99 @@ export const opportunityService = {
     } catch {}
 
     return updated
+  },
+
+  /* ──────────── User Story S6-02: Bộ lọc cơ hội nâng cao & Lưu bộ lọc ──────────── */
+  getSavedFilters(): SavedOpportunityFilter[] {
+    const STORAGE_KEY = 'crm_opportunity_saved_filters_v1'
+    const PRESET_FILTERS: SavedOpportunityFilter[] = [
+      {
+        id: 'preset-week-focus',
+        name: 'Thương vụ cần đẩy trong tuần này',
+        icon: '⚡',
+        date_preset: 'THIS_WEEK',
+        status: 'OPEN',
+        is_preset: true,
+      },
+      {
+        id: 'preset-high-value',
+        name: 'Cơ hội lớn (> 200M)',
+        icon: '💎',
+        revenue_range: '200M_500M',
+        status: 'OPEN',
+        is_preset: true,
+      },
+      {
+        id: 'preset-month-closing',
+        name: 'Dự kiến chốt trong tháng này',
+        icon: '🎯',
+        date_preset: 'THIS_MONTH',
+        status: 'OPEN',
+        is_preset: true,
+      },
+      {
+        id: 'preset-my-deals',
+        name: 'Cơ hội của tôi',
+        icon: '👤',
+        owner: 'CURRENT_USER',
+        status: 'OPEN',
+        is_preset: true,
+      },
+      {
+        id: 'preset-overdue',
+        name: 'Cơ hội quá hạn chốt',
+        icon: '⏰',
+        date_preset: 'OVERDUE',
+        status: 'OPEN',
+        is_preset: true,
+      },
+    ]
+
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          return [...PRESET_FILTERS, ...parsed]
+        }
+      }
+    } catch {}
+
+    return PRESET_FILTERS
+  },
+
+  saveCustomFilter(name: string, criteria: Partial<SavedOpportunityFilter>): SavedOpportunityFilter {
+    const STORAGE_KEY = 'crm_opportunity_saved_filters_v1'
+    const newFilter: SavedOpportunityFilter = {
+      id: `filter-${Date.now()}`,
+      name: name.trim(),
+      icon: '🔖',
+      is_preset: false,
+      ...criteria,
+    }
+
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      const existing = raw ? JSON.parse(raw) : []
+      const updated = [newFilter, ...(Array.isArray(existing) ? existing : [])]
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+    } catch {}
+
+    return newFilter
+  },
+
+  deleteCustomFilter(id: string): void {
+    const STORAGE_KEY = 'crm_opportunity_saved_filters_v1'
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const existing = JSON.parse(raw)
+        if (Array.isArray(existing)) {
+          const updated = existing.filter((f: any) => f.id !== id)
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+        }
+      }
+    } catch {}
   },
 }
 
