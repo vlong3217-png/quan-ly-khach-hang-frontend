@@ -151,6 +151,16 @@ function App() {
         }
       />
 
+      {/* 4g. S7-07: Quản lý Hiệu lực & Gia hạn Hợp đồng */}
+      <Route
+        path="/dashboard/contracts/*"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* 5. Quản lý tài khoản (S1-08 / S1-10) */}
       <Route
         path="/dashboard/users/*"

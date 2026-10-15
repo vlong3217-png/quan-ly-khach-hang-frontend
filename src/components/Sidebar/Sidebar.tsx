@@ -165,6 +165,8 @@ function getMenuIcon(id: string) {
       return <IconTrendingUp />
     case 'menu-calendar':
       return <IconCalendar />
+    case 'menu-contracts':
+      return <IconClipboardList />
     case 'menu-products':
       return <IconPackage />
     case 'menu-pipeline':

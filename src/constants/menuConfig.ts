@@ -90,6 +90,13 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Xem lịch cuộc gặp, công việc và phát hiện trùng lịch (S6-07)',
       },
       {
+        id: 'menu-contracts',
+        title: 'Hợp đồng & Gia hạn',
+        path: '/dashboard/contracts',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Theo dõi hiệu lực, cảnh báo hết hạn và tạo cơ hội gia hạn (S7-07)',
+      },
+      {
         id: 'menu-products',
         title: 'Sản phẩm & Bảng giá',
         path: '/dashboard/products',
