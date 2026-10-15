@@ -23,6 +23,7 @@ import AuditLogPage from '../AuditLogPage/AuditLogPage.tsx'
 import WorkflowAutomationPage from '../WorkflowAutomationPage/WorkflowAutomationPage.tsx'
 import SalesQuotasPage from '../SalesQuotasPage/SalesQuotasPage.tsx'
 import PipelineFunnelPage from '../PipelineFunnelPage/PipelineFunnelPage.tsx'
+import RevenueForecastPage from '../RevenueForecastPage/RevenueForecastPage.tsx'
 import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
 import ExecutiveDashboard from '../../components/ExecutiveDashboard/ExecutiveDashboard.tsx'
 import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
@@ -127,6 +128,8 @@ function DashboardPage() {
       setActiveMenuId('menu-quotas')
     } else if (path.startsWith('/dashboard/pipeline-funnel')) {
       setActiveMenuId('menu-pipeline-funnel')
+    } else if (path.startsWith('/dashboard/forecast')) {
+      setActiveMenuId('menu-forecast')
     } else if (path.startsWith('/dashboard/customers')) {
       setActiveMenuId('menu-customers')
     } else if (path === '/dashboard' || path === '/dashboard/') {
@@ -210,6 +213,9 @@ function DashboardPage() {
   const isPipelineFunnelView =
     activeMenuId === 'menu-pipeline-funnel' ||
     activeMenuId.startsWith('menu-pipeline-funnel-')
+  const isForecastView =
+    activeMenuId === 'menu-forecast' ||
+    activeMenuId.startsWith('menu-forecast-')
   const isSettingView =
     activeMenuId === 'menu-settings' ||
     activeMenuId.startsWith('menu-settings-')
@@ -436,6 +442,15 @@ function DashboardPage() {
           {isPipelineFunnelView && (
             <section className="dashboard-section pipeline-funnel-section">
               <PipelineFunnelPage />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              VIEW: DỰ BÁO DOANH THU & THẮNG/THUA (S8-06)
+              ───────────────────────────────────────────────────────────── */}
+          {isForecastView && (
+            <section className="dashboard-section forecast-section">
+              <RevenueForecastPage />
             </section>
           )}
 
