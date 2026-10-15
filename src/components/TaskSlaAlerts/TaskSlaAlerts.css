@@ -1,0 +1,486 @@
+/* TaskSlaAlerts.css - S6-09 Prominent Overdue and SLA Alerts */
+
+.task-sla-alerts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* ── 1. Prominent Overdue Alert Card ── */
+.home-overdue-alert-card {
+  background: linear-gradient(135deg, #fff1f2 0%, #fee2e2 100%);
+  border: 2px solid #f87171;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.12);
+  animation: pulseBorder 3s infinite alternate;
+}
+
+@keyframes pulseBorder {
+  0% {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+  }
+  100% {
+    box-shadow: 0 4px 18px rgba(239, 68, 68, 0.25);
+  }
+}
+
+.overdue-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.alert-siren-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.siren-pulse-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #dc2626;
+  color: #ffffff;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  width: fit-content;
+}
+
+.overdue-card-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #991b1b;
+  font-weight: 700;
+}
+
+.overdue-task-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.overdue-task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.15s ease;
+}
+
+.overdue-task-item:hover {
+  transform: translateY(-1px);
+  border-color: #f87171;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.overdue-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.overdue-tag {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  font-size: 0.725rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.task-title-txt {
+  margin: 0 0 3px 0;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.task-meta-txt {
+  font-size: 0.8rem;
+  color: #64748b;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-quick-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+}
+
+/* ── 2. Upcoming Tasks Alert Card ── */
+.home-upcoming-alert-card {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.upcoming-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.upcoming-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #15803d;
+}
+
+.upcoming-title-group h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #166534;
+}
+
+.upcoming-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.upcoming-task-chip {
+  background: #ffffff;
+  border: 1px solid #dcfce7;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.upcoming-task-chip .chip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.825rem;
+}
+
+.upcoming-task-chip .chip-content strong {
+  color: #0f172a;
+}
+
+.upcoming-task-chip .chip-content .due-info {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.upcoming-task-chip .chip-content .cust-info {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.btn-mark-done {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #22c55e;
+  background: #f0fdf4;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 800;
+  transition: all 0.15s ease;
+}
+
+.btn-mark-done:hover {
+  background: #22c55e;
+  color: #ffffff;
+}
+
+/* ── 3. Manager SLA Breakdown Card ── */
+.manager-team-sla-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.manager-sla-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.manager-sla-header .title-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.manager-sla-header .icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.manager-sla-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.manager-sla-header .sub-text {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.total-sla-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.num-overdue-total {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #dc2626;
+  line-height: 1;
+}
+
+.txt-overdue {
+  font-size: 0.75rem;
+  color: #991b1b;
+  font-weight: 600;
+}
+
+.member-sla-table-wrapper {
+  overflow-x: auto;
+}
+
+.member-sla-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.member-sla-table th {
+  background: #f8fafc;
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.member-sla-table td {
+  padding: 12px 14px;
+  font-size: 0.875rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.row-has-overdue {
+  background: #fffafa;
+}
+
+.member-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-letter {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #475569;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+.email-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.role-tag {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.badge-overdue-count {
+  background: #fee2e2;
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #fca5a5;
+}
+
+.badge-on-time {
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+/* Expanded Overdue Details */
+.manager-member-overdue-detail-box {
+  margin-top: 16px;
+  padding: 16px;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 8px;
+}
+
+.manager-member-overdue-detail-box h5 {
+  margin: 0 0 12px 0;
+  color: #9b2c2c;
+  font-size: 0.95rem;
+}
+
+.overdue-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.detail-overdue-card {
+  background: #ffffff;
+  border: 1px solid #feb2b2;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.825rem;
+}
+
+.detail-overdue-card .meta {
+  display: flex;
+  gap: 8px;
+  color: #742a2a;
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+.detail-overdue-card .desc {
+  margin: 6px 0 0 0;
+  color: #718096;
+  font-size: 0.75rem;
+}
+
+/* ── 4. Config Modal ── */
+.task-config-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 16px;
+}
+
+.task-config-modal-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 440px;
+  overflow: hidden;
+}
+
+.task-config-modal-card .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.task-config-modal-card .modal-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.config-radio-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.config-option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.875rem;
+}
+
+.config-option-row:hover {
+  background: #f8fafc;
+}
+
+.config-option-row.selected {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .overdue-task-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .overdue-item-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
