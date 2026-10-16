@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    Customer Management Page Styles - User Story S3-01 to S3-09
    Quản lý khách hàng doanh nghiệp, Người liên hệ, Trang 360,
    Gộp trùng, Công ty Mẹ-Con, Nhập Excel, Yêu cầu CSKH & Chăm sóc định kỳ
@@ -816,15 +816,16 @@
 
 .c360-header {
   padding: 22px 28px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%);
-  color: #ffffff;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  color: #0f172a;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
   border-top-left-radius: 19px;
   border-top-right-radius: 19px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: none;
 }
 
 .c360-header-info {
@@ -835,7 +836,7 @@
   margin: 0 0 10px 0;
   font-size: 22px;
   font-weight: 700;
-  color: #ffffff;
+  color: #0f172a;
   letter-spacing: -0.02em;
   display: flex;
   align-items: center;
@@ -848,7 +849,7 @@
   flex-wrap: wrap;
   gap: 8px;
   font-size: 13px;
-  color: #e2e8f0;
+  color: #64748b;
 }
 
 .c360-meta-chip {
@@ -856,8 +857,9 @@
   align-items: center;
   gap: 5px;
   padding: 3px 10px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;

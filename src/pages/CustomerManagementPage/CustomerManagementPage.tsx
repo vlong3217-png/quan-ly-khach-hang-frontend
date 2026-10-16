@@ -685,20 +685,18 @@ export default function CustomerManagementPage() {
           <div className="c360-header">
             <div className="c360-header-info">
               <h3>
-                <span>🏢</span>
                 <span>{selected360Customer.name}</span>
               </h3>
               <div className="c360-header-meta">
-                <span className="c360-meta-chip">🔖 Mã: <strong>{selected360Customer.code}</strong></span>
-                <span className="c360-meta-chip">📑 MST: {selected360Customer.tax_code || 'Chưa cập nhật'}</span>
-                <span className="c360-meta-chip">💼 Ngành: {selected360Customer.industry}</span>
-                <span className="c360-meta-chip">👤 Phụ trách: {selected360Customer.owner_name}</span>
+                <span className="c360-meta-chip">Mã: <strong>{selected360Customer.code}</strong></span>
+                <span className="c360-meta-chip">MST: {selected360Customer.tax_code || 'Chưa cập nhật'}</span>
+                <span className="c360-meta-chip">Ngành: {selected360Customer.industry}</span>
+                <span className="c360-meta-chip">Phụ trách: {selected360Customer.owner_name}</span>
               </div>
             </div>
             <button
               type="button"
               className="cust-modal-close-btn"
-              style={{ color: '#ffffff' }}
               onClick={() => setSelected360Customer(null)}
               title="Đóng cửa sổ"
             >
