@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { Opportunity } from '../../types/opportunity.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
 import { pipelineService } from '../../services/pipelineService.ts'
@@ -559,7 +559,7 @@ export default function OpportunityDetailModal({
             onClick={() => setActiveTab('QUOTES')}
             id="tab-btn-quotes"
           >
-            📑 Báo giá & Chiết khấu
+            Báo giá & Chiết khấu
           </button>
           <button
             type="button"
@@ -591,7 +591,7 @@ export default function OpportunityDetailModal({
             onClick={() => setActiveTab('HISTORY')}
             id="tab-btn-history"
           >
-            📜 Lịch sử thay đổi
+            Lịch sử thay đổi
           </button>
           <button
             type="button"
@@ -599,7 +599,7 @@ export default function OpportunityDetailModal({
             onClick={() => setActiveTab('TEAM')}
             id="tab-btn-team"
           >
-            👥 Đội ngũ & Chia sẻ
+            Đội ngũ & Chia sẻ
             {currentOpp.shared_members && currentOpp.shared_members.length > 0 && (
               <span className="tab-pill">{currentOpp.shared_members.length + 1}</span>
             )}
@@ -610,7 +610,7 @@ export default function OpportunityDetailModal({
             onClick={() => setActiveTab('ATTACHMENTS')}
             id="tab-btn-attachments"
           >
-            📎 Tài liệu đính kèm
+            Tài liệu đính kèm
           </button>
         </div>
 

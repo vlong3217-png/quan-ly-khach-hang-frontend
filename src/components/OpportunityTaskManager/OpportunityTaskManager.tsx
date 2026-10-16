@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import type {
   OpportunityTask,
   OpportunityTaskStatus,
@@ -463,7 +463,7 @@ export default function OpportunityTaskManager({
             className={`task-pill ${statusFilter === 'POSTPONED' ? 'active' : ''}`}
             onClick={() => setStatusFilter('POSTPONED')}
           >
-            ⏳ Đã hoãn ({postponedCount})
+            Đã hoãn ({postponedCount})
           </button>
           {overdueCount > 0 && (
             <button
@@ -471,7 +471,7 @@ export default function OpportunityTaskManager({
               className={`task-pill pill-overdue ${statusFilter === 'OVERDUE' ? 'active' : ''}`}
               onClick={() => setStatusFilter('OVERDUE')}
             >
-              ⚠️ Quá hạn ({overdueCount})
+              Quá hạn ({overdueCount})
             </button>
           )}
         </div>
@@ -513,7 +513,7 @@ export default function OpportunityTaskManager({
         </div>
       ) : filteredTasks.length === 0 ? (
         <div className="task-state-box empty-state" id="task-empty-state">
-          <div className="empty-illustration">📝</div>
+          
           <h4>Chưa có công việc nào</h4>
           <p>
             {searchKeyword || statusFilter !== 'ALL'
