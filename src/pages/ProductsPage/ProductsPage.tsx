@@ -4,6 +4,7 @@ import { productService } from '../../services/productService.ts'
 import type { Product, ProductType, ProductStatus } from '../../types/product.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import './ProductsPage.css'
+import Button from '../../components/ui/Button.tsx'
 
 export default function ProductsPage() {
   const { user } = useAuth()
@@ -180,13 +181,13 @@ export default function ProductsPage() {
         </div>
       )}
 
-      <div className="products-header">
+      <div className="products-header crm-ui-page-header">
         <div>
-          <h2>Quản lý Sản phẩm / Dịch vụ & Bảng giá niêm yết</h2>
+          <h2 className="crm-ui-page-header__title">Quản lý Sản phẩm / Dịch vụ & Bảng giá niêm yết</h2>
         </div>
-        <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
+        <Button type="button" variant="primary" className="btn btn-primary" onClick={handleOpenCreate}>
           + Thêm sản phẩm / dịch vụ
-        </button>
+        </Button>
       </div>
 
       {/* Bộ lọc */}

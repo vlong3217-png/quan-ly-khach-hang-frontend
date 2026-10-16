@@ -5,6 +5,8 @@ import { AuthProvider } from './contexts/AuthContext.tsx'
 import './index.css'
 import './actionMenu.css'
 import App from './App.tsx'
+import './components/ui/ui.css'
+import './ui-consistency.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -15,4 +17,3 @@ createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </StrictMode>,
 )
-

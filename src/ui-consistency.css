@@ -1,0 +1,100 @@
+/* Cross-page consistency layer. Every rule is scoped to its owning page. */
+:where(.products-page-container, .campaigns-page-container, .opportunities-page-container, .org-page-container, .customer-page) {
+  color: var(--text, #475569);
+  font-family: var(--sans, system-ui, sans-serif);
+}
+
+.products-page-container > .products-header h2,
+.products-page-container .products-header .crm-ui-page-header__title,
+.campaigns-page-container .campaign-page-header h1,
+.campaigns-page-container .campaign-page-header .crm-ui-page-header__title,
+.campaigns-page-container .campaign-page-header h2,
+.opportunities-page-container .opportunities-header h1,
+.opportunities-page-container .opportunities-header h2,
+.org-page-container .org-header h1,
+.org-page-container .org-header h2,
+.customer-page .customer-header-info h1,
+.customer-page .customer-header-info h2 {
+  color: var(--text-h, #0f172a);
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Shared form control rhythm; page-specific layout remains in each page stylesheet. */
+.products-page-container input:not([type="checkbox"]):not([type="radio"]),
+.products-page-container select,
+.products-page-container textarea,
+.campaigns-page-container input:not([type="checkbox"]):not([type="radio"]),
+.campaigns-page-container select,
+.campaigns-page-container textarea,
+.opportunities-page-container input:not([type="checkbox"]):not([type="radio"]),
+.opportunities-page-container select,
+.opportunities-page-container textarea,
+.org-page-container input:not([type="checkbox"]):not([type="radio"]),
+.org-page-container select,
+.org-page-container textarea,
+.customer-page input:not([type="checkbox"]):not([type="radio"]),
+.customer-page select,
+.customer-page textarea {
+  border-radius: var(--radius-md, 8px);
+}
+
+.products-page-container input:focus-visible,
+.products-page-container select:focus-visible,
+.products-page-container textarea:focus-visible,
+.campaigns-page-container input:focus-visible,
+.campaigns-page-container select:focus-visible,
+.campaigns-page-container textarea:focus-visible,
+.opportunities-page-container input:focus-visible,
+.opportunities-page-container select:focus-visible,
+.opportunities-page-container textarea:focus-visible,
+.org-page-container input:focus-visible,
+.org-page-container select:focus-visible,
+.org-page-container textarea:focus-visible,
+.customer-page input:focus-visible,
+.customer-page select:focus-visible,
+.customer-page textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent, #2563eb);
+  box-shadow: var(--shadow-focus, 0 0 0 3px rgba(37, 99, 235, 0.15));
+}
+
+/* Normalize repeated generic toast classes without letting one page's stylesheet win. */
+.products-page-container .toast-success,
+.campaigns-page-container .toast-success,
+.opportunities-page-container .toast-success,
+.org-page-container .toast-success,
+.customer-page .toast-success {
+  background: var(--success-50, #ecfdf5);
+  color: var(--success-700, #047857);
+  border-color: var(--success-100, #d1fae5);
+}
+.products-page-container .toast-error,
+.campaigns-page-container .toast-error,
+.opportunities-page-container .toast-error,
+.org-page-container .toast-error,
+.customer-page .toast-error {
+  background: var(--danger-50, #fef2f2);
+  color: var(--danger-700, #b91c1c);
+  border-color: var(--danger-100, #fee2e2);
+}
+
+/* Responsive content gutters stay comfortable on narrow screens. */
+@media (max-width: 640px) {
+  .products-page-container { padding: 14px; }
+  .products-page-container > .products-header h2,
+  .products-page-container .products-header .crm-ui-page-header__title,
+  .campaigns-page-container .campaign-page-header h1,
+  .campaigns-page-container .campaign-page-header .crm-ui-page-header__title,
+  .campaigns-page-container .campaign-page-header h2,
+  .opportunities-page-container .opportunities-header h1,
+  .opportunities-page-container .opportunities-header h2,
+  .org-page-container .org-header h1,
+  .org-page-container .org-header h2,
+  .customer-page .customer-header-info h1,
+  .customer-page .customer-header-info h2 {
+    font-size: 20px;
+  }
+}
