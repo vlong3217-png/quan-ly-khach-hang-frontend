@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { Opportunity, OpportunitySharedMember } from '../../types/opportunity.ts'
 import type { UserAccount } from '../../types/user.ts'
 import { opportunityService } from '../../services/opportunityService.ts'
@@ -143,7 +143,7 @@ export default function OpportunityTeamSharing({
       <div className="team-section-card primary-owner-card">
         <div className="section-card-header">
           <div className="header-badge-title">
-            <span className="badge-crown">⭐</span>
+            
             <div>
               <h4 className="section-title">Chủ sở hữu cơ hội (Primary Owner)</h4>
               <span className="section-subtitle">Chịu trách nhiệm chính về tiến độ và kết quả chốt thương vụ</span>
@@ -156,11 +156,11 @@ export default function OpportunityTeamSharing({
               onClick={onOpenReassignModal}
               title="Bàn giao cơ hội cho nhân viên khác"
             >
-              🔄 Chuyển giao quyền sở hữu
+              Chuyển giao quyền sở hữu
             </button>
           ) : (
             <span className="badge-locked" title="Chỉ Chủ sở hữu chính hoặc Quản lý mới có quyền bàn giao">
-              🔒 Không có quyền chuyển giao
+              Không có quyền chuyển giao
             </span>
           )}
         </div>
@@ -184,7 +184,7 @@ export default function OpportunityTeamSharing({
         <div className="section-card-header">
           <div>
             <h4 className="section-title">
-              👥 Thành viên cùng theo dõi & phối hợp (S6-03)
+              Thành viên cùng theo dõi & phối hợp (S6-03)
             </h4>
             <span className="section-subtitle">
               Cả đội cùng vào hỗ trợ thương vụ, ghi nhận hoạt động nhưng không làm mất người chịu trách nhiệm chính
@@ -231,10 +231,10 @@ export default function OpportunityTeamSharing({
                   onChange={(e) => setSelectedRole(e.target.value)}
                   disabled={submitting}
                 >
-                  <option value="Đồng phụ trách">🤝 Đồng phụ trách (Co-owner)</option>
-                  <option value="Chuyên gia kỹ thuật / Pre-sales">🛠️ Chuyên gia kỹ thuật / Pre-sales</option>
-                  <option value="Hỗ trợ báo giá & Đấu thầu">📄 Hỗ trợ báo giá & Đấu thầu</option>
-                  <option value="Thành viên theo dõi">👀 Thành viên theo dõi (Viewer)</option>
+                  <option value="Đồng phụ trách">Đồng phụ trách (Co-owner)</option>
+                  <option value="Chuyên gia kỹ thuật / Pre-sales">Chuyên gia kỹ thuật / Pre-sales</option>
+                  <option value="Hỗ trợ báo giá & Đấu thầu">Hỗ trợ báo giá & Đấu thầu</option>
+                  <option value="Thành viên theo dõi">Thành viên theo dõi (Viewer)</option>
                 </select>
               </div>
             </div>
@@ -268,7 +268,7 @@ export default function OpportunityTeamSharing({
         {/* Danh sách thành viên */}
         {(!opportunity.shared_members || opportunity.shared_members.length === 0) ? (
           <div className="empty-collaborators">
-            <span className="empty-icon">🤝</span>
+            
             <p>Chưa có thành viên phối hợp nào được thêm vào thương vụ này.</p>
             {canManageTeam && (
               <span className="empty-hint">

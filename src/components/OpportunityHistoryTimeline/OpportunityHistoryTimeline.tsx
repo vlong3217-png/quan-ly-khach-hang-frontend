@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type { OpportunityFieldChange, OpportunityChangeField } from '../../types/opportunityHistory.ts'
 import { opportunityHistoryService } from '../../services/opportunityHistoryService.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
@@ -149,7 +149,7 @@ export default function OpportunityHistoryTimeline({
       <div className="history-header">
         <div className="history-title-wrap">
           <h4 className="history-title">
-            📜 Lịch sử thay đổi cơ hội
+            Lịch sử thay đổi cơ hội
             {opportunityTitle ? ` · ${opportunityTitle}` : ''}
           </h4>
           <span className="history-count-badge">
@@ -186,12 +186,12 @@ export default function OpportunityHistoryTimeline({
                 value={customField}
                 onChange={(e) => setCustomField(e.target.value as OpportunityChangeField)}
               >
-                <option value="expected_revenue">💰 Doanh số dự kiến</option>
-                <option value="expected_close_date">📅 Ngày chốt dự kiến</option>
-                <option value="stage">🔄 Giai đoạn Pipeline</option>
-                <option value="owner">👤 Người phụ trách</option>
-                <option value="win_probability">📈 Xác suất thắng (%)</option>
-                <option value="other">📝 Thuộc tính khác</option>
+                <option value="expected_revenue">Doanh số dự kiến</option>
+                <option value="expected_close_date">Ngày chốt dự kiến</option>
+                <option value="stage">Giai đoạn Pipeline</option>
+                <option value="owner">Người phụ trách</option>
+                <option value="win_probability">Xác suất thắng (%)</option>
+                <option value="other">Thuộc tính khác</option>
               </select>
             </div>
             <div className="form-group">
@@ -261,28 +261,28 @@ export default function OpportunityHistoryTimeline({
             className={`chip-btn ${selectedField === 'stage' ? 'active' : ''}`}
             onClick={() => setSelectedField('stage')}
           >
-            🔄 Giai đoạn ({historyList.filter((h) => h.field === 'stage').length})
+            Giai đoạn ({historyList.filter((h) => h.field === 'stage').length})
           </button>
           <button
             type="button"
             className={`chip-btn ${selectedField === 'expected_revenue' ? 'active' : ''}`}
             onClick={() => setSelectedField('expected_revenue')}
           >
-            💰 Doanh số ({historyList.filter((h) => h.field === 'expected_revenue').length})
+            Doanh số ({historyList.filter((h) => h.field === 'expected_revenue').length})
           </button>
           <button
             type="button"
             className={`chip-btn ${selectedField === 'expected_close_date' ? 'active' : ''}`}
             onClick={() => setSelectedField('expected_close_date')}
           >
-            📅 Ngày chốt ({historyList.filter((h) => h.field === 'expected_close_date').length})
+            Ngày chốt ({historyList.filter((h) => h.field === 'expected_close_date').length})
           </button>
           <button
             type="button"
             className={`chip-btn ${selectedField === 'owner' ? 'active' : ''}`}
             onClick={() => setSelectedField('owner')}
           >
-            👤 Phụ trách ({historyList.filter((h) => h.field === 'owner').length})
+            Phụ trách ({historyList.filter((h) => h.field === 'owner').length})
           </button>
         </div>
         <div className="history-search-box">
@@ -302,7 +302,7 @@ export default function OpportunityHistoryTimeline({
           <div className="history-loading">Đang tải lịch sử thay đổi...</div>
         ) : filteredHistory.length === 0 ? (
           <div className="history-empty">
-            <div className="empty-icon">📂</div>
+            
             <p className="empty-text">Chưa có bản ghi thay đổi nào cho cơ hội này.</p>
             <span className="empty-hint">
               Mọi thay đổi về Giai đoạn, Doanh số, Ngày chốt và Người phụ trách sẽ được hệ thống tự động ghi nhật ký tại đây.
