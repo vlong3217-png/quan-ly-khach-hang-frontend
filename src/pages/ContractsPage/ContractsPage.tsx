@@ -8,6 +8,9 @@ import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import PdfExportModal from '../../components/PdfExportModal/PdfExportModal.tsx'
 import './ContractsPage.css'
+import PageHeader from '../../components/ui/PageHeader.tsx'
+import Button from '../../components/ui/Button.tsx'
+import Card from '../../components/ui/Card.tsx'
 
 type FilterTab = 'ALL' | 'EXPIRING_SOON' | 'EXPIRED' | 'ACTIVE' | 'RENEWED'
 
@@ -159,30 +162,27 @@ export default function ContractsPage() {
   return (
     <div className="contracts-page-container" id="contracts-page-container">
       {/* Header bar */}
-      <div className="contracts-header-bar">
-        <div>
-          <h2>Quản lý Hiệu lực & Gia hạn Hợp đồng (S7-07)</h2>
-          <p className="sub-text">
-            Theo dõi thời hạn kết thúc hợp đồng, cảnh báo mất doanh thu và 1-click tạo cơ hội gia hạn
-          </p>
-        </div>
-
-        {/* AC 2: Ngưỡng cảnh báo cấu hình được */}
-        <div className="threshold-control-box">
-          <label htmlFor="select-threshold">⚠️ Ngưỡng cảnh báo sắp hết hạn:</label>
-          <select
-            id="select-threshold"
-            value={thresholdDays}
-            onChange={(e) => handleThresholdChange(parseInt(e.target.value, 10))}
-          >
-            <option value={15}>Trước 15 ngày</option>
-            <option value={30}>Trước 30 ngày (Chuẩn)</option>
-            <option value={45}>Trước 45 ngày</option>
-            <option value={60}>Trước 60 ngày</option>
-            <option value={90}>Trước 90 ngày (Quý)</option>
-          </select>
-        </div>
-      </div>
+      <PageHeader
+        title="Quản lý Hiệu lực & Gia hạn Hợp đồng (S7-07)"
+        description="Theo dõi thời hạn kết thúc hợp đồng, cảnh báo mất doanh thu và 1-click tạo cơ hội gia hạn"
+        className="contracts-header-bar"
+        actions={
+          <div className="threshold-control-box">
+            <label htmlFor="select-threshold">⚠️ Ngưỡng cảnh báo sắp hết hạn:</label>
+            <select
+              id="select-threshold"
+              value={thresholdDays}
+              onChange={(e) => handleThresholdChange(parseInt(e.target.value, 10))}
+            >
+              <option value={15}>Trước 15 ngày</option>
+              <option value={30}>Trước 30 ngày (Chuẩn)</option>
+              <option value={45}>Trước 45 ngày</option>
+              <option value={60}>Trước 60 ngày</option>
+              <option value={90}>Trước 90 ngày (Quý)</option>
+            </select>
+          </div>
+        }
+      />
 
       {/* Stats Cards */}
       <div className="contracts-stats-grid">
@@ -278,7 +278,7 @@ export default function ContractsPage() {
       </div>
 
       {/* Contracts Table (S7-07 AC 1) */}
-      <div className="contracts-table-card">
+      <Card className="contracts-table-card">
         {filteredContracts.length === 0 ? (
           <div className="contracts-empty-state">
             <span className="empty-icon">📂</span>
@@ -364,7 +364,7 @@ export default function ContractsPage() {
             </tbody>
           </table>
         )}
-      </div>
+      </Card>
 
       {/* Renewal Opportunity Modal (S7-07 AC 3) */}
       {renewalContract && (
@@ -420,14 +420,15 @@ export default function ContractsPage() {
                   >
                     Hủy
                   </button>
-                  <button
+                  <Button
                     type="submit"
+                    variant="primary"
                     className="btn btn-primary"
                     id="btn-confirm-submit-renewal"
                     disabled={isCreatingRenewal}
                   >
                     {isCreatingRenewal ? 'Đang tạo...' : '✓ Xác nhận tạo cơ hội gia hạn'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </form>
