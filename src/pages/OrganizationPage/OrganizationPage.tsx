@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { organizationService } from '../../services/organizationService.ts'
 import type { DepartmentNode, Region } from '../../types/organization.ts'
 import './OrganizationPage.css'
+import PageHeader from '../../components/ui/PageHeader.tsx'
+import Button from '../../components/ui/Button.tsx'
+import Card from '../../components/ui/Card.tsx'
 
 export default function OrganizationPage() {
   const [tree, setTree] = useState<DepartmentNode[]>(() => organizationService.getDepartmentTree())
@@ -140,19 +143,20 @@ export default function OrganizationPage() {
         </div>
       )}
 
-      <div className="org-header">
-        <div>
-          <h2>Cơ cấu Tổ chức Kinh doanh & Khu vực địa lý</h2>
-        </div>
-        <div className="org-header-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => setIsRegionModalOpen(true)}>
-            Khai báo Khu vực
-          </button>
-          <button type="button" className="btn btn-primary" onClick={() => handleOpenAddDept(null)}>
-            + Thêm Khối / Phòng ban gốc
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Cơ cấu Tổ chức Kinh doanh & Khu vực địa lý"
+        className="org-header"
+        actions={
+          <div className="org-header-actions">
+            <Button type="button" variant="secondary" className="btn btn-secondary" onClick={() => setIsRegionModalOpen(true)}>
+              Khai báo Khu vực
+            </Button>
+            <Button type="button" variant="primary" className="btn btn-primary" onClick={() => handleOpenAddDept(null)}>
+              + Thêm Khối / Phòng ban gốc
+            </Button>
+          </div>
+        }
+      />
 
       <div className="org-layout">
         {/* Cột trái: Cây cấu trúc tổ chức */}
@@ -167,7 +171,7 @@ export default function OrganizationPage() {
         {/* Cột phải: Chi tiết nhóm & Phân bổ nhân sự */}
         <div className="org-details-panel">
           {selectedNode ? (
-            <div className="node-detail-card">
+            <Card className="node-detail-card">
               <div className="node-detail-header">
                 <h3>{selectedNode.name}</h3>
                 <span className="detail-code">{selectedNode.code}</span>
@@ -213,7 +217,7 @@ export default function OrganizationPage() {
                 </div>
 
               </div>
-            </div>
+            </Card>
           ) : (
             <div className="no-selection-placeholder">
               <h4>Chọn một phòng ban hoặc đội nhóm trên sơ đồ</h4>

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { customFieldService } from '../../services/customFieldService.ts'
 import type { CustomFieldDefinition, CustomFieldTarget, CustomFieldType } from '../../types/customField.ts'
 import './CustomFieldsPage.css'
+import PageHeader from '../../components/ui/PageHeader.tsx'
+import Button from '../../components/ui/Button.tsx'
 
 export default function CustomFieldsPage() {
   const [activeTarget, setActiveTarget] = useState<CustomFieldTarget>('CUSTOMER')
@@ -147,14 +149,15 @@ export default function CustomFieldsPage() {
         </div>
       )}
 
-      <div className="cf-header">
-        <div>
-          <h2>Trường tuỳ chỉnh</h2>
-        </div>
-        <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
-          + Thêm trường tuỳ chỉnh
-        </button>
-      </div>
+      <PageHeader
+        title="Trường tuỳ chỉnh"
+        className="cf-header"
+        actions={
+          <Button type="button" variant="primary" className="btn btn-primary" onClick={handleOpenCreate}>
+            + Thêm trường tuỳ chỉnh
+          </Button>
+        }
+      />
 
       {/* Target Tabs: Khách hàng vs Cơ hội */}
       <div className="cf-target-tabs">
