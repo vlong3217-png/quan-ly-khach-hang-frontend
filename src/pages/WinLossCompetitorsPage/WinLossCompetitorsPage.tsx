@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { winLossService } from '../../services/winLossService.ts'
 import type { WinLossReason, WinLossType, Competitor } from '../../types/winLossCompetitor.ts'
 import './WinLossCompetitorsPage.css'
+import PageHeader from '../../components/ui/PageHeader.tsx'
+import Button from '../../components/ui/Button.tsx'
 
 export default function WinLossCompetitorsPage() {
   const [activeTab, setActiveTab] = useState<'WIN' | 'LOSS' | 'COMPETITOR'>('WIN')
@@ -160,22 +162,21 @@ export default function WinLossCompetitorsPage() {
         </div>
       )}
 
-      <div className="wl-header">
-        <div>
-          <h2>Danh mục Lý do Thắng / Thua & Đối thủ cạnh tranh</h2>
-        </div>
-        <div>
-          {activeTab === 'COMPETITOR' ? (
-            <button type="button" className="btn btn-primary" onClick={handleOpenCreateComp}>
+      <PageHeader
+        title="Danh mục Lý do Thắng / Thua & Đối thủ cạnh tranh"
+        className="wl-header"
+        actions={
+          activeTab === 'COMPETITOR' ? (
+            <Button type="button" variant="primary" className="btn btn-primary" onClick={handleOpenCreateComp}>
               + Thêm đối thủ cạnh tranh
-            </button>
+            </Button>
           ) : (
-            <button type="button" className="btn btn-primary" onClick={handleOpenCreateReason}>
+            <Button type="button" variant="primary" className="btn btn-primary" onClick={handleOpenCreateReason}>
               + Thêm lý do {activeTab === 'WIN' ? 'thắng' : 'thua'}
-            </button>
-          )}
-        </div>
-      </div>
+            </Button>
+          )
+        }
+      />
 
       {/* Tabs */}
       <div className="wl-tabs">
