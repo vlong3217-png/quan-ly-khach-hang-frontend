@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { pipelineService } from '../../services/pipelineService.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
 import './PipelineStagesPage.css'
+import PageHeader from '../../components/ui/PageHeader.tsx'
+import Button from '../../components/ui/Button.tsx'
 
 export default function PipelineStagesPage() {
   const navigate = useNavigate()
@@ -178,32 +180,35 @@ export default function PipelineStagesPage() {
         </div>
       )}
 
-      <div className="pipe-header">
-        <div>
-          <h2>Cấu hình Giai đoạn Pipeline & Xác suất Thắng</h2>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => navigate('/dashboard/opportunities')}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-          >
-            <span>Quản lý Cơ hội bán hàng</span>
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => handleOpenAddRule()}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', borderColor: '#2563eb', color: '#2563eb' }}
-          >
-            <span>+ Thêm quy tắc bổ sung</span>
-          </button>
-          <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
-            Thêm giai đoạn mới
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Cấu hình Giai đoạn Pipeline & Xác suất Thắng"
+        className="pipe-header"
+        actions={
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button
+              type="button"
+              variant="secondary"
+              className="btn btn-secondary"
+              onClick={() => navigate('/dashboard/opportunities')}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <span>Quản lý Cơ hội bán hàng</span>
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="btn btn-secondary"
+              onClick={() => handleOpenAddRule()}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', borderColor: '#2563eb', color: '#2563eb' }}
+            >
+              <span>+ Thêm quy tắc bổ sung</span>
+            </Button>
+            <Button type="button" variant="primary" className="btn btn-primary" onClick={handleOpenCreate}>
+              Thêm giai đoạn mới
+            </Button>
+          </div>
+        }
+      />
 
       {/* Sơ đồ trực quan chuỗi Pipeline */}
       <div className="pipeline-flow-diagram">

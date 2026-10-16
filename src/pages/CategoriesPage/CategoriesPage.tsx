@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { categoryService } from '../../services/categoryService.ts'
 import type { SalesCategoryItem, SalesCategoryType } from '../../types/category.ts'
 import './CategoriesPage.css'
+import PageHeader from '../../components/ui/PageHeader.tsx'
+import Button from '../../components/ui/Button.tsx'
 
 const CATEGORY_TABS: Array<{ type: SalesCategoryType; label: string }> = [
   { type: 'INDUSTRY', label: 'Ngành nghề khách hàng' },
@@ -112,14 +114,15 @@ export default function CategoriesPage() {
         </div>
       )}
 
-      <div className="cat-header">
-        <div>
-          <h2>Danh mục Bán hàng dùng chung</h2>
-        </div>
-        <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
-          Thêm mục mới
-        </button>
-      </div>
+      <PageHeader
+        title="Danh mục Bán hàng dùng chung"
+        className="cat-header"
+        actions={
+          <Button type="button" variant="primary" className="btn btn-primary" onClick={handleOpenCreate}>
+            Thêm mục mới
+          </Button>
+        }
+      />
 
       {/* Tabs chuyển đổi 4 loại danh mục */}
       <div className="cat-tabs-nav">
