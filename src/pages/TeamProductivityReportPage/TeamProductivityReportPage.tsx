@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import type { ProductivityFilter } from '../../types/teamProductivity.ts'
 import { teamProductivityService } from '../../services/teamProductivityService.ts'
 import './TeamProductivityReportPage.css'
+import PageHeader from '../../components/ui/PageHeader.tsx'
 
 export default function TeamProductivityReportPage() {
   const [filter, setFilter] = useState<ProductivityFilter>({
@@ -42,37 +43,28 @@ export default function TeamProductivityReportPage() {
   return (
     <div className="productivity-report-page" id="productivity-report-page">
       {/* ── 1. HEADER ── */}
-      <div className="productivity-header">
-        <div className="productivity-header-title">
-          <h2>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <polyline points="16 11 18 13 22 9" />
-            </svg>
-            Báo Cáo Năng Suất & Hoạt Động Đội Ngũ (S8-07)
-          </h2>
-          <p>
-            Theo dõi số cuộc gọi, cuộc gặp, báo giá gửi đi theo từng thành viên, theo tuần và tỷ lệ phản hồi Lead trong SLA (&lt; 24h)
-          </p>
-        </div>
-
-        <div className="productivity-header-actions">
-          <button
-            type="button"
-            className="btn-export-excel"
-            id="btn-export-productivity-excel"
-            onClick={handleExport}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" x2="12" y1="15" y2="3" />
-            </svg>
-            Xuất Excel Báo Cáo
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Báo Cáo Năng Suất & Hoạt Động Đội Ngũ (S8-07)"
+        description="Theo dõi số cuộc gọi, cuộc gặp, báo giá gửi đi theo từng thành viên, theo tuần và tỷ lệ phản hồi Lead trong SLA (< 24h)"
+        className="productivity-header"
+        actions={
+          <div className="productivity-header-actions">
+            <button
+              type="button"
+              className="btn-export-excel"
+              id="btn-export-productivity-excel"
+              onClick={handleExport}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" x2="12" y1="15" y2="3" />
+              </svg>
+              Xuất Excel Báo Cáo
+            </button>
+          </div>
+        }
+      />
 
       {exportNotice && (
         <div style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.875rem' }}>

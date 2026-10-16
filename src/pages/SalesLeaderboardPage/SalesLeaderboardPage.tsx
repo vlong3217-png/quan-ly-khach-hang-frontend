@@ -3,6 +3,8 @@ import { useAuth } from '../../contexts/AuthContext.tsx'
 import { ROLES } from '../../constants/permissions.ts'
 import { salesLeaderboardService } from '../../services/salesLeaderboardService.ts'
 import './SalesLeaderboardPage.css'
+import PageHeader from '../../components/ui/PageHeader.tsx'
+import Card from '../../components/ui/Card.tsx'
 
 export default function SalesLeaderboardPage() {
   const { user } = useAuth()
@@ -41,37 +43,27 @@ export default function SalesLeaderboardPage() {
   return (
     <div className="leaderboard-page" id="sales-leaderboard-page">
       {/* ── 1. HEADER & CONFIG TOGGLE ── */}
-      <div className="leaderboard-header">
-        <div className="leaderboard-header-title">
-          <h2>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-              <path d="M4 22h16" />
-              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
-            </svg>
-            Bảng Xếp Hạng Doanh Số Đội Nhóm (S8-08)
-          </h2>
-          <p>Xếp hạng thành viên theo doanh số đã chốt trong kỳ và tiến độ hoàn thành chỉ tiêu cá nhân</p>
-        </div>
-
-        {isAdmin && (
-          <div className="admin-config-box" title="Cấu hình hệ thống dành riêng cho Administrator">
-            <label className="switch-label">
-              <input
-                type="checkbox"
-                className="switch-input"
-                id="toggle-leaderboard-feature"
-                checked={config.is_enabled}
-                onChange={handleToggleConfig}
-              />
-              <span>{config.is_enabled ? 'Tính năng đang BẬT' : 'Tính năng đang TẮT'}</span>
-            </label>
-          </div>
-        )}
-      </div>
+      <PageHeader
+        title="Bảng Xếp Hạng Doanh Số Đội Nhóm (S8-08)"
+        description="Xếp hạng thành viên theo doanh số đã chốt trong kỳ và tiến độ hoàn thành chỉ tiêu cá nhân"
+        className="leaderboard-header"
+        actions={
+          isAdmin ? (
+            <div className="admin-config-box" title="Cấu hình hệ thống dành riêng cho Administrator">
+              <label className="switch-label">
+                <input
+                  type="checkbox"
+                  className="switch-input"
+                  id="toggle-leaderboard-feature"
+                  checked={config.is_enabled}
+                  onChange={handleToggleConfig}
+                />
+                <span>{config.is_enabled ? 'Tính năng đang BẬT' : 'Tính năng đang TẮT'}</span>
+              </label>
+            </div>
+          ) : null
+        }
+      />
 
       {notice && (
         <div style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.875rem' }}>
@@ -188,7 +180,7 @@ export default function SalesLeaderboardPage() {
 
       {/* ── 6. DETAILED RANKING TABLE ── */}
       {is_enabled && (
-        <div className="leaderboard-table-card">
+        <Card className="leaderboard-table-card">
           <table className="leaderboard-table">
             <thead>
               <tr>
@@ -264,7 +256,7 @@ export default function SalesLeaderboardPage() {
               })}
             </tbody>
           </table>
-        </div>
+        </Card>
       )}
     </div>
   )
