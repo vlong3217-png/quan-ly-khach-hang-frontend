@@ -9,6 +9,7 @@ import type {
 } from '../../types/campaign.ts'
 import type { Lead } from '../../types/lead.ts'
 import './CampaignsPage.css'
+import Button from '../../components/ui/Button.tsx'
 
 /* ──────────── Cấu hình Kênh và Trạng thái ──────────── */
 const CHANNEL_CONFIG: Record<
@@ -248,19 +249,20 @@ export default function CampaignsPage() {
       {/* ── 1. Page Header ── */}
       <div className="campaign-page-header">
         <div className="campaign-header-info">
-          <h2>Quản lý Chiến dịch & Theo dõi Lead</h2>
+          <h2 className="crm-ui-page-header__title">Quản lý Chiến dịch & Theo dõi Lead</h2>
 
         </div>
 
         <div className="campaign-header-actions">
-          <button
+          <Button
             type="button"
+            variant="primary"
             className="btn btn-primary"
             onClick={handleOpenCreateModal}
             id="btn-create-campaign"
           >
             <span>Tạo chiến dịch mới</span>
-          </button>
+          </Button>
         </div>
       </div>
 
