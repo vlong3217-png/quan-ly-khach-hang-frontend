@@ -5,7 +5,9 @@
 }
 
 .products-page-container > .products-header h2,
+.products-page-container .products-header .crm-ui-page-header__title,
 .campaigns-page-container .campaign-page-header h1,
+.campaigns-page-container .campaign-page-header .crm-ui-page-header__title,
 .campaigns-page-container .campaign-page-header h2,
 .opportunities-page-container > .page-header h1,
 .opportunities-page-container > .page-header h2,
@@ -83,7 +85,9 @@
 @media (max-width: 640px) {
   .products-page-container { padding: 14px; }
   .products-page-container > .products-header h2,
+  .products-page-container .products-header .crm-ui-page-header__title,
   .campaigns-page-container .campaign-page-header h1,
+  .campaigns-page-container .campaign-page-header .crm-ui-page-header__title,
   .campaigns-page-container .campaign-page-header h2,
   .opportunities-page-container > .page-header h1,
   .opportunities-page-container > .page-header h2,
