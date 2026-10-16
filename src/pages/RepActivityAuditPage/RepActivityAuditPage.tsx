@@ -5,6 +5,8 @@ import type {
 } from '../../types/repActivityAudit.ts'
 import { repActivityAuditService } from '../../services/repActivityAuditService.ts'
 import './RepActivityAuditPage.css'
+import PageHeader from '../../components/ui/PageHeader.tsx'
+import Card from '../../components/ui/Card.tsx'
 
 export default function RepActivityAuditPage() {
   const [filter, setFilter] = useState<RepActivityFilter>({
@@ -50,34 +52,26 @@ export default function RepActivityAuditPage() {
   return (
     <div className="activity-audit-page" id="rep-activity-audit-page">
       {/* ── 1. HEADER ── */}
-      <div className="audit-header">
-        <div className="audit-header-title">
-          <h2>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+      <PageHeader
+        title="Nhật Ký Hoạt Động & Khối Lượng Công Việc Sales (S8-11)"
+        description="Lọc và đối soát toàn diện hoạt động tương tác khách hàng theo thành viên, loại hoạt động, thời gian và thống kê khối lượng công việc"
+        className="audit-header"
+        actions={
+          <button
+            type="button"
+            className="btn-export-excel"
+            id="btn-export-activity-audit-excel"
+            onClick={handleExport}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" x2="12" y1="15" y2="3" />
             </svg>
-            Nhật Ký Hoạt Động & Khối Lượng Công Việc Sales (S8-11)
-          </h2>
-          <p>
-            Lọc và đối soát toàn diện hoạt động tương tác khách hàng theo thành viên, loại hoạt động, thời gian và thống kê khối lượng công việc
-          </p>
-        </div>
-
-        <button
-          type="button"
-          className="btn-export-excel"
-          id="btn-export-activity-audit-excel"
-          onClick={handleExport}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" x2="12" y1="15" y2="3" />
-          </svg>
-          Xuất Excel Nhật Ký
-        </button>
-      </div>
+            Xuất Excel Nhật Ký
+          </button>
+        }
+      />
 
       {exportNotice && (
         <div style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.875rem' }}>
@@ -210,7 +204,7 @@ export default function RepActivityAuditPage() {
         <h3 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 1rem 0', color: '#0f172a' }}>
           Nhật ký hoạt động chi tiết ({activities.length} bản ghi)
         </h3>
-        <div className="activity-table-card">
+        <Card className="activity-table-card">
           <table className="activity-table">
             <thead>
               <tr>
@@ -270,7 +264,7 @@ export default function RepActivityAuditPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </Card>
       </div>
     </div>
   )

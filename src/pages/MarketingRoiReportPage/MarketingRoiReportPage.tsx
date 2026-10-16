@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react'
 import type { MarketingRoiFilter } from '../../types/marketingRoiReport.ts'
 import { marketingRoiService } from '../../services/marketingRoiService.ts'
 import './MarketingRoiReportPage.css'
+import PageHeader from '../../components/ui/PageHeader.tsx'
+import Card from '../../components/ui/Card.tsx'
 
 export default function MarketingRoiReportPage() {
   const [filter, setFilter] = useState<MarketingRoiFilter>({
@@ -32,35 +34,26 @@ export default function MarketingRoiReportPage() {
   return (
     <div className="marketing-roi-page" id="marketing-roi-report-page">
       {/* ── 1. HEADER ── */}
-      <div className="marketing-roi-header">
-        <div className="marketing-roi-header-title">
-          <h2>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 20V10" />
-              <path d="M18 20V4" />
-              <path d="M6 20v-4" />
+      <PageHeader
+        title="Báo Cáo Nguồn Lead & Hiệu Quả Chiến Dịch (S8-09)"
+        description="Theo dõi số lượng lead, tỷ lệ tiếp nhận, tỷ lệ chuyển đổi thành cơ hội theo từng nguồn và từng chiến dịch marketing, tính toán ROI và xuất file Excel"
+        className="marketing-roi-header"
+        actions={
+          <button
+            type="button"
+            className="btn-export-excel"
+            id="btn-export-marketing-roi-excel"
+            onClick={handleExport}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" x2="12" y1="15" y2="3" />
             </svg>
-            Báo Cáo Nguồn Lead & Hiệu Quả Chiến Dịch (S8-09)
-          </h2>
-          <p>
-            Theo dõi số lượng lead, tỷ lệ tiếp nhận, tỷ lệ chuyển đổi thành cơ hội theo từng nguồn và từng chiến dịch marketing, tính toán ROI và xuất file Excel
-          </p>
-        </div>
-
-        <button
-          type="button"
-          className="btn-export-excel"
-          id="btn-export-marketing-roi-excel"
-          onClick={handleExport}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" x2="12" y1="15" y2="3" />
-          </svg>
-          Xuất Excel Báo Cáo
-        </button>
-      </div>
+            Xuất Excel Báo Cáo
+          </button>
+        }
+      />
 
       {exportNotice && (
         <div style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.875rem' }}>
@@ -194,7 +187,7 @@ export default function MarketingRoiReportPage() {
 
       {/* ── TAB 1: LEAD SOURCES ── */}
       {activeTab === 'sources' && (
-        <div className="roi-table-card">
+        <Card className="roi-table-card">
           <table className="roi-table">
             <thead>
               <tr>
@@ -243,12 +236,12 @@ export default function MarketingRoiReportPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </Card>
       )}
 
       {/* ── TAB 2: CAMPAIGNS ── */}
       {activeTab === 'campaigns' && (
-        <div className="roi-table-card">
+        <Card className="roi-table-card">
           <table className="roi-table">
             <thead>
               <tr>
@@ -291,7 +284,7 @@ export default function MarketingRoiReportPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </Card>
       )}
     </div>
   )
