@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import type { Opportunity } from '../../types/opportunity.ts'
 import type {
   OpportunityAttachment,
@@ -154,7 +154,7 @@ export default function OpportunityAttachments({
       {/* Upload Box */}
       <div className="attachments-upload-card">
         <div className="upload-header">
-          <h4 className="upload-title">📎 Đính kèm tài liệu vào thương vụ (S6-04)</h4>
+          <h4 className="upload-title">Đính kèm tài liệu vào thương vụ (S6-04)</h4>
           <span className="upload-limit-badge">Tối đa 20MB / tệp · Hỗ trợ nhiều tệp</span>
         </div>
 
@@ -169,11 +169,11 @@ export default function OpportunityAttachments({
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value as AttachmentCategory)}
             >
-              <option value="Hồ sơ thầu">📑 Hồ sơ thầu (Bidding / Tender)</option>
-              <option value="Biên bản họp">📝 Biên bản họp (MoM / Meeting Notes)</option>
-              <option value="Báo giá & Hợp đồng">📄 Báo giá & Hợp đồng</option>
-              <option value="Yêu cầu kỹ thuật (RFP)">🛠️ Yêu cầu kỹ thuật (RFP / Spec)</option>
-              <option value="Tài liệu khác">📂 Tài liệu khác</option>
+              <option value="Hồ sơ thầu">Hồ sơ thầu (Bidding / Tender)</option>
+              <option value="Biên bản họp">Biên bản họp (MoM / Meeting Notes)</option>
+              <option value="Báo giá & Hợp đồng">Báo giá & Hợp đồng</option>
+              <option value="Yêu cầu kỹ thuật (RFP)">Yêu cầu kỹ thuật (RFP / Spec)</option>
+              <option value="Tài liệu khác">Tài liệu khác</option>
             </select>
           </div>
 
@@ -202,7 +202,7 @@ export default function OpportunityAttachments({
             onChange={(e) => handleFilesSelected(e.target.files)}
           />
           <div className="dropzone-content">
-            <span className="dropzone-icon">☁️</span>
+            
             <span className="dropzone-text">
               {isUploading
                 ? 'Đang tải lên các tệp tài liệu...'
@@ -217,7 +217,7 @@ export default function OpportunityAttachments({
 
       {/* Permissions banner */}
       <div className={`download-permission-banner ${downloadCheck.allowed ? 'allowed' : 'restricted'}`}>
-        <span className="perm-icon">{downloadCheck.allowed ? '🔒' : '⚠️'}</span>
+        
         <div className="perm-info">
           <strong>Chính sách bảo mật tài liệu thương vụ (S6-04 AC2):</strong>
           <span>
@@ -246,7 +246,7 @@ export default function OpportunityAttachments({
           <div className="attachments-loading">Đang tải danh sách tài liệu...</div>
         ) : attachments.length === 0 ? (
           <div className="attachments-empty">
-            <span className="empty-icon">📁</span>
+            
             <p>Chưa có tài liệu nào được đính kèm vào cơ hội này.</p>
             <span className="empty-hint">
               Đính kèm hồ sơ thầu, biên bản họp và đề xuất kỹ thuật để lưu trữ tập trung cùng thương vụ.

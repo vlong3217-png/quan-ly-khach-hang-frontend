@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import type {
   Opportunity,
   CreateOpportunityPayload,
@@ -779,7 +779,7 @@ export default function OpportunitiesPage() {
 
           {/* ── S6-02: Dải Bộ lọc nhanh & Bộ lọc đã lưu ── */}
           <div className="opp-saved-filters-bar" id="opp-saved-filters-bar">
-            <span className="saved-filter-label">🎯 Bộ lọc tiêu điểm:</span>
+            <span className="saved-filter-label">Bộ lọc tiêu điểm:</span>
             <div className="saved-filter-chips">
               {savedFilters.map((sf) => (
                 <button
@@ -788,7 +788,7 @@ export default function OpportunitiesPage() {
                   className={`saved-filter-chip ${activeSavedFilterId === sf.id ? 'active' : ''}`}
                   onClick={() => handleApplySavedFilter(sf)}
                 >
-                  <span className="chip-icon">{sf.icon || '📌'}</span>
+                  
                   <span className="chip-name">{sf.name}</span>
                   {!sf.is_preset && (
                     <span
@@ -903,11 +903,11 @@ export default function OpportunitiesPage() {
                 title="Lọc theo ngày chốt dự kiến"
               >
                 <option value="ALL">-- Mọi ngày chốt --</option>
-                <option value="THIS_WEEK">⚡ Chốt trong tuần này</option>
-                <option value="THIS_MONTH">🎯 Chốt trong tháng này</option>
-                <option value="THIS_QUARTER">📊 Chốt trong quý này</option>
-                <option value="OVERDUE">⏰ Đã quá hạn chốt</option>
-                <option value="CUSTOM">📅 Tùy chọn khoảng ngày...</option>
+                <option value="THIS_WEEK">Chốt trong tuần này</option>
+                <option value="THIS_MONTH">Chốt trong tháng này</option>
+                <option value="THIS_QUARTER">Chốt trong quý này</option>
+                <option value="OVERDUE">Đã quá hạn chốt</option>
+                <option value="CUSTOM">Tùy chọn khoảng ngày...</option>
               </select>
 
               {closeDatePreset === 'CUSTOM' && (
