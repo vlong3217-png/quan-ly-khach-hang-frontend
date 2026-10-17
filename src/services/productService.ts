@@ -5,7 +5,7 @@ const STORAGE_KEY = 'crm_products_pricing_data'
 const INITIAL_PRODUCTS: Product[] = [
   {
     id: 'prod-001',
-    code: '1001',
+    code: 'SP-001',
     name: 'Phần mềm CRM Doanh Nghiệp Pro (Bản quyền vĩnh viễn)',
     type: 'ONE_TIME',
     unit: 'Gói',
@@ -20,7 +20,7 @@ const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: 'prod-002',
-    code: '1002',
+    code: 'SP-002',
     name: 'Dịch vụ CRM Cloud Tiêu chuẩn (Thuê bao hàng tháng)',
     type: 'SUBSCRIPTION',
     unit: 'User/Tháng',
@@ -35,7 +35,7 @@ const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: 'prod-003',
-    code: '1003',
+    code: 'SP-003',
     name: 'Dịch vụ Cài đặt & Tích hợp On-Premise',
     type: 'ONE_TIME',
     unit: 'Dự án',
@@ -50,7 +50,7 @@ const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: 'prod-004',
-    code: '1004',
+    code: 'SP-004',
     name: 'Gói SMS Brandname Chăm sóc khách hàng (10,000 tin)',
     type: 'ONE_TIME',
     unit: 'Gói',
@@ -65,7 +65,7 @@ const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: 'prod-005',
-    code: '1005',
+    code: 'SP-005',
     name: 'Khóa đào tạo Quản trị & Vận hành CRM nâng cao',
     type: 'ONE_TIME',
     unit: 'Buổi',
@@ -80,7 +80,7 @@ const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: 'prod-006',
-    code: '1006',
+    code: 'SP-006',
     name: 'Gói Bảo trì & Hỗ trợ kỹ thuật 24/7 (Hàng năm)',
     type: 'SUBSCRIPTION',
     unit: 'Năm',
@@ -100,10 +100,15 @@ function getStoredProducts(): Product[] {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed: Product[] = JSON.parse(raw)
-      // Tự động chuyển đổi các mã sản phẩm cũ có ký tự chữ sang số
+      // Tự động chuẩn hóa các mã sản phẩm sang định dạng SP-...
       const updated = parsed.map((p, idx) => {
-        if (!/^\d+$/.test(p.code)) {
-          return { ...p, code: String(1001 + idx) }
+        if (/^\d+$/.test(p.code)) {
+          const num = parseInt(p.code, 10)
+          const seq = num >= 1000 ? num - 1000 : num
+          return { ...p, code: `SP-${String(seq).padStart(3, '0')}` }
+        }
+        if (!p.code.startsWith('SP-')) {
+          return { ...p, code: `SP-${String(idx + 1).padStart(3, '0')}` }
         }
         return p
       })
