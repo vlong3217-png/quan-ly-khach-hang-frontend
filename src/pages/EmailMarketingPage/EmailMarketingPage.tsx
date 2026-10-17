@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from 'react'
+import Button from '../../components/ui/Button.tsx'
 import type {
   EmailTemplate,
   EmailQueueItem,
@@ -268,9 +269,10 @@ export default function EmailMarketingPage() {
           </h1>
           
         </div>
-        <div className="email-header-actions">
-          <button
+                <div className="email-header-actions">
+          <Button
             type="button"
+            variant="primary"
             className="btn btn-primary"
             id="btn-compose-email"
             onClick={() => {
@@ -283,19 +285,18 @@ export default function EmailMarketingPage() {
               setEmailBody('')
               setIsSendModalOpen(true)
             }}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
           >
-            <span>Soạn email gửi khách</span>
-          </button>
-          <button
+            Soạn email gửi khách
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
             className="btn btn-secondary"
             id="btn-create-template"
             onClick={handleOpenCreateTmpl}
-            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <span>+ Tạo mẫu thư mới</span>
-          </button>
+            + Tạo mẫu thư mới
+          </Button>
         </div>
       </div>
 
@@ -408,24 +409,24 @@ export default function EmailMarketingPage() {
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: 6 }}>
                         {item.status === 'FAILED' && (
-                          <button
+                          <Button
                             type="button"
-                            className="btn btn-primary"
-                            style={{ fontSize: '0.75rem', padding: '4px 10px', background: '#dc2626', borderColor: '#dc2626' }}
+                            variant="danger"
+                            className="btn btn-danger"
                             onClick={() => handleRetryEmail(item.id)}
                             title="Thử gửi lại thư này qua hàng đợi bất đồng bộ (S8-01 AC)"
                           >
                             Gửi lại (Retry)
-                          </button>
+                          </Button>
                         )}
-                        <button
+                        <Button
                           type="button"
+                          variant="secondary"
                           className="btn btn-secondary"
-                          style={{ fontSize: '0.75rem', padding: '4px 10px' }}
                           onClick={() => setViewingQueueItem(item)}
                         >
                           Xem nội dung
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -457,30 +458,30 @@ export default function EmailMarketingPage() {
               <div className="template-card-footer">
                 <span>Đã dùng: <strong>{tmpl.usage_count} lần</strong></span>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <button
+                  <Button
                     type="button"
+                    variant="primary"
                     className="btn btn-primary"
-                    style={{ fontSize: '0.75rem', padding: '4px 10px' }}
                     onClick={() => handleUseTemplateToSend(tmpl)}
                   >
                     Dùng mẫu
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="secondary"
                     className="btn btn-secondary"
-                    style={{ fontSize: '0.75rem', padding: '4px 8px' }}
                     onClick={() => handleOpenEditTmpl(tmpl)}
                   >
-                    ✏
-                  </button>
-                  <button
+                    Sửa
+                  </Button>
+                  <Button
                     type="button"
-                    className="btn btn-secondary"
-                    style={{ fontSize: '0.75rem', padding: '4px 8px', color: '#ef4444' }}
+                    variant="danger"
+                    className="btn btn-danger"
                     onClick={() => handleDeleteTemplate(tmpl.id)}
                   >
-                    🗑
-                  </button>
+                    Xóa
+                  </Button>
                 </div>
               </div>
             </div>
