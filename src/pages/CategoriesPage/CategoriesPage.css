@@ -95,12 +95,7 @@
   vertical-align: middle;
 }
 
-.order-num {
-  font-weight: 700;
-  min-width: 18px;
-  text-align: center;
-  font-family: monospace;
-}
+/* .order-num is styled via ui.css crm-stt-badge */
 
 .cat-code {
   font-family: monospace;
