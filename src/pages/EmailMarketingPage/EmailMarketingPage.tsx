@@ -264,12 +264,9 @@ export default function EmailMarketingPage() {
       <div className="email-page-header">
         <div>
           <h1>
-            <span>Tiếp thị Email & Mẫu thư (Email Marketing & Templates)</span>
+            <span>Tiếp thị Email & Mẫu thư</span>
           </h1>
-          <p>
-            Soạn mẫu thư có chèn biến cá nhân hoá (tên người liên hệ, công ty, chuyên viên phụ trách).
-            Email gửi đi được xếp hàng đợi bất đồng bộ, tự động ghi vào Dòng thời gian 360 độ của khách hàng và hỗ trợ gửi lại thư thất bại (S8-01).
-          </p>
+          
         </div>
         <div className="email-header-actions">
           <button
