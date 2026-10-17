@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import type {
   EmailTemplate,
   EmailQueueItem,
@@ -264,7 +264,6 @@ export default function EmailMarketingPage() {
       <div className="email-page-header">
         <div>
           <h1>
-            <span>✉️</span>
             <span>Tiếp thị Email & Mẫu thư (Email Marketing & Templates)</span>
           </h1>
           <p>
@@ -289,7 +288,6 @@ export default function EmailMarketingPage() {
             }}
             style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
           >
-            <span>✉️</span>
             <span>Soạn email gửi khách</span>
           </button>
           <button
@@ -299,8 +297,7 @@ export default function EmailMarketingPage() {
             onClick={handleOpenCreateTmpl}
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <span>＋</span>
-            <span>Tạo mẫu thư mới</span>
+            <span>+ Tạo mẫu thư mới</span>
           </button>
         </div>
       </div>
@@ -332,7 +329,7 @@ export default function EmailMarketingPage() {
             <input
               type="text"
               className="queue-search-input"
-              placeholder="🔍 Tìm theo email, khách hàng, tiêu đề..."
+              placeholder="Tìm theo email, khách hàng, tiêu đề..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -405,10 +402,10 @@ export default function EmailMarketingPage() {
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       <span className={`status-pill ${item.status}`}>
-                        {item.status === 'QUEUED' && '⏳ Chờ gửi'}
-                        {item.status === 'SENDING' && '📡 Đang gửi...'}
-                        {item.status === 'SENT' && '✓ Đã gửi'}
-                        {item.status === 'FAILED' && '✕ Thất bại'}
+                        {item.status === 'QUEUED' && 'Chờ gửi'}
+                        {item.status === 'SENDING' && 'Đang gửi...'}
+                        {item.status === 'SENT' && 'Đã gửi'}
+                        {item.status === 'FAILED' && 'Thất bại'}
                       </span>
                     </td>
                     <td style={{ textAlign: 'right' }}>
@@ -421,7 +418,7 @@ export default function EmailMarketingPage() {
                             onClick={() => handleRetryEmail(item.id)}
                             title="Thử gửi lại thư này qua hàng đợi bất đồng bộ (S8-01 AC)"
                           >
-                            🔄 Gửi lại (Retry)
+                            Gửi lại (Retry)
                           </button>
                         )}
                         <button
@@ -430,7 +427,7 @@ export default function EmailMarketingPage() {
                           style={{ fontSize: '0.75rem', padding: '4px 10px' }}
                           onClick={() => setViewingQueueItem(item)}
                         >
-                          👁 Xem nội dung
+                          Xem nội dung
                         </button>
                       </div>
                     </td>
@@ -469,7 +466,7 @@ export default function EmailMarketingPage() {
                     style={{ fontSize: '0.75rem', padding: '4px 10px' }}
                     onClick={() => handleUseTemplateToSend(tmpl)}
                   >
-                    ✉ Dùng mẫu
+                    Dùng mẫu
                   </button>
                   <button
                     type="button"
