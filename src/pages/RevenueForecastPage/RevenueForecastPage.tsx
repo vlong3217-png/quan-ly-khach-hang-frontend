@@ -46,10 +46,6 @@ export default function RevenueForecastPage() {
             <span>📈</span>
             <span>Báo cáo Dự báo doanh số & Tiến độ chỉ tiêu (S8-06)</span>
           </h1>
-          <p>
-            So sánh bộ ba con số then chốt: Đã chốt thực tế (Closed Won), Dự báo theo trọng số (Weighted Forecast), và Chỉ tiêu cam kết (Quota).
-            Hỗ trợ xem theo nhân viên, nhóm hoặc toàn khối; phân tích lý do thua theo danh mục và đối thủ; xuất file Excel hoàn chỉnh.
-          </p>
         </div>
 
         <button

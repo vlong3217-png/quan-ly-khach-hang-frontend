@@ -45,7 +45,6 @@ export default function TeamProductivityReportPage() {
       {/* ── 1. HEADER ── */}
       <PageHeader
         title="Báo Cáo Năng Suất & Hoạt Động Đội Ngũ (S8-07)"
-        description="Theo dõi số cuộc gọi, cuộc gặp, báo giá gửi đi theo từng thành viên, theo tuần và tỷ lệ phản hồi Lead trong SLA (< 24h)"
         className="productivity-header"
         actions={
           <div className="productivity-header-actions">

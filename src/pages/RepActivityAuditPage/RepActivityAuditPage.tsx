@@ -54,7 +54,6 @@ export default function RepActivityAuditPage() {
       {/* ── 1. HEADER ── */}
       <PageHeader
         title="Nhật Ký Hoạt Động & Khối Lượng Công Việc Sales (S8-11)"
-        description="Lọc và đối soát toàn diện hoạt động tương tác khách hàng theo thành viên, loại hoạt động, thời gian và thống kê khối lượng công việc"
         className="audit-header"
         actions={
           <button

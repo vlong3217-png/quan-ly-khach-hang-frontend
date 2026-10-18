@@ -45,7 +45,6 @@ export default function SalesLeaderboardPage() {
       {/* ── 1. HEADER & CONFIG TOGGLE ── */}
       <PageHeader
         title="Bảng Xếp Hạng Doanh Số Đội Nhóm (S8-08)"
-        description="Xếp hạng thành viên theo doanh số đã chốt trong kỳ và tiến độ hoàn thành chỉ tiêu cá nhân"
         className="leaderboard-header"
         actions={
           isAdmin ? (
