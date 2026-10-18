@@ -12,6 +12,9 @@ export default function OrganizationPage() {
   const [selectedNode, setSelectedNode] = useState<DepartmentNode | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
+  // Trạng thái thu gọn/mở rộng từng node nhánh
+  const [collapsedNodeIds, setCollapsedNodeIds] = useState<Record<string, boolean>>({})
+
   // Modal Thêm phòng ban
   const [isDeptModalOpen, setIsDeptModalOpen] = useState(false)
   const [parentIdForNewDept, setParentIdForNewDept] = useState<string | null>(null)
@@ -42,6 +45,34 @@ export default function OrganizationPage() {
   const reloadData = () => {
     setTree(organizationService.getDepartmentTree())
     setRegions(organizationService.getRegions())
+  }
+
+  // Thu gọn / Mở rộng node
+  const toggleCollapse = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setCollapsedNodeIds((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }))
+  }
+
+  // Mở rộng tất cả / Thu gọn tất cả
+  const handleExpandAll = () => {
+    setCollapsedNodeIds({})
+  }
+
+  const handleCollapseAll = () => {
+    const allIds: Record<string, boolean> = {}
+    const collect = (nodes: DepartmentNode[]) => {
+      nodes.forEach((n) => {
+        if (n.children && n.children.length > 0) {
+          allIds[n.id] = true
+          collect(n.children)
+        }
+      })
+    }
+    collect(tree)
+    setCollapsedNodeIds(allIds)
   }
 
   const handleOpenAddDept = (parentId: string | null) => {
@@ -75,6 +106,10 @@ export default function OrganizationPage() {
     })
     showToast(`Đã thêm cơ cấu phòng ban "${deptForm.name}" thành công!`, 'success')
     setIsDeptModalOpen(false)
+    // Tự động mở rộng node cha để thấy nhánh mới vừa tạo
+    if (parentIdForNewDept) {
+      setCollapsedNodeIds((prev) => ({ ...prev, [parentIdForNewDept]: false }))
+    }
     reloadData()
   }
 
@@ -111,29 +146,58 @@ export default function OrganizationPage() {
     reloadData()
   }
 
-  // Render đệ quy cây tổ chức
+  // Render đệ quy cây tổ chức dạng đường nối phân cấp (Tree Connector Lines)
   const renderTreeNodes = (nodes: DepartmentNode[], depth = 0) => {
     return (
       <ul className={`tree-branch depth-${depth}`}>
-        {nodes.map((node) => {
+        {nodes.map((node, index) => {
           const isSelected = selectedNode?.id === node.id
+          const hasChildren = node.children && node.children.length > 0
+          const isCollapsed = !!collapsedNodeIds[node.id]
+          const isLastChild = index === nodes.length - 1
+
           return (
-            <li key={node.id} className="tree-leaf">
+            <li key={node.id} className={`tree-leaf ${isLastChild ? 'is-last' : ''}`}>
+              {/* Connector line horizontal stub */}
+              {depth > 0 && <span className="tree-connector-stub" />}
+
               <div
-                className={`tree-node-card ${isSelected ? 'selected' : ''}`}
+                className={`tree-node-card depth-level-${depth} ${isSelected ? 'selected' : ''}`}
                 onClick={() => setSelectedNode(node)}
               >
+                {/* Nút thu gọn / mở rộng */}
+                {hasChildren ? (
+                  <button
+                    type="button"
+                    className={`tree-toggle-btn ${isCollapsed ? 'collapsed' : 'expanded'}`}
+                    onClick={(e) => toggleCollapse(node.id, e)}
+                    title={isCollapsed ? 'Mở rộng nhánh con' : 'Thu gọn nhánh con'}
+                  >
+                    {isCollapsed ? '+' : '−'}
+                  </button>
+                ) : (
+                  <span className="tree-leaf-bullet" />
+                )}
+
                 <div className="node-badge-code">{node.code}</div>
+
                 <div className="node-content">
                   <div className="node-title">
                     <strong>{node.name}</strong>
+                    {depth === 0 && <span className="root-badge">Khối gốc</span>}
                   </div>
                   <div className="node-meta">
-                    <span>Trưởng nhóm: <strong>{node.leader_name}</strong></span>
+                    <span className="meta-leader">Trưởng nhóm: <strong>{node.leader_name}</strong></span>
                     <span className="region-tag">{node.region_name}</span>
                     <span className="member-count-tag">{node.members?.length || 0} nhân sự</span>
+                    {hasChildren && (
+                      <span className="children-count-tag">
+                        {node.children!.length} nhánh trực thuộc
+                      </span>
+                    )}
                   </div>
                 </div>
+
                 <div className="node-actions-group" onClick={(e) => e.stopPropagation()}>
                   <button
                     type="button"
@@ -154,7 +218,7 @@ export default function OrganizationPage() {
                 </div>
               </div>
 
-              {node.children && node.children.length > 0 && renderTreeNodes(node.children, depth + 1)}
+              {hasChildren && !isCollapsed && renderTreeNodes(node.children!, depth + 1)}
             </li>
           )
         })}
@@ -188,10 +252,31 @@ export default function OrganizationPage() {
       <div className="org-layout">
         {/* Cột trái: Cây cấu trúc tổ chức */}
         <div className="org-tree-panel">
-          <div className="panel-title">
-            <span>Cây sơ đồ tổ chức (Organization Hierarchy)</span>
-            <small>Click vào nhóm để xem danh sách nhân sự</small>
+          <div className="panel-title-bar">
+            <div>
+              <span className="panel-title-text">Cây sơ đồ tổ chức phân cấp</span>
+              <small className="panel-subtitle-text">Nhấp vào nhánh để xem chi tiết & danh sách nhân sự</small>
+            </div>
+            <div className="tree-global-actions">
+              <button
+                type="button"
+                className="btn-tree-action"
+                onClick={handleExpandAll}
+                title="Mở rộng tất cả các nhánh con"
+              >
+                Mở rộng tất cả
+              </button>
+              <button
+                type="button"
+                className="btn-tree-action"
+                onClick={handleCollapseAll}
+                title="Thu gọn các nhánh con"
+              >
+                Thu gọn tất cả
+              </button>
+            </div>
           </div>
+
           <div className="tree-scroll-wrapper">{renderTreeNodes(tree)}</div>
         </div>
 
