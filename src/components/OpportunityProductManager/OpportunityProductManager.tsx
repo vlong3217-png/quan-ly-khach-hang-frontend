@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react'
+﻿import { useState, useEffect, useMemo } from 'react'
 import type { Opportunity, OpportunityProductItem, OpportunityBillingCycle } from '../../types/opportunity.ts'
 import type { Product } from '../../types/product.ts'
 import { productService } from '../../services/productService.ts'
 import { opportunityService } from '../../services/opportunityService.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
+import Button from '../ui/Button.tsx'
 import './OpportunityProductManager.css'
 
 interface OpportunityProductManagerProps {
@@ -192,13 +193,12 @@ export default function OpportunityProductManager({
         </div>
 
         {!readOnly && (
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
+          <Button
+            variant={isAdding ? 'secondary' : 'primary'}
             onClick={() => setIsAdding(!isAdding)}
           >
-            {isAdding ? 'Hủy thêm' : '+ Thêm sản phẩm / dịch vụ'}
-          </button>
+            {isAdding ? 'Hủy thêm' : 'Thêm sản phẩm / dịch vụ'}
+          </Button>
         )}
       </div>
 
@@ -312,14 +312,13 @@ export default function OpportunityProductManager({
                 </span>
               )}
             </span>
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
+            <Button
+              variant="primary"
               disabled={isSaving || !selectedProductId}
               onClick={handleAddItem}
             >
               {isSaving ? 'Đang lưu...' : 'Xác nhận thêm'}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -329,13 +328,12 @@ export default function OpportunityProductManager({
         <div className="opp-product-empty">
           <p>Chưa có sản phẩm hoặc dịch vụ nào được gán vào cơ hội bán hàng này.</p>
           {!readOnly && (
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
+            <Button
+              variant="secondary"
               onClick={() => setIsAdding(true)}
             >
-              + Chọn sản phẩm từ danh mục niêm yết
-            </button>
+              Chọn sản phẩm từ danh mục niêm yết
+            </Button>
           )}
         </div>
       ) : (

@@ -2,6 +2,7 @@
 import type { OpportunityFieldChange, OpportunityChangeField } from '../../types/opportunityHistory.ts'
 import { opportunityHistoryService } from '../../services/opportunityHistoryService.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
+import Button from '../ui/Button.tsx'
 import './OpportunityHistoryTimeline.css'
 
 interface OpportunityHistoryTimelineProps {
@@ -157,21 +158,19 @@ export default function OpportunityHistoryTimeline({
           </span>
         </div>
         <div className="history-actions">
-          <button
-            type="button"
-            className="btn-refresh-history"
+          <Button
+            variant="secondary"
             onClick={loadHistory}
             title="Tải lại nhật ký"
           >
-            ↻ Làm mới
-          </button>
-          <button
-            type="button"
-            className="btn-add-history-note"
+            Làm mới
+          </Button>
+          <Button
+            variant={isAddNoteOpen ? 'secondary' : 'primary'}
             onClick={() => setIsAddNoteOpen(!isAddNoteOpen)}
           >
-            {isAddNoteOpen ? '✕ Đóng form' : '+ Ghi chú thay đổi'}
-          </button>
+            {isAddNoteOpen ? 'Đóng form' : 'Ghi chú thay đổi'}
+          </Button>
         </div>
       </div>
 
@@ -227,21 +226,20 @@ export default function OpportunityHistoryTimeline({
               onChange={(e) => setReasonInput(e.target.value)}
             />
           </div>
-          <div className="form-actions" style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-            <button
-              type="button"
-              className="btn btn-secondary"
+          <div className="form-actions" style={{ marginTop: '14px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <Button
+              variant="secondary"
               onClick={() => setIsAddNoteOpen(false)}
             >
               Hủy
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="btn btn-primary"
+              variant="primary"
               disabled={submitting}
             >
               {submitting ? 'Đang lưu...' : 'Lưu vào lịch sử'}
-            </button>
+            </Button>
           </div>
         </form>
       )}

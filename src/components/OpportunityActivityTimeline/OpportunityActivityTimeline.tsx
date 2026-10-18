@@ -6,6 +6,7 @@ import type {
 } from '../../types/opportunity.ts'
 import { opportunityActivityService } from '../../services/opportunityActivityService.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
+import Button from '../ui/Button.tsx'
 import './OpportunityActivityTimeline.css'
 
 interface OpportunityActivityTimelineProps {
@@ -351,15 +352,14 @@ export default function OpportunityActivityTimeline({
         </div>
 
         <div className="action-bar-right">
-          <button
-            type="button"
-            className="btn btn-primary log-activity-btn"
+          <Button
+            variant="primary"
             id="log-activity-btn"
             onClick={() => handleOpenModal('CALL')}
           >
             <IconPlus />
             <span>Ghi nhận hoạt động</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -485,13 +485,12 @@ export default function OpportunityActivityTimeline({
               ? 'Không tìm thấy hoạt động nào phù hợp với bộ lọc hiện tại.'
               : 'Hãy ghi lại cuộc gọi, email, demo hoặc ghi chú để theo dõi toàn bộ tiến trình trao đổi của cơ hội này.'}
           </p>
-          <button
-            type="button"
-            className="btn btn-primary"
+          <Button
+            variant="primary"
             onClick={() => handleOpenModal('CALL')}
           >
-            + Ghi nhận hoạt động đầu tiên
-          </button>
+            Ghi nhận hoạt động đầu tiên
+          </Button>
         </div>
       ) : (
         <div className="timeline-stream">
@@ -665,34 +664,22 @@ export default function OpportunityActivityTimeline({
                     onChange={(e) => setFormData({ ...formData, occurred_at: e.target.value })}
                   />
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-secondary"
-                      style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                    <button type="button" className="opp-quick-chip"
                       onClick={() => setQuickOccurredAt(0)}
                     >
                       Vừa xong
                     </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-secondary"
-                      style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                    <button type="button" className="opp-quick-chip"
                       onClick={() => setQuickOccurredAt(30, '30p trước')}
                     >
                       30 phút trước
                     </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-secondary"
-                      style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                    <button type="button" className="opp-quick-chip"
                       onClick={() => setQuickOccurredAt(60, '1h trước')}
                     >
                       1 giờ trước
                     </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-secondary"
-                      style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                    <button type="button" className="opp-quick-chip"
                       onClick={() => {
                         const d = new Date()
                         d.setHours(9, 0, 0, 0)
@@ -704,10 +691,7 @@ export default function OpportunityActivityTimeline({
                     >
                       Sáng nay
                     </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-secondary"
-                      style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                    <button type="button" className="opp-quick-chip"
                       onClick={() => {
                         const d = new Date(Date.now() - 24 * 3600 * 1000)
                         d.setHours(15, 0, 0, 0)
@@ -780,11 +764,10 @@ export default function OpportunityActivityTimeline({
                         <button
                           key={chip}
                           type="button"
-                          className="btn btn-sm btn-outline-primary"
-                          style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '12px' }}
+                          className="opp-quick-chip opp-outcome-chip"
                           onClick={() => setFormData((prev) => ({ ...prev, outcome: chip }))}
                         >
-                          + {chip}
+                          {chip}
                         </button>
                       ))}
                     </div>
@@ -859,22 +842,21 @@ export default function OpportunityActivityTimeline({
               </div>
 
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
+                <Button
+                  variant="secondary"
                   onClick={() => setIsModalOpen(false)}
                   disabled={submitting}
                 >
                   Hủy
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  className="btn btn-primary"
+                  variant="primary"
                   id="submit-activity-btn"
                   disabled={submitting}
                 >
                   {submitting ? 'Đang lưu...' : 'Ghi nhận hoạt động'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

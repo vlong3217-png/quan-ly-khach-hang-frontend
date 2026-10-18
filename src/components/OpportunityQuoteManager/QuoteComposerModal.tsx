@@ -8,6 +8,7 @@ import {
 } from '../../services/quoteService.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
+import Button from '../ui/Button.tsx'
 import './QuoteComposerModal.css'
 
 interface QuoteComposerModalProps {
@@ -305,14 +306,13 @@ export default function QuoteComposerModal({
                     </option>
                   ))}
                 </select>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-primary"
+                <Button
+                  variant="primary"
                   onClick={handleAddProduct}
                   disabled={!selectedAddProductId}
                 >
-                  + Thêm dòng
-                </button>
+                  Thêm dòng
+                </Button>
               </div>
             </div>
 
@@ -530,35 +530,32 @@ export default function QuoteComposerModal({
 
         {/* Footer (S7-01 AC: Lưu nháp và sửa tiếp được) */}
         <div className="quote-modal-footer">
-          <button
-            type="button"
-            className="btn btn-secondary"
+          <Button
+            variant="secondary"
             onClick={onClose}
             disabled={isSubmitting}
           >
             Hủy
-          </button>
+          </Button>
           <div className="save-actions-group">
-            <button
-              type="button"
-              className="btn btn-outline-primary"
+            <Button
+              variant="secondary"
               id="btn-save-quote-draft"
               onClick={() => handleSave(true)}
               disabled={isSubmitting}
             >
-              💾 Lưu bản nháp (Sửa tiếp sau)
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
+              Lưu bản nháp (Sửa tiếp sau)
+            </Button>
+            <Button
+              variant="primary"
               id="btn-submit-quote-final"
               onClick={() => handleSave(false)}
               disabled={isSubmitting}
             >
               {financials.requires_approval
-                ? '🚀 Hoàn tất & Gửi duyệt chiết khấu'
-                : '🚀 Hoàn tất & Thông qua báo giá'}
-            </button>
+                ? 'Hoàn tất & Gửi duyệt chiết khấu'
+                : 'Hoàn tất & Thông qua báo giá'}
+            </Button>
           </div>
         </div>
       </div>
