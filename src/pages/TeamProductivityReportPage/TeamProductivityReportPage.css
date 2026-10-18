@@ -53,21 +53,22 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: #fff;
+  background: #2563eb;
+  color: #ffffff;
   font-weight: 600;
   padding: 0.6rem 1.2rem;
   border-radius: 8px;
-  border: none;
+  border: 1px solid #2563eb;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
 }
 
 .btn-export-excel:hover {
-  background: linear-gradient(135deg, #059669, #047857);
+  background: #1d4ed8;
+  border-color: #1d4ed8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 /* Filter bar */
