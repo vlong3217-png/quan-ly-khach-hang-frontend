@@ -54,7 +54,7 @@ export default function RevenueForecastPage() {
           onClick={handleExportExcel}
           style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}
         >
-          <span>Xuất báo cáo Excel (.XLSX)</span>
+          <span>Xuất báo cáo Excel</span>
         </button>
       </div>
 
