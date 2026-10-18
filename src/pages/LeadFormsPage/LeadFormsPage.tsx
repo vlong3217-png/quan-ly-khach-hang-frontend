@@ -514,6 +514,7 @@ export default function LeadFormsPage() {
   const [excelFile, setExcelFile] = useState<File | null>(null)
   const [excelRows, setExcelRows] = useState<ExcelLeadRow[]>([])
   const [previewFilter, setPreviewFilter] = useState<'ALL' | 'VALID' | 'INVALID' | 'DUPLICATE'>('ALL')
+  const [previewSearchQuery, setPreviewSearchQuery] = useState('')
   const [isParsingExcel, setIsParsingExcel] = useState(false)
   const [isCommittingImport, setIsCommittingImport] = useState(false)
   const [importResult, setImportResult] = useState<ImportLeadResult | null>(null)
@@ -1414,13 +1415,31 @@ export default function LeadFormsPage() {
     }
   }
 
-  // Lọc dòng xem trước trong Excel theo 3 trạng thái rõ ràng
+  // Lọc & Tìm kiếm dòng xem trước trong Excel theo trạng thái và từ khóa
   const filteredExcelRows = useMemo(() => {
-    if (previewFilter === 'VALID') return excelRows.filter((r) => r.is_valid && !r.is_duplicate)
-    if (previewFilter === 'DUPLICATE') return excelRows.filter((r) => r.is_duplicate)
-    if (previewFilter === 'INVALID') return excelRows.filter((r) => !r.is_valid && !r.is_duplicate)
-    return excelRows
-  }, [excelRows, previewFilter])
+    let result = excelRows
+    if (previewFilter === 'VALID') {
+      result = result.filter((r) => r.is_valid && !r.is_duplicate)
+    } else if (previewFilter === 'DUPLICATE') {
+      result = result.filter((r) => r.is_duplicate)
+    } else if (previewFilter === 'INVALID') {
+      result = result.filter((r) => !r.is_valid && !r.is_duplicate)
+    }
+
+    const q = previewSearchQuery.trim().toLowerCase()
+    if (q) {
+      result = result.filter((r) => {
+        const nameMatch = (r.full_name || '').toLowerCase().includes(q)
+        const emailMatch = (r.email || '').toLowerCase().includes(q)
+        const phoneMatch = (r.phone || '').toLowerCase().includes(q)
+        const companyMatch = (r.company || '').toLowerCase().includes(q)
+        const reqMatch = (r.requirement || '').toLowerCase().includes(q)
+        const errorsMatch = (r.errors || []).some((err) => err.toLowerCase().includes(q))
+        return nameMatch || emailMatch || phoneMatch || companyMatch || reqMatch || errorsMatch
+      })
+    }
+    return result
+  }, [excelRows, previewFilter, previewSearchQuery])
 
   // Tiến hành Import Excel vào hệ thống
   const handleCommitExcelImport = async () => {
@@ -1452,6 +1471,7 @@ export default function LeadFormsPage() {
     setExcelRows([])
     setImportResult(null)
     setPreviewFilter('ALL')
+    setPreviewSearchQuery('')
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -3601,35 +3621,59 @@ export default function LeadFormsPage() {
                   </span>
                 </div>
 
-                <div className="preview-filter-buttons">
-                  <button
-                    type="button"
-                    className={`btn-filter-pill ${previewFilter === 'ALL' ? 'active' : ''}`}
-                    onClick={() => setPreviewFilter('ALL')}
-                  >
-                    Tất cả ({excelRows.length})
-                  </button>
-                  <button
-                    type="button"
-                    className={`btn-filter-pill ${previewFilter === 'VALID' ? 'active' : ''}`}
-                    onClick={() => setPreviewFilter('VALID')}
-                  >
-                    Hợp lệ ({excelRows.filter((r) => r.is_valid && !r.is_duplicate).length})
-                  </button>
-                  <button
-                    type="button"
-                    className={`btn-filter-pill ${previewFilter === 'DUPLICATE' ? 'active' : ''}`}
-                    onClick={() => setPreviewFilter('DUPLICATE')}
-                  >
-                    Trùng lặp ({excelRows.filter((r) => r.is_duplicate).length})
-                  </button>
-                  <button
-                    type="button"
-                    className={`btn-filter-pill ${previewFilter === 'INVALID' ? 'active' : ''}`}
-                    onClick={() => setPreviewFilter('INVALID')}
-                  >
-                    Có lỗi ({excelRows.filter((r) => !r.is_valid && !r.is_duplicate).length})
-                  </button>
+                <div className="preview-toolbar-right">
+                  {/* Ô tìm kiếm dòng trong file import */}
+                  <div className="preview-search-box">
+                    <input
+                      type="text"
+                      className="preview-search-input"
+                      placeholder="Tìm theo tên, email, SĐT, công ty..."
+                      value={previewSearchQuery}
+                      onChange={(e) => setPreviewSearchQuery(e.target.value)}
+                    />
+                    {previewSearchQuery && (
+                      <button
+                        type="button"
+                        className="preview-search-clear"
+                        onClick={() => setPreviewSearchQuery('')}
+                        title="Xóa tìm kiếm"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Bộ lọc trạng thái */}
+                  <div className="preview-filter-buttons">
+                    <button
+                      type="button"
+                      className={`btn-filter-pill ${previewFilter === 'ALL' ? 'active' : ''}`}
+                      onClick={() => setPreviewFilter('ALL')}
+                    >
+                      Tất cả ({excelRows.length})
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn-filter-pill ${previewFilter === 'VALID' ? 'active' : ''}`}
+                      onClick={() => setPreviewFilter('VALID')}
+                    >
+                      Hợp lệ ({excelRows.filter((r) => r.is_valid && !r.is_duplicate).length})
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn-filter-pill ${previewFilter === 'DUPLICATE' ? 'active' : ''}`}
+                      onClick={() => setPreviewFilter('DUPLICATE')}
+                    >
+                      Trùng lặp ({excelRows.filter((r) => r.is_duplicate).length})
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn-filter-pill ${previewFilter === 'INVALID' ? 'active' : ''}`}
+                      onClick={() => setPreviewFilter('INVALID')}
+                    >
+                      Có lỗi ({excelRows.filter((r) => !r.is_valid && !r.is_duplicate).length})
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -3647,7 +3691,19 @@ export default function LeadFormsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredExcelRows.map((row) => (
+                    {filteredExcelRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} style={{ textAlign: 'center', padding: '36px 16px', color: '#64748b' }}>
+                          <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px' }}>
+                            Không tìm thấy dòng nào phù hợp
+                          </div>
+                          <div style={{ fontSize: '12.5px' }}>
+                            Thử thay đổi từ khóa tìm kiếm hoặc chuyển sang bộ lọc trạng thái khác.
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredExcelRows.map((row) => (
                       <tr
                         key={row.row_index}
                         className={
@@ -3702,7 +3758,8 @@ export default function LeadFormsPage() {
                           )}
                         </td>
                       </tr>
-                    ))}
+                    ))
+                    )}
                   </tbody>
                 </table>
               </div>
