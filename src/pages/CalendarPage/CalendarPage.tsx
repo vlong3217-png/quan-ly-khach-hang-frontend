@@ -295,9 +295,6 @@ export default function CalendarPage() {
             
             <h2>Lịch làm việc & Bố trí gặp mặt</h2>
           </div>
-          <span className="page-desc">
-            Xem lịch cá nhân & toàn nhóm, phát hiện trùng lịch và điều phối công việc
-          </span>
         </div>
 
         <div className="toolbar-right">
