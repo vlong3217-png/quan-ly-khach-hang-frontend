@@ -155,14 +155,14 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
       },
       {
         id: 'menu-pipeline-funnel',
-        title: 'Phễu bán hàng & Chuyển đổi',
+        title: 'Phễu bán hàng',
         path: '/dashboard/pipeline-funnel',
         roles: [ROLES.ADMIN, ROLES.MANAGER],
         description: 'Phân tích tỷ lệ chuyển đổi, điểm rơi rụng nhiều nhất và điểm nghẽn (S8-05)',
       },
       {
         id: 'menu-forecast',
-        title: 'Dự báo doanh thu & Thắng thua',
+        title: 'Dự báo doanh thu',
         path: '/dashboard/forecast',
         roles: [ROLES.ADMIN, ROLES.MANAGER],
         description: 'Dự báo doanh thu so với chỉ tiêu (3 con số), phân tích thắng/thua và xuất báo cáo Excel (S8-06)',
@@ -183,14 +183,14 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
       },
       {
         id: 'menu-marketing-roi',
-        title: 'Báo cáo ROI Nguồn & Chiến dịch',
+        title: 'Báo cáo ROI',
         path: '/dashboard/marketing-roi',
         roles: [ROLES.ADMIN, ROLES.MANAGER],
         description: 'Phân tích số lead, tỷ lệ tiếp nhận, chuyển đổi thành cơ hội theo nguồn và chiến dịch (S8-09)',
       },
       {
         id: 'menu-rep-activity-audit',
-        title: 'Nhật ký & Khối lượng công việc',
+        title: 'Nhật ký công việc',
         path: '/dashboard/rep-activity-audit',
         roles: [ROLES.ADMIN, ROLES.MANAGER],
         description: 'Lọc theo thời gian, loại hoạt động, thành viên và thống kê tổng số hoạt động theo từng nhân sự (S8-11)',
