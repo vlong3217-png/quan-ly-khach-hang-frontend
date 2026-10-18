@@ -211,9 +211,9 @@ export default function NotificationBell() {
                 setIsOpen(false)
                 navigate('/profile')
               }}
-              title="Cấu hình kênh nhận thông báo cá nhân (S8-02)"
+              title="Cấu hình kênh nhận thông báo cá nhân"
             >
-              ⚙️ Cài đặt kênh thông báo (S8-02)
+              Cài đặt kênh thông báo
             </button>
           </div>
         </div>
