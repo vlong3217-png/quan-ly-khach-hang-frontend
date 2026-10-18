@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Button from '../ui/Button.tsx'
 import type { Opportunity, StageGateEvaluation } from '../../types/opportunity.ts'
 import './StageGateEnforcementModal.css'
 
@@ -135,35 +136,37 @@ export default function StageGateEnforcementModal({
 
               {errorMessage && <div className="override-error">{errorMessage}</div>}
 
-              <div className="form-group" style={{ marginTop: '10px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
-                  Lý do ghi đè bắt buộc *
+              <div className="stage-gate-input-wrapper">
+                <label className="stage-gate-input-label">
+                  Lý do ghi đè bắt buộc <span style={{ color: '#dc2626' }}>*</span>
                 </label>
                 <textarea
-                  className="form-control"
-                  rows={2}
+                  className="stage-gate-textarea"
+                  rows={4}
                   required
-                  placeholder="Nhập căn cứ ngoại lệ (VD: Khách hàng VIP đã đồng ý chủ trương qua trao đổi trực tiếp với TGĐ...)"
+                  placeholder="Nhập căn cứ ngoại lệ (VD: Khách hàng VIP đã đồng ý chủ trương qua trao đổi trực tiếp với Ban Tổng Giám đốc...)"
                   value={overrideReason}
                   onChange={(e) => setOverrideReason(e.target.value)}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px', gap: '8px' }}>
-                <button
+              <div className="stage-gate-actions">
+                <Button
                   type="button"
-                  className="btn btn-secondary btn-sm"
+                  variant="secondary"
+                  className="btn btn-secondary"
                   onClick={onClose}
                 >
                   Hủy bỏ
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  className="btn btn-danger btn-sm"
+                  variant="danger"
+                  className="btn btn-danger"
                   disabled={isSubmittingOverride}
                 >
                   {isSubmittingOverride ? 'Đang duyệt...' : 'Xác nhận Ghi đè & Chuyển giai đoạn'}
-                </button>
+                </Button>
               </div>
             </form>
           ) : (
