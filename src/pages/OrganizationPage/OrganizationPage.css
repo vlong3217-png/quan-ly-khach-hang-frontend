@@ -306,3 +306,46 @@
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   z-index: 9999;
 }
+
+
+.node-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.delete-dept-btn {
+  padding: 4px 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #dc2626;
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.delete-dept-btn:hover {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.btn-danger-outline {
+  border-color: #fecaca !important;
+  color: #dc2626 !important;
+  background: #fff5f5 !important;
+  font-size: 12.5px !important;
+  padding: 6px 14px !important;
+  font-weight: 600 !important;
+}
+
+.btn-danger-outline:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
+
+.modal-confirm-delete {
+  max-width: 480px !important;
+}

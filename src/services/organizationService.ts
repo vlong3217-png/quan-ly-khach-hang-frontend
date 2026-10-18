@@ -152,6 +152,52 @@ export const organizationService = {
     return newNode
   },
 
+  
+  deleteDepartment(deptId: string): { success: boolean; message?: string } {
+    const tree = this.getDepartmentTree()
+
+    const findNode = (list: DepartmentNode[]): DepartmentNode | null => {
+      for (const item of list) {
+        if (item.id === deptId) return item
+        if (item.children && item.children.length > 0) {
+          const found = findNode(item.children)
+          if (found) return found
+        }
+      }
+      return null
+    }
+
+    const targetNode = findNode(tree)
+    if (!targetNode) {
+      return { success: false, message: 'Không tìm thấy phòng ban cần xóa!' }
+    }
+
+    if (targetNode.children && targetNode.children.length > 0) {
+      return {
+        success: false,
+        message: 'Không thể xóa "' + targetNode.name + '" vì đang có ' + targetNode.children.length + ' nhánh con trực thuộc. Vui lòng chuyển hoặc xóa các nhánh con trước!',
+      }
+    }
+
+    const removeFromList = (list: DepartmentNode[]): boolean => {
+      const idx = list.findIndex((item) => item.id === deptId)
+      if (idx !== -1) {
+        list.splice(idx, 1)
+        return true
+      }
+      for (const item of list) {
+        if (item.children && item.children.length > 0) {
+          if (removeFromList(item.children)) return true
+        }
+      }
+      return false
+    }
+
+    removeFromList(tree)
+    this.saveDepartmentTree(tree)
+    return { success: true }
+  },
+
   assignMemberToDepartment(deptId: string, member: { id: number; name: string; email: string; role: string }): void {
     const tree = this.getDepartmentTree()
     // Quy tắc AC: Mỗi nhân viên thuộc đúng một nhóm tại một thời điểm -> Xóa khỏi nhóm cũ
