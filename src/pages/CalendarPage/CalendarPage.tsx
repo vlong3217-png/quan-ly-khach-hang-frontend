@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import Button from '../../components/ui/Button.tsx'
 import { opportunityTaskService } from '../../services/opportunityTaskService.ts'
 import { opportunityActivityService } from '../../services/opportunityActivityService.ts'
 import { userService } from '../../services/userService.ts'
@@ -25,59 +26,6 @@ export interface CalendarEvent {
   isCompleted?: boolean
   raw?: OpportunityTask | OpportunityActivity
 }
-
-/* ─────────── Inline Icons ─────────── */
-const IconCalendar = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-    <line x1="16" x2="16" y1="2" y2="6" />
-    <line x1="8" x2="8" y1="2" y2="6" />
-    <line x1="3" x2="21" y1="10" y2="10" />
-  </svg>
-)
-
-const IconClock = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-)
-
-const IconUsers = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-)
-
-const IconPlus = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19" />
-    <line x1="5" y1="12" x2="19" y2="12" />
-  </svg>
-)
-
-const IconChevronLeft = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="15 18 9 12 15 6" />
-  </svg>
-)
-
-const IconChevronRight = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 18 15 12 9 6" />
-  </svg>
-)
-
-const IconAlertTriangle = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-    <line x1="12" y1="9" x2="12" y2="13" />
-    <line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
-)
 
 export default function CalendarPage() {
   const { user } = useAuth()
@@ -344,7 +292,7 @@ export default function CalendarPage() {
       <div className="calendar-header-toolbar">
         <div className="toolbar-left">
           <div className="page-title-badge">
-            <IconCalendar />
+            
             <h2>Lịch làm việc & Bố trí gặp mặt</h2>
           </div>
           <span className="page-desc">
@@ -354,30 +302,29 @@ export default function CalendarPage() {
 
         <div className="toolbar-right">
           {/* Quick Create Event */}
-          <button
+          <Button
             type="button"
-            className="btn btn-primary add-event-btn"
+            variant="primary"
             id="btn-add-calendar-event"
             onClick={() => setIsCreateModalOpen(true)}
           >
-            <IconPlus />
-            <span>+ Đặt lịch mới</span>
-          </button>
+            Đặt lịch mới
+          </Button>
         </div>
       </div>
 
       {/* ── Sub-header: Navigation, View Modes, Scope Filter ── */}
       <div className="calendar-controls-bar">
         <div className="nav-group">
-          <button type="button" className="btn btn-sm btn-outline-secondary" onClick={handlePrev} title="Trước">
-            <IconChevronLeft />
-          </button>
-          <button type="button" className="btn btn-sm btn-outline-primary" onClick={handleToday}>
+          <Button type="button" variant="secondary" onClick={handlePrev} title="Trước">
+            &lt;
+          </Button>
+          <Button type="button" variant="secondary" onClick={handleToday}>
             Hôm nay
-          </button>
-          <button type="button" className="btn btn-sm btn-outline-secondary" onClick={handleNext} title="Sau">
-            <IconChevronRight />
-          </button>
+          </Button>
+          <Button type="button" variant="secondary" onClick={handleNext} title="Sau">
+            &gt;
+          </Button>
 
           <span className="current-date-display">
             {viewMode === 'DAY'
@@ -428,7 +375,7 @@ export default function CalendarPage() {
               className={`scope-btn ${teamScope === 'TEAM' ? 'active' : ''}`}
               onClick={() => setTeamScope('TEAM')}
             >
-              <IconUsers /> Toàn nhóm
+              Toàn nhóm
             </button>
           </div>
 
@@ -453,7 +400,7 @@ export default function CalendarPage() {
       {/* ── Overlap Conflict Warning Banner (S6-07) ── */}
       {overlaps.length > 0 && (
         <div className="calendar-overlap-alert" role="alert">
-          <IconAlertTriangle />
+          
           <div className="overlap-text">
             <strong>Cảnh báo chồng chéo lịch ({overlaps.length} xung đột):</strong>
             <span>
@@ -507,13 +454,13 @@ export default function CalendarPage() {
                             title={`${ev.time} - ${ev.title} (${ev.assigneeName})`}
                           >
                             <div className="event-pill-time">
-                              <IconClock /> {ev.time}
+                              {ev.time}
                               {ev.durationMinutes && <span className="duration">({ev.durationMinutes}p)</span>}
                             </div>
                             <div className="event-pill-title">{ev.title}</div>
                             <div className="event-pill-meta">
-                              <span className="assignee">👤 {ev.assigneeName}</span>
-                              {ev.customerName && <span className="customer">🏢 {ev.customerName}</span>}
+                              <span className="assignee">{ev.assigneeName}</span>
+                              {ev.customerName && <span className="customer">{ev.customerName}</span>}
                             </div>
                           </div>
                         ))
@@ -556,7 +503,7 @@ export default function CalendarPage() {
                             <span className="time-badge">{ev.time}</span>
                             <strong>{ev.title}</strong>
                             <span className="assignee-badge">Phụ trách: {ev.assigneeName}</span>
-                            {ev.customerName && <span>🏢 {ev.customerName}</span>}
+                            {ev.customerName && <span>{ev.customerName}</span>}
                           </div>
                         ))}
                       </div>
@@ -640,10 +587,10 @@ export default function CalendarPage() {
             <div className="modal-header">
               <span className={`event-type-tag type-${activeEvent.type.toLowerCase()}`}>
                 {activeEvent.type === 'MEETING'
-                  ? '📅 Cuộc gặp khách hàng'
+                  ? 'Cuộc gặp khách hàng'
                   : activeEvent.type === 'CALL'
-                  ? '📞 Cuộc gọi'
-                  : '📝 Công việc có hạn'}
+                  ? 'Cuộc gọi'
+                  : 'Công việc có hạn'}
               </span>
               <button
                 type="button"
@@ -741,7 +688,7 @@ export default function CalendarPage() {
                         checked={createType === 'MEETING'}
                         onChange={() => setCreateType('MEETING')}
                       />
-                      📅 Cuộc gặp khách hàng
+                      Cuộc gặp khách hàng
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
                       <input
@@ -750,7 +697,7 @@ export default function CalendarPage() {
                         checked={createType === 'TASK'}
                         onChange={() => setCreateType('TASK')}
                       />
-                      📝 Công việc có hạn
+                      Công việc có hạn
                     </label>
                   </div>
                 </div>
