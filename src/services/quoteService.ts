@@ -127,67 +127,7 @@ export function calculateQuoteFinancials(
 }
 
 // Mock initial quotes
-const INITIAL_QUOTES: Quote[] = [
-  {
-    id: 'quote-001',
-    quote_number: 'BG-2025-001',
-    version: 1,
-    is_active_version: true,
-    opportunity_id: 'opp-1',
-    opportunity_title: 'Triển khai CRM cho Tập đoàn Alpha',
-    customer_id: 'cust-001',
-    customer_name: 'Công ty Cổ phần Công Nghệ Alpha',
-    customer_contact_name: 'Nguyễn Văn An',
-    customer_contact_email: 'contact@alphatech.vn',
-    customer_contact_phone: '024 3768 9999',
-    created_by_name: 'Nguyễn Văn An',
-    status: 'APPROVED',
-    items: [
-      {
-        id: 'item-1',
-        product_name: 'Phần mềm CRM Cloud Doanh Nghiệp',
-        product_code: 'CRM-ENT',
-        unit: 'Gói/Năm',
-        unit_price: 150000000,
-        quantity: 1,
-        discount_type: 'PERCENT',
-        discount_value: 5,
-        line_discount_amount: 7500000,
-        floor_price: 120000000,
-        vat_rate: 10,
-        line_total: 156750000,
-      },
-    ],
-    subtotal: 150000000,
-    total_line_discount: 7500000,
-    overall_discount_type: 'PERCENT',
-    overall_discount_value: 0,
-    total_discount_amount: 7500000,
-    discount_percentage: 5.0,
-    vat_amount: 14250000,
-    grand_total: 156750000,
-    valid_until: '2025-12-31',
-    payment_terms: 'Thanh toán 50% khi ký hợp đồng, 50% sau khi nghiệm thu.',
-    delivery_terms: 'Bàn giao tài khoản hệ thống trong vòng 3 ngày làm việc.',
-    notes: 'Ưu đãi bao gồm 2 buổi đào tạo trực tiếp tại văn phòng khách hàng.',
-    requires_approval: false,
-    approval_level: 'NONE',
-    approval_history: [
-      {
-        id: 'appr-1',
-        action: 'AUTO_APPROVED',
-        performed_by_name: 'Hệ thống tự động',
-        performed_by_role: 'SYSTEM',
-        comments: 'Chiết khấu 5% dưới ngưỡng 10%, tự động thông qua.',
-        timestamp: '2025-02-15T09:00:00Z',
-      },
-    ],
-    access_token: 'token-alpha-001',
-    is_converted_to_contract: false,
-    created_at: '2025-02-15T09:00:00Z',
-    updated_at: '2025-02-15T09:00:00Z',
-  },
-]
+const INITIAL_QUOTES: Quote[] = []
 
 function getStoredQuotes(): Quote[] {
   try {

@@ -154,6 +154,24 @@ function DashboardPage() {
   const [isChangePwdModalOpen, setIsChangePwdModalOpen] = useState(false)
   const [isQuickCallModalOpen, setIsQuickCallModalOpen] = useState(false)
 
+  const handleResetAllData = () => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu mẫu để vận hành hệ thống từ đầu không?\nHệ thống sẽ làm sạch dữ liệu khách hàng, lead, cơ hội, báo giá, hợp đồng... và tải lại trang.')) {
+      // Clear all cached mock/local data while preserving login session
+      const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token')
+      const user = localStorage.getItem('user') || sessionStorage.getItem('user')
+      
+      localStorage.clear()
+      sessionStorage.clear()
+      
+      if (token && user) {
+        localStorage.setItem('access_token', token)
+        localStorage.setItem('user', user)
+      }
+      
+      window.location.reload()
+    }
+  }
+
   const handleLogout = () => {
     logout()
     navigate('/login', { replace: true })
@@ -298,6 +316,16 @@ function DashboardPage() {
                   <span className="dashboard-user-name">Hồ sơ</span>
                 </div>
               </div>
+              <button
+                type="button"
+                className="dashboard-change-pwd-btn"
+                onClick={handleResetAllData}
+                style={{ color: '#dc2626', borderColor: '#fca5a5' }}
+                id="dashboard-reset-all-data-btn"
+                title="Xóa trắng dữ liệu mẫu để vận hành hệ thống từ đầu"
+              >
+                <span>Xóa dữ liệu mẫu</span>
+              </button>
               <button
                 type="button"
                 className="dashboard-change-pwd-btn"

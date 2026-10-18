@@ -147,67 +147,7 @@ const INITIAL_RULES: AutomationRule[] = [
   },
 ]
 
-const INITIAL_LOGS: AutomationExecutionLog[] = [
-  {
-    id: 'log-01',
-    rule_id: 'rule-auto-01',
-    rule_name: 'Tự tạo việc nhắc gọi sau 3 ngày khi Cơ hội sang Báo giá',
-    entity: 'OPPORTUNITY',
-    target_id: 'opp-101',
-    target_name: 'Triển khai CRM cho Tập đoàn Hoa Sen',
-    trigger_event: 'Cơ hội chuyển sang giai đoạn [Báo giá]',
-    executed_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-    status: 'SUCCESS',
-    actions_taken: [
-      'Đã tự động tạo công việc "Gọi điện chăm sóc phương án báo giá" (hạn 3 ngày tới)',
-      'Đã gửi thông báo in-app cho người phụ trách Nguyễn Văn A',
-    ],
-  },
-  {
-    id: 'log-02',
-    rule_id: 'rule-auto-02',
-    rule_name: 'Chuyển Lead tiềm năng cao (Hot Lead) cho Trưởng nhóm & lên lịch demo',
-    entity: 'LEAD',
-    target_id: 'lead-204',
-    target_name: 'Công ty Cổ phần Công nghệ DigiTech',
-    trigger_event: 'Lead chuyển trạng thái sang [Đã thẩm định - QUALIFIED]',
-    executed_at: new Date(Date.now() - 3600000 * 18).toISOString(),
-    status: 'SUCCESS',
-    actions_taken: [
-      'Đã đổi người phụ trách sang "Nguyễn Văn A (Trưởng nhóm)"',
-      'Đã tạo công việc "Tổ chức buổi Demo giải pháp chuyên sâu" (hạn 2 ngày)',
-    ],
-  },
-  {
-    id: 'log-03',
-    rule_id: 'rule-auto-01',
-    rule_name: 'Tự tạo việc nhắc gọi sau 3 ngày khi Cơ hội sang Báo giá',
-    entity: 'OPPORTUNITY',
-    target_id: 'opp-108',
-    target_name: 'Gói phần mềm kế toán & bán hàng FPT Retail',
-    trigger_event: 'Cơ hội chuyển sang giai đoạn [Báo giá]',
-    executed_at: new Date(Date.now() - 3600000 * 25).toISOString(),
-    status: 'SUCCESS',
-    actions_taken: [
-      'Đã tự động tạo công việc "Gọi điện chăm sóc phương án báo giá" (hạn 3 ngày tới)',
-      'Đã gửi thông báo in-app cho người phụ trách',
-    ],
-  },
-  {
-    id: 'log-04',
-    rule_id: 'rule-auto-03',
-    rule_name: 'Cảnh báo đình trệ khi cơ hội không có tương tác quá 7 ngày',
-    entity: 'OPPORTUNITY',
-    target_id: 'opp-094',
-    target_name: 'Nâng cấp hệ thống Cloud Server Viettel Post',
-    trigger_event: 'Không có hoạt động tương tác trong 7 ngày',
-    executed_at: new Date(Date.now() - 3600000 * 28).toISOString(),
-    status: 'SUCCESS',
-    actions_taken: [
-      'Đã gửi thông báo cảnh báo đình trệ tới Quản lý phòng kinh doanh',
-    ],
-  },
-]
+const INITIAL_LOGS: AutomationExecutionLog[] = []
 
 class WorkflowAutomationService {
   private rules: AutomationRule[]

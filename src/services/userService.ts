@@ -17,7 +17,7 @@ const MOCK_USERS: UserAccount[] = [
   {
     id: 1,
     full_name: 'Nguyễn Văn An',
-    email: 'admin@company.com',
+    email: 'vlong3217@gmail.com',
     phone: '0901234567',
     role: 'ADMIN',
     team: 'Ban Giám đốc',

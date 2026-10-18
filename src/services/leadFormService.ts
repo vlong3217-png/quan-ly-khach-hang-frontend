@@ -96,68 +96,7 @@ const INITIAL_LEAD_FORMS: LeadForm[] = [
   },
 ]
 
-const INITIAL_SUBMISSIONS: LeadSubmission[] = [
-  {
-    id: 'sub-001',
-    form_id: 'form-001',
-    form_name: 'Biểu mẫu Đăng ký Tư vấn - Trang chủ Website',
-    full_name: 'Trần Hải Đăng',
-    email: 'dang.tran@saovangtech.com',
-    phone: '0912345678',
-    company: 'Công ty TNHH Giải pháp Công nghệ Sao Vàng',
-    requirement: 'Cần tư vấn gói CRM cho đội ngũ kinh doanh 25 nhân sự, yêu cầu tính năng quản lý pipeline và nhắc hẹn chăm sóc.',
-    status: 'NEW',
-    created_at: '2026-10-08T09:15:00Z',
-  },
-  {
-    id: 'sub-002',
-    form_id: 'form-001',
-    form_name: 'Biểu mẫu Đăng ký Tư vấn - Trang chủ Website',
-    full_name: 'Ngô Thanh Hương',
-    email: 'huong.ngo@anphatlogistics.vn',
-    phone: '0987654321',
-    company: 'Công ty Cổ phần Vận tải & Logistics An Phát',
-    requirement: 'Muốn đặt lịch demo trực tiếp phần mềm vào sáng thứ 6 tuần này tại văn phòng công ty ở Cầu Giấy.',
-    status: 'CONTACTED',
-    created_at: '2026-10-07T15:30:00Z',
-  },
-  {
-    id: 'sub-003',
-    form_id: 'form-002',
-    form_name: 'Biểu mẫu Dùng thử 14 ngày - Landing Page',
-    full_name: 'Vũ Đức Mạnh',
-    email: 'manh.vu@namvietsteel.com',
-    phone: '0903456789',
-    company: 'Công ty Cổ phần Thép Nam Việt',
-    requirement: 'Muốn dùng thử tính năng phân quyền dữ liệu khách hàng theo chi nhánh Bắc - Trung - Nam.',
-    status: 'QUALIFIED',
-    created_at: '2026-10-06T10:45:00Z',
-  },
-  {
-    id: 'sub-004',
-    form_id: 'form-001',
-    form_name: 'Biểu mẫu Đăng ký Tư vấn - Trang chủ Website',
-    full_name: 'Phan Thị Mai Lan',
-    email: 'lan.phan@thudoedu.vn',
-    phone: '0934567890',
-    company: 'Tổ chức Giáo dục & Đào tạo Thủ Đô',
-    requirement: 'Tìm kiếm phần mềm quản lý học viên và phụ huynh, có tính năng gửi email báo giá khóa học.',
-    status: 'CONVERTED',
-    created_at: '2026-10-05T08:20:00Z',
-  },
-  {
-    id: 'sub-005',
-    form_id: 'form-002',
-    form_name: 'Biểu mẫu Dùng thử 14 ngày - Landing Page',
-    full_name: 'Đặng Quốc Huy',
-    email: 'huy.dang@greenfood.vn',
-    phone: '0945678901',
-    company: 'Công ty TNHH Thực phẩm Sạch Green Food',
-    requirement: 'Cần hướng dẫn import dữ liệu khách hàng từ file Excel cũ vào hệ thống.',
-    status: 'CONTACTED',
-    created_at: '2026-10-04T14:10:00Z',
-  },
-]
+const INITIAL_SUBMISSIONS: LeadSubmission[] = []
 
 /* ──────────── LocalStorage Helpers ──────────── */
 export function getStoredForms(): LeadForm[] {
