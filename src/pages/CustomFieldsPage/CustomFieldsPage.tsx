@@ -154,7 +154,7 @@ export default function CustomFieldsPage() {
         className="cf-header"
         actions={
           <Button type="button" variant="primary" className="btn btn-primary" onClick={handleOpenCreate}>
-            + Thêm trường tuỳ chỉnh
+            Thêm trường tuỳ chỉnh
           </Button>
         }
       />
@@ -166,14 +166,14 @@ export default function CustomFieldsPage() {
           className={`cf-tab ${activeTarget === 'CUSTOMER' ? 'active' : ''}`}
           onClick={() => setActiveTarget('CUSTOMER')}
         >
-          Hồ sơ Khách hàng ({fields.filter((f) => f.target === 'CUSTOMER').length} trường)
+          Hồ sơ Khách hàng
         </button>
         <button
           type="button"
           className={`cf-tab ${activeTarget === 'OPPORTUNITY' ? 'active' : ''}`}
           onClick={() => setActiveTarget('OPPORTUNITY')}
         >
-          Cơ hội bán hàng - Deals ({fields.filter((f) => f.target === 'OPPORTUNITY').length} trường)
+          Cơ hội bán hàng - Deals
         </button>
       </div>
 
