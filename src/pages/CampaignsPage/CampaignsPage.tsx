@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { campaignService } from '../../services/campaignService.ts'
+import { campaignService, getStoredCampaigns } from '../../services/campaignService.ts'
 import type {
   Campaign,
   CampaignChannel,
@@ -37,9 +37,9 @@ const STATUS_CONFIG: Record<
 }
 
 export default function CampaignsPage() {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [campaigns, setCampaigns] = useState<Campaign[]>(() => getStoredCampaigns())
   const [stats, setStats] = useState<CampaignSummaryStats | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [toast, setToast] = useState<{ message: string; isError?: boolean } | null>(null)
 
   // Bộ lọc
@@ -84,7 +84,7 @@ export default function CampaignsPage() {
 
   const loadData = async () => {
     try {
-      setIsLoading(true)
+      /* background refresh */
       const [list, summary] = await Promise.all([
         campaignService.getCampaigns(),
         campaignService.getCampaignStats(),

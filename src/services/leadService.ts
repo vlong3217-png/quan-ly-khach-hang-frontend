@@ -227,7 +227,7 @@ export function calculateSlaStatus(lead: Lead): 'ON_TIME' | 'WARNING' | 'OVERDUE
   return 'ON_TIME'
 }
 
-function getStoredLeads(): Lead[] {
+export function getStoredLeads(): Lead[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_LEADS)
     if (raw) {

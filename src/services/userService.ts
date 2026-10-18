@@ -111,6 +111,8 @@ let mockAssignedItems: Array<{ id: number; name: string; type: string; owner_id:
 ]
 
 let mockUsers = [...MOCK_USERS]
+
+export function getMockUsers(): UserAccount[] { return [...mockUsers]; }
 let nextId = 9
 
 /* ──────────── Helper ──────────── */

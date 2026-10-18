@@ -32,7 +32,7 @@ function getAuthHeaders(): Record<string, string> {
 // Dữ liệu ban đầu rỗng cho công việc liên quan đến cơ hội bán hàng
 const INITIAL_TASKS: OpportunityTask[] = []
 
-function getStoredTasks(): OpportunityTask[] {
+export function getStoredTasks(): OpportunityTask[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {

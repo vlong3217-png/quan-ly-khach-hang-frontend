@@ -109,7 +109,7 @@ const INITIAL_CAMPAIGNS: Campaign[] = [
   },
 ]
 
-function getStoredCampaigns(): Campaign[] {
+export function getStoredCampaigns(): Campaign[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_CAMPAIGNS)
     if (raw) return JSON.parse(raw)

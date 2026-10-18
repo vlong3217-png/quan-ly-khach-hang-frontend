@@ -31,7 +31,7 @@ function getAuthHeaders(): Record<string, string> {
 // Dữ liệu ban đầu rỗng cho lịch sử hoạt động cơ hội
 const INITIAL_ACTIVITIES: OpportunityActivity[] = []
 
-function getStoredActivities(): OpportunityActivity[] {
+export function getStoredActivities(): OpportunityActivity[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {

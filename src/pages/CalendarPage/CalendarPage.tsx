@@ -39,7 +39,7 @@ export default function CalendarPage() {
   // Data state
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [teamUsers, setTeamUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(false)
 
   // Selected event details modal
   const [activeEvent, setActiveEvent] = useState<CalendarEvent | null>(null)
@@ -70,7 +70,7 @@ export default function CalendarPage() {
 
   // Load unified calendar events (Tasks + Activities/Meetings)
   const loadCalendarData = async () => {
-    setLoading(true)
+    /* background refresh */
     try {
       const [tasks, activities] = await Promise.all([
         opportunityTaskService.getTasks(),
