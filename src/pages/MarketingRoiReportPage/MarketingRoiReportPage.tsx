@@ -35,7 +35,7 @@ export default function MarketingRoiReportPage() {
     <div className="marketing-roi-page" id="marketing-roi-report-page">
       {/* ── 1. HEADER ── */}
       <PageHeader
-        title="Báo Cáo Nguồn Lead & Hiệu Quả Chiến Dịch (S8-09)"
+        title="Báo Cáo Nguồn Lead & Hiệu Quả Chiến Dịch"
         className="marketing-roi-header"
         actions={
           <button
@@ -56,7 +56,7 @@ export default function MarketingRoiReportPage() {
 
       {exportNotice && (
         <div style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.875rem' }}>
-          ✓ {exportNotice}
+          {exportNotice}
         </div>
       )}
 

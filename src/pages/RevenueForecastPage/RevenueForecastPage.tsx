@@ -35,7 +35,7 @@ export default function RevenueForecastPage() {
       {/* Toast Notice */}
       {toastMessage && (
         <div className="action-notice-toast" style={{ position: 'fixed', top: 20, right: 20, zIndex: 9999 }}>
-          <span>✓ {toastMessage}</span>
+          <span>{toastMessage}</span>
         </div>
       )}
 
@@ -43,8 +43,7 @@ export default function RevenueForecastPage() {
       <div className="forecast-header">
         <div>
           <h1>
-            <span>📈</span>
-            <span>Báo cáo Dự báo doanh số & Tiến độ chỉ tiêu (S8-06)</span>
+            <span>Báo cáo Dự báo doanh số & Tiến độ chỉ tiêu</span>
           </h1>
         </div>
 
@@ -55,7 +54,6 @@ export default function RevenueForecastPage() {
           onClick={handleExportExcel}
           style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}
         >
-          <span>📥</span>
           <span>Xuất báo cáo Excel (.XLSX)</span>
         </button>
       </div>
@@ -143,7 +141,6 @@ export default function RevenueForecastPage() {
       <div className="forecast-numbers-grid">
         <div className="forecast-number-card quota" id="card-total-quota">
           <span className="number-label">
-            <span>🎯</span>
             <span>(1) Chỉ tiêu cam kết (Quota)</span>
           </span>
           <span className="number-amount">{reportData.summary.total_quota.toLocaleString('vi-VN')} ₫</span>
@@ -152,7 +149,6 @@ export default function RevenueForecastPage() {
 
         <div className="forecast-number-card closed" id="card-total-closed">
           <span className="number-label">
-            <span>🏆</span>
             <span>(2) Đã chốt thực tế (Closed Won)</span>
           </span>
           <span className="number-amount" style={{ color: '#15803d' }}>
@@ -165,7 +161,6 @@ export default function RevenueForecastPage() {
 
         <div className="forecast-number-card weighted" id="card-total-weighted">
           <span className="number-label">
-            <span>📈</span>
             <span>(3) Dự báo theo trọng số (Forecast)</span>
           </span>
           <span className="number-amount" style={{ color: '#d97706' }}>
@@ -178,7 +173,6 @@ export default function RevenueForecastPage() {
 
         <div className="forecast-number-card gap" id="card-total-gap">
           <span className="number-label">
-            <span>⚠️</span>
             <span>Chênh lệch cần bù (Gap to Target)</span>
           </span>
           <span className="number-amount" style={{ color: '#dc2626' }}>
@@ -235,7 +229,7 @@ export default function RevenueForecastPage() {
                   {row.forecast_pct}%
                 </td>
                 <td style={{ textAlign: 'right', fontWeight: 700, color: row.gap_amount > 0 ? '#dc2626' : '#15803d' }}>
-                  {row.gap_amount > 0 ? `${row.gap_amount.toLocaleString('vi-VN')} ₫` : '✓ Đạt chỉ tiêu'}
+                  {row.gap_amount > 0 ? `${row.gap_amount.toLocaleString('vi-VN')} ₫` : 'Đạt chỉ tiêu'}
                 </td>
               </tr>
             ))}
@@ -248,7 +242,6 @@ export default function RevenueForecastPage() {
         {/* Panel 1: Thua theo danh mục */}
         <div className="winloss-panel" id="panel-winloss-category">
           <h3 className="winloss-panel-title">
-            <span>🏷️</span>
             <span>Phân tích lý do thua theo danh mục (By Category)</span>
           </h3>
 
@@ -273,7 +266,6 @@ export default function RevenueForecastPage() {
         {/* Panel 2: Thua theo đối thủ */}
         <div className="winloss-panel" id="panel-winloss-competitor">
           <h3 className="winloss-panel-title">
-            <span>⚔️</span>
             <span>Phân tích thua cuộc theo đối thủ (By Competitor)</span>
           </h3>
 
