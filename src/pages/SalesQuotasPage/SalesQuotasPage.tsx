@@ -1,3 +1,4 @@
+import Button from '../../components/ui/Button.tsx'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import type {
@@ -183,40 +184,19 @@ export default function SalesQuotasPage() {
       {/* Toast Notice */}
       {toastMessage && (
         <div className="action-notice-toast" style={{ position: 'fixed', top: 20, right: 20, zIndex: 9999 }}>
-          <span>✓ {toastMessage}</span>
+          <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Header */}
       <div className="quotas-header">
         <div>
-          <h1>
-            <span>🎯</span>
-            <span>Chỉ tiêu doanh số & Kế hoạch bán hàng (Sales Quotas)</span>
-          </h1>
+          <h1><span>Chỉ tiêu doanh số & Kế hoạch bán hàng</span></h1>
         </div>
         {isManagerOrAdmin && (
           <div className="quotas-header-actions">
-            <button
-              type="button"
-              className="btn btn-primary"
-              id="btn-create-quota"
-              onClick={handleOpenCreate}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
-            >
-              <span>＋</span>
-              <span>Đặt chỉ tiêu mới</span>
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              id="btn-view-quota-audit"
-              onClick={() => setIsAuditModalOpen(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-            >
-              <span>📋</span>
-              <span>Nhật ký điều chỉnh ({auditLogs.length})</span>
-            </button>
+            <Button type="button" variant="primary" id="btn-create-quota" onClick={handleOpenCreate}>Đặt chỉ tiêu mới</Button>
+            <Button type="button" variant="secondary" id="btn-view-quota-audit" onClick={() => setIsAuditModalOpen(true)}>Nhật ký điều chỉnh ({auditLogs.length})</Button>
           </div>
         )}
       </div>
@@ -257,7 +237,7 @@ export default function SalesQuotasPage() {
               }}
             >
               <span>Tháng 09/2026</span>
-              <span className="period-lock-tag">🔒 Đã khoá</span>
+              <span className="period-lock-tag">Đã khoá</span>
             </button>
           </div>
         </div>
@@ -338,7 +318,7 @@ export default function SalesQuotasPage() {
                     <div className="team-card-title-group">
                       <h3 className="team-card-title">{t.team_name}</h3>
                       <span className={`lock-badge ${t.is_locked ? 'locked' : 'unlocked'}`}>
-                        {t.is_locked ? '🔒 Đã khoá (Kỳ đã kết thúc)' : '🔓 Đang mở'}
+                        {t.is_locked ? 'Đã khoá (Kỳ đã kết thúc)' : 'Đang mở'}
                       </span>
                     </div>
 
@@ -349,7 +329,7 @@ export default function SalesQuotasPage() {
                         style={{ fontSize: '0.8rem', padding: '6px 12px' }}
                         onClick={() => handleOpenEdit(t)}
                       >
-                        ✏ {t.is_locked ? 'Sửa (Yêu cầu lý do)' : 'Điều chỉnh chỉ tiêu'}
+                        {t.is_locked ? 'Sửa (Yêu cầu lý do)' : 'Điều chỉnh chỉ tiêu'}
                       </button>
                     </div>
                   </div>
@@ -379,13 +359,12 @@ export default function SalesQuotasPage() {
                   {/* S8-03 AC: Cảnh báo nếu chỉ tiêu nhóm lệch tổng thành viên */}
                   {!validation.isValid ? (
                     <div className="sum-warning-box">
-                      <span>⚠️</span>
                       <span>{validation.warningMessage}</span>
                     </div>
                   ) : (
                     <div>
                       <span className="sum-ok-box">
-                        ✓ Chỉ tiêu nhóm hoàn toàn cân bằng với tổng chỉ tiêu các thành viên ({validation.sumMembers.toLocaleString('vi-VN')} ₫)
+                        Chỉ tiêu nhóm hoàn toàn cân bằng với tổng chỉ tiêu các thành viên ({validation.sumMembers.toLocaleString('vi-VN')} ₫)
                       </span>
                     </div>
                   )}
@@ -469,7 +448,7 @@ export default function SalesQuotasPage() {
                 {/* Locked Period Warning */}
                 {formIsLocked && (
                   <div className="locked-audit-alert">
-                    <strong>⚠️ KỲ ĐÃ KHOÁ THEO QUY ĐỊNH HỆ THỐNG:</strong>
+                    <strong>KỲ ĐÃ KHOÁ THEO QUY ĐỊNH HỆ THỐNG:</strong>
                     <div>
                       Kỳ {formPeriodLabel} đã kết thúc. Theo tiêu chí chấp nhận (S8-03 AC), mọi điều chỉnh đối với chỉ tiêu đã khoá
                       bắt buộc phải có lý do giải trình rõ ràng và sẽ được ghi vào nhật ký kiểm toán không thể xóa.
@@ -541,7 +520,7 @@ export default function SalesQuotasPage() {
                       onClick={handleAutoBalance}
                       style={{ marginTop: 22, height: 42, fontSize: '0.85rem' }}
                     >
-                      ⚡ Tự động tính nhóm = Tổng thành viên ({modalSumValidation.sumMembers.toLocaleString('vi-VN')} ₫)
+                      Tự động tính nhóm = Tổng thành viên ({modalSumValidation.sumMembers.toLocaleString('vi-VN')} ₫)
                     </button>
                   </div>
                 </div>
@@ -549,19 +528,18 @@ export default function SalesQuotasPage() {
                 {/* Live Sum Check Alert in Modal */}
                 {!modalSumValidation.isValid ? (
                   <div className="sum-warning-box">
-                    <span>⚠️</span>
                     <span>{modalSumValidation.warningMessage}</span>
                   </div>
                 ) : (
                   <div className="sum-ok-box">
-                    ✓ Chỉ tiêu nhóm ({formTargetAmount.toLocaleString('vi-VN')} ₫) hoàn toàn bằng tổng thành viên.
+                    Chỉ tiêu nhóm ({formTargetAmount.toLocaleString('vi-VN')} ₫) hoàn toàn bằng tổng thành viên.
                   </div>
                 )}
 
                 {/* Member Inputs */}
                 <div className="section-box">
                   <div className="section-title">
-                    <span>👥 Phân bổ chỉ tiêu chi tiết cho từng thành viên:</span>
+                    <span>Phân bổ chỉ tiêu chi tiết cho từng thành viên:</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {formMembers.map((m) => (

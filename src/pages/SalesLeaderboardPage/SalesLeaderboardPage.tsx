@@ -44,7 +44,7 @@ export default function SalesLeaderboardPage() {
     <div className="leaderboard-page" id="sales-leaderboard-page">
       {/* ── 1. HEADER & CONFIG TOGGLE ── */}
       <PageHeader
-        title="Bảng Xếp Hạng Doanh Số Đội Nhóm (S8-08)"
+        title="Bảng Xếp Hạng Doanh Số Đội Nhóm"
         className="leaderboard-header"
         actions={
           isAdmin ? (
@@ -66,7 +66,7 @@ export default function SalesLeaderboardPage() {
 
       {notice && (
         <div style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.875rem' }}>
-          ✓ {notice}
+          {notice}
         </div>
       )}
 
@@ -86,7 +86,7 @@ export default function SalesLeaderboardPage() {
 
       {(!is_enabled && isAdmin) && (
         <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', padding: '0.75rem 1.25rem', borderRadius: '10px', fontSize: '0.875rem' }}>
-          ⚠️ <strong>Lưu ý cho Quản trị viên:</strong> Bạn đang tắt tính năng này. Nhân viên và Trưởng nhóm hiện không thể nhìn thấy bảng xếp hạng. Bạn có thể bật lại bất cứ lúc nào bằng nút gạt phía trên.
+          <strong>Lưu ý cho Quản trị viên:</strong> Bạn đang tắt tính năng này. Nhân viên và Trưởng nhóm hiện không thể nhìn thấy bảng xếp hạng. Bạn có thể bật lại bất cứ lúc nào bằng nút gạt phía trên.
         </div>
       )}
 
@@ -144,7 +144,7 @@ export default function SalesLeaderboardPage() {
             <div className="podium-step">
               <div className="podium-avatar-wrap">
                 <div className="podium-avatar avatar-gold">
-                  👑
+                  TOP 1
                 </div>
                 <div className="podium-rank-medal medal-gold">1</div>
               </div>
@@ -201,9 +201,9 @@ export default function SalesLeaderboardPage() {
                 return (
                   <tr key={entry.user_id}>
                     <td style={{ textAlign: 'center' }}>
-                      {entry.rank === 1 && <span style={{ fontSize: '1.25rem' }}>🥇</span>}
-                      {entry.rank === 2 && <span style={{ fontSize: '1.25rem' }}>🥈</span>}
-                      {entry.rank === 3 && <span style={{ fontSize: '1.25rem' }}>🥉</span>}
+                      {entry.rank === 1 && <strong style={{ color: '#d97706' }}>#1</strong>}
+                      {entry.rank === 2 && <strong style={{ color: '#64748b' }}>#2</strong>}
+                      {entry.rank === 3 && <strong style={{ color: '#b45309' }}>#3</strong>}
                       {entry.rank > 3 && <strong style={{ color: '#64748b' }}>#{entry.rank}</strong>}
                     </td>
                     <td>
@@ -242,7 +242,7 @@ export default function SalesLeaderboardPage() {
                     <td>
                       {isCompleted ? (
                         <span className="badge-achievement over">
-                          ★ Vượt chỉ tiêu
+                          Vượt chỉ tiêu
                         </span>
                       ) : (
                         <span className="badge-achievement sub">

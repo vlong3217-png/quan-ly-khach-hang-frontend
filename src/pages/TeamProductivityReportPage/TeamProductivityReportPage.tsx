@@ -44,7 +44,7 @@ export default function TeamProductivityReportPage() {
     <div className="productivity-report-page" id="productivity-report-page">
       {/* ── 1. HEADER ── */}
       <PageHeader
-        title="Báo Cáo Năng Suất & Hoạt Động Đội Ngũ (S8-07)"
+        title="Báo Cáo Năng Suất & Hoạt Động Đội Ngũ"
         className="productivity-header"
         actions={
           <div className="productivity-header-actions">
@@ -67,7 +67,7 @@ export default function TeamProductivityReportPage() {
 
       {exportNotice && (
         <div style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.875rem' }}>
-          ✓ {exportNotice}
+          {exportNotice}
         </div>
       )}
 
@@ -309,9 +309,9 @@ export default function TeamProductivityReportPage() {
                   {m.weekly_activities.map((w) => (
                     <td key={w.week_number}>
                       <div className="weekly-pill-group">
-                        <span className="weekly-pill" title="Cuộc gọi">📞 {w.calls}</span>
-                        <span className="weekly-pill" title="Cuộc gặp">🤝 {w.meetings}</span>
-                        <span className="weekly-pill" title="Báo giá">📄 {w.quotes_sent}</span>
+                        <span className="weekly-pill" title="Cuộc gọi">Gọi: {w.calls}</span>
+                        <span className="weekly-pill" title="Cuộc gặp">Gặp: {w.meetings}</span>
+                        <span className="weekly-pill" title="Báo giá">Báo giá: {w.quotes_sent}</span>
                         <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#0f172a' }}>
                           = {w.total_activities}
                         </span>
@@ -366,9 +366,9 @@ export default function TeamProductivityReportPage() {
                   <td>&lt; {lead.sla_limit_hours} giờ</td>
                   <td>
                     {lead.is_within_sla ? (
-                      <span className="badge-sla good">✓ Trong hạn SLA</span>
+                      <span className="badge-sla good">Trong hạn SLA</span>
                     ) : (
-                      <span className="badge-sla danger">⚠ Quá hạn SLA</span>
+                      <span className="badge-sla danger">Quá hạn SLA</span>
                     )}
                   </td>
                 </tr>

@@ -33,8 +33,7 @@ export default function PipelineFunnelPage() {
       <div className="funnel-header">
         <div>
           <h1>
-            <span>🌪️</span>
-            <span>Phễu bán hàng & Tỷ lệ chuyển đổi (Pipeline Funnel Analytics)</span>
+            <span>Phễu bán hàng & Tỷ lệ chuyển đổi</span>
           </h1>
         </div>
       </div>
@@ -102,7 +101,6 @@ export default function PipelineFunnelPage() {
       <div className="funnel-insights-grid">
         <div className="insight-card alert-drop" id="card-highest-drop-off">
           <span className="insight-label">
-            <span>🛑</span>
             <span>Giai đoạn rơi rụng nhiều nhất</span>
           </span>
           <span className="insight-value" style={{ color: '#dc2626' }}>
@@ -117,7 +115,6 @@ export default function PipelineFunnelPage() {
 
         <div className="insight-card alert-bottleneck" id="card-longest-bottleneck">
           <span className="insight-label">
-            <span>⏳</span>
             <span>Giai đoạn tắc lâu nhất (Điểm nghẽn)</span>
           </span>
           <span className="insight-value" style={{ color: '#d97706' }}>
@@ -132,7 +129,6 @@ export default function PipelineFunnelPage() {
 
         <div className="insight-card success-conv">
           <span className="insight-label">
-            <span>🎯</span>
             <span>Tỷ lệ chuyển đổi toàn phễu</span>
           </span>
           <span className="insight-value" style={{ color: '#15803d' }}>
@@ -145,7 +141,6 @@ export default function PipelineFunnelPage() {
 
         <div className="insight-card info-val">
           <span className="insight-label">
-            <span>💰</span>
             <span>Tổng giá trị luân chuyển trong phễu</span>
           </span>
           <span className="insight-value" style={{ color: '#2563eb' }}>
@@ -158,7 +153,6 @@ export default function PipelineFunnelPage() {
       {/* Visual Pipeline Funnel Blueprint */}
       <div className="funnel-visual-card">
         <h3 className="funnel-card-title">
-          <span>📊</span>
           <span>Sơ đồ dòng chảy phễu bán hàng (Pipeline Conversion Flow)</span>
         </h3>
 
@@ -186,7 +180,7 @@ export default function PipelineFunnelPage() {
                                 fontWeight: 700,
                               }}
                             >
-                              🛑 Rơi rụng nhiều nhất ({st.drop_off_rate}%)
+                              Rơi rụng nhiều nhất ({st.drop_off_rate}%)
                             </span>
                           )}
                           {st.is_longest_bottleneck && (
@@ -201,7 +195,7 @@ export default function PipelineFunnelPage() {
                                 fontWeight: 700,
                               }}
                             >
-                              ⏳ Tắc lâu nhất (TB {st.avg_days_in_stage} ngày)
+                              Tắc lâu nhất (TB {st.avg_days_in_stage} ngày)
                             </span>
                           )}
                         </div>
@@ -232,10 +226,10 @@ export default function PipelineFunnelPage() {
                 {idx < stages.length - 1 && (
                   <div className="funnel-transition-indicator">
                     <span className="conv-rate-pill">
-                      ▼ Chuyển sang giai đoạn sau: {st.conversion_rate_to_next}%
+                      Chuyển sang giai đoạn sau: {st.conversion_rate_to_next}%
                     </span>
                     <span className="drop-rate-pill">
-                      ✕ Rơi rụng / Thua: {st.drop_off_rate}% ({st.drop_off_count} deals)
+                      Rơi rụng / Thua: {st.drop_off_rate}% ({st.drop_off_count} deals)
                     </span>
                   </div>
                 )}
@@ -248,7 +242,6 @@ export default function PipelineFunnelPage() {
       {/* Detailed Funnel Table */}
       <div className="dashboard-panel" style={{ background: '#ffffff', borderRadius: 14, padding: 24, border: '1px solid #e2e8f0' }}>
         <h3 className="funnel-card-title" style={{ marginBottom: 16 }}>
-          <span>📋</span>
           <span>Bảng phân tích chi tiết chỉ số chuyển đổi theo từng giai đoạn</span>
         </h3>
 
@@ -286,17 +279,17 @@ export default function PipelineFunnelPage() {
                 <td>
                   {st.is_highest_drop_off && (
                     <span style={{ color: '#dc2626', fontSize: '0.8rem', fontWeight: 600 }}>
-                      ⚠️ Điểm rò rỉ cơ hội lớn nhất. Cần tối ưu chính sách chiết khấu.
+                      Điểm rò rỉ cơ hội lớn nhất. Cần tối ưu chính sách chiết khấu.
                     </span>
                   )}
                   {st.is_longest_bottleneck && (
                     <span style={{ color: '#d97706', fontSize: '0.8rem', fontWeight: 600 }}>
-                      ⏱ Điểm nghẽn pháp lý. Cần chuẩn hóa mẫu hợp đồng rút gọn.
+                      Điểm nghẽn pháp lý. Cần chuẩn hóa mẫu hợp đồng rút gọn.
                     </span>
                   )}
                   {!st.is_highest_drop_off && !st.is_longest_bottleneck && (
                     <span style={{ color: '#16a34a', fontSize: '0.8rem' }}>
-                      ✓ Vận hành ổn định trong định mức tiêu chuẩn.
+                      Vận hành ổn định trong định mức tiêu chuẩn.
                     </span>
                   )}
                 </td>

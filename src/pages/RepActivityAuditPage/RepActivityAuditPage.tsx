@@ -35,17 +35,17 @@ export default function RepActivityAuditPage() {
   const renderActivityBadge = (type: RepActivityType) => {
     switch (type) {
       case 'CALL':
-        return <span className="badge-act act-call">📞 Cuộc gọi</span>
+        return <span className="badge-act act-call">Cuộc gọi</span>
       case 'MEETING':
-        return <span className="badge-act act-meeting">🤝 Cuộc gặp</span>
+        return <span className="badge-act act-meeting">Cuộc gặp</span>
       case 'EMAIL':
-        return <span className="badge-act act-email">✉ Gửi Email</span>
+        return <span className="badge-act act-email">Gửi Email</span>
       case 'QUOTE':
-        return <span className="badge-act act-quote">📄 Báo giá</span>
+        return <span className="badge-act act-quote">Báo giá</span>
       case 'STAGE_CHANGE':
-        return <span className="badge-act act-stage">🔄 Đổi giai đoạn</span>
+        return <span className="badge-act act-stage">Đổi giai đoạn</span>
       default:
-        return <span className="badge-act act-note">📝 Ghi chú</span>
+        return <span className="badge-act act-note">Ghi chú</span>
     }
   }
 
@@ -53,7 +53,7 @@ export default function RepActivityAuditPage() {
     <div className="activity-audit-page" id="rep-activity-audit-page">
       {/* ── 1. HEADER ── */}
       <PageHeader
-        title="Nhật Ký Hoạt Động & Khối Lượng Công Việc Sales (S8-11)"
+        title="Nhật Ký Hoạt Động & Khối Lượng Công Việc Sales"
         className="audit-header"
         actions={
           <button
@@ -74,7 +74,7 @@ export default function RepActivityAuditPage() {
 
       {exportNotice && (
         <div style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.875rem' }}>
-          ✓ {exportNotice}
+          {exportNotice}
         </div>
       )}
 
@@ -174,11 +174,11 @@ export default function RepActivityAuditPage() {
               </div>
 
               <div className="workload-chips">
-                <span className="chip-item">📞 {w.calls_count} gọi</span>
-                <span className="chip-item">🤝 {w.meetings_count} gặp</span>
-                <span className="chip-item">✉ {w.emails_count} email</span>
-                <span className="chip-item">📄 {w.quotes_count} báo giá</span>
-                <span className="chip-item">📝 {w.notes_and_others} khác</span>
+                <span className="chip-item">{w.calls_count} gọi</span>
+                <span className="chip-item">{w.meetings_count} gặp</span>
+                <span className="chip-item">{w.emails_count} email</span>
+                <span className="chip-item">{w.quotes_count} báo giá</span>
+                <span className="chip-item">{w.notes_and_others} khác</span>
               </div>
 
               <div className="workload-distribution-bar">
