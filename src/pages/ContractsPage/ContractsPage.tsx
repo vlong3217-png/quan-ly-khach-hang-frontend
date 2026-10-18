@@ -109,7 +109,7 @@ export default function ContractsPage() {
       )
       loadContracts()
       alert(
-        `🎉 Đã khởi tạo thành công cơ hội gia hạn: "${res.opportunity.title}"!\nKế thừa khách hàng và giá trị hợp đồng cũ sang Pipeline bán hàng.`
+        `Đã khởi tạo thành công cơ hội gia hạn: "${res.opportunity.title}"!\nKế thừa khách hàng và giá trị hợp đồng cũ sang Pipeline bán hàng.`
       )
       setRenewalContract(null)
     } catch (err: any) {
@@ -122,13 +122,13 @@ export default function ContractsPage() {
   const renderStatusBadge = (status: ContractStatus) => {
     switch (status) {
       case 'ACTIVE':
-        return <span className="status-badge active">🟢 Đang hiệu lực</span>
+        return <span className="status-badge active">Đang hiệu lực</span>
       case 'EXPIRING_SOON':
-        return <span className="status-badge expiring_soon">🟠 Sắp hết hạn</span>
+        return <span className="status-badge expiring_soon">Sắp hết hạn</span>
       case 'EXPIRED':
-        return <span className="status-badge expired">🔴 Đã hết hạn</span>
+        return <span className="status-badge expired">Đã hết hạn</span>
       case 'RENEWED':
-        return <span className="status-badge renewed">🟣 Đã gia hạn</span>
+        return <span className="status-badge renewed">Đã gia hạn</span>
       default:
         return <span className="status-badge">{status}</span>
     }
@@ -136,7 +136,7 @@ export default function ContractsPage() {
 
   const renderCountdownPill = (c: Contract) => {
     if (c.status === 'RENEWED') {
-      return <span className="countdown-pill renewed">✓ Đã tạo gia hạn</span>
+      return <span className="countdown-pill renewed">Đã tạo gia hạn</span>
     }
     const days = calculateRemainingDays(c.expiration_date)
     if (days < 0) {
@@ -147,12 +147,12 @@ export default function ContractsPage() {
       )
     }
     if (days === 0) {
-      return <span className="countdown-pill warning">⚠️ Hết hạn hôm nay</span>
+      return <span className="countdown-pill warning">Hết hạn hôm nay</span>
     }
     if (days <= thresholdDays) {
       return (
         <span className="countdown-pill warning">
-          ⏳ Còn {days} ngày
+          Còn {days} ngày
         </span>
       )
     }
@@ -168,7 +168,7 @@ export default function ContractsPage() {
         className="contracts-header-bar"
         actions={
           <div className="threshold-control-box">
-            <label htmlFor="select-threshold">⚠️ Ngưỡng cảnh báo sắp hết hạn:</label>
+            <label htmlFor="select-threshold">Ngưỡng cảnh báo sắp hết hạn:</label>
             <select
               id="select-threshold"
               value={thresholdDays}
@@ -187,7 +187,7 @@ export default function ContractsPage() {
       {/* Stats Cards */}
       <div className="contracts-stats-grid">
         <div className="contract-stat-card" onClick={() => setActiveTab('ALL')} style={{ cursor: 'pointer' }}>
-          <div className="stat-icon total">📜</div>
+          
           <div className="stat-info">
             <h3>{stats.total}</h3>
             <span>Tổng số hợp đồng</span>
@@ -195,7 +195,7 @@ export default function ContractsPage() {
         </div>
 
         <div className="contract-stat-card" onClick={() => setActiveTab('ACTIVE')} style={{ cursor: 'pointer' }}>
-          <div className="stat-icon active">🟢</div>
+          
           <div className="stat-info">
             <h3>{stats.active}</h3>
             <span>Đang hiệu lực</span>
@@ -203,7 +203,7 @@ export default function ContractsPage() {
         </div>
 
         <div className="contract-stat-card" onClick={() => setActiveTab('EXPIRING_SOON')} style={{ cursor: 'pointer' }}>
-          <div className="stat-icon expiring">⚠️</div>
+          
           <div className="stat-info">
             <h3 style={{ color: '#ea580c' }}>{stats.expiring}</h3>
             <span>Sắp hết hạn (&le; {thresholdDays} ngày)</span>
@@ -211,7 +211,7 @@ export default function ContractsPage() {
         </div>
 
         <div className="contract-stat-card" onClick={() => setActiveTab('EXPIRED')} style={{ cursor: 'pointer' }}>
-          <div className="stat-icon expired">❌</div>
+          
           <div className="stat-info">
             <h3 style={{ color: '#dc2626' }}>{stats.expired}</h3>
             <span>Đã hết hạn</span>
@@ -219,7 +219,7 @@ export default function ContractsPage() {
         </div>
 
         <div className="contract-stat-card" onClick={() => setActiveTab('RENEWED')} style={{ cursor: 'pointer' }}>
-          <div className="stat-icon renewed">🔄</div>
+          
           <div className="stat-info">
             <h3 style={{ color: '#7c3aed' }}>{stats.renewed}</h3>
             <span>Đã tạo cơ hội gia hạn</span>
@@ -242,35 +242,35 @@ export default function ContractsPage() {
             className={`tab-btn ${activeTab === 'EXPIRING_SOON' ? 'active' : ''}`}
             onClick={() => setActiveTab('EXPIRING_SOON')}
           >
-            ⚠️ Sắp hết hạn ({stats.expiring})
+            Sắp hết hạn ({stats.expiring})
           </button>
           <button
             type="button"
             className={`tab-btn ${activeTab === 'EXPIRED' ? 'active' : ''}`}
             onClick={() => setActiveTab('EXPIRED')}
           >
-            ❌ Đã hết hạn ({stats.expired})
+            Đã hết hạn ({stats.expired})
           </button>
           <button
             type="button"
             className={`tab-btn ${activeTab === 'ACTIVE' ? 'active' : ''}`}
             onClick={() => setActiveTab('ACTIVE')}
           >
-            🟢 Đang hiệu lực ({stats.active})
+            Đang hiệu lực ({stats.active})
           </button>
           <button
             type="button"
             className={`tab-btn ${activeTab === 'RENEWED' ? 'active' : ''}`}
             onClick={() => setActiveTab('RENEWED')}
           >
-            🔄 Đã gia hạn ({stats.renewed})
+            Đã gia hạn ({stats.renewed})
           </button>
         </div>
 
         <div className="search-input-box">
           <input
             type="text"
-            placeholder="🔍 Tìm số HĐ, khách hàng..."
+            placeholder="Tìm số HĐ, khách hàng..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -281,7 +281,7 @@ export default function ContractsPage() {
       <Card className="contracts-table-card">
         {filteredContracts.length === 0 ? (
           <div className="contracts-empty-state">
-            <span className="empty-icon">📂</span>
+            
             <h4>Không có hợp đồng nào trong danh mục này</h4>
             <p>Tất cả hợp đồng được chuyển đổi từ Báo giá thành công (S7-04) sẽ xuất hiện tại đây.</p>
           </div>
@@ -326,37 +326,39 @@ export default function ContractsPage() {
                   </td>
                   <td>{renderStatusBadge(c.status)}</td>
                   <td style={{ textAlign: 'right' }}>
-                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                      {/* AC 3: Tạo cơ hội gia hạn từ hợp đồng sắp hết hạn */}
+                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center' }}>
                       {!c.renewal_opportunity_id && (
-                        <button
+                        <Button
                           type="button"
-                          className="btn-renew-action"
+                          variant="primary"
+                          className="btn btn-primary"
                           id={`btn-create-renewal-${c.id}`}
                           onClick={() => handleOpenRenewalModal(c)}
                           title="Tạo cơ hội gia hạn trong Pipeline bán hàng (S7-07 AC)"
                         >
-                          🔄 Gia hạn
-                        </button>
+                          Gia hạn
+                        </Button>
                       )}
 
-                      <button
+                      <Button
                         type="button"
-                        className="btn btn-sm btn-outline-dark"
+                        variant="secondary"
+                        className="btn btn-secondary"
                         onClick={() => setPdfContract(c)}
                         title="Xuất Hợp đồng ra PDF (S7-05)"
                       >
-                        🖨️ PDF
-                      </button>
+                        Xuất PDF
+                      </Button>
 
-                      <button
+                      <Button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        variant="secondary"
+                        className="btn btn-secondary"
                         onClick={() => setDetailContract(c)}
                         title="Xem chi tiết hợp đồng"
                       >
-                        👁️
-                      </button>
+                        Xem chi tiết
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -378,7 +380,7 @@ export default function ContractsPage() {
           >
             <div className="dialog-header">
               <h3 style={{ margin: 0, color: '#0f172a' }}>
-                🔄 Tạo cơ hội gia hạn hợp đồng (S7-07)
+                Tạo cơ hội gia hạn hợp đồng (S7-07)
               </h3>
               <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748b' }}>
                 Hệ thống tự động kế thừa thông tin khách hàng, số liệu dòng sản phẩm và giá trị để đưa vào Pipeline bán hàng
@@ -427,7 +429,7 @@ export default function ContractsPage() {
                     id="btn-confirm-submit-renewal"
                     disabled={isCreatingRenewal}
                   >
-                    {isCreatingRenewal ? 'Đang tạo...' : '✓ Xác nhận tạo cơ hội gia hạn'}
+                    {isCreatingRenewal ? 'Đang tạo...' : 'Xác nhận tạo cơ hội gia hạn'}
                   </Button>
                 </div>
               </div>
@@ -498,7 +500,7 @@ export default function ContractsPage() {
                     setPdfContract(c)
                   }}
                 >
-                  🖨️ Xuất PDF
+                  Xuất PDF
                 </button>
                 <button
                   type="button"
