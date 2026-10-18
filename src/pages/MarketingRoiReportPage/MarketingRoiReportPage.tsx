@@ -201,38 +201,46 @@ export default function MarketingRoiReportPage() {
               </tr>
             </thead>
             <tbody>
-              {sources.map((s) => (
-                <tr key={s.source_id}>
-                  <td>
-                    <strong style={{ color: '#0f172a' }}>{s.source_name}</strong>
-                  </td>
-                  <td><strong>{s.total_leads}</strong></td>
-                  <td>{s.received_leads}</td>
-                  <td>
-                    <div className="rate-bar-container">
-                      <div className="rate-bar-bg">
-                        <div className="rate-bar-fill fill-blue" style={{ width: `${Math.min(s.received_rate, 100)}%` }} />
-                      </div>
-                      <span style={{ fontWeight: 600 }}>{s.received_rate}%</span>
-                    </div>
-                  </td>
-                  <td><strong>{s.converted_opportunities}</strong></td>
-                  <td>
-                    <div className="rate-bar-container">
-                      <div className="rate-bar-bg">
-                        <div className="rate-bar-fill fill-emerald" style={{ width: `${Math.min(s.conversion_rate, 100)}%` }} />
-                      </div>
-                      <span style={{ fontWeight: 600 }}>{s.conversion_rate}%</span>
-                    </div>
-                  </td>
-                  <td>{(s.total_pipeline_value / 1000000).toLocaleString('vi-VN')} tr ₫</td>
-                  <td>
-                    <span style={{ fontWeight: 700, color: '#059669' }}>
-                      {(s.won_revenue / 1000000).toLocaleString('vi-VN')} tr ₫
-                    </span>
+              {sources.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '32px 16px', color: '#64748b' }}>
+                    Chưa có dữ liệu nguồn lead
                   </td>
                 </tr>
-              ))}
+              ) : (
+                sources.map((s) => (
+                  <tr key={s.source_id}>
+                    <td>
+                      <strong style={{ color: '#0f172a' }}>{s.source_name}</strong>
+                    </td>
+                    <td><strong>{s.total_leads}</strong></td>
+                    <td>{s.received_leads}</td>
+                    <td>
+                      <div className="rate-bar-container">
+                        <div className="rate-bar-bg">
+                          <div className="rate-bar-fill fill-blue" style={{ width: `${Math.min(s.received_rate, 100)}%` }} />
+                        </div>
+                        <span style={{ fontWeight: 600 }}>{s.received_rate}%</span>
+                      </div>
+                    </td>
+                    <td><strong>{s.converted_opportunities}</strong></td>
+                    <td>
+                      <div className="rate-bar-container">
+                        <div className="rate-bar-bg">
+                          <div className="rate-bar-fill fill-emerald" style={{ width: `${Math.min(s.conversion_rate, 100)}%` }} />
+                        </div>
+                        <span style={{ fontWeight: 600 }}>{s.conversion_rate}%</span>
+                      </div>
+                    </td>
+                    <td>{(s.total_pipeline_value / 1000000).toLocaleString('vi-VN')} tr ₫</td>
+                    <td>
+                      <span style={{ fontWeight: 700, color: '#059669' }}>
+                        {(s.won_revenue / 1000000).toLocaleString('vi-VN')} tr ₫
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </Card>
@@ -255,32 +263,40 @@ export default function MarketingRoiReportPage() {
               </tr>
             </thead>
             <tbody>
-              {campaigns.map((c) => (
-                <tr key={c.campaign_id}>
-                  <td>
-                    <strong style={{ color: '#0f172a' }}>{c.campaign_name}</strong>
-                  </td>
-                  <td>
-                    <span style={{ background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', color: '#475569' }}>
-                      {c.channel}
-                    </span>
-                  </td>
-                  <td>{c.actual_cost.toLocaleString('vi-VN')} ₫</td>
-                  <td><strong>{c.total_leads}</strong></td>
-                  <td>{c.received_rate}%</td>
-                  <td><strong>{c.conversion_rate}%</strong></td>
-                  <td>
-                    <span style={{ fontWeight: 700, color: '#059669' }}>
-                      {c.won_revenue.toLocaleString('vi-VN')} ₫
-                    </span>
-                  </td>
-                  <td>
-                    <span className="badge-roi-high">
-                      +{c.roi_percentage}% ROI
-                    </span>
+              {campaigns.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '32px 16px', color: '#64748b' }}>
+                    Chưa có dữ liệu chiến dịch marketing
                   </td>
                 </tr>
-              ))}
+              ) : (
+                campaigns.map((c) => (
+                  <tr key={c.campaign_id}>
+                    <td>
+                      <strong style={{ color: '#0f172a' }}>{c.campaign_name}</strong>
+                    </td>
+                    <td>
+                      <span style={{ background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', color: '#475569' }}>
+                        {c.channel}
+                      </span>
+                    </td>
+                    <td>{c.actual_cost.toLocaleString('vi-VN')} ₫</td>
+                    <td><strong>{c.total_leads}</strong></td>
+                    <td>{c.received_rate}%</td>
+                    <td><strong>{c.conversion_rate}%</strong></td>
+                    <td>
+                      <span style={{ fontWeight: 700, color: '#059669' }}>
+                        {c.won_revenue.toLocaleString('vi-VN')} ₫
+                      </span>
+                    </td>
+                    <td>
+                      <span className="badge-roi-high">
+                        +{c.roi_percentage}% ROI
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </Card>

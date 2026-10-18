@@ -130,8 +130,6 @@ export default function RevenueForecastPage() {
               style={{ height: 34 }}
             >
               <option value="">Tất cả các đội</option>
-              <option value="1">Đội Kinh Doanh 1</option>
-              <option value="2">Đội Khách Hàng Doanh Nghiệp</option>
             </select>
           )}
         </div>
@@ -205,34 +203,42 @@ export default function RevenueForecastPage() {
             </tr>
           </thead>
           <tbody>
-            {reportData.items.map((row) => (
-              <tr key={row.id}>
-                <td>
-                  <strong style={{ color: '#0f172a' }}>{row.name}</strong>
-                </td>
-                {level === 'MEMBER' && (
-                  <td>
-                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{row.team_name}</span>
-                  </td>
-                )}
-                <td style={{ textAlign: 'right', fontWeight: 600 }}>{row.quota_amount.toLocaleString('vi-VN')} ₫</td>
-                <td style={{ textAlign: 'right', fontWeight: 700, color: '#15803d' }}>
-                  {row.closed_amount.toLocaleString('vi-VN')} ₫
-                </td>
-                <td style={{ textAlign: 'right', fontWeight: 700, color: '#d97706' }}>
-                  {row.weighted_forecast_amount.toLocaleString('vi-VN')} ₫
-                </td>
-                <td style={{ textAlign: 'right', fontWeight: 700, color: row.closed_pct >= 80 ? '#15803d' : '#2563eb' }}>
-                  {row.closed_pct}%
-                </td>
-                <td style={{ textAlign: 'right', fontWeight: 700, color: row.forecast_pct >= 90 ? '#15803d' : '#b45309' }}>
-                  {row.forecast_pct}%
-                </td>
-                <td style={{ textAlign: 'right', fontWeight: 700, color: row.gap_amount > 0 ? '#dc2626' : '#15803d' }}>
-                  {row.gap_amount > 0 ? `${row.gap_amount.toLocaleString('vi-VN')} ₫` : 'Đạt chỉ tiêu'}
+            {reportData.items.length === 0 ? (
+              <tr>
+                <td colSpan={level === 'MEMBER' ? 8 : 7} style={{ textAlign: 'center', padding: '32px 16px', color: '#64748b' }}>
+                  Chưa có dữ liệu dự báo cho kỳ này
                 </td>
               </tr>
-            ))}
+            ) : (
+              reportData.items.map((row) => (
+                <tr key={row.id}>
+                  <td>
+                    <strong style={{ color: '#0f172a' }}>{row.name}</strong>
+                  </td>
+                  {level === 'MEMBER' && (
+                    <td>
+                      <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{row.team_name}</span>
+                    </td>
+                  )}
+                  <td style={{ textAlign: 'right', fontWeight: 600 }}>{row.quota_amount.toLocaleString('vi-VN')} ₫</td>
+                  <td style={{ textAlign: 'right', fontWeight: 700, color: '#15803d' }}>
+                    {row.closed_amount.toLocaleString('vi-VN')} ₫
+                  </td>
+                  <td style={{ textAlign: 'right', fontWeight: 700, color: '#d97706' }}>
+                    {row.weighted_forecast_amount.toLocaleString('vi-VN')} ₫
+                  </td>
+                  <td style={{ textAlign: 'right', fontWeight: 700, color: row.closed_pct >= 80 ? '#15803d' : '#2563eb' }}>
+                    {row.closed_pct}%
+                  </td>
+                  <td style={{ textAlign: 'right', fontWeight: 700, color: row.forecast_pct >= 90 ? '#15803d' : '#b45309' }}>
+                    {row.forecast_pct}%
+                  </td>
+                  <td style={{ textAlign: 'right', fontWeight: 700, color: row.gap_amount > 0 ? '#dc2626' : '#15803d' }}>
+                    {row.gap_amount > 0 ? `${row.gap_amount.toLocaleString('vi-VN')} ₫` : 'Đạt chỉ tiêu'}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -246,20 +252,26 @@ export default function RevenueForecastPage() {
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {reportData.winLossReasons.map((r, idx) => (
-              <div key={idx} className="reason-bar-item">
-                <div className="reason-header-row">
-                  <span>{r.category}</span>
-                  <span style={{ color: '#dc2626' }}>{r.percentage}% ({r.count} cơ hội)</span>
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                  Giá trị thất thoát: <strong>{r.lost_value.toLocaleString('vi-VN')} ₫</strong>
-                </div>
-                <div style={{ height: 6, background: '#e2e8f0', borderRadius: 9999, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${r.percentage}%`, background: '#ef4444', borderRadius: 9999 }}></div>
-                </div>
+            {reportData.winLossReasons.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+                Chưa có dữ liệu phân tích lý do thua
               </div>
-            ))}
+            ) : (
+              reportData.winLossReasons.map((r, idx) => (
+                <div key={idx} className="reason-bar-item">
+                  <div className="reason-header-row">
+                    <span>{r.category}</span>
+                    <span style={{ color: '#dc2626' }}>{r.percentage}% ({r.count} cơ hội)</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                    Giá trị thất thoát: <strong>{r.lost_value.toLocaleString('vi-VN')} ₫</strong>
+                  </div>
+                  <div style={{ height: 6, background: '#e2e8f0', borderRadius: 9999, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${r.percentage}%`, background: '#ef4444', borderRadius: 9999 }}></div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -270,19 +282,25 @@ export default function RevenueForecastPage() {
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {reportData.competitorLosses.map((c, idx) => (
-              <div key={idx} className="competitor-loss-card">
-                <div className="competitor-name-row">
-                  <strong style={{ fontSize: '0.95rem', color: '#1e293b' }}>{c.competitor_name}</strong>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#dc2626' }}>
-                    Thua {c.deals_lost} deals ({c.total_lost_value.toLocaleString('vi-VN')} ₫)
-                  </span>
-                </div>
-                <div style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.4 }}>
-                  <strong>Lý do chính:</strong> {c.primary_reason}
-                </div>
+            {reportData.competitorLosses.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+                Chưa có dữ liệu thất thoát theo đối thủ
               </div>
-            ))}
+            ) : (
+              reportData.competitorLosses.map((c, idx) => (
+                <div key={idx} className="competitor-loss-card">
+                  <div className="competitor-name-row">
+                    <strong style={{ fontSize: '0.95rem', color: '#1e293b' }}>{c.competitor_name}</strong>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#dc2626' }}>
+                      Thua {c.deals_lost} deals ({c.total_lost_value.toLocaleString('vi-VN')} ₫)
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.4 }}>
+                    <strong>Lý do chính:</strong> {c.primary_reason}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
