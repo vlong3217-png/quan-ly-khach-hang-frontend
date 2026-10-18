@@ -42,8 +42,7 @@ export default function NotificationPreferencesCard() {
       <div className="notif-pref-header">
         <div>
           <h3 className="notif-pref-title">
-            <span>🔔</span>
-            <span>Cấu hình kênh nhận thông báo cá nhân (S8-02)</span>
+            <span>Cấu hình kênh nhận thông báo cá nhân</span>
           </h3>
           <p className="notif-pref-desc">
             Tùy chỉnh bật/tắt từng loại thông báo cho riêng bạn qua 2 kênh: Trong ứng dụng (In-app) và Thư điện tử (Email).
