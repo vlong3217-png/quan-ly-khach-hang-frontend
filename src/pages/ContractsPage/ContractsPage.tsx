@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import type { Contract, ContractStatus } from '../../types/contract.ts'
 import {
   contractService,
@@ -40,8 +40,11 @@ export default function ContractsPage() {
 
   useEffect(() => {
     loadContracts()
-  useEffect(() => { setCurrentPage(1) }, [activeTab, searchQuery])
   }, [thresholdDays])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeTab, searchQuery])
 
   const handleThresholdChange = (days: number) => {
     setThresholdDays(days)
@@ -93,16 +96,10 @@ export default function ContractsPage() {
     })
   }, [contracts, activeTab, searchQuery])
 
-  const totalPages = Math.max(1, Math.ceil(filteredContracts.length / pageSize))
-  const pagedContracts = useMemo(() => {
-    const start = (currentPage - 1) * pageSize
-    return filteredContracts.slice(start, start + pageSize)
-  }, [filteredContracts, currentPage, pageSize])
-
   // Open Renewal Modal
   const handleOpenRenewalModal = (c: Contract) => {
     setRenewalContract(c)
-    setRenewalTitleInput(`[Gia háº¡n HÄ ${c.contract_number}] ${c.opportunity_title || c.customer_name}`)
+    setRenewalTitleInput(`[Gia hạn HĐ ${c.contract_number}] ${c.opportunity_title || c.customer_name}`)
   }
 
   // Confirm Create Renewal Opportunity (S7-07 AC 3)
@@ -119,11 +116,11 @@ export default function ContractsPage() {
       )
       loadContracts()
       alert(
-        `ÄÃ£ khá»Ÿi táº¡o thÃ nh cÃ´ng cÆ¡ há»™i gia háº¡n: "${res.opportunity.title}"!\nKáº¿ thá»«a khÃ¡ch hÃ ng vÃ  giÃ¡ trá»‹ há»£p Ä‘á»“ng cÅ© sang Pipeline bÃ¡n hÃ ng.`
+        `Đã khởi tạo thành công cơ hội gia hạn: "${res.opportunity.title}"!\nKế thừa khách hàng và giá trị hợp đồng cũ sang Pipeline bán hàng.`
       )
       setRenewalContract(null)
     } catch (err: any) {
-      alert(err.message || 'Lá»—i khi táº¡o cÆ¡ há»™i gia háº¡n.')
+      alert(err.message || 'Lỗi khi tạo cơ hội gia hạn.')
     } finally {
       setIsCreatingRenewal(false)
     }
@@ -132,13 +129,13 @@ export default function ContractsPage() {
   const renderStatusBadge = (status: ContractStatus) => {
     switch (status) {
       case 'ACTIVE':
-        return <span className="status-badge active">Äang hiá»‡u lá»±c</span>
+        return <span className="status-badge active">Đang hiệu lực</span>
       case 'EXPIRING_SOON':
-        return <span className="status-badge expiring_soon">Sáº¯p háº¿t háº¡n</span>
+        return <span className="status-badge expiring_soon">Sắp hết hạn</span>
       case 'EXPIRED':
-        return <span className="status-badge expired">ÄÃ£ háº¿t háº¡n</span>
+        return <span className="status-badge expired">Đã hết hạn</span>
       case 'RENEWED':
-        return <span className="status-badge renewed">ÄÃ£ gia háº¡n</span>
+        return <span className="status-badge renewed">Đã gia hạn</span>
       default:
         return <span className="status-badge">{status}</span>
     }
@@ -146,48 +143,48 @@ export default function ContractsPage() {
 
   const renderCountdownPill = (c: Contract) => {
     if (c.status === 'RENEWED') {
-      return <span className="countdown-pill renewed">ÄÃ£ táº¡o gia háº¡n</span>
+      return <span className="countdown-pill renewed">Đã tạo gia hạn</span>
     }
     const days = calculateRemainingDays(c.expiration_date)
     if (days < 0) {
       return (
         <span className="countdown-pill expired">
-          QuÃ¡ háº¡n {Math.abs(days)} ngÃ y
+          Quá hạn {Math.abs(days)} ngày
         </span>
       )
     }
     if (days === 0) {
-      return <span className="countdown-pill warning">Háº¿t háº¡n hÃ´m nay</span>
+      return <span className="countdown-pill warning">Hết hạn hôm nay</span>
     }
     if (days <= thresholdDays) {
       return (
         <span className="countdown-pill warning">
-          CÃ²n {days} ngÃ y
+          Còn {days} ngày
         </span>
       )
     }
-    return <span className="countdown-pill active">CÃ²n {days} ngÃ y</span>
+    return <span className="countdown-pill active">Còn {days} ngày</span>
   }
 
   return (
     <div className="contracts-page-container" id="contracts-page-container">
       {/* Header bar */}
       <PageHeader
-        title="Quáº£n lÃ½ Hiá»‡u lá»±c & Gia háº¡n Há»£p Ä‘á»“ng"
+        title="Quản lý Hiệu lực & Gia hạn Hợp đồng"
         className="contracts-header-bar"
         actions={
           <div className="threshold-control-box">
-            <label htmlFor="select-threshold">NgÆ°á»¡ng cáº£nh bÃ¡o sáº¯p háº¿t háº¡n:</label>
+            <label htmlFor="select-threshold">Ngưỡng cảnh báo sắp hết hạn:</label>
             <select
               id="select-threshold"
               value={thresholdDays}
               onChange={(e) => handleThresholdChange(parseInt(e.target.value, 10))}
             >
-              <option value={15}>TrÆ°á»›c 15 ngÃ y</option>
-              <option value={30}>TrÆ°á»›c 30 ngÃ y (Chuáº©n)</option>
-              <option value={45}>TrÆ°á»›c 45 ngÃ y</option>
-              <option value={60}>TrÆ°á»›c 60 ngÃ y</option>
-              <option value={90}>TrÆ°á»›c 90 ngÃ y (QuÃ½)</option>
+              <option value={15}>Trước 15 ngày</option>
+              <option value={30}>Trước 30 ngày (Chuẩn)</option>
+              <option value={45}>Trước 45 ngày</option>
+              <option value={60}>Trước 60 ngày</option>
+              <option value={90}>Trước 90 ngày (Quý)</option>
             </select>
           </div>
         }
@@ -199,7 +196,7 @@ export default function ContractsPage() {
           
           <div className="stat-info">
             <h3>{stats.total}</h3>
-            <span>Tá»•ng sá»‘ há»£p Ä‘á»“ng</span>
+            <span>Tổng số hợp đồng</span>
           </div>
         </div>
 
@@ -207,7 +204,7 @@ export default function ContractsPage() {
           
           <div className="stat-info">
             <h3>{stats.active}</h3>
-            <span>Äang hiá»‡u lá»±c</span>
+            <span>Đang hiệu lực</span>
           </div>
         </div>
 
@@ -215,7 +212,7 @@ export default function ContractsPage() {
           
           <div className="stat-info">
             <h3 style={{ color: '#ea580c' }}>{stats.expiring}</h3>
-            <span>Sáº¯p háº¿t háº¡n (&le; {thresholdDays} ngÃ y)</span>
+            <span>Sắp hết hạn (&le; {thresholdDays} ngày)</span>
           </div>
         </div>
 
@@ -223,7 +220,7 @@ export default function ContractsPage() {
           
           <div className="stat-info">
             <h3 style={{ color: '#dc2626' }}>{stats.expired}</h3>
-            <span>ÄÃ£ háº¿t háº¡n</span>
+            <span>Đã hết hạn</span>
           </div>
         </div>
 
@@ -231,7 +228,7 @@ export default function ContractsPage() {
           
           <div className="stat-info">
             <h3 style={{ color: '#7c3aed' }}>{stats.renewed}</h3>
-            <span>ÄÃ£ táº¡o cÆ¡ há»™i gia háº¡n</span>
+            <span>Đã tạo cơ hội gia hạn</span>
           </div>
         </div>
       </div>
@@ -244,42 +241,42 @@ export default function ContractsPage() {
             className={`tab-btn ${activeTab === 'ALL' ? 'active' : ''}`}
             onClick={() => setActiveTab('ALL')}
           >
-            Táº¥t cáº£ ({stats.total})
+            Tất cả ({stats.total})
           </button>
           <button
             type="button"
             className={`tab-btn ${activeTab === 'EXPIRING_SOON' ? 'active' : ''}`}
             onClick={() => setActiveTab('EXPIRING_SOON')}
           >
-            Sáº¯p háº¿t háº¡n ({stats.expiring})
+            Sắp hết hạn ({stats.expiring})
           </button>
           <button
             type="button"
             className={`tab-btn ${activeTab === 'EXPIRED' ? 'active' : ''}`}
             onClick={() => setActiveTab('EXPIRED')}
           >
-            ÄÃ£ háº¿t háº¡n ({stats.expired})
+            Đã hết hạn ({stats.expired})
           </button>
           <button
             type="button"
             className={`tab-btn ${activeTab === 'ACTIVE' ? 'active' : ''}`}
             onClick={() => setActiveTab('ACTIVE')}
           >
-            Äang hiá»‡u lá»±c ({stats.active})
+            Đang hiệu lực ({stats.active})
           </button>
           <button
             type="button"
             className={`tab-btn ${activeTab === 'RENEWED' ? 'active' : ''}`}
             onClick={() => setActiveTab('RENEWED')}
           >
-            ÄÃ£ gia háº¡n ({stats.renewed})
+            Đã gia hạn ({stats.renewed})
           </button>
         </div>
 
         <div className="search-input-box">
           <input
             type="text"
-            placeholder="TÃ¬m sá»‘ HÄ, khÃ¡ch hÃ ng..."
+            placeholder="Tìm số HĐ, khách hàng..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -291,21 +288,21 @@ export default function ContractsPage() {
         {filteredContracts.length === 0 ? (
           <div className="contracts-empty-state">
             
-            <h4>KhÃ´ng cÃ³ há»£p Ä‘á»“ng nÃ o trong danh má»¥c nÃ y</h4>
-            <p>Táº¥t cáº£ há»£p Ä‘á»“ng Ä‘Æ°á»£c chuyá»ƒn Ä‘á»•i tá»« BÃ¡o giÃ¡ thÃ nh cÃ´ng (S7-04) sáº½ xuáº¥t hiá»‡n táº¡i Ä‘Ã¢y.</p>
+            <h4>Không có hợp đồng nào trong danh mục này</h4>
+            <p>Tất cả hợp đồng được chuyển đổi từ Báo giá thành công (S7-04) sẽ xuất hiện tại đây.</p>
           </div>
         ) : (
           <table className="contracts-table">
             <thead>
               <tr>
-                <th>Sá»‘ há»£p Ä‘á»“ng</th>
-                <th>KhÃ¡ch hÃ ng & CÆ¡ há»™i</th>
-                <th style={{ textAlign: 'right' }}>GiÃ¡ trá»‹ há»£p Ä‘á»“ng</th>
-                <th>NgÃ y hiá»‡u lá»±c</th>
-                <th>NgÃ y háº¿t háº¡n</th>
-                <th style={{ textAlign: 'center' }}>Sá»‘ ngÃ y cÃ²n láº¡i</th>
-                <th>Tráº¡ng thÃ¡i</th>
-                <th style={{ textAlign: 'right' }}>Thao tÃ¡c</th>
+                <th>Số hợp đồng</th>
+                <th>Khách hàng & Cơ hội</th>
+                <th style={{ textAlign: 'right' }}>Giá trị hợp đồng</th>
+                <th>Ngày hiệu lực</th>
+                <th>Ngày hết hạn</th>
+                <th style={{ textAlign: 'center' }}>Số ngày còn lại</th>
+                <th>Trạng thái</th>
+                <th style={{ textAlign: 'right' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -314,7 +311,7 @@ export default function ContractsPage() {
                   <td>
                     <span className="contract-code-tag">{c.contract_number}</span>
                     <div style={{ fontSize: '11px', color: '#64748b' }}>
-                      BÃ¡o giÃ¡: {c.quote_number}
+                      Báo giá: {c.quote_number}
                     </div>
                   </td>
                   <td>
@@ -343,9 +340,9 @@ export default function ContractsPage() {
                           className="btn btn-primary"
                           id={`btn-create-renewal-${c.id}`}
                           onClick={() => handleOpenRenewalModal(c)}
-                          title="Táº¡o cÆ¡ há»™i gia háº¡n trong Pipeline bÃ¡n hÃ ng (S7-07 AC)"
+                          title="Tạo cơ hội gia hạn trong Pipeline bán hàng (S7-07 AC)"
                         >
-                          Gia háº¡n
+                          Gia hạn
                         </Button>
                       )}
 
@@ -354,9 +351,9 @@ export default function ContractsPage() {
                         variant="secondary"
                         className="btn btn-secondary"
                         onClick={() => setPdfContract(c)}
-                        title="Xuáº¥t Há»£p Ä‘á»“ng ra PDF (S7-05)"
+                        title="Xuất Hợp đồng ra PDF (S7-05)"
                       >
-                        Xuáº¥t PDF
+                        Xuất PDF
                       </Button>
 
                       <Button
@@ -364,9 +361,9 @@ export default function ContractsPage() {
                         variant="secondary"
                         className="btn btn-secondary"
                         onClick={() => setDetailContract(c)}
-                        title="Xem chi tiáº¿t há»£p Ä‘á»“ng"
+                        title="Xem chi tiết hợp đồng"
                       >
-                        Xem chi tiáº¿t
+                        Xem chi tiết
                       </Button>
                     </div>
                   </td>
@@ -405,27 +402,27 @@ export default function ContractsPage() {
           >
             <div className="dialog-header">
               <h3 style={{ margin: 0, color: '#0f172a' }}>
-                Táº¡o cÆ¡ há»™i gia háº¡n há»£p Ä‘á»“ng (S7-07)
+                Tạo cơ hội gia hạn hợp đồng (S7-07)
               </h3>
               <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748b' }}>
-                Há»‡ thá»‘ng tá»± Ä‘á»™ng káº¿ thá»«a thÃ´ng tin khÃ¡ch hÃ ng, sá»‘ liá»‡u dÃ²ng sáº£n pháº©m vÃ  giÃ¡ trá»‹ Ä‘á»ƒ Ä‘Æ°a vÃ o Pipeline bÃ¡n hÃ ng
+                Hệ thống tự động kế thừa thông tin khách hàng, số liệu dòng sản phẩm và giá trị để đưa vào Pipeline bán hàng
               </p>
             </div>
 
             <form onSubmit={handleConfirmRenewal}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '12px' }}>
                 <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.9rem' }}>
-                  <div>Sá»‘ HÄ nguá»“n: <strong>{renewalContract.contract_number}</strong></div>
-                  <div>KhÃ¡ch hÃ ng: <strong>{renewalContract.customer_name}</strong></div>
-                  <div>NgÃ y háº¿t háº¡n HÄ cÅ©: <strong>{renewalContract.expiration_date}</strong></div>
+                  <div>Số HĐ nguồn: <strong>{renewalContract.contract_number}</strong></div>
+                  <div>Khách hàng: <strong>{renewalContract.customer_name}</strong></div>
+                  <div>Ngày hết hạn HĐ cũ: <strong>{renewalContract.expiration_date}</strong></div>
                   <div>
-                    GiÃ¡ trá»‹ há»£p Ä‘á»“ng: <strong>{formatCurrencyVND(renewalContract.total_value)}</strong>
+                    Giá trị hợp đồng: <strong>{formatCurrencyVND(renewalContract.total_value)}</strong>
                   </div>
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '4px' }}>
-                    TÃªn cÆ¡ há»™i gia háº¡n má»›i (*):
+                    Tên cơ hội gia hạn mới (*):
                   </label>
                   <input
                     type="text"
@@ -445,7 +442,7 @@ export default function ContractsPage() {
                     onClick={() => setRenewalContract(null)}
                     disabled={isCreatingRenewal}
                   >
-                    Há»§y
+                    Hủy
                   </button>
                   <Button
                     type="submit"
@@ -454,7 +451,7 @@ export default function ContractsPage() {
                     id="btn-confirm-submit-renewal"
                     disabled={isCreatingRenewal}
                   >
-                    {isCreatingRenewal ? 'Äang táº¡o...' : 'XÃ¡c nháº­n táº¡o cÆ¡ há»™i gia háº¡n'}
+                    {isCreatingRenewal ? 'Đang tạo...' : 'Xác nhận tạo cơ hội gia hạn'}
                   </Button>
                 </div>
               </div>
@@ -475,38 +472,38 @@ export default function ContractsPage() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0 }}>
-                Chi tiáº¿t Há»£p Ä‘á»“ng: {detailContract.contract_number}
+                Chi tiết Hợp đồng: {detailContract.contract_number}
               </h3>
               <button
                 type="button"
                 style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer' }}
                 onClick={() => setDetailContract(null)}
               >
-                âœ•
+                ✕
               </button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-                <div>KhÃ¡ch hÃ ng: <strong>{detailContract.customer_name}</strong></div>
-                <div>CÆ¡ há»™i liÃªn káº¿t: <strong>{detailContract.opportunity_title}</strong></div>
-                <div>CÄƒn cá»© bÃ¡o giÃ¡: <strong>{detailContract.quote_number}</strong></div>
-                <div>Tá»•ng giÃ¡ trá»‹: <strong style={{ color: '#0284c7' }}>{formatCurrencyVND(detailContract.total_value)}</strong></div>
-                <div>NgÃ y kÃ½: {detailContract.sign_date}</div>
-                <div>NgÃ y hiá»‡u lá»±c: {detailContract.effective_date}</div>
-                <div>NgÃ y háº¿t háº¡n: <strong>{detailContract.expiration_date}</strong></div>
-                <div>Tráº¡ng thÃ¡i: {renderStatusBadge(detailContract.status)}</div>
+                <div>Khách hàng: <strong>{detailContract.customer_name}</strong></div>
+                <div>Cơ hội liên kết: <strong>{detailContract.opportunity_title}</strong></div>
+                <div>Căn cứ báo giá: <strong>{detailContract.quote_number}</strong></div>
+                <div>Tổng giá trị: <strong style={{ color: '#0284c7' }}>{formatCurrencyVND(detailContract.total_value)}</strong></div>
+                <div>Ngày ký: {detailContract.sign_date}</div>
+                <div>Ngày hiệu lực: {detailContract.effective_date}</div>
+                <div>Ngày hết hạn: <strong>{detailContract.expiration_date}</strong></div>
+                <div>Trạng thái: {renderStatusBadge(detailContract.status)}</div>
               </div>
 
               <div>
-                <strong>Äiá»u khoáº£n thanh toÃ¡n: </strong>
+                <strong>Điều khoản thanh toán: </strong>
                 {detailContract.payment_terms}
               </div>
 
               <div>
-                <strong>Danh má»¥c sáº£n pháº©m káº¿ thá»«a ({detailContract.items.length}):</strong>
+                <strong>Danh mục sản phẩm kế thừa ({detailContract.items?.length || 0}):</strong>
                 <div style={{ maxHeight: '160px', overflowY: 'auto', marginTop: '6px', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
-                  {detailContract.items.map((it, idx) => (
+                  {(detailContract.items || []).map((it, idx) => (
                     <div key={it.id || idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', borderBottom: '1px solid #f1f5f9' }}>
                       <span>{it.product_name} ({it.quantity} {it.unit})</span>
                       <strong>{formatCurrencyVND(it.line_total)}</strong>
@@ -525,14 +522,14 @@ export default function ContractsPage() {
                     setPdfContract(c)
                   }}
                 >
-                  Xuáº¥t PDF
+                  Xuất PDF
                 </button>
                 <button
                   type="button"
                   className="btn btn-secondary btn-sm"
                   onClick={() => setDetailContract(null)}
                 >
-                  ÄÃ³ng
+                  Đóng
                 </button>
               </div>
             </div>
