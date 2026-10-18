@@ -219,3 +219,54 @@
   display: flex;
   justify-content: flex-end;
 }
+
+
+/* Beautiful Override Input & Actions */
+.stage-gate-input-wrapper {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stage-gate-input-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #7c2d12;
+}
+
+.stage-gate-textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #1e293b;
+  background-color: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.stage-gate-textarea::placeholder {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.stage-gate-textarea:focus {
+  border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+  background-color: #ffffff;
+}
+
+.stage-gate-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
