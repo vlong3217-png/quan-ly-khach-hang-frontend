@@ -277,7 +277,15 @@ export default function OrganizationPage() {
             </div>
           </div>
 
-          <div className="tree-scroll-wrapper">{renderTreeNodes(tree)}</div>
+          <div className="tree-scroll-wrapper">
+            {tree.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '32px 16px', color: '#64748b' }}>
+                Chưa có sơ đồ tổ chức phòng ban. Nhấp "+ Thêm Khối / Phòng ban gốc" để khởi tạo.
+              </div>
+            ) : (
+              renderTreeNodes(tree)
+            )}
+          </div>
         </div>
 
         {/* Cột phải: Chi tiết nhóm & Phân bổ nhân sự */}

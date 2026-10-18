@@ -16,7 +16,7 @@ import { API_BASE_URL } from './authService.ts'
 const MOCK_USERS: UserAccount[] = [
   {
     id: 1,
-    full_name: 'Nguyễn Văn An',
+    full_name: 'Quản trị viên',
     email: 'vlong3217@gmail.com',
     phone: '0901234567',
     role: 'ADMIN',
@@ -25,90 +25,10 @@ const MOCK_USERS: UserAccount[] = [
     is_active: true,
     created_at: '2025-01-15T08:00:00Z',
   },
-  {
-    id: 2,
-    full_name: 'Trần Thị Bình',
-    email: 'binh.tran@company.com',
-    phone: '0912345678',
-    role: 'MANAGER',
-    team: 'Kinh doanh',
-    status: 'active',
-    is_active: true,
-    created_at: '2025-02-10T09:30:00Z',
-  },
-  {
-    id: 3,
-    full_name: 'Lê Hoàng Cường',
-    email: 'cuong.le@company.com',
-    phone: '0923456789',
-    role: 'STAFF',
-    team: 'Kỹ thuật',
-    status: 'active',
-    is_active: true,
-    created_at: '2025-03-05T10:15:00Z',
-  },
-  {
-    id: 4,
-    full_name: 'Phạm Minh Duy',
-    email: 'duy.pham@company.com',
-    role: 'STAFF',
-    team: 'Kinh doanh',
-    status: 'inactive',
-    is_active: false,
-    created_at: '2025-03-20T14:00:00Z',
-  },
-  {
-    id: 5,
-    full_name: 'Hoàng Thị Em',
-    email: 'em.hoang@company.com',
-    phone: '0945678901',
-    role: 'STAFF',
-    team: 'Hỗ trợ',
-    status: 'active',
-    is_active: true,
-    created_at: '2025-04-01T08:45:00Z',
-  },
-  {
-    id: 6,
-    full_name: 'Võ Đức Phúc',
-    email: 'phuc.vo@company.com',
-    phone: '0956789012',
-    role: 'MANAGER',
-    team: 'Kỹ thuật',
-    status: 'locked',
-    is_active: false,
-    created_at: '2025-04-15T11:20:00Z',
-  },
-  {
-    id: 7,
-    full_name: 'Đặng Thùy Giang',
-    email: 'giang.dang@company.com',
-    phone: '0967890123',
-    role: 'STAFF',
-    team: 'Hỗ trợ',
-    status: 'active',
-    is_active: true,
-    created_at: '2025-05-10T09:00:00Z',
-  },
-  {
-    id: 8,
-    full_name: 'Bùi Quốc Hùng',
-    email: 'hung.bui@company.com',
-    role: 'STAFF',
-    team: 'Kinh doanh',
-    status: 'active',
-    is_active: true,
-    created_at: '2025-06-01T13:30:00Z',
-  },
 ]
 
 // Mock dữ liệu phụ trách của từng user (cho tính năng bàn giao dữ liệu S1-10)
-let mockAssignedItems: Array<{ id: number; name: string; type: string; owner_id: number }> = [
-  { id: 1, name: 'Công ty TNHH Ánh Dương', type: 'customer', owner_id: 3 },
-  { id: 2, name: 'Tập đoàn Công nghệ Sao Mai', type: 'customer', owner_id: 3 },
-  { id: 3, name: 'Doanh nghiệp Tư nhân Hoàng Gia', type: 'customer', owner_id: 2 },
-  { id: 4, name: 'Công ty Cổ phần Đại Phát', type: 'customer', owner_id: 5 },
-]
+let mockAssignedItems: Array<{ id: number; name: string; type: string; owner_id: number }> = []
 
 let mockUsers = [...MOCK_USERS]
 

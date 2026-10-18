@@ -131,11 +131,6 @@ export default function RepActivityAuditPage() {
             }
           >
             <option value="ALL">Tất cả thành viên</option>
-            <option value="1">Nguyễn Văn A</option>
-            <option value="2">Trần Thị B</option>
-            <option value="3">Lê Văn C</option>
-            <option value="4">Phạm Thị D</option>
-            <option value="5">Hoàng Văn E</option>
           </select>
         </div>
 
@@ -156,45 +151,51 @@ export default function RepActivityAuditPage() {
           Tổng số hoạt động theo từng thành viên ({workloads.length} nhân sự)
         </h3>
         <div className="workload-grid">
-          {workloads.map((w) => (
-            <div className="workload-card" key={w.user_id}>
-              <div className="workload-header">
-                <div className="workload-user-info">
-                  <div className="workload-avatar">
-                    {w.user_name.split(' ').slice(-1)[0][0]}
-                  </div>
-                  <div>
-                    <div className="workload-name">{w.user_name}</div>
-                    <div className="workload-sub">{w.role} • {w.team_name}</div>
-                  </div>
-                </div>
-                <div className="workload-total-badge" title="Tổng số hoạt động thực hiện">
-                  {w.total_activities}
-                </div>
-              </div>
-
-              <div className="workload-chips">
-                <span className="chip-item">{w.calls_count} gọi</span>
-                <span className="chip-item">{w.meetings_count} gặp</span>
-                <span className="chip-item">{w.emails_count} email</span>
-                <span className="chip-item">{w.quotes_count} báo giá</span>
-                <span className="chip-item">{w.notes_and_others} khác</span>
-              </div>
-
-              <div className="workload-distribution-bar">
-                <div className="distribution-label">
-                  <span>Tỷ trọng đóng góp</span>
-                  <span>{w.workload_share_percentage}%</span>
-                </div>
-                <div className="distribution-progress-bg">
-                  <div
-                    className="distribution-progress-fill"
-                    style={{ width: `${w.workload_share_percentage}%` }}
-                  />
-                </div>
-              </div>
+          {workloads.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px', color: '#64748b', gridColumn: '1 / -1', background: '#fff', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+              Chưa có số liệu tổng hợp công việc nhân sự
             </div>
-          ))}
+          ) : (
+            workloads.map((w) => (
+              <div className="workload-card" key={w.user_id}>
+                <div className="workload-header">
+                  <div className="workload-user-info">
+                    <div className="workload-avatar">
+                      {w.user_name.split(' ').slice(-1)[0][0]}
+                    </div>
+                    <div>
+                      <div className="workload-name">{w.user_name}</div>
+                      <div className="workload-sub">{w.role} • {w.team_name}</div>
+                    </div>
+                  </div>
+                  <div className="workload-total-badge" title="Tổng số hoạt động thực hiện">
+                    {w.total_activities}
+                  </div>
+                </div>
+
+                <div className="workload-chips">
+                  <span className="chip-item">{w.calls_count} gọi</span>
+                  <span className="chip-item">{w.meetings_count} gặp</span>
+                  <span className="chip-item">{w.emails_count} email</span>
+                  <span className="chip-item">{w.quotes_count} báo giá</span>
+                  <span className="chip-item">{w.notes_and_others} khác</span>
+                </div>
+
+                <div className="workload-distribution-bar">
+                  <div className="distribution-label">
+                    <span>Tỷ trọng đóng góp</span>
+                    <span>{w.workload_share_percentage}%</span>
+                  </div>
+                  <div className="distribution-progress-bg">
+                    <div
+                      className="distribution-progress-fill"
+                      style={{ width: `${w.workload_share_percentage}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -216,51 +217,59 @@ export default function RepActivityAuditPage() {
               </tr>
             </thead>
             <tbody>
-              {activities.map((act) => (
-                <tr key={act.id}>
-                  <td>
-                    <div style={{ fontWeight: 600, color: '#0f172a' }}>
-                      {new Date(act.timestamp).toLocaleDateString('vi-VN')}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                      {new Date(act.timestamp).toLocaleTimeString('vi-VN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ fontWeight: 600, color: '#0f172a' }}>{act.user_name}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{act.team_name}</div>
-                  </td>
-                  <td>{renderActivityBadge(act.activity_type)}</td>
-                  <td>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2563eb' }}>
-                      [{act.target_type}]
-                    </span>
-                    <div style={{ fontWeight: 600, color: '#334155', fontSize: '0.8125rem' }}>
-                      {act.target_name}
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: '0.2rem' }}>
-                      {act.title}
-                    </div>
-                    <div style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.4 }}>
-                      {act.content}
-                    </div>
-                  </td>
-                  <td>
-                    {act.duration_minutes ? (
-                      <span style={{ fontWeight: 600, color: '#0f172a' }}>
-                        {act.duration_minutes} phút
-                      </span>
-                    ) : (
-                      <span style={{ color: '#94a3b8' }}>—</span>
-                    )}
+              {activities.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '32px 16px', color: '#64748b' }}>
+                    Chưa có hoạt động nào trong khoảng thời gian đã chọn
                   </td>
                 </tr>
-              ))}
+              ) : (
+                activities.map((act) => (
+                  <tr key={act.id}>
+                    <td>
+                      <div style={{ fontWeight: 600, color: '#0f172a' }}>
+                        {new Date(act.timestamp).toLocaleDateString('vi-VN')}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                        {new Date(act.timestamp).toLocaleTimeString('vi-VN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 600, color: '#0f172a' }}>{act.user_name}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{act.team_name}</div>
+                    </td>
+                    <td>{renderActivityBadge(act.activity_type)}</td>
+                    <td>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2563eb' }}>
+                        [{act.target_type}]
+                      </span>
+                      <div style={{ fontWeight: 600, color: '#334155', fontSize: '0.8125rem' }}>
+                        {act.target_name}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: '0.2rem' }}>
+                        {act.title}
+                      </div>
+                      <div style={{ fontSize: '0.8125rem', color: '#475569', lineHeight: 1.4 }}>
+                        {act.content}
+                      </div>
+                    </td>
+                    <td>
+                      {act.duration_minutes ? (
+                        <span style={{ fontWeight: 600, color: '#0f172a' }}>
+                          {act.duration_minutes} phút
+                        </span>
+                      ) : (
+                        <span style={{ color: '#94a3b8' }}>—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </Card>

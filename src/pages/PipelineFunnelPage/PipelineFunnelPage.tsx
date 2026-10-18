@@ -48,8 +48,6 @@ export default function PipelineFunnelPage() {
             onChange={(e) => setTeamId(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
           >
             <option value="ALL">Tất cả đội nhóm (Toàn khối)</option>
-            <option value={1}>Đội Kinh Doanh 1</option>
-            <option value={2}>Đội Khách Hàng Doanh Nghiệp (Enterprise)</option>
           </select>
         </div>
 
@@ -61,10 +59,6 @@ export default function PipelineFunnelPage() {
             onChange={(e) => setUserId(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
           >
             <option value="ALL">Tất cả nhân viên</option>
-            <option value={1}>Nguyễn Văn A</option>
-            <option value={2}>Trần Thị B</option>
-            <option value={3}>Lê Văn C</option>
-            <option value={4}>Phạm Hồng Đăng</option>
           </select>
         </div>
 
@@ -76,9 +70,6 @@ export default function PipelineFunnelPage() {
             onChange={(e) => setProductId(e.target.value)}
           >
             <option value="ALL">Tất cả sản phẩm & dịch vụ</option>
-            <option value="prod-crm">Gói Phần mềm SmartCRM Doanh nghiệp</option>
-            <option value="prod-erp">Hệ thống Quản trị Doanh nghiệp ERP</option>
-            <option value="prod-cloud">Hạ tầng Cloud Server & Security</option>
           </select>
         </div>
 

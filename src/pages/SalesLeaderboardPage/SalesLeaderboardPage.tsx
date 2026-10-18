@@ -112,8 +112,6 @@ export default function SalesLeaderboardPage() {
             style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.875rem' }}
           >
             <option value="ALL">Toàn công ty (Tất cả đội nhóm)</option>
-            <option value="1">Đội Kinh Doanh 1</option>
-            <option value="2">Đội Khách Hàng Doanh Nghiệp (Enterprise)</option>
           </select>
         </div>
       )}
@@ -194,65 +192,73 @@ export default function SalesLeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {entries.map((entry) => {
-                const isCompleted = entry.achievement_rate >= 100
-                const progressWidth = Math.min(entry.achievement_rate, 100)
+              {entries.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '32px 16px', color: '#64748b' }}>
+                    Chưa có dữ liệu xếp hạng doanh số cho kỳ này
+                  </td>
+                </tr>
+              ) : (
+                entries.map((entry) => {
+                  const isCompleted = entry.achievement_rate >= 100
+                  const progressWidth = Math.min(entry.achievement_rate, 100)
 
-                return (
-                  <tr key={entry.user_id}>
-                    <td style={{ textAlign: 'center' }}>
-                      {entry.rank === 1 && <strong style={{ color: '#d97706' }}>#1</strong>}
-                      {entry.rank === 2 && <strong style={{ color: '#64748b' }}>#2</strong>}
-                      {entry.rank === 3 && <strong style={{ color: '#b45309' }}>#3</strong>}
-                      {entry.rank > 3 && <strong style={{ color: '#64748b' }}>#{entry.rank}</strong>}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#3b82f6', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.8125rem' }}>
-                          {entry.user_name.split(' ').slice(-1)[0][0]}
+                  return (
+                    <tr key={entry.user_id}>
+                      <td style={{ textAlign: 'center' }}>
+                        {entry.rank === 1 && <strong style={{ color: '#d97706' }}>#1</strong>}
+                        {entry.rank === 2 && <strong style={{ color: '#64748b' }}>#2</strong>}
+                        {entry.rank === 3 && <strong style={{ color: '#b45309' }}>#3</strong>}
+                        {entry.rank > 3 && <strong style={{ color: '#64748b' }}>#{entry.rank}</strong>}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#3b82f6', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.8125rem' }}>
+                            {entry.user_name.split(' ').slice(-1)[0][0]}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 600, color: '#0f172a' }}>{entry.user_name}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{entry.role}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div style={{ fontWeight: 600, color: '#0f172a' }}>{entry.user_name}</div>
-                          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{entry.role}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>{entry.team_name}</td>
-                    <td><strong>{entry.won_deals_count} hợp đồng</strong></td>
-                    <td>
-                      <span style={{ fontWeight: 700, color: '#059669', fontSize: '0.9375rem' }}>
-                        {entry.closed_revenue.toLocaleString('vi-VN')} ₫
-                      </span>
-                    </td>
-                    <td>{entry.personal_quota.toLocaleString('vi-VN')} ₫</td>
-                    <td>
-                      <div className="progress-container">
-                        <div className="progress-header">
-                          <span>{entry.achievement_rate}%</span>
-                          <span>{isCompleted ? 'Hoàn thành' : 'Đang thực hiện'}</span>
-                        </div>
-                        <div className="progress-bar-bg">
-                          <div
-                            className={`progress-bar-fill ${isCompleted ? 'completed' : 'normal'}`}
-                            style={{ width: `${progressWidth}%` }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      {isCompleted ? (
-                        <span className="badge-achievement over">
-                          Vượt chỉ tiêu
+                      </td>
+                      <td>{entry.team_name}</td>
+                      <td><strong>{entry.won_deals_count} hợp đồng</strong></td>
+                      <td>
+                        <span style={{ fontWeight: 700, color: '#059669', fontSize: '0.9375rem' }}>
+                          {entry.closed_revenue.toLocaleString('vi-VN')} ₫
                         </span>
-                      ) : (
-                        <span className="badge-achievement sub">
-                          Tiếp tục nỗ lực
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
+                      </td>
+                      <td>{entry.personal_quota.toLocaleString('vi-VN')} ₫</td>
+                      <td>
+                        <div className="progress-container">
+                          <div className="progress-header">
+                            <span>{entry.achievement_rate}%</span>
+                            <span>{isCompleted ? 'Hoàn thành' : 'Đang thực hiện'}</span>
+                          </div>
+                          <div className="progress-bar-bg">
+                            <div
+                              className={`progress-bar-fill ${isCompleted ? 'completed' : 'normal'}`}
+                              style={{ width: `${progressWidth}%` }}
+                            />
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        {isCompleted ? (
+                          <span className="badge-achievement over">
+                            Vượt chỉ tiêu
+                          </span>
+                        ) : (
+                          <span className="badge-achievement sub">
+                            Tiếp tục nỗ lực
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
             </tbody>
           </table>
         </Card>

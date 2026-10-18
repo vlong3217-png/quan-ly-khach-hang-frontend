@@ -5,148 +5,10 @@ import type {
   MemberQuota,
 } from '../types/salesQuota.ts'
 
-const STORAGE_KEY_QUOTAS = 'crm_sales_quotas_v1'
-const STORAGE_KEY_LOGS = 'crm_sales_quota_audit_logs_v1'
+const STORAGE_KEY_QUOTAS = 'crm_sales_quotas_v2'
+const STORAGE_KEY_LOGS = 'crm_sales_quota_audit_logs_v2'
 
-const INITIAL_QUOTAS: TeamQuota[] = [
-  {
-    id: 'quota-2026-10-t1',
-    team_id: 1,
-    team_name: 'Đội Kinh Doanh 1',
-    period_type: 'MONTH',
-    period_code: '2026-10',
-    period_label: 'Tháng 10/2026',
-    target_amount: 1500000000, // 1.5 tỷ
-    achieved_amount: 1150000000,
-    is_locked: false,
-    created_at: '2026-10-01T08:00:00.000Z',
-    updated_at: '2026-10-01T08:00:00.000Z',
-    members: [
-      {
-        user_id: 1,
-        user_name: 'Nguyễn Văn A',
-        role: 'USER',
-        target_amount: 600000000,
-        achieved_amount: 480000000,
-      },
-      {
-        user_id: 2,
-        user_name: 'Trần Thị B',
-        role: 'USER',
-        target_amount: 500000000,
-        achieved_amount: 420000000,
-      },
-      {
-        user_id: 3,
-        user_name: 'Lê Văn C',
-        role: 'USER',
-        target_amount: 400000000,
-        achieved_amount: 250000000,
-      },
-    ],
-  },
-  {
-    id: 'quota-2026-10-t2',
-    team_id: 2,
-    team_name: 'Đội Khách Hàng Doanh Nghiệp (Enterprise)',
-    period_type: 'MONTH',
-    period_code: '2026-10',
-    period_label: 'Tháng 10/2026',
-    target_amount: 2800000000, // 2.8 tỷ
-    achieved_amount: 2100000000,
-    is_locked: false,
-    created_at: '2026-10-01T08:00:00.000Z',
-    updated_at: '2026-10-01T08:00:00.000Z',
-    members: [
-      {
-        user_id: 4,
-        user_name: 'Phạm Hồng Đăng',
-        role: 'USER',
-        target_amount: 1500000000,
-        achieved_amount: 1250000000,
-      },
-      {
-        user_id: 5,
-        user_name: 'Vũ Thu Trang',
-        role: 'USER',
-        target_amount: 1300000000,
-        achieved_amount: 850000000,
-      },
-    ],
-  },
-  {
-    id: 'quota-2026-q4-t1',
-    team_id: 1,
-    team_name: 'Đội Kinh Doanh 1',
-    period_type: 'QUARTER',
-    period_code: '2026-Q4',
-    period_label: 'Quý 4/2026',
-    target_amount: 4500000000, // 4.5 tỷ
-    achieved_amount: 1150000000,
-    is_locked: false,
-    created_at: '2026-10-01T08:00:00.000Z',
-    updated_at: '2026-10-01T08:00:00.000Z',
-    members: [
-      {
-        user_id: 1,
-        user_name: 'Nguyễn Văn A',
-        role: 'USER',
-        target_amount: 1800000000,
-        achieved_amount: 480000000,
-      },
-      {
-        user_id: 2,
-        user_name: 'Trần Thị B',
-        role: 'USER',
-        target_amount: 1500000000,
-        achieved_amount: 420000000,
-      },
-      {
-        user_id: 3,
-        user_name: 'Lê Văn C',
-        role: 'USER',
-        target_amount: 1200000000,
-        achieved_amount: 250000000,
-      },
-    ],
-  },
-  {
-    id: 'quota-2026-09-t1',
-    team_id: 1,
-    team_name: 'Đội Kinh Doanh 1',
-    period_type: 'MONTH',
-    period_code: '2026-09',
-    period_label: 'Tháng 09/2026',
-    target_amount: 1400000000,
-    achieved_amount: 1480000000,
-    is_locked: true, // S8-03 AC: Chỉ tiêu đã qua kỳ thì khoá lại, sửa phải có lý do và được ghi nhật ký
-    created_at: '2026-09-01T08:00:00.000Z',
-    updated_at: '2026-09-01T08:00:00.000Z',
-    members: [
-      {
-        user_id: 1,
-        user_name: 'Nguyễn Văn A',
-        role: 'USER',
-        target_amount: 550000000,
-        achieved_amount: 610000000,
-      },
-      {
-        user_id: 2,
-        user_name: 'Trần Thị B',
-        role: 'USER',
-        target_amount: 450000000,
-        achieved_amount: 490000000,
-      },
-      {
-        user_id: 3,
-        user_name: 'Lê Văn C',
-        role: 'USER',
-        target_amount: 400000000,
-        achieved_amount: 380000000,
-      },
-    ],
-  },
-]
+const INITIAL_QUOTAS: TeamQuota[] = []
 
 const INITIAL_LOGS: QuotaAuditLog[] = []
 
@@ -155,6 +17,12 @@ class SalesQuotaService {
   private logs: QuotaAuditLog[]
 
   constructor() {
+    try {
+      localStorage.removeItem('crm_sales_quotas_v1')
+      localStorage.removeItem('crm_sales_quota_audit_logs_v1')
+    } catch {
+      // ignore
+    }
     this.quotas = this.loadQuotas()
     this.logs = this.loadLogs()
   }

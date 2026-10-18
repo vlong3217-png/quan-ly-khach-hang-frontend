@@ -92,8 +92,6 @@ export default function TeamProductivityReportPage() {
             onChange={(e) => setFilter({ ...filter, team_id: e.target.value === 'ALL' ? 'ALL' : Number(e.target.value) })}
           >
             <option value="ALL">Tất cả đội nhóm</option>
-            <option value="1">Đội Kinh Doanh 1</option>
-            <option value="2">Đội Khách Hàng Doanh Nghiệp (Enterprise)</option>
           </select>
         </div>
 
@@ -104,11 +102,6 @@ export default function TeamProductivityReportPage() {
             onChange={(e) => setFilter({ ...filter, user_id: e.target.value === 'ALL' ? 'ALL' : Number(e.target.value) })}
           >
             <option value="ALL">Tất cả nhân viên</option>
-            <option value="1">Nguyễn Văn A</option>
-            <option value="2">Trần Thị B</option>
-            <option value="3">Lê Văn C</option>
-            <option value="4">Phạm Thị D</option>
-            <option value="5">Hoàng Văn E</option>
           </select>
         </div>
 
@@ -243,36 +236,44 @@ export default function TeamProductivityReportPage() {
               </tr>
             </thead>
             <tbody>
-              {members.map((m) => (
-                <tr key={m.user_id}>
-                  <td>
-                    <div className="user-cell">
-                      <div className="user-avatar-circle">
-                        {m.user_name.split(' ').slice(-1)[0][0]}
-                      </div>
-                      <div className="user-info-text">
-                        <span className="user-info-name">{m.user_name}</span>
-                        <span className="user-info-team">{m.role}</span>
-                      </div>
-                    </div>
+              {members.length === 0 ? (
+                <tr>
+                  <td colSpan={10} style={{ textAlign: 'center', padding: '32px 16px', color: '#64748b' }}>
+                    Chưa có dữ liệu năng suất nhân viên cho kỳ này
                   </td>
-                  <td>{m.team_name}</td>
-                  <td><strong>{m.total_calls}</strong></td>
-                  <td><strong>{m.total_meetings}</strong></td>
-                  <td><strong>{m.total_quotes_sent}</strong></td>
-                  <td>
-                    <span style={{ fontWeight: 700, color: '#2563eb' }}>{m.total_activities}</span>
-                  </td>
-                  <td>{m.leads_assigned}</td>
-                  <td>{m.leads_responded_in_sla}</td>
-                  <td>
-                    <span className={getSlaBadgeClass(m.sla_compliance_rate)}>
-                      {m.sla_compliance_rate}%
-                    </span>
-                  </td>
-                  <td>{m.avg_response_time_hours} giờ</td>
                 </tr>
-              ))}
+              ) : (
+                members.map((m) => (
+                  <tr key={m.user_id}>
+                    <td>
+                      <div className="user-cell">
+                        <div className="user-avatar-circle">
+                          {m.user_name.split(' ').slice(-1)[0][0]}
+                        </div>
+                        <div className="user-info-text">
+                          <span className="user-info-name">{m.user_name}</span>
+                          <span className="user-info-team">{m.role}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{m.team_name}</td>
+                    <td><strong>{m.total_calls}</strong></td>
+                    <td><strong>{m.total_meetings}</strong></td>
+                    <td><strong>{m.total_quotes_sent}</strong></td>
+                    <td>
+                      <span style={{ fontWeight: 700, color: '#2563eb' }}>{m.total_activities}</span>
+                    </td>
+                    <td>{m.leads_assigned}</td>
+                    <td>{m.leads_responded_in_sla}</td>
+                    <td>
+                      <span className={getSlaBadgeClass(m.sla_compliance_rate)}>
+                        {m.sla_compliance_rate}%
+                      </span>
+                    </td>
+                    <td>{m.avg_response_time_hours} giờ</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -293,38 +294,46 @@ export default function TeamProductivityReportPage() {
               </tr>
             </thead>
             <tbody>
-              {members.map((m) => (
-                <tr key={m.user_id}>
-                  <td>
-                    <div className="user-cell">
-                      <div className="user-avatar-circle">
-                        {m.user_name.split(' ').slice(-1)[0][0]}
-                      </div>
-                      <div className="user-info-text">
-                        <span className="user-info-name">{m.user_name}</span>
-                        <span className="user-info-team">{m.team_name}</span>
-                      </div>
-                    </div>
-                  </td>
-                  {m.weekly_activities.map((w) => (
-                    <td key={w.week_number}>
-                      <div className="weekly-pill-group">
-                        <span className="weekly-pill" title="Cuộc gọi">Gọi: {w.calls}</span>
-                        <span className="weekly-pill" title="Cuộc gặp">Gặp: {w.meetings}</span>
-                        <span className="weekly-pill" title="Báo giá">Báo giá: {w.quotes_sent}</span>
-                        <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#0f172a' }}>
-                          = {w.total_activities}
-                        </span>
-                      </div>
-                    </td>
-                  ))}
-                  <td>
-                    <strong style={{ color: '#2563eb', fontSize: '1rem' }}>
-                      {m.total_activities}
-                    </strong>
+              {members.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '32px 16px', color: '#64748b' }}>
+                    Chưa có dữ liệu hoạt động theo tuần
                   </td>
                 </tr>
-              ))}
+              ) : (
+                members.map((m) => (
+                  <tr key={m.user_id}>
+                    <td>
+                      <div className="user-cell">
+                        <div className="user-avatar-circle">
+                          {m.user_name.split(' ').slice(-1)[0][0]}
+                        </div>
+                        <div className="user-info-text">
+                          <span className="user-info-name">{m.user_name}</span>
+                          <span className="user-info-team">{m.team_name}</span>
+                        </div>
+                      </div>
+                    </td>
+                    {m.weekly_activities.map((w) => (
+                      <td key={w.week_number}>
+                        <div className="weekly-pill-group">
+                          <span className="weekly-pill" title="Cuộc gọi">Gọi: {w.calls}</span>
+                          <span className="weekly-pill" title="Cuộc gặp">Gặp: {w.meetings}</span>
+                          <span className="weekly-pill" title="Báo giá">Báo giá: {w.quotes_sent}</span>
+                          <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#0f172a' }}>
+                            = {w.total_activities}
+                          </span>
+                        </div>
+                      </td>
+                    ))}
+                    <td>
+                      <strong style={{ color: '#2563eb', fontSize: '1rem' }}>
+                        {m.total_activities}
+                      </strong>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -347,32 +356,40 @@ export default function TeamProductivityReportPage() {
               </tr>
             </thead>
             <tbody>
-              {leadSlas.map((lead) => (
-                <tr key={lead.id}>
-                  <td><strong>{lead.lead_name}</strong></td>
-                  <td>{lead.company}</td>
-                  <td>{lead.assigned_to_name}</td>
-                  <td>{new Date(lead.created_at).toLocaleString('vi-VN')}</td>
-                  <td>
-                    {lead.first_responded_at
-                      ? new Date(lead.first_responded_at).toLocaleString('vi-VN')
-                      : 'Chưa phản hồi'}
-                  </td>
-                  <td>
-                    {lead.actual_duration_hours !== undefined
-                      ? `${lead.actual_duration_hours} giờ`
-                      : 'N/A'}
-                  </td>
-                  <td>&lt; {lead.sla_limit_hours} giờ</td>
-                  <td>
-                    {lead.is_within_sla ? (
-                      <span className="badge-sla good">Trong hạn SLA</span>
-                    ) : (
-                      <span className="badge-sla danger">Quá hạn SLA</span>
-                    )}
+              {leadSlas.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '32px 16px', color: '#64748b' }}>
+                    Chưa có dữ liệu phản hồi lead
                   </td>
                 </tr>
-              ))}
+              ) : (
+                leadSlas.map((lead) => (
+                  <tr key={lead.id}>
+                    <td><strong>{lead.lead_name}</strong></td>
+                    <td>{lead.company}</td>
+                    <td>{lead.assigned_to_name}</td>
+                    <td>{new Date(lead.created_at).toLocaleString('vi-VN')}</td>
+                    <td>
+                      {lead.first_responded_at
+                        ? new Date(lead.first_responded_at).toLocaleString('vi-VN')
+                        : 'Chưa phản hồi'}
+                    </td>
+                    <td>
+                      {lead.actual_duration_hours !== undefined
+                        ? `${lead.actual_duration_hours} giờ`
+                        : 'N/A'}
+                    </td>
+                    <td>&lt; {lead.sla_limit_hours} giờ</td>
+                    <td>
+                      {lead.is_within_sla ? (
+                        <span className="badge-sla good">Trong hạn SLA</span>
+                      ) : (
+                        <span className="badge-sla danger">Quá hạn SLA</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

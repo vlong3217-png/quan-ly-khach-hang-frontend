@@ -1,82 +1,17 @@
 import type { Region, DepartmentNode } from '../types/organization.ts'
 
-const STORAGE_REGIONS_KEY = 'crm_regions_data'
-const STORAGE_DEPT_KEY = 'crm_organization_tree_data'
+const STORAGE_REGIONS_KEY = 'crm_regions_data_v2'
+const STORAGE_DEPT_KEY = 'crm_organization_tree_data_v2'
 
-const INITIAL_REGIONS: Region[] = [
-  { id: 'reg-north', code: 'KV-MB', name: 'Khu vực Miền Bắc', description: 'Hà Nội và các tỉnh phía Bắc' },
-  { id: 'reg-central', code: 'KV-MT', name: 'Khu vực Miền Trung', description: 'Đà Nẵng, Huế, Quảng Nam...' },
-  { id: 'reg-south', code: 'KV-MN', name: 'Khu vực Miền Nam', description: 'TP. Hồ Chí Minh, Bình Dương, Đồng Nai...' },
-]
+const INITIAL_REGIONS: Region[] = []
 
-const INITIAL_DEPARTMENTS: DepartmentNode[] = [
-  {
-    id: 'dept-root',
-    name: 'Khối Kinh Doanh Toàn Quốc',
-    code: 'KHOI-KD',
-    parent_id: null,
-    leader_id: 1,
-    leader_name: 'Nguyễn Văn An (Giám đốc kinh doanh)',
-    region_id: 'reg-north',
-    region_name: 'Khu vực Miền Bắc',
-    members: [
-      { id: 1, name: 'Nguyễn Văn An', email: 'admin@company.com', role: 'ADMIN' },
-    ],
-    children: [
-      {
-        id: 'dept-north',
-        name: 'Phòng Kinh Doanh Miền Bắc',
-        code: 'PKD-MB',
-        parent_id: 'dept-root',
-        leader_id: 2,
-        leader_name: 'Trần Thị Bình (Trưởng phòng)',
-        region_id: 'reg-north',
-        region_name: 'Khu vực Miền Bắc',
-        members: [
-          { id: 2, name: 'Trần Thị Bình', email: 'binh.tran@company.com', role: 'MANAGER' },
-          { id: 3, name: 'Lê Hoàng Cường', email: 'cuong.le@company.com', role: 'STAFF' },
-          { id: 5, name: 'Hoàng Thị Em', email: 'em.hoang@company.com', role: 'STAFF' },
-        ],
-        children: [
-          {
-            id: 'team-enterprise-mb',
-            name: 'Đội Khách Hàng Doanh Nghiệp (B2B)',
-            code: 'DKD-DN-MB',
-            parent_id: 'dept-north',
-            leader_id: 3,
-            leader_name: 'Lê Hoàng Cường (Trưởng nhóm)',
-            region_id: 'reg-north',
-            region_name: 'Khu vực Miền Bắc',
-            members: [
-              { id: 3, name: 'Lê Hoàng Cường', email: 'cuong.le@company.com', role: 'STAFF' },
-              { id: 5, name: 'Hoàng Thị Em', email: 'em.hoang@company.com', role: 'STAFF' },
-            ],
-            children: [],
-          },
-        ],
-      },
-      {
-        id: 'dept-south',
-        name: 'Phòng Kinh Doanh Miền Nam',
-        code: 'PKD-MN',
-        parent_id: 'dept-root',
-        leader_id: 6,
-        leader_name: 'Võ Đức Phúc (Trưởng phòng)',
-        region_id: 'reg-south',
-        region_name: 'Khu vực Miền Nam',
-        members: [
-          { id: 6, name: 'Võ Đức Phúc', email: 'phuc.vo@company.com', role: 'MANAGER' },
-          { id: 7, name: 'Đặng Thùy Giang', email: 'giang.dang@company.com', role: 'STAFF' },
-          { id: 8, name: 'Bùi Quốc Hùng', email: 'hung.bui@company.com', role: 'STAFF' },
-        ],
-        children: [],
-      },
-    ],
-  },
-]
+const INITIAL_DEPARTMENTS: DepartmentNode[] = []
 
 export const organizationService = {
   getRegions(): Region[] {
+    try {
+      localStorage.removeItem('crm_regions_data')
+    } catch {}
     try {
       const raw = localStorage.getItem(STORAGE_REGIONS_KEY)
       if (raw) return JSON.parse(raw)
@@ -94,6 +29,9 @@ export const organizationService = {
   },
 
   getDepartmentTree(): DepartmentNode[] {
+    try {
+      localStorage.removeItem('crm_organization_tree_data')
+    } catch {}
     try {
       const raw = localStorage.getItem(STORAGE_DEPT_KEY)
       if (raw) return JSON.parse(raw)

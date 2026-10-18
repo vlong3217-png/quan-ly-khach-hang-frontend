@@ -25,11 +25,11 @@ export default function SalesQuotasPage() {
   // Edit Modal Form State
   const [editingQuotaId, setEditingQuotaId] = useState<string | null>(null)
   const [formTeamId, setFormTeamId] = useState<number>(1)
-  const [formTeamName, setFormTeamName] = useState<string>('Đội Kinh Doanh 1')
+  const [formTeamName, setFormTeamName] = useState<string>('')
   const [formPeriodType, setFormPeriodType] = useState<QuotaPeriodType>('MONTH')
   const [formPeriodCode, setFormPeriodCode] = useState<string>('2026-10')
   const [formPeriodLabel, setFormPeriodLabel] = useState<string>('Tháng 10/2026')
-  const [formTargetAmount, setFormTargetAmount] = useState<number>(1500000000)
+  const [formTargetAmount, setFormTargetAmount] = useState<number>(0)
   const [formMembers, setFormMembers] = useState<MemberQuota[]>([])
   const [formIsLocked, setFormIsLocked] = useState<boolean>(false)
   const [auditReason, setAuditReason] = useState<string>('')
@@ -83,7 +83,7 @@ export default function SalesQuotasPage() {
   const handleOpenCreate = () => {
     setEditingQuotaId(null)
     setFormTeamId(1)
-    setFormTeamName('Đội Kinh Doanh 1')
+    setFormTeamName('')
     setFormPeriodType(periodType)
     setFormPeriodCode(selectedPeriodCode)
     setFormPeriodLabel(
@@ -93,12 +93,8 @@ export default function SalesQuotasPage() {
         ? 'Quý 4/2026'
         : selectedPeriodCode
     )
-    setFormTargetAmount(1500000000)
-    setFormMembers([
-      { user_id: 1, user_name: 'Nguyễn Văn A', role: 'USER', target_amount: 600000000, achieved_amount: 0 },
-      { user_id: 2, user_name: 'Trần Thị B', role: 'USER', target_amount: 500000000, achieved_amount: 0 },
-      { user_id: 3, user_name: 'Lê Văn C', role: 'USER', target_amount: 400000000, achieved_amount: 0 },
-    ])
+    setFormTargetAmount(0)
+    setFormMembers([])
     setFormIsLocked(false)
     setAuditReason('')
     setIsEditModalOpen(true)
