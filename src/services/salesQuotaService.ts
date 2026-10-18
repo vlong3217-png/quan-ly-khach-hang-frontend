@@ -148,21 +148,7 @@ const INITIAL_QUOTAS: TeamQuota[] = [
   },
 ]
 
-const INITIAL_LOGS: QuotaAuditLog[] = [
-  {
-    id: 'log-quota-1',
-    team_quota_id: 'quota-2026-09-t1',
-    team_name: 'Đội Kinh Doanh 1',
-    period_code: '2026-09',
-    modified_by_id: 99,
-    modified_by_name: 'Giám đốc kinh doanh (Director)',
-    modified_at: '2026-10-02T09:15:00.000Z',
-    reason: 'Điều chỉnh hạn mức bổ sung do dự án Tổng Cty Hàng Hải hoàn tất ký nghiệm thu bổ sung cuối tháng 9',
-    old_target: 1300000000,
-    new_target: 1400000000,
-    details: 'Tăng chỉ tiêu nhóm từ 1.300.000.000 ₫ lên 1.400.000.000 ₫ và cập nhật chỉ tiêu thành viên Nguyễn Văn A (+100tr).',
-  },
-]
+const INITIAL_LOGS: QuotaAuditLog[] = []
 
 class SalesQuotaService {
   private quotas: TeamQuota[]

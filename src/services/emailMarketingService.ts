@@ -76,57 +76,7 @@ Trân trọng,
   },
 ]
 
-const INITIAL_QUEUE: EmailQueueItem[] = [
-  {
-    id: 'mail-q-101',
-    template_id: 'tmpl-01',
-    template_name: 'Giới thiệu giải pháp CRM & Ưu đãi Q4',
-    customer_id: 'cust-1',
-    customer_name: 'Tập đoàn Công nghệ FPT',
-    contact_name: 'Nguyễn Văn Minh',
-    recipient_email: 'minh.nv@fpt.com.vn',
-    subject: 'Kính gửi Nguyễn Văn Minh - Giải pháp chuyển đổi số bán hàng từ Nguyễn Văn A',
-    body: 'Kính gửi Anh/Chị Nguyễn Văn Minh, Em là Nguyễn Văn A phụ trách tư vấn...',
-    assigned_rep: 'Nguyễn Văn A',
-    status: 'SENT',
-    queued_at: new Date(Date.now() - 3600000 * 5).toISOString(),
-    sent_at: new Date(Date.now() - 3600000 * 5 + 1200).toISOString(),
-    retry_count: 0,
-  },
-  {
-    id: 'mail-q-102',
-    template_id: 'tmpl-02',
-    template_name: 'Thư chăm sóc & Lắng nghe phản hồi sau Báo giá',
-    customer_id: 'cust-2',
-    customer_name: 'Công ty Cổ phần Thép Hoa Sen',
-    contact_name: 'Trần Thị Thu Trang',
-    recipient_email: 'trang.ttt@hoasengroup.vn',
-    subject: 'Trao đổi thêm về phương án báo giá cho Công ty Cổ phần Thép Hoa Sen',
-    body: 'Chào Anh/Chị Trần Thị Thu Trang, Sau khi gửi bảng báo giá chi tiết...',
-    assigned_rep: 'Lê Văn C',
-    status: 'FAILED',
-    queued_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-    failed_at: new Date(Date.now() - 3600000 * 2 + 1500).toISOString(),
-    error_message: 'Máy chủ thư nhận phản hồi lỗi kết nối tạm thời (554 Transaction Failed: Mailbox busy)',
-    retry_count: 0,
-  },
-  {
-    id: 'mail-q-103',
-    template_id: 'tmpl-03',
-    template_name: 'Thư cảm ơn & Kích hoạt dịch vụ Hợp đồng',
-    customer_id: 'cust-3',
-    customer_name: 'Tổng Công ty Bưu chính Viettel',
-    contact_name: 'Hoàng Quốc Việt',
-    recipient_email: 'viet.hq@viettelpost.com.vn',
-    subject: 'Chào mừng Tổng Công ty Bưu chính Viettel chính thức gia nhập hệ sinh thái dịch vụ',
-    body: 'Kính gửi Quý công ty Tổng Công ty Bưu chính Viettel và Anh/Chị Hoàng Quốc Việt...',
-    assigned_rep: 'Nguyễn Văn A',
-    status: 'SENT',
-    queued_at: new Date(Date.now() - 3600000 * 24).toISOString(),
-    sent_at: new Date(Date.now() - 3600000 * 24 + 1100).toISOString(),
-    retry_count: 0,
-  },
-]
+const INITIAL_QUEUE: EmailQueueItem[] = []
 
 class EmailMarketingService {
   private templates: EmailTemplate[]

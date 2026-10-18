@@ -17,128 +17,7 @@ import { normalizePaginatedResponse } from '../types/pagination.ts'
 
 const STORAGE_KEY = 'crm_enterprise_customers_data'
 
-const INITIAL_CUSTOMERS: CustomerEnterprise[] = [
-  {
-    id: 'cust-001',
-    code: 'KH-001',
-    name: 'Công ty Cổ phần Công Nghệ Alpha',
-    tax_code: '0102345678',
-    industry: 'Công nghệ thông tin & Viễn thông',
-    company_size: '50 - 200 nhân sự (Quy mô vừa)',
-    website: 'https://alphatech.vn',
-    address: 'Tầng 12, Tòa nhà Keangnam Landmark 72, Nam Từ Liêm, Hà Nội',
-    phone: '024 3768 9999',
-    email: 'contact@alphatech.vn',
-    owner_id: 1,
-    owner_name: 'Nguyễn Văn An',
-    team_id: 1,
-    team_name: 'Đội Kinh Doanh 1',
-    status: 'ACTIVE_CUSTOMER',
-    description: 'Khách hàng chiến lược đang triển khai phần mềm CRM gói Pro.',
-    created_at: '2025-01-10T08:30:00Z',
-    updated_at: '2025-02-15T09:00:00Z',
-  },
-  {
-    id: 'cust-002',
-    code: 'KH-002',
-    name: 'Tập đoàn Xây dựng & Bất động sản Hòa Bình',
-    tax_code: '0301122334',
-    industry: 'Bất động sản & Xây dựng',
-    company_size: 'Trên 200 nhân sự (Tập đoàn lớn)',
-    website: 'https://hoabinhgroup.vn',
-    address: 'Số 123 Nguyễn Thị Minh Khai, Quận 1, TP. Hồ Chí Minh',
-    phone: '028 3822 4567',
-    email: 'info@hoabinhgroup.vn',
-    owner_id: 2,
-    owner_name: 'Trần Thị Bình',
-    team_id: 1,
-    team_name: 'Đội Kinh Doanh 1',
-    status: 'IN_TRANSACTION',
-    description: 'Đang đàm phán hợp đồng chuyển đổi số quản lý công trình đợt 2.',
-    created_at: '2025-01-15T10:00:00Z',
-    updated_at: '2025-03-01T14:20:00Z',
-  },
-  {
-    id: 'cust-003',
-    code: 'KH-003',
-    name: 'Hệ thống Bán lẻ Toàn Cầu Mekong Mart',
-    tax_code: '0309988776',
-    industry: 'Hàng tiêu dùng nhanh & Bán lẻ',
-    company_size: 'Trên 200 nhân sự (Tập đoàn lớn)',
-    website: 'https://mekongretail.com',
-    address: 'Lô C2, Khu công nghiệp Tân Bình, Tây Thạnh, Tân Phú, TP. HCM',
-    phone: '028 3948 1122',
-    email: 'corporate@mekongretail.com',
-    owner_id: 3,
-    owner_name: 'Lê Hoàng Cường',
-    team_id: 2,
-    team_name: 'Đội Kinh Doanh 2',
-    status: 'POTENTIAL',
-    description: 'Mới nhận được yêu cầu demo giải pháp tích hợp điểm bán lẻ.',
-    created_at: '2025-02-05T09:15:00Z',
-    updated_at: '2025-02-05T09:15:00Z',
-  },
-  {
-    id: 'cust-004',
-    code: 'KH-004',
-    name: 'Tổng Công ty Logistics Sao Vàng Toàn Cầu',
-    tax_code: '0200456789',
-    industry: 'Sản xuất & Chế tạo công nghiệp',
-    company_size: '50 - 200 nhân sự (Quy mô vừa)',
-    website: 'https://goldenstarlogistics.com',
-    address: 'Khu công nghiệp Đình Vũ, Đông Hải 2, Hải An, Hải Phòng',
-    phone: '0225 3855 666',
-    email: 'booking@goldenstarlogistics.com',
-    owner_id: 4,
-    owner_name: 'Phạm Minh Duy',
-    team_id: 2,
-    team_name: 'Đội Kinh Doanh 2',
-    status: 'STOPPED',
-    description: 'Tạm dừng do khách chuyển hướng tái cơ cấu nguồn vốn.',
-    created_at: '2025-01-20T11:00:00Z',
-    updated_at: '2025-03-10T16:00:00Z',
-  },
-  {
-    id: 'cust-005',
-    code: 'KH-005',
-    name: 'Công ty Cổ phần Nông nghiệp Xanh Việt',
-    tax_code: '0400876543',
-    industry: 'Hàng tiêu dùng nhanh & Bán lẻ',
-    company_size: '10 - 50 nhân sự (Doanh nghiệp nhỏ)',
-    website: 'https://greenvietagri.vn',
-    address: 'Km 15, Quốc lộ 1A, Hòa Châu, Hòa Vang, TP. Đà Nẵng',
-    phone: '0236 3678 123',
-    email: 'agri@greenviet.vn',
-    owner_id: 1,
-    owner_name: 'Nguyễn Văn An',
-    team_id: 1,
-    team_name: 'Đội Kinh Doanh 1',
-    status: 'IN_TRANSACTION',
-    description: 'Đã báo giá gói CRM Cloud và chuẩn bị ký kết hợp đồng.',
-    created_at: '2025-02-18T14:45:00Z',
-    updated_at: '2025-03-12T10:30:00Z',
-  },
-  {
-    id: 'cust-006',
-    code: 'KH-006',
-    name: 'Công ty Dược phẩm Quốc tế Hải Đăng',
-    tax_code: '0109876543',
-    industry: 'Tài chính - Ngân hàng - Bảo hiểm',
-    company_size: '50 - 200 nhân sự (Quy mô vừa)',
-    website: 'https://haidangpharma.vn',
-    address: 'Số 45 Hoàng Cầu, Đống Đa, Hà Nội',
-    phone: '024 3856 2244',
-    email: 'support@haidangpharma.vn',
-    owner_id: 2,
-    owner_name: 'Trần Thị Bình',
-    team_id: 1,
-    team_name: 'Đội Kinh Doanh 1',
-    status: 'ACTIVE_CUSTOMER',
-    description: 'Khách hàng thân thiết sử dụng dịch vụ SMS Brandname hàng tháng.',
-    created_at: '2025-01-25T08:00:00Z',
-    updated_at: '2025-03-15T11:00:00Z',
-  },
-]
+const INITIAL_CUSTOMERS: CustomerEnterprise[] = []
 
 function getStoredCustomers(): CustomerEnterprise[] {
   try {
@@ -155,78 +34,7 @@ function saveStoredCustomers(customers: CustomerEnterprise[]): void {
 
 const STORAGE_CONTACTS_KEY = 'crm_enterprise_contacts_data'
 
-const INITIAL_CONTACTS: CustomerContact[] = [
-  {
-    id: 'cont-001',
-    customer_id: 'cust-001',
-    customer_name: 'Công ty Cổ phần Công Nghệ Alpha',
-    full_name: 'Trần Văn Hải',
-    title: 'Giám đốc Công nghệ (CTO)',
-    email: 'hai.tran@alphatech.vn',
-    phone: '0912 345 678',
-    buying_role: 'DECISION_MAKER',
-    is_primary: true,
-    notes: 'Quyết định trực tiếp về kiến trúc và phê duyệt hợp đồng kỹ thuật.',
-    created_at: '2025-01-10T09:00:00Z',
-    updated_at: '2025-01-10T09:00:00Z',
-  },
-  {
-    id: 'cont-002',
-    customer_id: 'cust-001',
-    customer_name: 'Công ty Cổ phần Công Nghệ Alpha',
-    full_name: 'Nguyễn Thị Hương',
-    title: 'Trưởng phòng Vận hành Sales',
-    email: 'huong.nguyen@alphatech.vn',
-    phone: '0988 123 456',
-    buying_role: 'END_USER',
-    is_primary: false,
-    notes: 'Người quản lý đội ngũ 30 nhân viên sử dụng hàng ngày.',
-    created_at: '2025-01-11T10:00:00Z',
-    updated_at: '2025-01-11T10:00:00Z',
-  },
-  {
-    id: 'cont-003',
-    customer_id: 'cust-002',
-    customer_name: 'Tập đoàn Xây dựng & Bất động sản Hòa Bình',
-    full_name: 'Đặng Quốc Huy',
-    title: 'Phó Tổng Giám Đốc Đầu Tư',
-    email: 'huy.dang@hoabinhgroup.vn',
-    phone: '0903 888 999',
-    buying_role: 'DECISION_MAKER',
-    is_primary: true,
-    notes: 'Người ký hợp đồng chính và phê duyệt hạn mức ngân sách.',
-    created_at: '2025-01-16T11:00:00Z',
-    updated_at: '2025-01-16T11:00:00Z',
-  },
-  {
-    id: 'cont-004',
-    customer_id: 'cust-002',
-    customer_name: 'Tập đoàn Xây dựng & Bất động sản Hòa Bình',
-    full_name: 'Vũ Đức Thịnh',
-    title: 'Trưởng ban Kiểm soát Tài chính',
-    email: 'thinh.vu@hoabinhgroup.vn',
-    phone: '0937 222 333',
-    buying_role: 'BLOCKER',
-    is_primary: false,
-    notes: 'Rất khắt khe về điều khoản thanh toán trả chậm và bảo hành.',
-    created_at: '2025-01-17T14:00:00Z',
-    updated_at: '2025-01-17T14:00:00Z',
-  },
-  {
-    id: 'cont-005',
-    customer_id: 'cust-003',
-    customer_name: 'Hệ thống Bán lẻ Toàn Cầu Mekong Mart',
-    full_name: 'Lê Thu Trang',
-    title: 'Giám đốc Mua hàng & Cung ứng',
-    email: 'trang.le@mekongretail.com',
-    phone: '0945 666 777',
-    buying_role: 'INFLUENCER',
-    is_primary: true,
-    notes: 'Ảnh hưởng lớn đến hội đồng đánh giá thầu nhà cung cấp.',
-    created_at: '2025-02-06T15:00:00Z',
-    updated_at: '2025-02-06T15:00:00Z',
-  },
-]
+const INITIAL_CONTACTS: CustomerContact[] = []
 
 function getStoredContacts(): CustomerContact[] {
   try {
@@ -242,48 +50,7 @@ function saveStoredContacts(contacts: CustomerContact[]): void {
 }
 
 const STORAGE_DEALS_KEY = 'crm_enterprise_deals_data'
-const INITIAL_DEALS: CustomerDeal[] = [
-  {
-    id: 'deal-001',
-    customer_id: 'cust-001',
-    title: 'Hợp đồng Bản quyền CRM Enterprise 150 User',
-    value: 120000000,
-    stage: 'WON',
-    status: 'CLOSED_WON',
-    expected_close_date: '2025-01-20',
-    created_at: '2025-01-10T10:00:00Z',
-  },
-  {
-    id: 'deal-002',
-    customer_id: 'cust-001',
-    title: 'Gói Dịch vụ Tùy biến Báo cáo BI theo yêu cầu',
-    value: 45000000,
-    stage: 'NEGOTIATION',
-    status: 'OPEN',
-    expected_close_date: '2025-04-15',
-    created_at: '2025-02-01T14:30:00Z',
-  },
-  {
-    id: 'deal-003',
-    customer_id: 'cust-002',
-    title: 'Gói Chuyển đổi số quản lý công trình đợt 2',
-    value: 280000000,
-    stage: 'PROPOSAL',
-    status: 'OPEN',
-    expected_close_date: '2025-05-10',
-    created_at: '2025-01-18T09:00:00Z',
-  },
-  {
-    id: 'deal-004',
-    customer_id: 'cust-002',
-    title: 'Hợp đồng bảo trì hạ tầng hệ thống năm 2024',
-    value: 60000000,
-    stage: 'WON',
-    status: 'CLOSED_WON',
-    expected_close_date: '2024-12-15',
-    created_at: '2024-11-20T08:00:00Z',
-  },
-]
+const INITIAL_DEALS: CustomerDeal[] = []
 
 function getStoredDeals(): CustomerDeal[] {
   try {
@@ -299,35 +66,7 @@ function saveStoredDeals(deals: CustomerDeal[]): void {
 }
 
 const STORAGE_ACTIVITIES_KEY = 'crm_enterprise_activities_data'
-const INITIAL_ACTIVITIES: CustomerActivity[] = [
-  {
-    id: 'act-001',
-    customer_id: 'cust-001',
-    type: 'CALL',
-    title: 'Gọi điện xác nhận lịch triển khai đợt 2',
-    description: 'Trao đổi với CTO Trần Văn Hải về tiến độ tích hợp cơ sở dữ liệu.',
-    performed_by_name: 'Nguyễn Văn An',
-    performed_at: '2025-02-15T09:30:00Z',
-  },
-  {
-    id: 'act-002',
-    customer_id: 'cust-001',
-    type: 'MEETING',
-    title: 'Họp nghiệm thu giai đoạn 1 tại trụ sở khách hàng',
-    description: 'Ký biên bản bàn giao tính năng phân quyền dữ liệu và tài khoản.',
-    performed_by_name: 'Nguyễn Văn An',
-    performed_at: '2025-01-28T14:00:00Z',
-  },
-  {
-    id: 'act-003',
-    customer_id: 'cust-002',
-    type: 'DEMO',
-    title: 'Demo giải pháp Mobile App cho kỹ sư công trường',
-    description: 'Trình bày tính năng chấm công và nhập nhật ký thi công offline.',
-    performed_by_name: 'Trần Thị Bình',
-    performed_at: '2025-02-20T10:00:00Z',
-  },
-]
+const INITIAL_ACTIVITIES: CustomerActivity[] = []
 
 function getStoredActivities(): CustomerActivity[] {
   try {
@@ -343,26 +82,7 @@ function saveStoredActivities(activities: CustomerActivity[]): void {
 }
 
 const STORAGE_ATTACHMENTS_KEY = 'crm_enterprise_attachments_data'
-const INITIAL_ATTACHMENTS: CustomerAttachment[] = [
-  {
-    id: 'att-001',
-    customer_id: 'cust-001',
-    file_name: 'Hop_dong_kinh_te_CRM_Alpha_2025.pdf',
-    file_size: '2.4 MB',
-    file_type: 'PDF',
-    uploaded_by: 'Nguyễn Văn An',
-    uploaded_at: '2025-01-20T11:00:00Z',
-  },
-  {
-    id: 'att-002',
-    customer_id: 'cust-001',
-    file_name: 'Ban_dac_ta_yeu_cau_ky_thuat_v2.docx',
-    file_size: '850 KB',
-    file_type: 'DOCX',
-    uploaded_by: 'Trần Văn Hải (Khách)',
-    uploaded_at: '2025-01-15T09:00:00Z',
-  },
-]
+const INITIAL_ATTACHMENTS: CustomerAttachment[] = []
 
 function getStoredAttachments(): CustomerAttachment[] {
   try {
@@ -378,47 +98,7 @@ function saveStoredAttachments(attachments: CustomerAttachment[]): void {
 }
 
 const STORAGE_TICKETS_KEY = 'crm_enterprise_support_tickets_data'
-const INITIAL_TICKETS: SupportTicket[] = [
-  {
-    id: 'tick-001',
-    customer_id: 'cust-001',
-    customer_name: 'Công ty Cổ phần Công Nghệ Alpha',
-    title: 'Lỗi đồng bộ danh bạ từ máy chấm công vân tay',
-    priority: 'HIGH',
-    status: 'IN_PROGRESS',
-    assignee_name: 'Lê Hoàng Cường',
-    assignee_id: 3,
-    description: 'Dữ liệu ca đêm bị trễ 2 tiếng sau khi mất kết nối mạng cục bộ.',
-    created_at: '2025-03-01T08:30:00Z',
-    updated_at: '2025-03-01T10:00:00Z',
-  },
-  {
-    id: 'tick-002',
-    customer_id: 'cust-004',
-    customer_name: 'Tổng Công ty Logistics Sao Vàng Toàn Cầu',
-    title: 'Yêu cầu hỗ trợ xuất hóa đơn điện tử điều chỉnh',
-    priority: 'URGENT',
-    status: 'NEW',
-    assignee_name: 'Hoàng Thị Em',
-    assignee_id: 5,
-    description: 'Hóa đơn tháng 1 bị sai thông tin địa chỉ chi nhánh Hải Phòng.',
-    created_at: '2025-03-05T09:00:00Z',
-    updated_at: '2025-03-05T09:00:00Z',
-  },
-  {
-    id: 'tick-003',
-    customer_id: 'cust-004',
-    customer_name: 'Tổng Công ty Logistics Sao Vàng Toàn Cầu',
-    title: 'Tài khoản nhân viên kho không đăng nhập được mobile app',
-    priority: 'HIGH',
-    status: 'NEW',
-    assignee_name: 'Lê Hoàng Cường',
-    assignee_id: 3,
-    description: 'Báo lỗi phiên hết hạn liên tục khi quét mã barcode.',
-    created_at: '2025-03-06T14:00:00Z',
-    updated_at: '2025-03-06T14:00:00Z',
-  },
-]
+const INITIAL_TICKETS: SupportTicket[] = []
 
 function getStoredTickets(): SupportTicket[] {
   try {
@@ -434,15 +114,7 @@ function saveStoredTickets(tickets: SupportTicket[]): void {
 }
 
 const STORAGE_RELATIONS_KEY = 'crm_enterprise_parent_child_relations'
-const INITIAL_RELATIONS: ParentChildRelation[] = [
-  {
-    parent_id: 'cust-002',
-    child_id: 'cust-001',
-    parent_name: 'Tập đoàn Xây dựng & Bất động sản Hòa Bình',
-    child_name: 'Công ty Cổ phần Công Nghệ Alpha',
-    established_at: '2025-01-01T00:00:00Z',
-  },
-]
+const INITIAL_RELATIONS: ParentChildRelation[] = []
 
 function getStoredRelations(): ParentChildRelation[] {
   try {
