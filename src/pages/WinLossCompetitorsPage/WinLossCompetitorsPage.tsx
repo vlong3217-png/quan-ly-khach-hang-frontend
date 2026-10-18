@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import Pagination from '../../components/ui/Pagination.tsx'
 import { winLossService } from '../../services/winLossService.ts'
 import type { WinLossReason, WinLossType, Competitor } from '../../types/winLossCompetitor.ts'
 import './WinLossCompetitorsPage.css'
@@ -10,6 +11,10 @@ export default function WinLossCompetitorsPage() {
   const [reasons, setReasons] = useState<WinLossReason[]>(() => winLossService.getReasons())
   const [competitors, setCompetitors] = useState<Competitor[]>(() => winLossService.getCompetitors())
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [reasonPage, setReasonPage] = useState(1)
+  const [reasonPageSize, setReasonPageSize] = useState(8)
+  const [compPage, setCompPage] = useState(1)
+  const [compPageSize, setCompPageSize] = useState(6)
 
   // Modal Lý do
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false)
@@ -33,6 +38,11 @@ export default function WinLossCompetitorsPage() {
     price_segment: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH',
     is_active: true,
   })
+
+  useEffect(() => {
+    setReasonPage(1)
+    setCompPage(1)
+  }, [activeTab])
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type })
@@ -154,6 +164,18 @@ export default function WinLossCompetitorsPage() {
     (r) => r.type === (activeTab === 'WIN' ? 'WIN_REASON' : 'LOSS_REASON')
   )
 
+  const reasonTotalPages = Math.max(1, Math.ceil(currentReasons.length / reasonPageSize))
+  const pagedReasons = useMemo(() => {
+    const start = (reasonPage - 1) * reasonPageSize
+    return currentReasons.slice(start, start + reasonPageSize)
+  }, [currentReasons, reasonPage, reasonPageSize])
+
+  const compTotalPages = Math.max(1, Math.ceil(competitors.length / compPageSize))
+  const pagedCompetitors = useMemo(() => {
+    const start = (compPage - 1) * compPageSize
+    return competitors.slice(start, start + compPageSize)
+  }, [competitors, compPage, compPageSize])
+
   return (
     <div className="winloss-container">
       {toast && (
@@ -217,9 +239,9 @@ export default function WinLossCompetitorsPage() {
               </tr>
             </thead>
             <tbody>
-              {currentReasons.map((r, index) => (
+              {pagedReasons.map((r, index) => (
                 <tr key={r.id}>
-                  <td style={{ textAlign: 'center', fontWeight: 600, color: '#64748b' }}>{index + 1}</td>
+                  <td style={{ textAlign: 'center', fontWeight: 600, color: '#64748b' }}>{(reasonPage - 1) * reasonPageSize + index + 1}</td>
                   <td><strong>{r.name}</strong></td>
                   <td className="desc-cell">{r.description || '—'}</td>
                   <td>
@@ -247,10 +269,27 @@ export default function WinLossCompetitorsPage() {
               ))}
             </tbody>
           </table>
+
+          {currentReasons.length > 0 && (
+            <Pagination
+              currentPage={reasonPage}
+              totalPages={reasonTotalPages}
+              totalItems={currentReasons.length}
+              pageSize={reasonPageSize}
+              onPageChange={setReasonPage}
+              onPageSizeChange={(newSize) => {
+                setReasonPageSize(newSize)
+                setReasonPage(1)
+              }}
+              pageSizeOptions={[5, 8, 15]}
+              itemName="lý do"
+            />
+          )}
         </div>
       ) : (
-        <div className="competitors-grid">
-          {competitors.map((c) => (
+        <div>
+          <div className="competitors-grid">
+          {pagedCompetitors.map((c) => (
             <div key={c.id} className="competitor-card">
               <div className="card-top">
                 <div>
@@ -297,6 +336,25 @@ export default function WinLossCompetitorsPage() {
               </div>
             </div>
           ))}
+        </div>
+
+        {competitors.length > 0 && (
+          <div style={{ marginTop: '16px' }}>
+            <Pagination
+              currentPage={compPage}
+              totalPages={compTotalPages}
+              totalItems={competitors.length}
+              pageSize={compPageSize}
+              onPageChange={setCompPage}
+              onPageSizeChange={(newSize) => {
+                setCompPageSize(newSize)
+                setCompPage(1)
+              }}
+              pageSizeOptions={[3, 6, 12]}
+              itemName="đối thủ"
+            />
+          </div>
+        )}
         </div>
       )}
 
