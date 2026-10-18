@@ -17,16 +17,15 @@ export default function ExecutiveDashboard() {
   }
 
   const [roleView, setRoleView] = useState<DashboardRoleView>(getInitialRoleView)
-  const [loadTimeMs, setLoadTimeMs] = useState<number>(115)
+  const [loadTimeMs, setLoadTimeMs] = useState<number>(45)
 
   // Measure load performance (< 2s AC requirement)
   useEffect(() => {
     const start = performance.now()
-    // Simulated micro-task loading
     const timer = setTimeout(() => {
       const elapsed = Math.round(performance.now() - start)
-      setLoadTimeMs(Math.max(45, elapsed))
-    }, 50)
+      setLoadTimeMs(Math.max(35, elapsed))
+    }, 30)
     return () => clearTimeout(timer)
   }, [roleView])
 
@@ -70,39 +69,38 @@ export default function ExecutiveDashboard() {
 
       {/* ─────────────────────────────────────────────────────────────
           1. GIAO DIỆN DÀNH CHO NHÂN VIÊN KINH DOANH (SALES REP)
-          AC: chỉ tiêu và tiến độ của mình, cơ hội đang mở, việc hôm nay, lead chưa liên hệ
           ───────────────────────────────────────────────────────────── */}
       {roleView === 'REP' && (
         <>
           {/* Top KPI Cards for Rep */}
           <div className="kpi-metrics-grid">
             <div className="kpi-card blue">
-              <span className="kpi-label">Chỉ tiêu tháng 10 của tôi</span>
-              <span className="kpi-value">600,000,000 ₫</span>
+              <span className="kpi-label">Chỉ tiêu tháng của tôi</span>
+              <span className="kpi-value">0 ₫</span>
               <span className="kpi-subtext">
-                Đã đạt: <strong>480,000,000 ₫ (80%)</strong>
+                Đã đạt: <strong>0 ₫ (0%)</strong>
               </span>
             </div>
 
             <div className="kpi-card green">
               <span className="kpi-label">Cơ hội đang mở (Open Deals)</span>
-              <span className="kpi-value">5 cơ hội</span>
+              <span className="kpi-value">0 cơ hội</span>
               <span className="kpi-subtext">
-                Tổng giá trị dự kiến: <strong>1.85 tỷ ₫</strong>
+                Tổng giá trị dự kiến: <strong>0 ₫</strong>
               </span>
             </div>
 
             <div className="kpi-card amber">
               <span className="kpi-label">Việc cần làm hôm nay</span>
-              <span className="kpi-value">3 công việc</span>
-              <span className="kpi-subtext">2 cuộc gọi & 1 lịch hẹn chốt báo giá</span>
+              <span className="kpi-value">0 công việc</span>
+              <span className="kpi-subtext">Chưa có lịch hẹn hay công việc đến hạn</span>
             </div>
 
             <div className="kpi-card purple">
               <span className="kpi-label">Lead chưa liên hệ (Cần gọi)</span>
-              <span className="kpi-value">4 tiềm năng</span>
-              <span className="kpi-subtext" style={{ color: '#ef4444', fontWeight: 600 }}>
-                Có 1 lead sắp hết hạn SLA 4h
+              <span className="kpi-value">0 tiềm năng</span>
+              <span className="kpi-subtext" style={{ color: '#10b981', fontWeight: 600 }}>
+                Không có lead trễ hạn SLA
               </span>
             </div>
           </div>
@@ -126,30 +124,17 @@ export default function ExecutiveDashboard() {
                 </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div className="task-item-row">
-                  <div>
-                    <div className="task-item-title">📞 Gọi điện chăm sóc sau báo giá - Cty Tân Phát</div>
-                    <div className="task-item-meta">Hạn: Hôm nay 10:30 • Mức ưu tiên: Cao</div>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>Chờ thực hiện</span>
-                </div>
-
-                <div className="task-item-row">
-                  <div>
-                    <div className="task-item-title">✉️ Gửi hợp đồng chính thức - Tập đoàn Hoa Sen</div>
-                    <div className="task-item-meta">Hạn: Hôm nay 14:00 • Mức ưu tiên: Khẩn cấp</div>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>Chờ thực hiện</span>
-                </div>
-
-                <div className="task-item-row">
-                  <div>
-                    <div className="task-item-title">🤝 Họp demo giải pháp trực tuyến - Beta Corp</div>
-                    <div className="task-item-meta">Hạn: Hôm nay 16:00 • Qua Google Meet</div>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>Chờ thực hiện</span>
-                </div>
+              <div style={{ textAlign: 'center', padding: '36px 16px', color: '#64748b' }}>
+                <span style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }}>📋</span>
+                <p style={{ margin: 0, fontSize: '0.875rem' }}>Chưa có công việc nào cần xử lý hôm nay.</p>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  style={{ marginTop: 12, fontSize: '0.8rem', padding: '6px 12px' }}
+                  onClick={() => navigate('/dashboard/calendar')}
+                >
+                  + Lập lịch hẹn mới
+                </button>
               </div>
             </div>
 
@@ -170,34 +155,17 @@ export default function ExecutiveDashboard() {
                 </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div className="task-item-row">
-                  <div>
-                    <div className="task-item-title">Trần Văn Long - Cty TNHH Viễn Thông Á Châu</div>
-                    <div className="task-item-meta">Nguồn: Web Form • SĐT: 0988 123 456</div>
-                  </div>
-                  <span className="lead-sla-badge">⏱ Còn 45 phút</span>
-                </div>
-
-                <div className="task-item-row">
-                  <div>
-                    <div className="task-item-title">Nguyễn Thị Hạnh - Nội thất Hòa An</div>
-                    <div className="task-item-meta">Nguồn: Facebook Ads • SĐT: 0912 345 678</div>
-                  </div>
-                  <span className="lead-sla-badge" style={{ background: '#fef3c7', color: '#b45309' }}>
-                    ⏱ Còn 2.5 giờ
-                  </span>
-                </div>
-
-                <div className="task-item-row">
-                  <div>
-                    <div className="task-item-title">Đặng Quốc Cường - Thiết bị Y tế Phương Đông</div>
-                    <div className="task-item-meta">Nguồn: Giới thiệu • SĐT: 0903 888 999</div>
-                  </div>
-                  <span className="lead-sla-badge" style={{ background: '#dcfce7', color: '#15803d' }}>
-                    ⏱ Còn 3.8 giờ
-                  </span>
-                </div>
+              <div style={{ textAlign: 'center', padding: '36px 16px', color: '#64748b' }}>
+                <span style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }}>✅</span>
+                <p style={{ margin: 0, fontSize: '0.875rem' }}>Toàn bộ lead đã được xử lý hoặc chưa có lead mới.</p>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{ marginTop: 12, fontSize: '0.8rem', padding: '6px 12px' }}
+                  onClick={() => navigate('/dashboard/lead-forms')}
+                >
+                  + Thu thập lead từ Form
+                </button>
               </div>
             </div>
           </div>
@@ -206,40 +174,39 @@ export default function ExecutiveDashboard() {
 
       {/* ─────────────────────────────────────────────────────────────
           2. GIAO DIỆN DÀNH CHO TRƯỞNG NHÓM (SALES MANAGER)
-          AC: Trưởng nhóm thấy thêm: xếp hạng thành viên, cơ hội đình trệ của nhóm, việc quá hạn của nhóm
           ───────────────────────────────────────────────────────────── */}
       {roleView === 'MANAGER' && (
         <>
           {/* Top KPI for Manager */}
           <div className="kpi-metrics-grid">
             <div className="kpi-card blue">
-              <span className="kpi-label">Chỉ tiêu Đội Kinh Doanh 1</span>
-              <span className="kpi-value">1,500,000,000 ₫</span>
+              <span className="kpi-label">Chỉ tiêu Đội Kinh Doanh</span>
+              <span className="kpi-value">0 ₫</span>
               <span className="kpi-subtext">
-                Đã đạt: <strong>1,150,000,000 ₫ (76.7%)</strong>
+                Đã đạt: <strong>0 ₫ (0%)</strong>
               </span>
             </div>
 
             <div className="kpi-card green">
               <span className="kpi-label">Số thành viên đang phụ trách</span>
-              <span className="kpi-value">3 nhân viên</span>
-              <span className="kpi-subtext">Tất cả đều đạt &gt; 60% chỉ tiêu</span>
+              <span className="kpi-value">0 nhân viên</span>
+              <span className="kpi-subtext">Chưa gắn nhân viên vào nhóm</span>
             </div>
 
             <div className="kpi-card amber">
               <span className="kpi-label">Cơ hội đình trệ (&gt; 7 ngày)</span>
-              <span className="kpi-value" style={{ color: '#d97706' }}>
-                2 cơ hội
+              <span className="kpi-value" style={{ color: '#10b981' }}>
+                0 cơ hội
               </span>
-              <span className="kpi-subtext">Cần đôn đốc nhân viên liên hệ</span>
+              <span className="kpi-subtext">Không có cơ hội bị đình trệ</span>
             </div>
 
             <div className="kpi-card purple">
               <span className="kpi-label">Việc quá hạn của nhóm</span>
-              <span className="kpi-value" style={{ color: '#dc2626' }}>
-                4 công việc
+              <span className="kpi-value" style={{ color: '#10b981' }}>
+                0 công việc
               </span>
-              <span className="kpi-subtext">Cần kiểm tra lý do chậm trễ</span>
+              <span className="kpi-subtext">Toàn bộ việc hoàn thành đúng hạn</span>
             </div>
           </div>
 
@@ -262,65 +229,10 @@ export default function ExecutiveDashboard() {
                 </button>
               </div>
 
-              <table className="leaderboard-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: 40 }}>#</th>
-                    <th>Thành viên</th>
-                    <th style={{ textAlign: 'right' }}>Doanh số đã chốt</th>
-                    <th style={{ textAlign: 'right' }}>Tiến độ chỉ tiêu</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <span className="rank-medal">🥇</span>
-                    </td>
-                    <td>
-                      <strong>Trần Thị B</strong>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Chuyên viên tư vấn</div>
-                    </td>
-                    <td style={{ textAlign: 'right', fontWeight: 700, color: '#15803d' }}>
-                      420,000,000 ₫
-                    </td>
-                    <td style={{ textAlign: 'right', fontWeight: 800, color: '#2563eb' }}>
-                      84%
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <span className="rank-medal">🥈</span>
-                    </td>
-                    <td>
-                      <strong>Nguyễn Văn A</strong>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Chuyên viên tư vấn</div>
-                    </td>
-                    <td style={{ textAlign: 'right', fontWeight: 700, color: '#15803d' }}>
-                      480,000,000 ₫
-                    </td>
-                    <td style={{ textAlign: 'right', fontWeight: 800, color: '#2563eb' }}>
-                      80%
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <span className="rank-medal">🥉</span>
-                    </td>
-                    <td>
-                      <strong>Lê Văn C</strong>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Chuyên viên tư vấn</div>
-                    </td>
-                    <td style={{ textAlign: 'right', fontWeight: 700, color: '#15803d' }}>
-                      250,000,000 ₫
-                    </td>
-                    <td style={{ textAlign: 'right', fontWeight: 800, color: '#2563eb' }}>
-                      62.5%
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div style={{ textAlign: 'center', padding: '36px 16px', color: '#64748b' }}>
+                <span style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }}>🏅</span>
+                <p style={{ margin: 0, fontSize: '0.875rem' }}>Chưa có số liệu phát sinh từ thành viên trong nhóm.</p>
+              </div>
             </div>
 
             {/* Panel: Cơ hội đình trệ & Việc quá hạn */}
@@ -332,36 +244,9 @@ export default function ExecutiveDashboard() {
                 </h3>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>
-                  CƠ HỘI BÁN HÀNG ĐÌNH TRỆ (&gt; 7 NGÀY):
-                </div>
-                <div className="task-item-row" style={{ borderLeft: '3px solid #d97706' }}>
-                  <div>
-                    <div className="task-item-title">Triển khai Cloud Server - Viettel Post</div>
-                    <div className="task-item-meta">Phụ trách: Lê Văn C • Giá trị: 380,000,000 ₫</div>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 700 }}>9 ngày chưa tương tác</span>
-                </div>
-
-                <div className="task-item-row" style={{ borderLeft: '3px solid #d97706' }}>
-                  <div>
-                    <div className="task-item-title">Nâng cấp phân hệ kế toán - Cty Xây Dựng Số 5</div>
-                    <div className="task-item-meta">Phụ trách: Nguyễn Văn A • Giá trị: 220,000,000 ₫</div>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 700 }}>11 ngày chưa tương tác</span>
-                </div>
-
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginTop: 6 }}>
-                  VIỆC QUÁ HẠN DEADLINE CỦA THÀNH VIÊN:
-                </div>
-                <div className="task-item-row" style={{ borderLeft: '3px solid #dc2626' }}>
-                  <div>
-                    <div className="task-item-title">Gửi bản thảo hợp đồng bảo trì cho DigiTech</div>
-                    <div className="task-item-meta">Thực hiện: Lê Văn C • Hạn chót: 2 ngày trước</div>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 700 }}>Trễ 2 ngày</span>
-                </div>
+              <div style={{ textAlign: 'center', padding: '36px 16px', color: '#64748b' }}>
+                <span style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }}>👍</span>
+                <p style={{ margin: 0, fontSize: '0.875rem' }}>Đội ngũ đang vận hành đúng tiến độ. Không có việc hoặc cơ hội nào quá hạn.</p>
               </div>
             </div>
           </div>
@@ -370,7 +255,6 @@ export default function ExecutiveDashboard() {
 
       {/* ─────────────────────────────────────────────────────────────
           3. GIAO DIỆN DÀNH CHO GIÁM ĐỐC KINH DOANH (SALES DIRECTOR)
-          AC: Giám đốc thấy toàn khối: dự báo so với chỉ tiêu, giá trị pipeline theo giai đoạn, doanh số đã chốt theo tháng
           ───────────────────────────────────────────────────────────── */}
       {roleView === 'DIRECTOR' && (
         <>
@@ -378,32 +262,32 @@ export default function ExecutiveDashboard() {
           <div className="kpi-metrics-grid">
             <div className="kpi-card blue">
               <span className="kpi-label">Tổng chỉ tiêu toàn khối</span>
-              <span className="kpi-value">12,000,000,000 ₫</span>
-              <span className="kpi-subtext">Kỳ đánh giá: Tháng 10/2026</span>
+              <span className="kpi-value">0 ₫</span>
+              <span className="kpi-subtext">Kỳ đánh giá hiện tại</span>
             </div>
 
             <div className="kpi-card green">
               <span className="kpi-label">Doanh số đã chốt thực tế (Won)</span>
               <span className="kpi-value" style={{ color: '#15803d' }}>
-                8,650,000,000 ₫
+                0 ₫
               </span>
               <span className="kpi-subtext">
-                <span className="kpi-badge-inc">▲ 72.1%</span> so với chỉ tiêu kế hoạch
+                <span className="kpi-badge-inc">0%</span> so với chỉ tiêu kế hoạch
               </span>
             </div>
 
             <div className="kpi-card amber">
               <span className="kpi-label">Dự báo theo trọng số (Forecast)</span>
               <span className="kpi-value" style={{ color: '#d97706' }}>
-                10,800,000,000 ₫
+                0 ₫
               </span>
-              <span className="kpi-subtext">Dự kiến đạt 90% chỉ tiêu cuối kỳ</span>
+              <span className="kpi-subtext">Chưa phát sinh dữ liệu cơ hội</span>
             </div>
 
             <div className="kpi-card purple">
               <span className="kpi-label">Giá trị toàn bộ Pipeline</span>
-              <span className="kpi-value">22,050,000,000 ₫</span>
-              <span className="kpi-subtext">Tổng 60 cơ hội đang xúc tiến</span>
+              <span className="kpi-value">0 ₫</span>
+              <span className="kpi-subtext">Tổng 0 cơ hội đang xúc tiến</span>
             </div>
           </div>
 
@@ -416,59 +300,20 @@ export default function ExecutiveDashboard() {
                   <span>📈</span>
                   <span>Giá trị Pipeline theo giai đoạn (Pipeline by Stage)</span>
                 </h3>
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Tổng: 22.05 tỷ ₫</span>
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Tổng: 0 ₫</span>
               </div>
 
-              <div className="pipeline-bars-container">
-                <div className="pipeline-stage-item">
-                  <div className="pipeline-stage-meta">
-                    <span>1. Khảo sát nhu cầu (18 deals)</span>
-                    <span>3,200,000,000 ₫ (14.5%)</span>
-                  </div>
-                  <div className="stage-bar-bg">
-                    <div className="stage-bar-fill" style={{ width: '14.5%', background: '#94a3b8' }}></div>
-                  </div>
-                </div>
-
-                <div className="pipeline-stage-item">
-                  <div className="pipeline-stage-meta">
-                    <span>2. Đề xuất giải pháp (12 deals)</span>
-                    <span>4,500,000,000 ₫ (20.4%)</span>
-                  </div>
-                  <div className="stage-bar-bg">
-                    <div className="stage-bar-fill" style={{ width: '20.4%', background: '#3b82f6' }}></div>
-                  </div>
-                </div>
-
-                <div className="pipeline-stage-item">
-                  <div className="pipeline-stage-meta">
-                    <span>3. Báo giá chi tiết (9 deals)</span>
-                    <span>3,800,000,000 ₫ (17.2%)</span>
-                  </div>
-                  <div className="stage-bar-bg">
-                    <div className="stage-bar-fill" style={{ width: '17.2%', background: '#f59e0b' }}></div>
-                  </div>
-                </div>
-
-                <div className="pipeline-stage-item">
-                  <div className="pipeline-stage-meta">
-                    <span>4. Đàm phán & Pháp lý (6 deals)</span>
-                    <span>2,900,000,000 ₫ (13.2%)</span>
-                  </div>
-                  <div className="stage-bar-bg">
-                    <div className="stage-bar-fill" style={{ width: '13.2%', background: '#8b5cf6' }}></div>
-                  </div>
-                </div>
-
-                <div className="pipeline-stage-item">
-                  <div className="pipeline-stage-meta">
-                    <span>5. Đã chốt thành công - Closed Won (15 deals)</span>
-                    <span style={{ color: '#15803d', fontWeight: 700 }}>8,650,000,000 ₫ (39.2%)</span>
-                  </div>
-                  <div className="stage-bar-bg">
-                    <div className="stage-bar-fill" style={{ width: '39.2%', background: '#10b981' }}></div>
-                  </div>
-                </div>
+              <div style={{ textAlign: 'center', padding: '40px 16px', color: '#64748b' }}>
+                <span style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }}>📊</span>
+                <p style={{ margin: 0, fontSize: '0.875rem' }}>Chưa có cơ hội bán hàng nào trong chu kỳ Pipeline.</p>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  style={{ marginTop: 12, fontSize: '0.8rem', padding: '6px 12px' }}
+                  onClick={() => navigate('/dashboard/opportunities')}
+                >
+                  + Thêm cơ hội mới
+                </button>
               </div>
             </div>
 
@@ -479,42 +324,11 @@ export default function ExecutiveDashboard() {
                   <span>📊</span>
                   <span>Doanh số đã chốt theo tháng (Monthly Trend)</span>
                 </h3>
-                <span style={{ fontSize: '0.8rem', color: '#16a34a', fontWeight: 600 }}>Tăng trưởng +6.8% MoM</span>
               </div>
 
-              <div className="monthly-chart-container">
-                <div className="month-bar-col">
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>6.8 tỷ</span>
-                  <div className="month-bar-pill" style={{ height: '68%' }}></div>
-                  <span className="month-label">T07/2026</span>
-                </div>
-
-                <div className="month-bar-col">
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>7.4 tỷ</span>
-                  <div className="month-bar-pill" style={{ height: '74%' }}></div>
-                  <span className="month-label">T08/2026</span>
-                </div>
-
-                <div className="month-bar-col">
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>8.1 tỷ</span>
-                  <div className="month-bar-pill" style={{ height: '81%' }}></div>
-                  <span className="month-label">T09/2026</span>
-                </div>
-
-                <div className="month-bar-col">
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2563eb' }}>8.65 tỷ</span>
-                  <div
-                    className="month-bar-pill"
-                    style={{ height: '86.5%', background: 'linear-gradient(180deg, #10b981 0%, #059669 100%)' }}
-                  ></div>
-                  <span className="month-label" style={{ fontWeight: 700, color: '#1e293b' }}>
-                    T10/2026 (Nay)
-                  </span>
-                </div>
-              </div>
-
-              <div style={{ fontSize: '0.825rem', color: '#64748b', textAlign: 'center', marginTop: 4 }}>
-                Doanh số tăng trưởng đều đặn qua các tháng, bám sát hạn mức chỉ tiêu quý 4 đề ra.
+              <div style={{ textAlign: 'center', padding: '40px 16px', color: '#64748b' }}>
+                <span style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }}>📉</span>
+                <p style={{ margin: 0, fontSize: '0.875rem' }}>Hệ thống sẵn sàng ghi nhận doanh thu mới khi các hợp đồng được ký duyệt.</p>
               </div>
             </div>
           </div>
