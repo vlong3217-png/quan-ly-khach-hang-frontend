@@ -163,8 +163,7 @@ export default function ContractsPage() {
     <div className="contracts-page-container" id="contracts-page-container">
       {/* Header bar */}
       <PageHeader
-        title="Quản lý Hiệu lực & Gia hạn Hợp đồng (S7-07)"
-        description="Theo dõi thời hạn kết thúc hợp đồng, cảnh báo mất doanh thu và 1-click tạo cơ hội gia hạn"
+        title="Quản lý Hiệu lực & Gia hạn Hợp đồng"
         className="contracts-header-bar"
         actions={
           <div className="threshold-control-box">
