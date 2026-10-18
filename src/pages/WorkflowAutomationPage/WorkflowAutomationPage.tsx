@@ -16,6 +16,8 @@ export default function WorkflowAutomationPage() {
   const [logs, setLogs] = useState<AutomationExecutionLog[]>([])
   const [activeTab, setActiveTab] = useState<'RULES' | 'LOGS'>('RULES')
   const [searchTerm, setSearchTerm] = useState('')
+  const [rulesPage, setRulesPage] = useState<number>(1)
+  const [rulesPageSize, setRulesPageSize] = useState<number>(4)
   const [logsPage, setLogsPage] = useState<number>(1)
   const [logsPageSize, setLogsPageSize] = useState<number>(10)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
@@ -250,6 +252,12 @@ export default function WorkflowAutomationPage() {
     )
   })
 
+  const totalRulesPages = Math.max(1, Math.ceil(rules.length / rulesPageSize))
+  const pagedRules = useMemo(() => {
+    const start = (rulesPage - 1) * rulesPageSize
+    return rules.slice(start, start + rulesPageSize)
+  }, [rules, rulesPage, rulesPageSize])
+
   const totalLogsPages = Math.max(1, Math.ceil(filteredLogs.length / logsPageSize))
   const pagedLogs = useMemo(() => {
     const start = (logsPage - 1) * logsPageSize
@@ -329,8 +337,9 @@ export default function WorkflowAutomationPage() {
 
       {/* TAB 1: RULES BUILDER */}
       {activeTab === 'RULES' && (
+        <>
         <div className="rules-grid" id="rules-grid-container">
-          {rules.map((rule) => {
+          {pagedRules.map((rule) => {
             return (
               <div
                 key={rule.id}
@@ -448,6 +457,22 @@ export default function WorkflowAutomationPage() {
             )
           })}
         </div>
+        {rules.length > 0 && (
+          <Pagination
+            currentPage={rulesPage}
+            totalPages={totalRulesPages}
+            totalItems={rules.length}
+            pageSize={rulesPageSize}
+            onPageChange={setRulesPage}
+            onPageSizeChange={(sz: number) => {
+              setRulesPageSize(sz)
+              setRulesPage(1)
+            }}
+            pageSizeOptions={[2, 4, 8]}
+            itemName="quy tắc"
+          />
+        )}
+        </>
       )}
 
       {/* TAB 2: EXECUTION AUDIT LOGS */}
