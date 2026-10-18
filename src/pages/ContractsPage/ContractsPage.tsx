@@ -96,6 +96,12 @@ export default function ContractsPage() {
     })
   }, [contracts, activeTab, searchQuery])
 
+  const totalPages = Math.max(1, Math.ceil(filteredContracts.length / pageSize))
+  const pagedContracts = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredContracts.slice(start, start + pageSize)
+  }, [filteredContracts, currentPage, pageSize])
+
   // Open Renewal Modal
   const handleOpenRenewalModal = (c: Contract) => {
     setRenewalContract(c)
