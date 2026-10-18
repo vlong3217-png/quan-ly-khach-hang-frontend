@@ -202,8 +202,7 @@ function DashboardPage() {
     activeMenuId === 'menu-products' ||
     activeMenuId.startsWith('menu-products-')
   const isPipelineView =
-    activeMenuId === 'menu-pipeline' ||
-    activeMenuId.startsWith('menu-pipeline-')
+    activeMenuId === 'menu-pipeline'
   const isAutomationView =
     activeMenuId === 'menu-automation' ||
     activeMenuId.startsWith('menu-automation-')
@@ -223,8 +222,7 @@ function DashboardPage() {
     activeMenuId === 'menu-quotas' ||
     activeMenuId.startsWith('menu-quotas-')
   const isPipelineFunnelView =
-    activeMenuId === 'menu-pipeline-funnel' ||
-    activeMenuId.startsWith('menu-pipeline-funnel-')
+    activeMenuId === 'menu-pipeline-funnel'
   const isForecastView =
     activeMenuId === 'menu-forecast' ||
     activeMenuId.startsWith('menu-forecast-')
