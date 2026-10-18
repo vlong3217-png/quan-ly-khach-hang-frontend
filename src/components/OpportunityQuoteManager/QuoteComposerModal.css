@@ -101,6 +101,26 @@
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 16px;
+  align-items: start;
+}
+
+.quote-terms-grid .form-control {
+  height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  background-color: #ffffff;
+  color: #0f172a;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.quote-terms-grid .form-control:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 @media (max-width: 900px) {
@@ -166,11 +186,24 @@
 .add-prod-inline {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .add-prod-inline select {
-  max-width: 380px;
+  max-width: 420px;
+  height: 38px;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.add-prod-inline select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .quote-items-empty {
@@ -299,6 +332,33 @@
   display: flex;
   gap: 8px;
   max-width: 280px;
+}
+
+.overall-dc-row select,
+.overall-dc-row input {
+  height: 38px;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.overall-discount-box textarea {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  background-color: #ffffff;
+  color: #0f172a;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.overall-discount-box textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .totals-calculation-panel {

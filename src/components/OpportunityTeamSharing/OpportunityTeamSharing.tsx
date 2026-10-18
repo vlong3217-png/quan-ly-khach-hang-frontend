@@ -4,6 +4,7 @@ import type { UserAccount } from '../../types/user.ts'
 import { opportunityService } from '../../services/opportunityService.ts'
 import { userService } from '../../services/userService.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
+import Button from '../ui/Button.tsx'
 import './OpportunityTeamSharing.css'
 
 interface OpportunityTeamSharingProps {
@@ -150,14 +151,13 @@ export default function OpportunityTeamSharing({
             </div>
           </div>
           {canReassignOwner ? (
-            <button
-              type="button"
-              className="btn btn-outline-primary btn-reassign-owner"
+            <Button
+              variant="secondary"
               onClick={onOpenReassignModal}
               title="Bàn giao cơ hội cho nhân viên khác"
             >
               Chuyển giao quyền sở hữu
-            </button>
+            </Button>
           ) : (
             <span className="badge-locked" title="Chỉ Chủ sở hữu chính hoặc Quản lý mới có quyền bàn giao">
               Không có quyền chuyển giao
@@ -191,13 +191,12 @@ export default function OpportunityTeamSharing({
             </span>
           </div>
           {canManageTeam && (
-            <button
-              type="button"
-              className="btn btn-primary btn-sm btn-add-member"
+            <Button
+              variant={isAddMemberOpen ? 'secondary' : 'primary'}
               onClick={() => setIsAddMemberOpen(!isAddMemberOpen)}
             >
-              {isAddMemberOpen ? '✕ Đóng form' : '+ Thêm thành viên'}
-            </button>
+              {isAddMemberOpen ? 'Đóng form' : 'Thêm thành viên'}
+            </Button>
           )}
         </div>
 
@@ -245,21 +244,20 @@ export default function OpportunityTeamSharing({
                 <br />
                 ✗ Bị chặn: Không được phép thay đổi người sở hữu chính.
               </div>
-              <div className="actions">
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
+              <div className="actions" style={{ display: 'flex', gap: '8px' }}>
+                <Button
+                  variant="secondary"
                   onClick={() => setIsAddMemberOpen(false)}
                 >
                   Hủy
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  className="btn btn-primary btn-sm"
+                  variant="primary"
                   disabled={!selectedUserId || submitting}
                 >
                   {submitting ? 'Đang thêm...' : 'Xác nhận thêm'}
-                </button>
+                </Button>
               </div>
             </div>
           </form>
