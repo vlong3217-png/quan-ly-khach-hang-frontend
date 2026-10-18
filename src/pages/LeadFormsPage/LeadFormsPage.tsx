@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
-import { leadFormService } from '../../services/leadFormService.ts'
-import { leadService } from '../../services/leadService.ts'
+import { leadFormService, getStoredForms, getStoredSubmissions } from '../../services/leadFormService.ts'
+import { leadService, getStoredLeads } from '../../services/leadService.ts'
 import { leadScoringService } from '../../services/leadScoringService.ts'
 import { leadConversionService } from '../../services/leadConversionService.ts'
 import { leadInteractionService } from '../../services/leadInteractionService.ts'
@@ -325,10 +325,10 @@ export default function LeadFormsPage() {
   >('LEADS_LIST')
 
   // Data states
-  const [leads, setLeads] = useState<Lead[]>([])
-  const [forms, setForms] = useState<LeadForm[]>([])
-  const [submissions, setSubmissions] = useState<LeadSubmission[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [leads, setLeads] = useState<Lead[]>(() => getStoredLeads())
+  const [forms, setForms] = useState<LeadForm[]>(() => getStoredForms())
+  const [submissions, setSubmissions] = useState<LeadSubmission[]>(() => getStoredSubmissions())
+  const [isLoading, setIsLoading] = useState(false)
   const [toast, setToast] = useState<{ message: string; isError?: boolean } | null>(null)
 
   // ── S4-09: Bộ lọc nâng cao & Bộ lọc lưu sẵn cho NVKD ──
@@ -554,7 +554,7 @@ export default function LeadFormsPage() {
   // Tải dữ liệu ban đầu
   const loadData = async () => {
     try {
-      setIsLoading(true)
+      /* background refresh */
       const [fetchedLeads, fetchedForms, fetchedSubs, fetchedInteractions] = await Promise.all([
         leadService.getLeads(),
         leadFormService.getLeadForms(),

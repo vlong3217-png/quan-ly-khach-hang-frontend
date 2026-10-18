@@ -160,7 +160,7 @@ const INITIAL_SUBMISSIONS: LeadSubmission[] = [
 ]
 
 /* ──────────── LocalStorage Helpers ──────────── */
-function getStoredForms(): LeadForm[] {
+export function getStoredForms(): LeadForm[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_FORMS)
     if (raw) return JSON.parse(raw)
@@ -173,7 +173,7 @@ function saveStoredForms(forms: LeadForm[]): void {
   localStorage.setItem(STORAGE_KEY_FORMS, JSON.stringify(forms))
 }
 
-function getStoredSubmissions(): LeadSubmission[] {
+export function getStoredSubmissions(): LeadSubmission[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_SUBMISSIONS)
     if (raw) return JSON.parse(raw)

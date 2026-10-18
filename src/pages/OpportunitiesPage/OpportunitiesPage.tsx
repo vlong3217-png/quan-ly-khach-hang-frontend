@@ -7,7 +7,7 @@ import type {
 } from '../../types/opportunity.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
 import type { Product } from '../../types/product.ts'
-import { opportunityService, isOppInStage } from '../../services/opportunityService.ts'
+import { opportunityService, isOppInStage, getStoredOpportunities } from '../../services/opportunityService.ts'
 import { pipelineService } from '../../services/pipelineService.ts'
 import { productService } from '../../services/productService.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
@@ -30,9 +30,9 @@ export default function OpportunitiesPage() {
   const isManagerOrAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER'
 
   // State danh sách
-  const [opportunities, setOpportunities] = useState<Opportunity[]>([])
+  const [opportunities, setOpportunities] = useState<Opportunity[]>(() => getStoredOpportunities())
   const [stages, setStages] = useState<PipelineStage[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Drag and drop state
@@ -113,7 +113,7 @@ export default function OpportunitiesPage() {
 
   // Load data
   const loadData = useCallback(async () => {
-    setLoading(true)
+    /* background refresh */
     try {
       const stgs = pipelineService.getStages()
       setStages(stgs)

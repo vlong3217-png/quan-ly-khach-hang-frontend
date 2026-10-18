@@ -106,7 +106,7 @@ async function parseErrorResponse(response: Response, defaultMessage: string): P
   return defaultMessage
 }
 
-function getStoredOpportunities(): Opportunity[] {
+export function getStoredOpportunities(): Opportunity[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_OPPORTUNITIES)
     if (raw) {

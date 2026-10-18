@@ -117,7 +117,7 @@ const INITIAL_INTERACTIONS: LeadInteraction[] = [
   },
 ]
 
-function getStoredInteractions(): LeadInteraction[] {
+export function getStoredInteractions(): LeadInteraction[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) {

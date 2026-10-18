@@ -8,6 +8,7 @@ import {
   getAvailableTeams,
   updateUserStatus,
   getUserAssignedData,
+  getMockUsers,
 } from '../../services/userService.ts'
 import type {
   UserAccount,
@@ -231,9 +232,9 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
   const navigate = useNavigate()
 
   // Data
-  const [users, setUsers] = useState<UserAccount[]>([])
+  const [users, setUsers] = useState<UserAccount[]>(() => getMockUsers())
   const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Filters
@@ -300,7 +301,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
 
   /* --- Fetch users --- */
   const fetchUsers = useCallback(async () => {
-    setLoading(true)
+    /* background refresh */
     setError(null)
     try {
       const res = await getUsers({
