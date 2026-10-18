@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
-import Pagination from '../../components/ui/Pagination.tsx'
+import { useState, useEffect } from 'react'
 import type {
   AutomationRule,
   AutomationExecutionLog,
@@ -16,10 +15,6 @@ export default function WorkflowAutomationPage() {
   const [logs, setLogs] = useState<AutomationExecutionLog[]>([])
   const [activeTab, setActiveTab] = useState<'RULES' | 'LOGS'>('RULES')
   const [searchTerm, setSearchTerm] = useState('')
-  const [rulesPage, setRulesPage] = useState(1)
-  const [rulesPageSize, setRulesPageSize] = useState(6)
-  const [logsPage, setLogsPage] = useState(1)
-  const [logsPageSize, setLogsPageSize] = useState(10)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   // Modal State
@@ -47,15 +42,6 @@ export default function WorkflowAutomationPage() {
 
   const [enableReassign, setEnableReassign] = useState(false)
   const [reassignName, setReassignName] = useState('Nguyễn Văn A (Trưởng nhóm)')
-
-  useEffect(() => {
-    setLogsPage(1)
-  }, [searchTerm])
-
-  useEffect(() => {
-    setRulesPage(1)
-    setLogsPage(1)
-  }, [activeTab])
 
   const showToast = (msg: string) => {
     setToastMessage(msg)
@@ -261,18 +247,6 @@ export default function WorkflowAutomationPage() {
     )
   })
 
-  const rulesTotalPages = Math.max(1, Math.ceil(rules.length / rulesPageSize))
-  const pagedRules = useMemo(() => {
-    const start = (rulesPage - 1) * rulesPageSize
-    return rules.slice(start, start + rulesPageSize)
-  }, [rules, rulesPage, rulesPageSize])
-
-  const logsTotalPages = Math.max(1, Math.ceil(filteredLogs.length / logsPageSize))
-  const pagedLogs = useMemo(() => {
-    const start = (logsPage - 1) * logsPageSize
-    return filteredLogs.slice(start, start + logsPageSize)
-  }, [filteredLogs, logsPage, logsPageSize])
-
   // Natural language description for modal preview
   const generatePreviewText = () => {
     const entityName = formEntity === 'OPPORTUNITY' ? 'Cơ hội bán hàng' : formEntity === 'LEAD' ? 'Khách hàng tiềm năng (Lead)' : 'Hợp đồng'
@@ -346,9 +320,8 @@ export default function WorkflowAutomationPage() {
 
       {/* TAB 1: RULES BUILDER */}
       {activeTab === 'RULES' && (
-        <div>
-          <div className="rules-grid" id="rules-grid-container">
-          {pagedRules.map((rule) => {
+        <div className="rules-grid" id="rules-grid-container">
+          {rules.map((rule) => {
             return (
               <div
                 key={rule.id}
@@ -466,25 +439,6 @@ export default function WorkflowAutomationPage() {
             )
           })}
         </div>
-
-        {rules.length > 0 && (
-          <div style={{ marginTop: '16px' }}>
-            <Pagination
-              currentPage={rulesPage}
-              totalPages={rulesTotalPages}
-              totalItems={rules.length}
-              pageSize={rulesPageSize}
-              onPageChange={setRulesPage}
-              onPageSizeChange={(newSize) => {
-                setRulesPageSize(newSize)
-                setRulesPage(1)
-              }}
-              pageSizeOptions={[3, 6, 12]}
-              itemName="quy tắc"
-            />
-          </div>
-        )}
-        </div>
       )}
 
       {/* TAB 2: EXECUTION AUDIT LOGS */}
@@ -532,7 +486,7 @@ export default function WorkflowAutomationPage() {
                   </td>
                 </tr>
               ) : (
-                pagedLogs.map((log) => (
+                filteredLogs.map((log) => (
                   <tr key={log.id}>
                     <td style={{ color: '#64748b', fontSize: '0.825rem' }}>
                       {formatTime(log.executed_at)}
@@ -568,22 +522,6 @@ export default function WorkflowAutomationPage() {
               )}
             </tbody>
           </table>
-
-          {filteredLogs.length > 0 && (
-            <Pagination
-              currentPage={logsPage}
-              totalPages={logsTotalPages}
-              totalItems={filteredLogs.length}
-              pageSize={logsPageSize}
-              onPageChange={setLogsPage}
-              onPageSizeChange={(newSize) => {
-                setLogsPageSize(newSize)
-                setLogsPage(1)
-              }}
-              pageSizeOptions={[5, 10, 20]}
-              itemName="lượt thực thi"
-            />
-          )}
         </div>
       )}
 
