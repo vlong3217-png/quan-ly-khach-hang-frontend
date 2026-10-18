@@ -216,3 +216,25 @@
 .act-quote { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
 .act-stage { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 .act-note { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+
+.btn-export-excel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid #2563eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+.btn-export-excel:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
