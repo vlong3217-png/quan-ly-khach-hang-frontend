@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+﻿import { useState, useEffect, useMemo } from 'react'
 import Button from '../../components/ui/Button.tsx'
 import type {
   EmailTemplate,
@@ -8,6 +8,7 @@ import type {
 import { emailMarketingService } from '../../services/emailMarketingService.ts'
 import { customerService } from '../../services/customerService.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
+import Pagination from '../../components/ui/Pagination.tsx'
 import './EmailMarketingPage.css'
 
 export default function EmailMarketingPage() {
@@ -16,7 +17,16 @@ export default function EmailMarketingPage() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [queue, setQueue] = useState<EmailQueueItem[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [queuePage, setQueuePage] = useState<number>(1)
+  const [queuePageSize, setQueuePageSize] = useState<number>(10)
+  const [templatesPage, setTemplatesPage] = useState<number>(1)
+  const [templatesPageSize, setTemplatesPageSize] = useState<number>(6)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    setQueuePage(1)
+    setTemplatesPage(1)
+  }, [searchTerm, activeTab])
 
   // Modals
   const [isSendModalOpen, setIsSendModalOpen] = useState(false)
@@ -240,6 +250,18 @@ export default function EmailMarketingPage() {
     )
   })
 
+  const totalQueuePages = Math.max(1, Math.ceil(filteredQueue.length / queuePageSize))
+  const pagedQueue = useMemo(() => {
+    const start = (queuePage - 1) * queuePageSize
+    return filteredQueue.slice(start, start + queuePageSize)
+  }, [filteredQueue, queuePage, queuePageSize])
+
+  const totalTemplatePages = Math.max(1, Math.ceil(templates.length / templatesPageSize))
+  const pagedTemplates = useMemo(() => {
+    const start = (templatesPage - 1) * templatesPageSize
+    return templates.slice(start, start + templatesPageSize)
+  }, [templates, templatesPage, templatesPageSize])
+
   // Live rendered preview in send modal
   const liveRenderedSubject = emailMarketingService.renderMergeTags(emailSubject, {
     contact_name: contactName || 'Nguyễn Văn Minh',
@@ -370,7 +392,7 @@ export default function EmailMarketingPage() {
                   </td>
                 </tr>
               ) : (
-                filteredQueue.map((item) => (
+                pagedQueue.map((item: EmailQueueItem) => (
                   <tr key={item.id}>
                     <td style={{ fontSize: '0.8rem', color: '#64748b' }}>
                       {formatTime(item.sent_at || item.queued_at)}
@@ -434,13 +456,29 @@ export default function EmailMarketingPage() {
               )}
             </tbody>
           </table>
+          {filteredQueue.length > 0 && (
+            <Pagination
+              currentPage={queuePage}
+              totalPages={totalQueuePages}
+              totalItems={filteredQueue.length}
+              pageSize={queuePageSize}
+              onPageChange={setQueuePage}
+              onPageSizeChange={(sz: number) => {
+                setQueuePageSize(sz)
+                setQueuePage(1)
+              }}
+              pageSizeOptions={[5, 10, 20]}
+              itemName="email"
+            />
+          )}
         </div>
       )}
 
       {/* TAB 2: EMAIL TEMPLATES */}
       {activeTab === 'TEMPLATES' && (
+        <>
         <div className="templates-grid" id="templates-grid">
-          {templates.map((tmpl) => (
+          {pagedTemplates.map((tmpl: EmailTemplate) => (
             <div key={tmpl.id} className="template-card" id={`template-card-${tmpl.id}`}>
               <div className="template-card-header">
                 <h3 className="template-title">{tmpl.name}</h3>
@@ -487,6 +525,22 @@ export default function EmailMarketingPage() {
             </div>
           ))}
         </div>
+        {templates.length > 0 && (
+          <Pagination
+            currentPage={templatesPage}
+            totalPages={totalTemplatePages}
+            totalItems={templates.length}
+            pageSize={templatesPageSize}
+            onPageChange={setTemplatesPage}
+            onPageSizeChange={(sz: number) => {
+              setTemplatesPageSize(sz)
+              setTemplatesPage(1)
+            }}
+            pageSizeOptions={[3, 6, 12]}
+            itemName="mẫu email"
+          />
+        )}
+        </>
       )}
 
       {/* MODAL 1: SOẠN VÀ GỬI EMAIL */}

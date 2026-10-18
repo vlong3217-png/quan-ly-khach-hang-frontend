@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import type {
   AutomationRule,
   AutomationExecutionLog,
@@ -8,6 +8,7 @@ import type {
 } from '../../types/workflowAutomation.ts'
 import { workflowAutomationService } from '../../services/workflowAutomationService.ts'
 import Button from '../../components/ui/Button.tsx'
+import Pagination from '../../components/ui/Pagination.tsx'
 import './WorkflowAutomationPage.css'
 
 export default function WorkflowAutomationPage() {
@@ -15,6 +16,8 @@ export default function WorkflowAutomationPage() {
   const [logs, setLogs] = useState<AutomationExecutionLog[]>([])
   const [activeTab, setActiveTab] = useState<'RULES' | 'LOGS'>('RULES')
   const [searchTerm, setSearchTerm] = useState('')
+  const [logsPage, setLogsPage] = useState<number>(1)
+  const [logsPageSize, setLogsPageSize] = useState<number>(10)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   // Modal State
@@ -246,6 +249,12 @@ export default function WorkflowAutomationPage() {
       l.trigger_event.toLowerCase().includes(term)
     )
   })
+
+  const totalLogsPages = Math.max(1, Math.ceil(filteredLogs.length / logsPageSize))
+  const pagedLogs = useMemo(() => {
+    const start = (logsPage - 1) * logsPageSize
+    return filteredLogs.slice(start, start + logsPageSize)
+  }, [filteredLogs, logsPage, logsPageSize])
 
   // Natural language description for modal preview
   const generatePreviewText = () => {
@@ -486,7 +495,7 @@ export default function WorkflowAutomationPage() {
                   </td>
                 </tr>
               ) : (
-                filteredLogs.map((log) => (
+                pagedLogs.map((log: AutomationExecutionLog) => (
                   <tr key={log.id}>
                     <td style={{ color: '#64748b', fontSize: '0.825rem' }}>
                       {formatTime(log.executed_at)}
@@ -522,6 +531,21 @@ export default function WorkflowAutomationPage() {
               )}
             </tbody>
           </table>
+          {filteredLogs.length > 0 && (
+            <Pagination
+              currentPage={logsPage}
+              totalPages={totalLogsPages}
+              totalItems={filteredLogs.length}
+              pageSize={logsPageSize}
+              onPageChange={setLogsPage}
+              onPageSizeChange={(sz: number) => {
+                setLogsPageSize(sz)
+                setLogsPage(1)
+              }}
+              pageSizeOptions={[5, 10, 20]}
+              itemName="nhật ký"
+            />
+          )}
         </div>
       )}
 
