@@ -141,6 +141,8 @@ export default function CustomerManagementPage() {
   // S3-06 Excel Import state
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importPreview, setImportPreview] = useState<any[] | null>(null)
+  const [importSearchQuery, setImportSearchQuery] = useState('')
+  const [importStatusFilter, setImportStatusFilter] = useState<'ALL' | 'VALID' | 'DUPLICATE'>('ALL')
 
   // S3-07 Saved filters state
   const [savedFilters] = useState<Array<{ name: string; status: string; industry: string }>>([
@@ -602,6 +604,32 @@ export default function CustomerManagementPage() {
   }
 
   // ── S3-06 Excel Import Mock Handler ──
+  
+  // Lọc và Tìm kiếm các dòng xem trước khi import file Excel khách hàng
+  const filteredImportRows = useMemo(() => {
+    if (!importPreview) return []
+    let result = importPreview
+
+    if (importStatusFilter === 'VALID') {
+      result = result.filter((item) => !item.isDuplicate)
+    } else if (importStatusFilter === 'DUPLICATE') {
+      result = result.filter((item) => item.isDuplicate)
+    }
+
+    const q = importSearchQuery.trim().toLowerCase()
+    if (q) {
+      result = result.filter((item) => {
+        const nameMatch = (item.name || '').toLowerCase().includes(q)
+        const taxMatch = (item.tax_code || '').toLowerCase().includes(q)
+        const industryMatch = (item.industry || '').toLowerCase().includes(q)
+        const sizeMatch = (item.company_size || '').toLowerCase().includes(q)
+        return nameMatch || taxMatch || industryMatch || sizeMatch
+      })
+    }
+
+    return result
+  }, [importPreview, importStatusFilter, importSearchQuery])
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -610,6 +638,8 @@ export default function CustomerManagementPage() {
       { row: 1, name: 'Công ty Cổ phần AI Solutions', tax_code: '0109998881', industry: 'Công nghệ thông tin & Viễn thông', company_size: '10 - 50 nhân sự (Doanh nghiệp nhỏ)', isDuplicate: false },
       { row: 2, name: 'Công ty Cổ phần Công Nghệ Alpha', tax_code: '0102345678', industry: 'Công nghệ thông tin & Viễn thông', company_size: '50 - 200 nhân sự (Quy mô vừa)', isDuplicate: true },
     ]
+    setImportSearchQuery('')
+    setImportStatusFilter('ALL')
     setImportPreview(mockPreview)
   }
 
@@ -636,6 +666,8 @@ export default function CustomerManagementPage() {
     })
     showToast(`Đã nhập thành công ${count} khách hàng từ tệp Excel!`)
     setImportPreview(null)
+    setImportSearchQuery('')
+    setImportStatusFilter('ALL')
     loadCustomers()
   }
 
@@ -2393,22 +2425,83 @@ export default function CustomerManagementPage() {
 
       {/* ── MODAL XEM TRƯỚC NHẬP EXCEL ── */}
       {importPreview && (
-        <div className="cust-modal-backdrop" onClick={() => setImportPreview(null)}>
-          <div className="c360-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="cust-modal-backdrop" onClick={() => { setImportPreview(null); setImportSearchQuery(''); setImportStatusFilter('ALL'); }}>
+          <div className="c360-modal-content" style={{ maxWidth: '880px' }} onClick={(e) => e.stopPropagation()}>
             <div className="cust-modal-header">
               <h3>Xem trước & Báo lỗi Nhập file Excel</h3>
-              <button type="button" className="cust-modal-close-btn" onClick={() => setImportPreview(null)}>&times;</button>
+              <button type="button" className="cust-modal-close-btn" onClick={() => { setImportPreview(null); setImportSearchQuery(''); setImportStatusFilter('ALL'); }}>&times;</button>
             </div>
             <div className="cust-modal-body">
               <p style={{ margin: 0, fontSize: '13px', color: '#475569' }}>
                 Hệ thống kiểm tra từng dòng, phát hiện và cảnh báo các bản ghi bị trùng mã số thuế trước khi ghi vào CSDL.
               </p>
 
-              <div className="customer-table-responsive" style={{ maxHeight: '300px' }}>
+              {/* Thanh Tìm kiếm & Lọc dữ liệu import */}
+              <div className="import-modal-controls-bar">
+                <div className="import-stats-pills">
+                  <span className="import-stat-badge total">
+                    Tổng: {importPreview.length} dòng
+                  </span>
+                  <span className="import-stat-badge valid">
+                    Hợp lệ: {importPreview.filter((i) => !i.isDuplicate).length} dòng
+                  </span>
+                  <span className="import-stat-badge duplicate">
+                    Trùng mã số thuế: {importPreview.filter((i) => i.isDuplicate).length} dòng
+                  </span>
+                </div>
+
+                <div className="import-controls-right">
+                  <div className="import-search-box">
+                    <input
+                      type="text"
+                      className="import-search-input"
+                      placeholder="Tìm theo tên công ty, MST, ngành..."
+                      value={importSearchQuery}
+                      onChange={(e) => setImportSearchQuery(e.target.value)}
+                    />
+                    {importSearchQuery && (
+                      <button
+                        type="button"
+                        className="import-search-clear"
+                        onClick={() => setImportSearchQuery('')}
+                        title="Xóa tìm kiếm"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="import-filter-pills">
+                    <button
+                      type="button"
+                      className={`import-filter-btn ${importStatusFilter === 'ALL' ? 'active' : ''}`}
+                      onClick={() => setImportStatusFilter('ALL')}
+                    >
+                      Tất cả ({importPreview.length})
+                    </button>
+                    <button
+                      type="button"
+                      className={`import-filter-btn ${importStatusFilter === 'VALID' ? 'active' : ''}`}
+                      onClick={() => setImportStatusFilter('VALID')}
+                    >
+                      Hợp lệ ({importPreview.filter((i) => !i.isDuplicate).length})
+                    </button>
+                    <button
+                      type="button"
+                      className={`import-filter-btn ${importStatusFilter === 'DUPLICATE' ? 'active' : ''}`}
+                      onClick={() => setImportStatusFilter('DUPLICATE')}
+                    >
+                      Trùng lặp ({importPreview.filter((i) => i.isDuplicate).length})
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="customer-table-responsive" style={{ maxHeight: '340px' }}>
                 <table className="enterprise-customer-table cust-import-table">
                   <thead>
                     <tr>
-                      <th>Dòng</th>
+                      <th style={{ width: '60px', textAlign: 'center' }}>Dòng</th>
                       <th>Tên công ty</th>
                       <th>Mã số thuế</th>
                       <th>Ngành nghề</th>
@@ -2416,29 +2509,57 @@ export default function CustomerManagementPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {importPreview.map((item) => (
-                      <tr key={item.row}>
-                        <td>{item.row}</td>
-                        <td>{item.name}</td>
-                        <td>{item.tax_code}</td>
-                        <td>{item.industry}</td>
-                        <td>
-                          {item.isDuplicate ? (
-                            <span style={{ color: '#dc2626', fontWeight: 600 }}>Bị trùng mã số thuế (Sẽ bỏ qua)</span>
-                          ) : (
-                            <span style={{ color: '#059669', fontWeight: 600 }}>Hợp lệ (Sẵn sàng tạo)</span>
-                          )}
+                    {filteredImportRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} style={{ textAlign: 'center', padding: '32px 16px', color: '#64748b' }}>
+                          <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px' }}>
+                            Không tìm thấy bản ghi nào phù hợp
+                          </div>
+                          <div style={{ fontSize: '12.5px' }}>
+                            Vui lòng thử lại với từ khóa tìm kiếm hoặc điều kiện lọc khác.
+                          </div>
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      filteredImportRows.map((item) => (
+                        <tr key={item.row}>
+                          <td style={{ textAlign: 'center' }}>{item.row}</td>
+                          <td><strong>{item.name}</strong></td>
+                          <td><code>{item.tax_code}</code></td>
+                          <td>{item.industry}</td>
+                          <td>
+                            {item.isDuplicate ? (
+                              <span style={{ color: '#dc2626', fontWeight: 600, background: '#fef2f2', padding: '3px 8px', borderRadius: '4px', border: '1px solid #fecaca' }}>
+                                Bị trùng mã số thuế (Sẽ bỏ qua)
+                              </span>
+                            ) : (
+                              <span style={{ color: '#059669', fontWeight: 600, background: '#ecfdf5', padding: '3px 8px', borderRadius: '4px', border: '1px solid #a7f3d0' }}>
+                                Hợp lệ (Sẵn sàng tạo)
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
             </div>
             <div className="cust-modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={() => setImportPreview(null)}>Hủy</button>
-              <button type="button" className="btn btn-primary" onClick={handleConfirmImport}>
-                Xác nhận Nhập dữ liệu
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => { setImportPreview(null); setImportSearchQuery(''); setImportStatusFilter('ALL'); }}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleConfirmImport}
+                disabled={importPreview.filter((i) => !i.isDuplicate).length === 0}
+              >
+                Xác nhận Nhập dữ liệu ({importPreview.filter((i) => !i.isDuplicate).length} hợp lệ)
               </button>
             </div>
           </div>
