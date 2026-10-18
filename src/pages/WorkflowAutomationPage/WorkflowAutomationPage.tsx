@@ -7,6 +7,7 @@ import type {
   AutomationAction,
 } from '../../types/workflowAutomation.ts'
 import { workflowAutomationService } from '../../services/workflowAutomationService.ts'
+import Button from '../../components/ui/Button.tsx'
 import './WorkflowAutomationPage.css'
 
 export default function WorkflowAutomationPage() {
@@ -268,7 +269,7 @@ export default function WorkflowAutomationPage() {
     if (enableReassign) actionParts.push(`đổi người phụ trách sang "${reassignName}"`)
 
     if (actionParts.length === 0) return 'Vui lòng chọn ít nhất một hành động thực thi.'
-    return `⚡ KHI [${entityName}] [${condStr}] ➔ THÌ hệ thống sẽ ${actionParts.join(' VÀ ')}.`
+    return `KHI [${entityName}] [${condStr}] ➔ THÌ hệ thống sẽ ${actionParts.join(' VÀ ')}.`
   }
 
   return (
@@ -284,24 +285,17 @@ export default function WorkflowAutomationPage() {
       <div className="automation-header">
         <div>
           <h1>
-            <span>⚙️</span>
-            <span>Quy tắc tự động hoá quy trình (Workflow Automation)</span>
+            <span>Quy tắc tự động hoá quy trình</span>
           </h1>
-          <p>
-            Khai báo các quy tắc Khi – Thì (When-Then) để quy trình bán hàng tự chạy, tự động tạo việc nhắc nhở,
-            gửi thông báo và điều phối phụ trách mà không cần nhắc việc thủ công (S7-09).
-          </p>
         </div>
-        <button
+        <Button
           type="button"
-          className="btn btn-primary"
+          variant="primary"
           id="btn-create-automation-rule"
           onClick={handleOpenCreateModal}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
         >
-          <span>＋</span>
-          <span>Thêm quy tắc mới</span>
-        </button>
+          Thêm quy tắc mới
+        </Button>
       </div>
 
       {/* Tabs */}
@@ -374,7 +368,7 @@ export default function WorkflowAutomationPage() {
                         if (act.type === 'CREATE_TASK' && act.task_params) {
                           return (
                             <div key={act.id} className="action-pill">
-                              <span className="pill-badge pill-task">📋 Tạo việc</span>
+                              <span className="pill-badge pill-task">Tạo việc</span>
                               <span>
                                 <strong>{act.task_params.task_title}</strong> (hạn {act.task_params.due_days} ngày, ưu tiên {act.task_params.priority})
                               </span>
@@ -384,7 +378,7 @@ export default function WorkflowAutomationPage() {
                         if (act.type === 'SEND_NOTIFICATION' && act.notification_params) {
                           return (
                             <div key={act.id} className="action-pill">
-                              <span className="pill-badge pill-notify">🔔 Thông báo</span>
+                              <span className="pill-badge pill-notify">Thông báo</span>
                               <span>
                                 {act.notification_params.title} ➔ <em>{act.notification_params.recipient_target === 'CURRENT_OWNER' ? 'Người phụ trách' : 'Quản lý'}</em>
                               </span>
@@ -394,7 +388,7 @@ export default function WorkflowAutomationPage() {
                         if (act.type === 'REASSIGN_OWNER' && act.reassign_params) {
                           return (
                             <div key={act.id} className="action-pill">
-                              <span className="pill-badge pill-reassign">👤 Đổi phụ trách</span>
+                              <span className="pill-badge pill-reassign">Đổi phụ trách</span>
                               <span>Chuyển sang: <strong>{act.reassign_params.new_owner_name}</strong></span>
                             </div>
                           )
@@ -421,7 +415,7 @@ export default function WorkflowAutomationPage() {
                       onClick={() => handleTestRun(rule)}
                       title="Chạy thử quy tắc và ghi nhận vào nhật ký thực thi"
                     >
-                      ▶ Chạy thử
+                      Chạy thử
                     </button>
                     <button
                       type="button"
@@ -429,7 +423,7 @@ export default function WorkflowAutomationPage() {
                       style={{ fontSize: '0.75rem', padding: '4px 10px' }}
                       onClick={() => handleOpenEditModal(rule)}
                     >
-                      ✏ Sửa
+                      Sửa
                     </button>
                     <button
                       type="button"
@@ -437,7 +431,7 @@ export default function WorkflowAutomationPage() {
                       style={{ fontSize: '0.75rem', padding: '4px 8px', color: '#ef4444' }}
                       onClick={() => handleDelete(rule.id)}
                     >
-                      🗑
+                      Xoá
                     </button>
                   </div>
                 </div>
@@ -454,7 +448,7 @@ export default function WorkflowAutomationPage() {
             <input
               type="text"
               className="logs-search-input"
-              placeholder="🔍 Tìm kiếm theo quy tắc, đối tượng áp dụng..."
+              placeholder="Tìm kiếm theo quy tắc, đối tượng áp dụng..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -470,7 +464,7 @@ export default function WorkflowAutomationPage() {
                 }
               }}
             >
-              🧹 Dọn dẹp nhật ký
+              Dọn dẹp nhật ký
             </button>
           </div>
 
@@ -576,7 +570,7 @@ export default function WorkflowAutomationPage() {
                 {/* Section 1: KHI (WHEN) */}
                 <div className="section-box">
                   <div className="section-title">
-                    <span style={{ color: '#ef4444' }}>⚡ BƯỚC 1: ĐIỀU KIỆN KÍCH HOẠT (KHI - WHEN)</span>
+                    <span style={{ color: '#ef4444' }}>BƯỚC 1: ĐIỀU KIỆN KÍCH HOẠT (KHI - WHEN)</span>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -662,7 +656,7 @@ export default function WorkflowAutomationPage() {
                 {/* Section 2: THÌ (THEN) */}
                 <div className="section-box">
                   <div className="section-title">
-                    <span style={{ color: '#10b981' }}>🎯 BƯỚC 2: HÀNH ĐỘNG TỰ ĐỘNG THỰC THI (THÌ - THEN)</span>
+                    <span style={{ color: '#10b981' }}>BƯỚC 2: HÀNH ĐỘNG TỰ ĐỘNG THỰC THI (THÌ - THEN)</span>
                   </div>
 
                   {/* Action 1: Create Task */}
