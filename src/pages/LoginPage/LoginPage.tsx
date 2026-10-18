@@ -144,7 +144,12 @@ function LoginPage() {
 
   const isLockedOut = remainingLockSeconds > 0
 
-  /* ---- Redirect if already logged in ---- */
+  // Warm up Backend (Render free tier wakes up from sleep if cold)
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/`, { method: 'GET', mode: 'no-cors' }).catch(() => {})
+  }, [])
+
+    /* ---- Redirect if already logged in ---- */
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       navigate('/dashboard', { replace: true })
