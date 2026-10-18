@@ -2326,7 +2326,7 @@ export default function LeadFormsPage() {
             <table className="lead-data-table sla-lead-table">
               <thead>
                 <tr>
-                  <th style={{ width: '90px' }}>Mã Lead</th>
+                  <th style={{ width: '90px', textAlign: 'center' }}>Số thứ tự</th>
                   <th>Họ và tên & Liên hệ</th>
                   <th>Doanh nghiệp & Nhu cầu</th>
                   <th style={{ width: '160px' }}>Chuyên viên phụ trách</th>
@@ -2337,7 +2337,7 @@ export default function LeadFormsPage() {
                 </tr>
               </thead>
               <tbody>
-                {slaDistributionLeads.map((l) => {
+                {slaDistributionLeads.map((l, index) => {
                   const isOverdue = l.sla_status === 'OVERDUE'
                   const isWarning = l.sla_status === 'WARNING'
                   const isAccepted = l.assignment_status === 'ACCEPTED'
@@ -2349,8 +2349,8 @@ export default function LeadFormsPage() {
                       id={`sla-lead-row-${l.id}`}
                     >
 
-                      <td>
-                        <span className="lead-code-tag">{l.code}</span>
+                      <td style={{ textAlign: 'center' }}>
+                        <span className="lead-stt-badge">{index + 1}</span>
                       </td>
 
                       <td>
@@ -2842,7 +2842,7 @@ export default function LeadFormsPage() {
                 <table className="lead-conversion-table">
                   <thead>
                     <tr>
-                      <th style={{ width: '110px' }}>Mã Lead</th>
+                      <th style={{ width: '90px', textAlign: 'center' }}>Số thứ tự</th>
                       <th style={{ width: '230px' }}>Khách hàng tiềm năng</th>
                       <th>Doanh nghiệp / Nhu cầu</th>
                       <th style={{ width: '140px', textAlign: 'center' }}>Điểm & Phân hạng</th>
@@ -2858,11 +2858,13 @@ export default function LeadFormsPage() {
                         </td>
                       </tr>
                     ) : (
-                      leads.filter((l) => l.status !== 'CONVERTED').map((l) => {
+                      leads.filter((l) => l.status !== 'CONVERTED').map((l, index) => {
                         const statusCfg = LEAD_STATUS_CONFIG[l.status]
                         return (
                           <tr key={l.id}>
-                            <td><span className="lead-code-tag">{l.code}</span></td>
+                            <td style={{ textAlign: 'center' }}>
+                              <span className="lead-stt-badge">{index + 1}</span>
+                            </td>
                             <td>
                               <div className="lead-contact-info">
                                 <strong className="lead-contact-name">{l.full_name}</strong>
@@ -2929,7 +2931,7 @@ export default function LeadFormsPage() {
                     <table className="lead-conversion-table">
                       <thead>
                         <tr>
-                          <th style={{ width: '110px' }}>Mã Lead</th>
+                          <th style={{ width: '90px', textAlign: 'center' }}>Số thứ tự</th>
                           <th style={{ width: '200px' }}>Lead nguồn</th>
                           <th style={{ width: '230px' }}>Khách hàng CRM đã tạo</th>
                           <th>Cơ hội bán hàng đã tạo</th>
@@ -2938,9 +2940,11 @@ export default function LeadFormsPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {leads.filter((l) => l.status === 'CONVERTED').map((l) => (
+                        {leads.filter((l) => l.status === 'CONVERTED').map((l, index) => (
                           <tr key={l.id}>
-                            <td><span className="lead-code-tag">{l.code}</span></td>
+                            <td style={{ textAlign: 'center' }}>
+                              <span className="lead-stt-badge">{index + 1}</span>
+                            </td>
                             <td><strong style={{ color: '#0f172a' }}>{l.full_name}</strong></td>
                             <td>
                               <span style={{ fontWeight: 600, color: '#1d4ed8' }}>
