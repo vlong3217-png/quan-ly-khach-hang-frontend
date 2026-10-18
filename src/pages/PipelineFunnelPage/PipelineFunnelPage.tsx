@@ -36,10 +36,6 @@ export default function PipelineFunnelPage() {
             <span>🌪️</span>
             <span>Phễu bán hàng & Tỷ lệ chuyển đổi (Pipeline Funnel Analytics)</span>
           </h1>
-          <p>
-            Phân tích số cơ hội và giá trị ở từng giai đoạn, tỷ lệ chuyển đổi giữa các nấc phễu và thời gian lưu chuyển trung bình.
-            Tự động cảnh báo giai đoạn rơi rụng nhiều nhất và điểm nghẽn tắc lâu nhất (S8-05).
-          </p>
         </div>
       </div>
 

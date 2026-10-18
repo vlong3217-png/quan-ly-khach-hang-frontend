@@ -36,7 +36,6 @@ export default function MarketingRoiReportPage() {
       {/* ── 1. HEADER ── */}
       <PageHeader
         title="Báo Cáo Nguồn Lead & Hiệu Quả Chiến Dịch (S8-09)"
-        description="Theo dõi số lượng lead, tỷ lệ tiếp nhận, tỷ lệ chuyển đổi thành cơ hội theo từng nguồn và từng chiến dịch marketing, tính toán ROI và xuất file Excel"
         className="marketing-roi-header"
         actions={
           <button

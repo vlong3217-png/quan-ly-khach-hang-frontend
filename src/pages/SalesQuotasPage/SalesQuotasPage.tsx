@@ -194,10 +194,6 @@ export default function SalesQuotasPage() {
             <span>🎯</span>
             <span>Chỉ tiêu doanh số & Kế hoạch bán hàng (Sales Quotas)</span>
           </h1>
-          <p>
-            Thiết lập chỉ tiêu doanh số theo tháng và theo quý cho nhân viên và đội nhóm.
-            Kiểm soát tổng chỉ tiêu nhóm bằng tổng thành viên, tự động khoá kỳ đã qua và bảo mật chỉ tiêu cá nhân (S8-03).
-          </p>
         </div>
         {isManagerOrAdmin && (
           <div className="quotas-header-actions">
