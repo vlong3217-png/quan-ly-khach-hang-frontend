@@ -1,0 +1,100 @@
+﻿/* Standard CRM Pagination Component CSS */
+.crm-pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #ffffff;
+  border-top: 1px solid var(--border, #e2e8f0);
+  border-bottom-left-radius: var(--radius-lg, 12px);
+  border-bottom-right-radius: var(--radius-lg, 12px);
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: inherit;
+}
+
+.crm-pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--slate-600, #475569);
+  flex-wrap: wrap;
+}
+
+.crm-pagination-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.crm-pagination-select {
+  padding: 4px 8px;
+  border: 1px solid var(--border-strong, #cbd5e1);
+  border-radius: var(--radius-sm, 6px);
+  background: #ffffff;
+  font-size: 12.5px;
+  color: var(--slate-800, #1e293b);
+  cursor: pointer;
+  outline: none;
+}
+
+.crm-pagination-select:focus {
+  border-color: var(--accent, #2563eb);
+}
+
+.crm-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crm-page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.crm-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border, #e2e8f0);
+  background: #ffffff;
+  color: var(--slate-700, #334155);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.crm-page-btn:hover:not(:disabled) {
+  background: var(--slate-100, #f1f5f9);
+  border-color: var(--border-strong, #cbd5e1);
+  color: var(--slate-900, #0f172a);
+}
+
+.crm-page-btn.page-num.active {
+  background: var(--accent, #2563eb);
+  border-color: var(--accent, #2563eb);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.crm-page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--slate-50, #f8fafc);
+  border-color: var(--slate-200, #e2e8f0);
+}
+
+.crm-page-dots {
+  padding: 0 4px;
+  color: var(--slate-400, #94a3b8);
+  font-size: 13px;
+}
