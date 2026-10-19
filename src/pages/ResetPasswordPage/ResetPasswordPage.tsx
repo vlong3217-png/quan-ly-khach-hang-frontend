@@ -19,7 +19,7 @@ export function validateResetPassword(
   const errors: ResetFormErrors = {}
 
   if (!token.trim()) {
-    errors.token = 'Vui lòng cung cấp mã token đặt lại mật khẩu.'
+    errors.token = 'Vui lòng cung cấp mã xác nhận từ email.'
   }
 
   if (!newPassword) {
@@ -233,7 +233,7 @@ function ResetPasswordPage() {
             {/* Token */}
             <div className="input-group">
               <label className="input-label" htmlFor="reset-token">
-                Mã xác nhận (Token)
+                Mã xác nhận (OTP gồm 6 chữ số)
               </label>
               <div className="input-wrapper">
                 <IconKey />
@@ -241,7 +241,7 @@ function ResetPasswordPage() {
                   id="reset-token"
                   className={`input-field ${errors.token ? 'input-field--error' : ''}`}
                   type="text"
-                  placeholder="Nhập mã token từ email"
+                  placeholder="Nhập mã xác nhận 6 số từ email"
                   value={token}
                   onChange={(e) => handleFieldChange('token', e.target.value)}
                   autoComplete="off"
