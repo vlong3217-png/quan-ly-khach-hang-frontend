@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    Customer Management Page Styles - User Story S3-01 to S3-09
    Quản lý khách hàng doanh nghiệp, Người liên hệ, Trang 360,
    Gộp trùng, Công ty Mẹ-Con, Nhập Excel, Yêu cầu CSKH & Chăm sóc định kỳ
@@ -9,6 +9,17 @@
   flex-direction: column;
   gap: 20px;
   width: 100%;
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Tắt mọi hiệu ứng chuyển động (animations & transitions) khi mở trang hoặc chuyển tab */
+.customer-page,
+.customer-page *,
+.customer-page *::before,
+.customer-page *::after {
+  animation: none !important;
+  transition: none !important;
 }
 
 /* ── 1. Page Header & Stats ── */
