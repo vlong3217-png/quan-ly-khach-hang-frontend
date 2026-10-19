@@ -1,4 +1,4 @@
-/* ──────────── S2-01: Import Users Service ──────────── */
+﻿/* ──────────── S2-01: Import Users Service ──────────── */
 
 import { API_BASE_URL } from './authService.ts'
 import type {
@@ -353,7 +353,7 @@ export async function importUsers(
         method: 'POST',
         headers: authHeaders,
         body: formData,
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(60000),
       })
     } else {
       // Fallback JSON payload
@@ -374,7 +374,7 @@ export async function importUsers(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(60000),
       })
     }
 
@@ -416,13 +416,7 @@ export async function importUsers(
       }
     }
 
-    // Nếu endpoint không tồn tại, fallback sang mock
-    if (response.status === 404 || response.status === 405) {
-      return mockImportUsers(validRows)
-    }
-
-    // Lỗi khác từ API
-    let errorMsg = 'Lỗi từ server khi import'
+    let errorMsg = 'Lỗi từ máy chủ khi nhập danh sách tài khoản'
     try {
       const errData = await response.json()
       errorMsg = errData.detail || errData.message || errorMsg
@@ -430,44 +424,11 @@ export async function importUsers(
       // ignore
     }
     throw new Error(errorMsg)
-  } catch (err) {
-    if (err instanceof Error && err.message.includes('Lỗi từ server')) {
+  } catch (err: any) {
+    if (err instanceof Error && err.message.includes('Lỗi từ máy chủ')) {
       throw err
     }
-    // Network error hoặc API không tồn tại → fallback sang mock
-    console.warn('API import chưa sẵn sàng, sử dụng mock import:', err)
-    return mockImportUsers(validRows)
-  }
-}
-
-/* ──────────── Mock Import (khi chưa có Backend) ──────────── */
-async function mockImportUsers(validRows: ImportUserRow[]): Promise<ImportResult> {
-  // Giả lập thời gian xử lý
-  await new Promise((r) => setTimeout(r, 1500))
-
-  // Giả lập: 95% thành công, 5% random lỗi trùng email từ server
-  const errors: ImportResult['errors'] = []
-  let importedCount = 0
-
-  for (const row of validRows) {
-    // Random 5% chance lỗi giả lập
-    if (Math.random() < 0.05) {
-      errors.push({
-        rowIndex: row.rowIndex,
-        full_name: row.full_name,
-        email: row.email,
-        errors: [{ field: 'email', message: 'Email đã tồn tại trong hệ thống' }],
-      })
-    } else {
-      importedCount++
-    }
-  }
-
-  return {
-    totalRows: validRows.length,
-    validRows: validRows.length,
-    importedRows: importedCount,
-    errorRows: errors.length,
-    errors,
+    console.error('Import users API error:', err)
+    throw new Error(err?.message || 'Không thể kết nối đến máy chủ để nhập tài khoản. Vui lòng thử lại sau.')
   }
 }

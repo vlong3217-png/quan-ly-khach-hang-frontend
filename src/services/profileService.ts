@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   UserProfile,
   UpdateProfileRequest,
   UpdateProfileResponse,
@@ -94,7 +94,7 @@ export async function getProfile(): Promise<UserProfile> {
     const response = await fetch(`${API_BASE_URL}/profile`, {
       method: 'GET',
       headers: getAuthHeaders(),
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(30000),
     })
 
     if (response.ok) {
@@ -109,7 +109,7 @@ export async function getProfile(): Promise<UserProfile> {
         const altResponse = await fetch(`${API_BASE_URL}/users/me`, {
           method: 'GET',
           headers: getAuthHeaders(),
-          signal: AbortSignal.timeout(3000),
+          signal: AbortSignal.timeout(30000),
         })
         if (altResponse.ok) {
           const altData = await altResponse.json()
@@ -178,7 +178,7 @@ export async function updateProfile(data: UpdateProfileRequest): Promise<UpdateP
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(30000),
     })
 
     if (response.ok) {
@@ -216,7 +216,7 @@ export async function updateProfile(data: UpdateProfileRequest): Promise<UpdateP
           method: 'PUT',
           headers: getAuthHeaders(),
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(4000),
+          signal: AbortSignal.timeout(30000),
         })
         if (altRes.ok) {
           const altData = (await altRes.json()) as UpdateProfileResponse
