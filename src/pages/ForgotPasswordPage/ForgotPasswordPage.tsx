@@ -61,7 +61,7 @@ function ForgotPasswordPage() {
   const [emailError, setEmailError] = useState<string | undefined>(undefined)
   const [generalError, setGeneralError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [resetToken, setResetToken] = useState<string | null>(null)
+  const [isSent, setIsSent] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleEmailChange = (val: string) => {
@@ -87,17 +87,14 @@ function ForgotPasswordPage() {
     setEmailError(undefined)
     setGeneralError(null)
     setSuccessMessage(null)
-    setResetToken(null)
     setIsLoading(true)
 
     try {
       const result = await forgotPassword(email)
       setSuccessMessage(
-        result.message || 'Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn'
+        result.message || 'Mã xác nhận 6 chữ số đã được gửi tới email của bạn.'
       )
-      if (result.reset_token) {
-        setResetToken(result.reset_token)
-      }
+      setIsSent(true)
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Đã có lỗi xảy ra. Vui lòng thử lại.'
@@ -117,7 +114,9 @@ function ForgotPasswordPage() {
           </div>
           <h1>Quên mật khẩu</h1>
           <p className="forgot-password-subtitle">
-            Nhập email của bạn để nhận hướng dẫn đặt lại mật khẩu
+            {isSent
+              ? 'Kiểm tra hộp thư email của bạn để lấy mã xác nhận'
+              : 'Nhập email của bạn để nhận mã xác nhận đặt lại mật khẩu'}
           </p>
         </div>
 
@@ -145,87 +144,108 @@ function ForgotPasswordPage() {
           </div>
         )}
 
-        {/* Dev / Test Token Helper Box (when backend returns reset_token) */}
-        {resetToken && (
-          <div className="dev-token-box" id="dev-token-box">
-            <p>Liên kết đặt lại mật khẩu (Token đã được tạo):</p>
+        {isSent ? (
+          <div className="forgot-password-actions" style={{ marginTop: '1.5rem' }}>
             <Link
-              to={`/reset-password?token=${encodeURIComponent(resetToken)}`}
-              className="dev-token-action"
-              id="dev-direct-reset-btn"
-            >
-              Chuyển tới Đặt lại mật khẩu ngay →
-            </Link>
-          </div>
-        )}
-
-        {/* Form */}
-        <form
-          className="forgot-password-form"
-          onSubmit={handleSubmit}
-          noValidate
-          id="forgot-password-form"
-        >
-          {/* Email input */}
-          <div className="input-group">
-            <label className="input-label" htmlFor="forgot-email">
-              Địa chỉ Email
-            </label>
-            <div className="input-wrapper">
-              <IconMail />
-              <input
-                id="forgot-email"
-                className={`input-field ${emailError ? 'input-field--error' : ''}`}
-                type="email"
-                placeholder="Nhập địa chỉ email của bạn"
-                value={email}
-                onChange={(e) => handleEmailChange(e.target.value)}
-                autoComplete="email"
-                disabled={isLoading}
-                aria-invalid={!!emailError}
-                aria-describedby={emailError ? 'forgot-email-error' : undefined}
-              />
-            </div>
-            {emailError && (
-              <div
-                className="input-error-text"
-                id="forgot-email-error"
-                role="alert"
-              >
-                <IconAlertCircle />
-                <span>{emailError}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className="forgot-password-actions">
-            <button
-              type="submit"
+              to="/reset-password"
               className="login-button"
-              disabled={isLoading}
-              id="forgot-submit-btn"
+              id="goto-reset-btn"
+              style={{ textAlign: 'center', textDecoration: 'none' }}
             >
-              {isLoading ? (
-                <>
-                  <span className="spinner" />
-                  Đang gửi yêu cầu...
-                </>
-              ) : (
-                'Gửi yêu cầu'
-              )}
+              Nhập mã xác nhận để đặt lại mật khẩu →
+            </Link>
+
+            <button
+              type="button"
+              className="back-to-login"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', justifyContent: 'center' }}
+              onClick={() => {
+                setIsSent(false)
+                setSuccessMessage(null)
+              }}
+            >
+              <span>Gửi lại mã xác nhận khác</span>
             </button>
 
             <Link
               to="/login"
               className="back-to-login"
               id="back-to-login-link"
+              style={{ justifyContent: 'center' }}
             >
               <IconArrowLeft />
               <span>Quay lại Đăng nhập</span>
             </Link>
           </div>
-        </form>
+        ) : (
+          /* Form */
+          <form
+            className="forgot-password-form"
+            onSubmit={handleSubmit}
+            noValidate
+            id="forgot-password-form"
+          >
+            {/* Email input */}
+            <div className="input-group">
+              <label className="input-label" htmlFor="forgot-email">
+                Địa chỉ Email
+              </label>
+              <div className="input-wrapper">
+                <IconMail />
+                <input
+                  id="forgot-email"
+                  className={`input-field ${emailError ? 'input-field--error' : ''}`}
+                  type="email"
+                  placeholder="Nhập địa chỉ email của bạn"
+                  value={email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  autoComplete="email"
+                  disabled={isLoading}
+                  aria-invalid={!!emailError}
+                  aria-describedby={emailError ? 'forgot-email-error' : undefined}
+                />
+              </div>
+              {emailError && (
+                <div
+                  className="input-error-text"
+                  id="forgot-email-error"
+                  role="alert"
+                >
+                  <IconAlertCircle />
+                  <span>{emailError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="forgot-password-actions">
+              <button
+                type="submit"
+                className="login-button"
+                disabled={isLoading}
+                id="forgot-submit-btn"
+              >
+                {isLoading ? (
+                  <>
+                    <span className="spinner" />
+                    Đang gửi mã về email...
+                  </>
+                ) : (
+                  'Gửi yêu cầu'
+                )}
+              </button>
+
+              <Link
+                to="/login"
+                className="back-to-login"
+                id="back-to-login-link"
+              >
+                <IconArrowLeft />
+                <span>Quay lại Đăng nhập</span>
+              </Link>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   )
