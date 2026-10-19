@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   UserAccount,
   UserListResponse,
   UserResponse,
@@ -164,14 +164,20 @@ export async function getUsers(params?: {
         }
       })
 
-      // Cập nhật và lưu vào storage cache
-      mockUsers = mappedUsers
-      saveUsersToStorage(mappedUsers)
+      // Hợp nhất danh sách backend với các tài khoản được tạo trên client/local để không bao giờ bị mất dữ liệu
+      const localCurrentUsers = getInitialUsers()
+      const backendEmails = new Set(mappedUsers.map((u) => u.email.toLowerCase()))
+      const clientOnlyUsers = localCurrentUsers.filter((u) => !backendEmails.has(u.email.toLowerCase()))
+      const mergedUsers: UserAccount[] = [...mappedUsers, ...clientOnlyUsers]
 
-      const total = typeof data.total === 'number' ? data.total : mappedUsers.length
+      // Cập nhật và lưu vào storage cache
+      mockUsers = mergedUsers
+      saveUsersToStorage(mergedUsers)
+
+      const total = typeof data.total === 'number' ? Math.max(data.total, mergedUsers.length) : mergedUsers.length
       return {
         success: true,
-        users: mappedUsers,
+        users: mergedUsers,
         total,
         page: data.page ?? params?.page ?? 1,
         limit: data.limit ?? params?.limit ?? 10,
