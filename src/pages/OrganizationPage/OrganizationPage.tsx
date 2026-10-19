@@ -178,9 +178,7 @@ export default function OrganizationPage() {
                 ) : (
                   <span className="tree-leaf-bullet" />
                 )}
-
-                <div className="node-badge-code">{node.code}</div>
-
+                {/* Ẩn mã PB cho gọn theo yêu cầu */}
                 <div className="node-content">
                   <div className="node-title">
                     <strong>{node.name}</strong>
@@ -295,7 +293,6 @@ export default function OrganizationPage() {
               <div className="node-detail-header">
                 <div>
                   <h3>{selectedNode.name}</h3>
-                  <span className="detail-code">{selectedNode.code}</span>
                 </div>
                 <Button
                   type="button"
