@@ -624,7 +624,7 @@ export const leadService = {
         source_detail: r.source || 'Nhập hàng loạt từ Excel',
         status: 'NEW',
         owner_id: 1,
-        owner_name: 'Nguyễn Văn An',
+        owner_name: 'Chưa phân công',
         requirement: r.requirement,
         notes: `Import ngày ${new Date().toLocaleDateString('vi-VN')}`,
         score,

@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   UserAccount,
   UserListResponse,
   UserResponse,
@@ -12,30 +12,64 @@ import type {
 } from '../types/user.ts'
 import { API_BASE_URL } from './authService.ts'
 
-/* ──────────── Mock Data ──────────── */
-const MOCK_USERS: UserAccount[] = [
-  {
-    id: 1,
-    full_name: 'Quản trị viên',
-    email: 'vlong3217@gmail.com',
-    phone: '0901234567',
-    role: 'ADMIN',
-    team: 'Ban Giám đốc',
-    status: 'active',
-    is_active: true,
-    created_at: '2025-01-15T08:00:00Z',
-  },
-]
+/* ──────────── LocalStorage Persistence Cache ──────────── */
+const STORAGE_USERS_KEY = 'crm_users_cache'
+const STORAGE_ASSIGNED_KEY = 'crm_users_assigned_cache'
 
-// Mock dữ liệu phụ trách của từng user (cho tính năng bàn giao dữ liệu S1-10)
+function getInitialUsers(): UserAccount[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_USERS_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return [
+    {
+      id: 1,
+      full_name: 'Quản trị viên',
+      email: 'vlong3217@gmail.com',
+      phone: '0901234567',
+      role: 'ADMIN',
+      team: 'Ban Giám đốc',
+      status: 'active',
+      is_active: true,
+      created_at: '2025-01-15T08:00:00Z',
+    },
+  ]
+}
+
+function saveUsersToStorage(users: UserAccount[]) {
+  try {
+    localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users))
+  } catch {
+    // ignore
+  }
+}
+
+let mockUsers: UserAccount[] = getInitialUsers()
 let mockAssignedItems: Array<{ id: number; name: string; type: string; owner_id: number }> = []
 
-let mockUsers = [...MOCK_USERS]
+try {
+  const rawAssigned = localStorage.getItem(STORAGE_ASSIGNED_KEY)
+  if (rawAssigned) {
+    mockAssignedItems = JSON.parse(rawAssigned)
+  }
+} catch {
+  // ignore
+}
 
-export function getMockUsers(): UserAccount[] { return [...mockUsers]; }
-let nextId = 9
+export function getMockUsers(): UserAccount[] {
+  return [...mockUsers]
+}
 
-/* ──────────── Helper ──────────── */
+let nextId = Math.max(10, ...mockUsers.map((u) => u.id + 1))
+
+/* ──────────── Helpers ──────────── */
 function getAuthToken(): string | null {
   return (
     localStorage.getItem('access_token') ||
@@ -68,31 +102,11 @@ async function parseErrorResponse(response: Response, defaultMessage: string): P
   return defaultMessage
 }
 
-/* ──────────── Kiểm tra API backend có sẵn không ──────────── */
-let _useRealApi: boolean | null = null
-
-async function shouldUseRealApi(): Promise<boolean> {
-  if (_useRealApi !== null) return _useRealApi
-
-  try {
-    // Kiểm tra endpoint backend S1-10 /users
-    const res = await fetch(`${API_BASE_URL}/users`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-      signal: AbortSignal.timeout(3000),
-    })
-    _useRealApi = res.status !== 404
-  } catch {
-    _useRealApi = false
-  }
-  return _useRealApi
-}
-
 /* ──────────── API Functions ──────────── */
 
 /**
  * Lấy danh sách người dùng
- * Hỗ trợ GET /users (S1-10 backend) hoặc GET /admin/users (Legacy)
+ * Gọi trực tiếp API backend /users. Nếu timeout (Render cold start) hoặc mất mạng, fallback sang localStorage cache.
  */
 export async function getUsers(params?: {
   search?: string
@@ -102,84 +116,75 @@ export async function getUsers(params?: {
   page?: number
   limit?: number
 }): Promise<UserListResponse> {
-  const useReal = await shouldUseRealApi()
+  try {
+    const query = new URLSearchParams()
+    if (params?.page) query.set('page', String(params.page))
+    if (params?.limit) query.set('limit', String(params.limit))
+    if (params?.search) query.set('search', params.search)
+    if (params?.role) query.set('role', params.role)
+    if (params?.status === 'active') query.set('is_active', 'true')
+    if (params?.status === 'locked' || params?.status === 'inactive') query.set('is_active', 'false')
 
-  if (useReal) {
-    try {
-      const query = new URLSearchParams()
-      if (params?.page) query.set('page', String(params.page))
-      if (params?.limit) query.set('limit', String(params.limit))
-      if (params?.search) query.set('search', params.search)
-      if (params?.role) query.set('role', params.role)
-      if (params?.status === 'active') query.set('is_active', 'true')
-      if (params?.status === 'locked' || params?.status === 'inactive') query.set('is_active', 'false')
+    const res = await fetch(`${API_BASE_URL}/users?${query.toString()}`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      signal: AbortSignal.timeout(30000), // Cho phép đến 30s khi Render cold start
+    })
 
-      const res = await fetch(`${API_BASE_URL}/users?${query.toString()}`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-      })
+    if (res.ok) {
+      const data = await res.json()
+      const rawList: any[] = Array.isArray(data?.items)
+        ? data.items
+        : Array.isArray(data)
+        ? data
+        : data.users || []
 
-      if (res.ok) {
-        const data = await res.json()
-        const rawList: any[] = Array.isArray(data?.items)
-          ? data.items
-          : (Array.isArray(data) ? data : data.users || [])
-        const mappedUsers: UserAccount[] = rawList.map((u) => {
-          let userStatus: UserStatus = 'active'
-          if (u.status) {
-            userStatus = u.status.toLowerCase() === 'locked' ? 'locked' : (u.is_active === false ? 'inactive' : 'active')
-          } else if (u.is_active === false) {
-            userStatus = 'locked'
-          }
-          return {
-            id: u.id,
-            full_name: u.full_name || u.username || u.email,
-            email: u.email,
-            phone: u.phone,
-            role: (u.role?.toUpperCase() || 'STAFF') as UserRole,
-            team: u.team,
-            status: userStatus,
-            is_active: u.is_active,
-            created_at: u.created_at || new Date().toISOString(),
-          }
-        })
-        const total = typeof data.total === 'number' ? data.total : mappedUsers.length
-        return {
-          success: true,
-          users: mappedUsers,
-          total,
-          page: data.page ?? params?.page ?? 1,
-          limit: data.limit ?? params?.limit ?? 10,
-          total_pages: data.total_pages ?? Math.max(1, Math.ceil(total / (data.limit || params?.limit || 10))),
+      const mappedUsers: UserAccount[] = rawList.map((u) => {
+        let userStatus: UserStatus = 'active'
+        if (u.status) {
+          userStatus =
+            u.status.toLowerCase() === 'locked'
+              ? 'locked'
+              : u.is_active === false
+              ? 'inactive'
+              : 'active'
+        } else if (u.is_active === false) {
+          userStatus = 'locked'
         }
-      }
-    } catch {
-      // Fallback
-    }
-
-    try {
-      const query = new URLSearchParams()
-      if (params?.search) query.set('search', params.search)
-      if (params?.role) query.set('role', params.role)
-      if (params?.status) query.set('status', params.status)
-      if (params?.team) query.set('team', params.team)
-
-      const url = `${API_BASE_URL}/admin/users${query.toString() ? '?' + query.toString() : ''}`
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: getAuthHeaders(),
+        return {
+          id: u.id,
+          full_name: u.full_name || u.username || u.email,
+          email: u.email,
+          phone: u.phone,
+          role: (u.role?.toUpperCase() || 'STAFF') as UserRole,
+          team: u.team,
+          status: userStatus,
+          is_active: u.is_active,
+          created_at: u.created_at || new Date().toISOString(),
+        }
       })
-      if (response.ok) {
-        return (await response.json()) as UserListResponse
+
+      // Cập nhật và lưu vào storage cache
+      mockUsers = mappedUsers
+      saveUsersToStorage(mappedUsers)
+
+      const total = typeof data.total === 'number' ? data.total : mappedUsers.length
+      return {
+        success: true,
+        users: mappedUsers,
+        total,
+        page: data.page ?? params?.page ?? 1,
+        limit: data.limit ?? params?.limit ?? 10,
+        total_pages:
+          data.total_pages ??
+          Math.max(1, Math.ceil(total / (data.limit || params?.limit || 10))),
       }
-    } catch {
-      // Fallback to mock
     }
+  } catch (err) {
+    console.warn('Backend /users request failed or timed out, using local storage cache:', err)
   }
 
-  // ── Mock ──
-  await new Promise((r) => setTimeout(r, 200))
-
+  // ── Fallback sang Cache LocalStorage ──
   let filtered = [...mockUsers]
   if (params?.search) {
     const s = params.search.toLowerCase()
@@ -205,45 +210,43 @@ export async function getUsers(params?: {
 
 /**
  * Tạo tài khoản mới
- * POST /admin/users hoặc POST /users
+ * Gửi lên POST /users, đồng thời lưu ngay vào cache localStorage
  */
 export async function createUser(payload: CreateUserRequest): Promise<UserResponse> {
-  const useReal = await shouldUseRealApi()
+  const roleNormalized = payload.role === 'STAFF' ? 'USER' : payload.role || 'USER'
+  const backendBody = {
+    email: payload.email.trim(),
+    full_name: payload.full_name.trim(),
+    password: payload.password,
+    role: roleNormalized,
+    username: payload.email.trim().split('@')[0],
+    is_active: true,
+  }
 
-  if (useReal) {
-    const roleNormalized = payload.role === 'STAFF' ? 'USER' : (payload.role || 'USER')
-    const backendBody = {
-      email: payload.email.trim(),
-      full_name: payload.full_name.trim(),
-      password: payload.password,
-      role: roleNormalized,
-      username: payload.email.trim().split('@')[0],
-      is_active: true,
-    }
+  let createdUser: UserAccount | null = null
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/users`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(backendBody),
-      })
+  try {
+    const response = await fetch(`${API_BASE_URL}/users`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(backendBody),
+      signal: AbortSignal.timeout(30000),
+    })
 
-      if (response.ok) {
-        const u = await response.json()
-        return {
-          success: true,
-          message: 'Tạo tài khoản thành công.',
-          user: {
-            ...u,
-            phone: payload.phone,
-            team: payload.team,
-            status: u.is_active ? 'active' : 'locked',
-            created_at: u.created_at || new Date().toISOString(),
-          },
-        }
+    if (response.ok) {
+      const u = await response.json()
+      createdUser = {
+        id: u.id,
+        full_name: u.full_name || payload.full_name,
+        email: u.email || payload.email,
+        phone: payload.phone,
+        role: (u.role?.toUpperCase() || payload.role) as UserRole,
+        team: payload.team,
+        status: u.is_active ? 'active' : 'locked',
+        is_active: u.is_active !== undefined ? u.is_active : true,
+        created_at: u.created_at || new Date().toISOString(),
       }
-
-      // Nếu backend trả về lỗi (400, 422, etc.), trích xuất thông báo chi tiết
+    } else {
       const errData = await response.json().catch(() => null)
       if (errData?.detail) {
         const errorMsg = Array.isArray(errData.detail)
@@ -251,110 +254,92 @@ export async function createUser(payload: CreateUserRequest): Promise<UserRespon
           : String(errData.detail)
         throw new Error(errorMsg)
       }
-    } catch (err: any) {
-      if (err?.message && !err.message.includes('fetch')) {
-        throw err
-      }
+    }
+  } catch (err: any) {
+    if (err?.message && !err.message.includes('fetch') && !err.message.includes('timeout')) {
+      throw err
+    }
+    console.warn('Network error creating user on backend, saving locally:', err)
+  }
+
+  // Nếu backend thành công hoặc nếu offline:
+  if (!createdUser) {
+    if (mockUsers.some((u) => u.email === payload.email)) {
+      throw new Error('Email đã được sử dụng bởi tài khoản khác.')
+    }
+    createdUser = {
+      id: nextId++,
+      full_name: payload.full_name,
+      email: payload.email,
+      phone: payload.phone,
+      role: payload.role,
+      team: payload.team,
+      status: 'active',
+      is_active: true,
+      created_at: new Date().toISOString(),
     }
   }
 
-  // ── Mock ──
-  await new Promise((r) => setTimeout(r, 300))
+  mockUsers = [createdUser, ...mockUsers.filter((u) => u.id !== createdUser!.id && u.email !== createdUser!.email)]
+  saveUsersToStorage(mockUsers)
 
-  if (mockUsers.some((u) => u.email === payload.email)) {
-    throw new Error('Email đã được sử dụng bởi tài khoản khác.')
-  }
-
-  const newUser: UserAccount = {
-    id: nextId++,
-    full_name: payload.full_name,
-    email: payload.email,
-    phone: payload.phone,
-    role: payload.role,
-    team: payload.team,
-    status: 'active',
-    is_active: true,
-    created_at: new Date().toISOString(),
-  }
-
-  mockUsers = [newUser, ...mockUsers]
-
-  return { success: true, message: 'Tạo tài khoản thành công.', user: newUser }
+  return { success: true, message: 'Tạo tài khoản thành công.', user: createdUser }
 }
 
 /**
  * Cập nhật tài khoản
- * PUT /admin/users/:id hoặc PUT /users/:id
+ * PUT /users/:id
  */
 export async function updateUser(
   userId: number,
   payload: UpdateUserRequest
 ): Promise<UserResponse> {
-  const useReal = await shouldUseRealApi()
+  const updateBody: any = {}
+  if (payload.full_name) updateBody.full_name = payload.full_name.trim()
+  if (payload.email) updateBody.email = payload.email.trim()
+  if (payload.role) updateBody.role = payload.role === 'STAFF' ? 'USER' : payload.role
+  if (payload.status) updateBody.is_active = payload.status === 'active'
 
-  if (useReal) {
-    const updateBody: any = {}
-    if (payload.full_name) updateBody.full_name = payload.full_name.trim()
-    if (payload.email) updateBody.email = payload.email.trim()
-    if (payload.role) updateBody.role = payload.role === 'STAFF' ? 'USER' : payload.role
-    if (payload.status) updateBody.is_active = payload.status === 'active'
+  let updatedUser: UserAccount | null = null
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(updateBody),
-      })
-      if (response.ok) {
-        const u = await response.json()
-        return {
-          success: true,
-          message: 'Cập nhật tài khoản thành công.',
-          user: {
-            ...u,
-            phone: payload.phone,
-            team: payload.team,
-            status: u.status?.toLowerCase() === 'locked' ? 'locked' : (u.is_active ? 'active' : 'inactive'),
-          },
-        }
-      }
-
-      const errData = await response.json().catch(() => null)
-      if (errData?.detail) {
-        const errorMsg = Array.isArray(errData.detail)
-          ? errData.detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ')
-          : String(errData.detail)
-        throw new Error(errorMsg)
-      }
-    } catch (err: any) {
-      if (err?.message && !err.message.includes('fetch')) {
-        throw err
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(updateBody),
+      signal: AbortSignal.timeout(30000),
+    })
+    if (response.ok) {
+      const u = await response.json()
+      updatedUser = {
+        id: u.id,
+        full_name: u.full_name || payload.full_name || '',
+        email: u.email || payload.email || '',
+        phone: payload.phone,
+        role: (u.role?.toUpperCase() || payload.role || 'USER') as UserRole,
+        team: payload.team,
+        status: u.status?.toLowerCase() === 'locked' ? 'locked' : u.is_active ? 'active' : 'inactive',
+        is_active: u.is_active,
+        created_at: u.created_at || new Date().toISOString(),
       }
     }
+  } catch (err) {
+    console.warn('Backend update failed, updating locally:', err)
   }
-
-  // ── Mock ──
-  await new Promise((r) => setTimeout(r, 300))
 
   const idx = mockUsers.findIndex((u) => u.id === userId)
-  if (idx === -1) {
-    throw new Error('Không tìm thấy tài khoản.')
-  }
-
-  if (payload.email && payload.email !== mockUsers[idx].email) {
-    if (mockUsers.some((u) => u.email === payload.email)) {
-      throw new Error('Email đã được sử dụng bởi tài khoản khác.')
+  if (idx !== -1) {
+    mockUsers[idx] = {
+      ...mockUsers[idx],
+      ...payload,
+      is_active: payload.status ? payload.status === 'active' : mockUsers[idx].is_active,
+      updated_at: new Date().toISOString(),
     }
+    saveUsersToStorage(mockUsers)
+    return { success: true, message: 'Cập nhật tài khoản thành công.', user: mockUsers[idx] }
   }
 
-  mockUsers[idx] = {
-    ...mockUsers[idx],
-    ...payload,
-    is_active: payload.status ? payload.status === 'active' : mockUsers[idx].is_active,
-    updated_at: new Date().toISOString(),
-  }
-
-  return { success: true, message: 'Cập nhật tài khoản thành công.', user: mockUsers[idx] }
+  return { success: true, message: 'Cập nhật tài khoản thành công.', user: updatedUser || (mockUsers[0] as UserAccount) }
 }
 
 /* ──────────── S1-10: Khóa / Mở khóa tài khoản & Bàn giao dữ liệu ──────────── */
@@ -363,78 +348,65 @@ export async function updateUser(
  * Lấy danh sách các dữ liệu đang do user phụ trách (khách hàng)
  */
 export async function getUserAssignedData(userId: number): Promise<HandoverItem[]> {
-  const useReal = await shouldUseRealApi()
-
-  if (useReal) {
-    try {
-      // Nếu backend có endpoint riêng hoặc mock
-      const res = await fetch(`${API_BASE_URL}/users/${userId}/assigned-data`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-      })
-      if (res.ok) {
-        return (await res.json()) as HandoverItem[]
-      }
-    } catch {
-      // Fallback to mock
+  try {
+    const res = await fetch(`${API_BASE_URL}/users/${userId}/assigned-data`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      signal: AbortSignal.timeout(15000),
+    })
+    if (res.ok) {
+      return (await res.json()) as HandoverItem[]
     }
+  } catch {
+    // Fallback to local
   }
 
-  // ── Mock ──
-  await new Promise((r) => setTimeout(r, 150))
   return mockAssignedItems.filter((item) => item.owner_id === userId)
 }
 
 /**
  * Cập nhật trạng thái tài khoản (Khóa hoặc Mở khóa)
  * PATCH /users/:id/status
- * Body: { status: "ACTIVE" | "LOCKED", handover_to_user_id?: number | null }
  */
 export async function updateUserStatus(
   userId: number,
   status: 'ACTIVE' | 'LOCKED',
   handoverToUserId?: number | null
 ): Promise<UserStatusResponse> {
-  const useReal = await shouldUseRealApi()
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/status`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        status,
+        handover_to_user_id: handoverToUserId || null,
+      }),
+      signal: AbortSignal.timeout(30000),
+    })
 
-  if (useReal) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/${userId}/status`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          status,
-          handover_to_user_id: handoverToUserId || null,
-        }),
-      })
-
-      if (response.ok) {
-        const data = (await response.json()) as UserStatusResponse
-        // Đồng bộ mock cache
-        const idx = mockUsers.findIndex((u) => u.id === userId)
-        if (idx !== -1) {
-          mockUsers[idx].status = status === 'LOCKED' ? 'locked' : 'active'
-          mockUsers[idx].is_active = status === 'ACTIVE'
-        }
-        return data
+    if (response.ok) {
+      const data = (await response.json()) as UserStatusResponse
+      const idx = mockUsers.findIndex((u) => u.id === userId)
+      if (idx !== -1) {
+        mockUsers[idx].status = status === 'LOCKED' ? 'locked' : 'active'
+        mockUsers[idx].is_active = status === 'ACTIVE'
+        saveUsersToStorage(mockUsers)
       }
+      return data
+    }
 
-      const errorMsg = await parseErrorResponse(
-        response,
-        status === 'LOCKED' ? 'Không thể khóa tài khoản.' : 'Không thể mở khóa tài khoản.'
-      )
-      throw new Error(errorMsg)
-    } catch (err) {
-      if (err instanceof Error && !err.message.includes('fetch')) {
-        throw err
-      }
-      // Fallback sang mock nếu server lỗi mạng
+    const errorMsg = await parseErrorResponse(
+      response,
+      status === 'LOCKED' ? 'Không thể khóa tài khoản.' : 'Không thể mở khóa tài khoản.'
+    )
+    throw new Error(errorMsg)
+  } catch (err) {
+    if (err instanceof Error && !err.message.includes('fetch') && !err.message.includes('timeout')) {
+      throw err
     }
   }
 
-  // ── Mock ──
-  await new Promise((r) => setTimeout(r, 350))
-
+  // ── Local Fallback ──
   const idx = mockUsers.findIndex((u) => u.id === userId)
   if (idx === -1) {
     throw new Error(`Không tìm thấy tài khoản người dùng với id ${userId}`)
@@ -446,15 +418,10 @@ export async function updateUserStatus(
     mockUsers[idx].status = 'locked'
     mockUsers[idx].is_active = false
 
-    // Thực hiện bàn giao nếu có chỉ định người nhận
     if (handoverToUserId) {
       const targetUser = mockUsers.find((u) => u.id === handoverToUserId)
-      if (!targetUser) {
-        throw new Error(`Không tìm thấy người nhận bàn giao với id ${handoverToUserId}`)
-      }
-      if (targetUser.id === userId) {
-        throw new Error('Không thể bàn giao dữ liệu cho chính tài khoản này')
-      }
+      if (!targetUser) throw new Error(`Không tìm thấy người nhận bàn giao với id ${handoverToUserId}`)
+      if (targetUser.id === userId) throw new Error('Không thể bàn giao dữ liệu cho chính tài khoản này')
       if (targetUser.status === 'locked' || targetUser.is_active === false) {
         throw new Error('Không thể bàn giao dữ liệu cho tài khoản đang bị khóa')
       }
@@ -466,6 +433,7 @@ export async function updateUserStatus(
           transferred.push({ id: item.id, type: item.type, name: item.name })
         }
       })
+      localStorage.setItem(STORAGE_ASSIGNED_KEY, JSON.stringify(mockAssignedItems))
 
       handoverResult = {
         success: true,
@@ -476,6 +444,8 @@ export async function updateUserStatus(
         transferred_items: transferred,
       }
     }
+
+    saveUsersToStorage(mockUsers)
 
     return {
       id: mockUsers[idx].id,
@@ -490,9 +460,9 @@ export async function updateUserStatus(
       handover: handoverResult,
     }
   } else {
-    // Mở khóa (ACTIVE)
     mockUsers[idx].status = 'active'
     mockUsers[idx].is_active = true
+    saveUsersToStorage(mockUsers)
 
     return {
       id: mockUsers[idx].id,
@@ -515,29 +485,23 @@ export async function handoverUserData(
   sourceUserId: number,
   targetUserId: number
 ): Promise<DataHandoverResponse> {
-  const useReal = await shouldUseRealApi()
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/${sourceUserId}/handover`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ target_user_id: targetUserId }),
+      signal: AbortSignal.timeout(30000),
+    })
 
-  if (useReal) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/${sourceUserId}/handover`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ target_user_id: targetUserId }),
-      })
-
-      if (response.ok) {
-        return (await response.json()) as DataHandoverResponse
-      }
-
-      const errorMsg = await parseErrorResponse(response, 'Bàn giao dữ liệu không thành công.')
-      throw new Error(errorMsg)
-    } catch (err) {
-      if (err instanceof Error && !err.message.includes('fetch')) throw err
+    if (response.ok) {
+      return (await response.json()) as DataHandoverResponse
     }
-  }
 
-  // ── Mock ──
-  await new Promise((r) => setTimeout(r, 300))
+    const errorMsg = await parseErrorResponse(response, 'Bàn giao dữ liệu không thành công.')
+    throw new Error(errorMsg)
+  } catch (err) {
+    if (err instanceof Error && !err.message.includes('fetch') && !err.message.includes('timeout')) throw err
+  }
 
   const sourceUser = mockUsers.find((u) => u.id === sourceUserId)
   if (!sourceUser) throw new Error(`Không tìm thấy tài khoản nguồn #${sourceUserId}`)
@@ -545,10 +509,7 @@ export async function handoverUserData(
   const targetUser = mockUsers.find((u) => u.id === targetUserId)
   if (!targetUser) throw new Error(`Không tìm thấy tài khoản nhận #${targetUserId}`)
 
-  if (targetUserId === sourceUserId) {
-    throw new Error('Không thể bàn giao dữ liệu cho chính tài khoản này')
-  }
-
+  if (targetUserId === sourceUserId) throw new Error('Không thể bàn giao dữ liệu cho chính tài khoản này')
   if (targetUser.status === 'locked' || targetUser.is_active === false) {
     throw new Error('Không thể bàn giao dữ liệu cho tài khoản đang bị khóa')
   }
@@ -560,6 +521,7 @@ export async function handoverUserData(
       transferred.push({ id: item.id, type: item.type, name: item.name })
     }
   })
+  localStorage.setItem(STORAGE_ASSIGNED_KEY, JSON.stringify(mockAssignedItems))
 
   return {
     success: true,
