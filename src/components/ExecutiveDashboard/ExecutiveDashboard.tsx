@@ -35,7 +35,7 @@ export default function ExecutiveDashboard() {
       <div className="role-preview-toolbar">
         <div className="role-switcher-title">
           <span>📊</span>
-          <span>Chế độ Dashboard theo vai trò (User Story S8-04):</span>
+          <span>Chế độ Dashboard theo vai trò</span>
         </div>
 
         <div className="role-pills-group">
