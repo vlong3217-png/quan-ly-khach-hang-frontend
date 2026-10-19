@@ -128,7 +128,7 @@ export async function getUsers(params?: {
     const res = await fetch(`${API_BASE_URL}/users?${query.toString()}`, {
       method: 'GET',
       headers: getAuthHeaders(),
-      signal: AbortSignal.timeout(30000), // Cho phép đến 30s khi Render cold start
+      signal: AbortSignal.timeout(4000), // Timeout nhanh 4s, nếu backend chậm/ngủ thì dùng ngay cache local
     })
 
     if (res.ok) {
@@ -236,7 +236,7 @@ export async function createUser(payload: CreateUserRequest): Promise<UserRespon
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(backendBody),
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(4000), // Timeout nhanh 4s nếu Render backend ngủ, tránh treo UI
     })
 
     if (response.ok) {
@@ -262,10 +262,11 @@ export async function createUser(payload: CreateUserRequest): Promise<UserRespon
       }
     }
   } catch (err: any) {
-    if (err?.message && !err.message.includes('fetch') && !err.message.includes('timeout')) {
+    // Nếu là lỗi nghiệp vụ (như trùng email, sai định dạng) do backend trả về thì throw
+    if (err?.message && !err.message.includes('fetch') && !err.message.toLowerCase().includes('time') && !err.name?.includes('Abort') && !err.name?.includes('Timeout')) {
       throw err
     }
-    console.warn('Network error creating user on backend, saving locally:', err)
+    console.warn('Backend /users request timed out or unavailable, saving locally:', err)
   }
 
   // Nếu backend thành công hoặc nếu offline:
