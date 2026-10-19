@@ -24,8 +24,8 @@ export function validateResetPassword(
 
   if (!newPassword) {
     errors.newPassword = 'Vui lòng nhập mật khẩu mới.'
-  } else if (newPassword.length < 6) {
-    errors.newPassword = 'Mật khẩu mới phải có ít nhất 6 ký tự.'
+  } else if (newPassword.length < 8) {
+    errors.newPassword = 'Mật khẩu mới phải có ít nhất 8 ký tự.'
   }
 
   if (!confirmPassword) {
@@ -275,7 +275,7 @@ function ResetPasswordPage() {
                     errors.newPassword ? 'input-field--error' : ''
                   }`}
                   type={showNewPassword ? 'text' : 'password'}
-                  placeholder="Tối thiểu 6 ký tự"
+                  placeholder="Tối thiểu 8 ký tự"
                   value={newPassword}
                   onChange={(e) => handleFieldChange('newPassword', e.target.value)}
                   autoComplete="new-password"
