@@ -5,76 +5,10 @@ import type {
 } from '../types/emailMarketing.ts'
 import { customerService } from './customerService.ts'
 
-const STORAGE_KEY_TEMPLATES = 'crm_email_templates_v1'
+const STORAGE_KEY_TEMPLATES = 'crm_email_templates_v2'
 const STORAGE_KEY_QUEUE = 'crm_email_queue_v1'
 
-const INITIAL_TEMPLATES: EmailTemplate[] = [
-  {
-    id: 'tmpl-01',
-    name: 'Giới thiệu giải pháp CRM & Ưu đãi Q4',
-    category: 'INTRODUCTION',
-    subject: 'Kính gửi {{contact_name}} - Giải pháp chuyển đổi số bán hàng từ {{assigned_rep}}',
-    body: `Kính gửi Anh/Chị {{contact_name}},
-
-Em là {{assigned_rep}} phụ trách tư vấn giải pháp tại SmartCRM.
-
-Nhận thấy {{company_name}} đang đẩy mạnh chuyển đổi số và mở rộng quy mô kinh doanh, chúng tôi xin gửi đến Anh/Chị bộ giải pháp quản lý quan hệ khách hàng và tối ưu hiệu suất đội ngũ kinh doanh.
-
-Các lợi ích then chốt:
-- Quản lý tập trung dữ liệu khách hàng 360 độ
-- Tự động hóa quy trình theo dõi báo giá và hợp đồng
-- Cảnh báo chống bỏ sót cơ hội và đo lường tỷ lệ chuyển đổi
-
-Em xin phép gửi kèm tài liệu chi tiết. Rất mong có dịp trao đổi thêm cùng Anh/Chị và {{company_name}}.
-
-Trân trọng,
-{{assigned_rep}}
-Bộ phận Phát triển Giải pháp`,
-    created_at: '2026-10-01T08:00:00.000Z',
-    updated_at: '2026-10-01T08:00:00.000Z',
-    usage_count: 24,
-  },
-  {
-    id: 'tmpl-02',
-    name: 'Thư chăm sóc & Lắng nghe phản hồi sau Báo giá',
-    category: 'FOLLOWUP',
-    subject: 'Trao đổi thêm về phương án báo giá cho {{company_name}}',
-    body: `Chào Anh/Chị {{contact_name}},
-
-Sau khi gửi bảng báo giá chi tiết, {{assigned_rep}} muốn liên hệ để lắng nghe thêm phản hồi của {{company_name}}.
-
-Không biết Anh/Chị đã xem qua đề xuất của bên em chưa? Nếu có điểm nào cần làm rõ về cấu hình giải pháp, điều khoản thanh toán hoặc chính sách ưu đãi, {{assigned_rep}} luôn sẵn sàng hỗ trợ trực tiếp.
-
-Chúc Anh/Chị {{contact_name}} và Quý công ty một tuần làm việc hiệu quả!
-
-Thân ái,
-{{assigned_rep}}`,
-    created_at: '2026-10-03T10:00:00.000Z',
-    updated_at: '2026-10-03T10:00:00.000Z',
-    usage_count: 18,
-  },
-  {
-    id: 'tmpl-03',
-    name: 'Thư cảm ơn & Kích hoạt dịch vụ Hợp đồng',
-    category: 'CONTRACT',
-    subject: 'Chào mừng {{company_name}} chính thức gia nhập hệ sinh thái dịch vụ',
-    body: `Kính gửi Quý công ty {{company_name}} và Anh/Chị {{contact_name}},
-
-Chúng tôi xin chân thành cảm ơn sự tin tưởng và đồng hành của Quý khách cùng chúng tôi trong thời gian qua.
-
-Hợp đồng cung cấp dịch vụ đã chính thức có hiệu lực. Chuyên viên phụ trách của Anh/Chị là {{assigned_rep}} sẽ liên hệ trong vòng 24 giờ tới để tiến hành các bước bàn giao và hướng dẫn triển khai.
-
-Mọi yêu cầu hỗ trợ kỹ thuật hoặc tư vấn phát sinh, xin vui lòng phản hồi trực tiếp qua email này.
-
-Kính chúc {{company_name}} ngày càng phát triển thịnh vượng!
-
-Trân trọng,
-{{assigned_rep}}`,
-    created_at: '2026-10-05T14:30:00.000Z',
-    updated_at: '2026-10-05T14:30:00.000Z',
-    usage_count: 12,
-  },
-]
+const INITIAL_TEMPLATES: EmailTemplate[] = []
 
 const INITIAL_QUEUE: EmailQueueItem[] = []
 
@@ -89,6 +23,9 @@ class EmailMarketingService {
   }
 
   private loadTemplates(): EmailTemplate[] {
+    try {
+      localStorage.removeItem('crm_email_templates_v1')
+    } catch {}
     try {
       const data = localStorage.getItem(STORAGE_KEY_TEMPLATES)
       if (data) return JSON.parse(data)

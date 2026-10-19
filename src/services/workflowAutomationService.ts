@@ -4,148 +4,10 @@ import type {
 } from '../types/workflowAutomation.ts'
 import { notificationService } from './notificationService.ts'
 
-const STORAGE_KEY_RULES = 'crm_workflow_automation_rules_v1'
-const STORAGE_KEY_LOGS = 'crm_workflow_automation_logs_v1'
+const STORAGE_KEY_RULES = 'crm_workflow_automation_rules_v2'
+const STORAGE_KEY_LOGS = 'crm_workflow_automation_logs_v2'
 
-const INITIAL_RULES: AutomationRule[] = [
-  {
-    id: 'rule-auto-01',
-    name: 'Tự tạo việc nhắc gọi sau 3 ngày khi Cơ hội sang Báo giá',
-    description: 'Quy tắc mẫu S7-09: Tự động lên lịch nhắc nhân viên gọi điện tư vấn và chốt phương án sau khi gửi báo giá.',
-    is_active: true,
-    trigger: {
-      type: 'STAGE_CHANGED',
-      entity: 'OPPORTUNITY',
-      target_stage_name: 'Báo giá',
-    },
-    actions: [
-      {
-        id: 'act-1-1',
-        type: 'CREATE_TASK',
-        task_params: {
-          task_title: 'Gọi điện chăm sóc phương án báo giá',
-          task_type: 'CALL',
-          due_days: 3,
-          priority: 'HIGH',
-          description: 'Khảo sát phản hồi của khách hàng về đơn giá và điều khoản thanh toán trong báo giá.',
-        },
-      },
-      {
-        id: 'act-1-2',
-        type: 'SEND_NOTIFICATION',
-        notification_params: {
-          title: 'Quy tắc tự động: Nhắc gọi lại khách hàng',
-          message: 'Cơ hội đã chuyển sang Báo giá. Hệ thống đã tự lên lịch cuộc gọi sau 3 ngày.',
-          recipient_target: 'CURRENT_OWNER',
-        },
-      },
-    ],
-    created_at: '2026-10-10T08:00:00.000Z',
-    updated_at: '2026-10-10T08:00:00.000Z',
-    execution_count: 14,
-    last_executed_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-  },
-  {
-    id: 'rule-auto-02',
-    name: 'Chuyển Lead tiềm năng cao (Hot Lead) cho Trưởng nhóm & lên lịch demo',
-    description: 'Khi Lead đạt trạng thái QUALIFIED (Đã thẩm định), tự động gán cho Senior Sales và tạo lịch gặp Demo.',
-    is_active: true,
-    trigger: {
-      type: 'STATUS_CHANGED',
-      entity: 'LEAD',
-      target_status: 'QUALIFIED',
-    },
-    actions: [
-      {
-        id: 'act-2-1',
-        type: 'REASSIGN_OWNER',
-        reassign_params: {
-          new_owner_id: 'usr-senior-sales',
-          new_owner_name: 'Nguyễn Văn A (Trưởng nhóm)',
-          reason: 'Lead tiềm năng đạt tiêu chuẩn thẩm định, cần chuyên viên giàu kinh nghiệm hỗ trợ',
-        },
-      },
-      {
-        id: 'act-2-2',
-        type: 'CREATE_TASK',
-        task_params: {
-          task_title: 'Tổ chức buổi Demo giải pháp chuyên sâu',
-          task_type: 'MEETING',
-          due_days: 2,
-          priority: 'HIGH',
-          description: 'Trình chiếu tính năng giải pháp và giải đáp vướng mắc kỹ thuật.',
-        },
-      },
-    ],
-    created_at: '2026-10-11T09:30:00.000Z',
-    updated_at: '2026-10-11T09:30:00.000Z',
-    execution_count: 8,
-    last_executed_at: new Date(Date.now() - 3600000 * 18).toISOString(),
-  },
-  {
-    id: 'rule-auto-03',
-    name: 'Cảnh báo đình trệ khi cơ hội không có tương tác quá 7 ngày',
-    description: 'Tự động gửi cảnh báo cho Quản lý khi cơ hội bán hàng bị bỏ quên quá 7 ngày làm việc.',
-    is_active: true,
-    trigger: {
-      type: 'INACTIVITY_DAYS',
-      entity: 'OPPORTUNITY',
-      days: 7,
-    },
-    actions: [
-      {
-        id: 'act-3-1',
-        type: 'SEND_NOTIFICATION',
-        notification_params: {
-          title: 'Cảnh báo cơ hội đình trệ quá 7 ngày',
-          message: 'Cơ hội chưa có thêm hoạt động tương tác nào trong 7 ngày qua. Đề nghị kiểm tra và đôn đốc.',
-          recipient_target: 'MANAGER',
-        },
-      },
-    ],
-    created_at: '2026-10-12T14:15:00.000Z',
-    updated_at: '2026-10-12T14:15:00.000Z',
-    execution_count: 5,
-    last_executed_at: new Date(Date.now() - 3600000 * 28).toISOString(),
-  },
-  {
-    id: 'rule-auto-04',
-    name: 'Nhắc đàm phán tái ký trước 30 ngày hết hạn hợp đồng',
-    description: 'Quy tắc gia hạn hợp đồng: Tự tạo công việc liên hệ khách hàng chuẩn bị hồ sơ tái ký khi còn 30 ngày.',
-    is_active: false,
-    trigger: {
-      type: 'DAYS_BEFORE_EXPIRY',
-      entity: 'CONTRACT',
-      days: 30,
-    },
-    actions: [
-      {
-        id: 'act-4-1',
-        type: 'CREATE_TASK',
-        task_params: {
-          task_title: 'Liên hệ khách hàng trao đổi gia hạn hợp đồng',
-          task_type: 'CALL',
-          due_days: 5,
-          priority: 'MEDIUM',
-          description: 'Gửi bảng tổng kết dịch vụ năm qua và chính sách ưu đãi tái ký.',
-        },
-      },
-      {
-        id: 'act-4-2',
-        type: 'SEND_NOTIFICATION',
-        notification_params: {
-          title: 'Hợp đồng sắp đến hạn tái ký (30 ngày)',
-          message: 'Khách hàng có hợp đồng sắp đáo hạn trong 30 ngày tới. Hãy tiến hành xúc tiến tái ký.',
-          recipient_target: 'CURRENT_OWNER',
-        },
-      },
-    ],
-    created_at: '2026-10-13T10:00:00.000Z',
-    updated_at: '2026-10-13T10:00:00.000Z',
-    execution_count: 2,
-    last_executed_at: new Date(Date.now() - 3600000 * 72).toISOString(),
-  },
-]
+const INITIAL_RULES: AutomationRule[] = []
 
 const INITIAL_LOGS: AutomationExecutionLog[] = []
 
@@ -159,6 +21,10 @@ class WorkflowAutomationService {
   }
 
   private loadRules(): AutomationRule[] {
+    try {
+      localStorage.removeItem('crm_workflow_automation_rules_v1')
+      localStorage.removeItem('crm_workflow_automation_logs_v1')
+    } catch {}
     try {
       const data = localStorage.getItem(STORAGE_KEY_RULES)
       if (data) {

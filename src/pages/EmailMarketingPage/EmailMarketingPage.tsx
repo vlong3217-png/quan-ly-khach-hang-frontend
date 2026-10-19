@@ -38,7 +38,7 @@ export default function EmailMarketingPage() {
   const [customerName, setCustomerName] = useState('')
   const [contactName, setContactName] = useState('')
   const [recipientEmail, setRecipientEmail] = useState('')
-  const [assignedRep, setAssignedRep] = useState(user?.full_name || 'Nguyễn Văn A')
+  const [assignedRep, setAssignedRep] = useState(user?.full_name || 'Admin')
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [emailSubject, setEmailSubject] = useState('')
   const [emailBody, setEmailBody] = useState('')

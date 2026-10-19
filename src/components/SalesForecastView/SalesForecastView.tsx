@@ -12,21 +12,9 @@ type PeriodFilter = 'THIS_MONTH' | 'NEXT_MONTH' | 'THIS_QUARTER' | 'ALL'
 type GroupByFilter = 'OWNER' | 'TEAM'
 
 // Chỉ tiêu kế hoạch mặc định theo nhân viên và đội nhóm (có thể tùy chỉnh)
-const DEFAULT_OWNER_TARGETS: Record<string, number> = {
-  'Lưu Quang Trường': 160000000,
-  'Nguyễn Văn An': 150000000,
-  'Trần Thị Mai': 120000000,
-  'Lê Hoàng Long': 100000000,
-  'Phạm Minh Tuấn': 80000000,
-  'Hoàng Thu Trang': 90000000,
-  'Vũ Đức Thịnh': 70000000,
-}
+const DEFAULT_OWNER_TARGETS: Record<string, number> = {}
 
-const DEFAULT_TEAM_TARGETS: Record<string, number> = {
-  'Đội Kinh Doanh 1': 300000000,
-  'Đội Kinh Doanh 2': 250000000,
-  'Đội Dự Án Doanh Nghiệp': 200000000,
-}
+const DEFAULT_TEAM_TARGETS: Record<string, number> = {}
 
 export default function SalesForecastView({
   opportunities,
@@ -117,7 +105,7 @@ export default function SalesForecastView({
         return sum + (DEFAULT_OWNER_TARGETS[name] || 100000000)
       }, 0)
     } else {
-      const uniqueTeams = Array.from(new Set(opportunities.map((o) => o.team_name || 'Đội Kinh Doanh 1')))
+      const uniqueTeams = Array.from(new Set(opportunities.map((o) => o.team_name || '')))
       totalTargetQuota = uniqueTeams.reduce((sum, name) => {
         return sum + (DEFAULT_TEAM_TARGETS[name] || 250000000)
       }, 0)
@@ -168,7 +156,7 @@ export default function SalesForecastView({
     > = {}
 
     filteredOpps.forEach((opp) => {
-      const groupKey = groupBy === 'OWNER' ? opp.owner_name : (opp.team_name || 'Đội Kinh Doanh 1')
+      const groupKey = groupBy === 'OWNER' ? opp.owner_name : (opp.team_name || '')
       if (!groups[groupKey]) {
         let baseQuota = 0
         if (groupBy === 'OWNER') {
@@ -181,7 +169,7 @@ export default function SalesForecastView({
         groups[groupKey] = {
           key: groupKey,
           name: groupKey,
-          teamName: opp.team_name || 'Đội Kinh Doanh 1',
+          teamName: opp.team_name || '',
           targetQuota: baseQuota,
           openCount: 0,
           wonCount: 0,
@@ -218,7 +206,7 @@ export default function SalesForecastView({
     if (groupBy === 'OWNER') {
       return filteredOpps.filter((o) => o.owner_name === selectedGroupKey)
     }
-    return filteredOpps.filter((o) => (o.team_name || 'Đội Kinh Doanh 1') === selectedGroupKey)
+    return filteredOpps.filter((o) => (o.team_name || '') === selectedGroupKey)
   }, [filteredOpps, selectedGroupKey, groupBy])
 
   const formatCurrency = (val: number) => {
