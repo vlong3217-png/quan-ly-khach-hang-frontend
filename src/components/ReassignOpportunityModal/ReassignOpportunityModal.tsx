@@ -25,14 +25,7 @@ interface TeamMember {
   capacityStatus: 'FREE' | 'NORMAL' | 'OVERLOAD'
 }
 
-const TEAM_MEMBERS: TeamMember[] = [
-  { id: 2, name: 'Trần Thị Bình', role: 'Trưởng nhóm / NVKD Senior', team: 'Đội Kinh Doanh 1', activeDealsCount: 2, capacityStatus: 'NORMAL' },
-  { id: 3, name: 'Lê Hoàng Cường', role: 'Nhân viên kinh doanh', team: 'Đội Kinh Doanh 1', activeDealsCount: 4, capacityStatus: 'NORMAL' },
-  { id: 5, name: 'Hoàng Thị Em', role: 'Nhân viên kinh doanh', team: 'Đội Kinh Doanh 1', activeDealsCount: 1, capacityStatus: 'FREE' },
-  { id: 7, name: 'Đặng Thùy Giang', role: 'Nhân viên kinh doanh', team: 'Đội Kinh Doanh 1', activeDealsCount: 2, capacityStatus: 'NORMAL' },
-  { id: 8, name: 'Bùi Quốc Hùng', role: 'Nhân viên kinh doanh', team: 'Đội Kinh Doanh 1', activeDealsCount: 6, capacityStatus: 'OVERLOAD' },
-  { id: 10, name: 'Bế Hoàng Quân', role: 'Trưởng nhóm kinh doanh', team: 'Đội Kinh Doanh 1', activeDealsCount: 0, capacityStatus: 'FREE' },
-]
+const TEAM_MEMBERS: TeamMember[] = []
 
 const COMMON_REASONS = [
   'Người phụ trách nghỉ ốm / nghỉ phép dài ngày',

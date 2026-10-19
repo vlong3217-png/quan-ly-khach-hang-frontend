@@ -188,7 +188,7 @@ export const leadConversionService = {
               outcome: 'Thành công - Đã chuyển đổi',
               content: `Lead đã được chuyển đổi thành công sang Khách hàng "${data.customer?.name || ''}" (${data.customer?.code || ''})${data.opportunity ? ` và Cơ hội "${data.opportunity?.title || data.opportunity?.name || ''}"` : ''}.`,
               performed_by_id: payload.owner_id || currentLead.owner_id || 1,
-              performed_by_name: payload.owner_name || currentLead.owner_name || 'Nguyễn Văn An',
+              performed_by_name: payload.owner_name || currentLead.owner_name || 'Admin',
             })
           } catch {}
 
@@ -398,7 +398,7 @@ export const leadConversionService = {
             : ''
         }. Không phải nhập lại thông tin khách hàng.`,
         performed_by_id: payload.owner_id || currentLead.owner_id || 1,
-        performed_by_name: payload.owner_name || currentLead.owner_name || 'Nguyễn Văn An',
+        performed_by_name: payload.owner_name || currentLead.owner_name || 'Admin',
       })
     } catch (err) {
       console.warn('Lỗi ghi nhận lịch sử tương tác chuyển đổi:', err)

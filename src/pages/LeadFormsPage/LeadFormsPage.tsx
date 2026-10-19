@@ -308,12 +308,7 @@ const LEAD_ASSIGNMENT_LABELS: Record<LeadAssignmentStatus, { label: string; bg: 
   UNASSIGNED: { label: 'Hàng chờ phân bổ', bg: '#f1f5f9', color: '#475569' },
 }
 
-const MOCK_USERS_FOR_ASSIGN: { id: number; name: string; team: string }[] = [
-  { id: 1, name: 'Nguyễn Văn An', team: 'Đội Kinh doanh 1' },
-  { id: 2, name: 'Trần Thị Bình', team: 'Đội Kinh doanh 2' },
-  { id: 3, name: 'Lê Hoàng Cường', team: 'Đội Kinh doanh Miền Bắc' },
-  { id: 4, name: 'Lưu Quang Trường', team: 'Đội Kinh doanh Miền Nam' },
-]
+const MOCK_USERS_FOR_ASSIGN: { id: number; name: string; team: string }[] = []
 
 export default function LeadFormsPage() {
   const { user } = useAuth()
@@ -5998,10 +5993,7 @@ export default function LeadFormsPage() {
                   value={reassignOwnerId}
                   onChange={(e) => setReassignOwnerId(Number(e.target.value))}
                 >
-                  <option value={1}>Nguyễn Văn An (Kinh doanh HN)</option>
-                  <option value={2}>Trần Thị Bình (Kinh doanh HCM)</option>
-                  <option value={3}>Lê Hoàng Cường (Kinh doanh ĐN)</option>
-                  <option value={4}>Lưu Quang Trường (Kinh doanh VIP)</option>
+                  <option value={user?.id || 1}>{user?.full_name || 'Admin'} (Quản trị viên)</option>
                 </select>
               </div>
 

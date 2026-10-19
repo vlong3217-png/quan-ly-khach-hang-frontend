@@ -6,7 +6,7 @@ import type {
   CreateLeadInteractionPayload,
 } from '../types/lead.ts'
 
-const STORAGE_KEY = 'crm_lead_interactions_v1'
+const STORAGE_KEY = 'crm_lead_interactions_v2'
 
 function getAuthToken(): string | null {
   return (
@@ -28,96 +28,13 @@ function getAuthHeaders(): Record<string, string> {
   return headers
 }
 
-// Mock dữ liệu tương tác ban đầu nếu chưa có trong LocalStorage
-const INITIAL_INTERACTIONS: LeadInteraction[] = [
-  {
-    id: 'act-1',
-    lead_id: 'lead-1',
-    type: 'SYSTEM',
-    title: 'Tiếp nhận Lead từ Biểu mẫu Website',
-    content: 'Lead gửi thông tin từ form "Đăng ký tư vấn giải pháp CRM Doanh nghiệp"',
-    performed_by_name: 'Hệ thống tự động',
-    performed_at: '2026-10-01T08:30:00Z',
-    created_at: '2026-10-01T08:30:00Z',
-  },
-  {
-    id: 'act-2',
-    lead_id: 'lead-1',
-    type: 'CALL',
-    title: 'Cuộc gọi xác nhận nhu cầu ban đầu',
-    content: 'Đã trao đổi với anh Tuấn. Khách hàng đang có 60 nhân viên kinh doanh, muốn triển khai trong tháng 11. Đánh giá nhu cầu rất cấp thiết.',
-    outcome: 'Thành công - Quan tâm cao',
-    performed_by_id: 1,
-    performed_by_name: 'Nguyễn Văn An',
-    performed_at: '2026-10-01T10:15:00Z',
-    next_action: 'Gửi hồ sơ năng lực và bảng giá giải pháp',
-    next_action_due: '2026-10-02T12:00:00Z',
-    created_at: '2026-10-01T10:20:00Z',
-  },
-  {
-    id: 'act-3',
-    lead_id: 'lead-1',
-    type: 'EMAIL',
-    title: 'Gửi bảng giới thiệu tính năng & báo giá gói Enterprise',
-    content: 'Đã gửi file PDF tài liệu giải pháp qua email tuan.nguyen@alphacorp.vn. Khách đã mở đọc lúc 14:20.',
-    outcome: 'Đã gửi thành công',
-    performed_by_id: 1,
-    performed_by_name: 'Nguyễn Văn An',
-    performed_at: '2026-10-02T11:00:00Z',
-    created_at: '2026-10-02T11:00:00Z',
-  },
-  {
-    id: 'act-4',
-    lead_id: 'lead-1',
-    type: 'MEETING',
-    title: 'Họp Demo trực tuyến qua Google Meet',
-    content: 'Buổi demo có sự tham gia của Giám đốc điều hành và Trưởng phòng IT. Khách đánh giá cao tính năng chấm điểm lead và pipeline quản lý cơ hội.',
-    outcome: 'Cuộc họp thành công',
-    performed_by_id: 1,
-    performed_by_name: 'Nguyễn Văn An',
-    performed_at: '2026-10-04T15:00:00Z',
-    next_action: 'Gửi hợp đồng dự thảo và chuẩn bị quy trình chuyển đổi khách hàng',
-    next_action_due: '2026-10-07T17:00:00Z',
-    created_at: '2026-10-04T16:00:00Z',
-  },
-  {
-    id: 'act-5',
-    lead_id: 'lead-2',
-    type: 'SYSTEM',
-    title: 'Nhập thông tin từ file Excel chiến dịch Q4',
-    content: 'Lead được nhập hàng loạt từ danh sách khách tham dự Triển lãm VietBuild.',
-    performed_by_name: 'Trần Thị Bình',
-    performed_at: '2026-10-03T09:00:00Z',
-    created_at: '2026-10-03T09:00:00Z',
-  },
-  {
-    id: 'act-6',
-    lead_id: 'lead-2',
-    type: 'CALL',
-    title: 'Gọi điện thoại giới thiệu chương trình ưu đãi',
-    content: 'Chị Mai bận họp lúc sáng, hẹn gọi lại vào cuối buổi chiều.',
-    outcome: 'Khách hẹn gọi lại',
-    performed_by_id: 2,
-    performed_by_name: 'Trần Thị Bình',
-    performed_at: '2026-10-03T10:30:00Z',
-    next_action: 'Gọi lại xác nhận sau 16h30',
-    next_action_due: '2026-10-03T16:30:00Z',
-    created_at: '2026-10-03T10:35:00Z',
-  },
-  {
-    id: 'act-7',
-    lead_id: 'lead-3',
-    type: 'NOTE',
-    title: 'Ghi chú khảo sát thực tế',
-    content: 'Khách hàng có chuỗi 4 cửa hàng bán lẻ, ngân sách ban đầu khoảng 30-50 triệu.',
-    performed_by_id: 1,
-    performed_by_name: 'Nguyễn Văn An',
-    performed_at: '2026-10-05T14:00:00Z',
-    created_at: '2026-10-05T14:00:00Z',
-  },
-]
+// Dữ liệu tương tác ban đầu trống
+const INITIAL_INTERACTIONS: LeadInteraction[] = []
 
 export function getStoredInteractions(): LeadInteraction[] {
+  try {
+    localStorage.removeItem('crm_lead_interactions_v1')
+  } catch {}
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) {

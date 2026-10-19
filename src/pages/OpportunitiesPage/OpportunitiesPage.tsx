@@ -716,7 +716,7 @@ export default function OpportunitiesPage() {
           <StalledOpportunityAlerts
             opportunities={opportunities}
             isManagerOrAdmin={isManagerOrAdmin}
-            managerName={user?.full_name || 'Bế Hoàng Quân (Trưởng nhóm)'}
+            managerName={user?.full_name || 'Quản trị viên'}
             managerId={user?.id ? Number(user.id) : 1}
             onOpportunityUpdated={handleOppUpdated}
             onOpenOpportunityDetail={(opp) => handleOpenDetail(opp, 'DETAILS')}
@@ -1352,7 +1352,7 @@ export default function OpportunitiesPage() {
         <ReassignOpportunityModal
           opportunity={oppToReassign}
           isOpen={isReassignModalOpen}
-          managerName={user?.full_name || 'Bế Hoàng Quân (Trưởng nhóm)'}
+          managerName={user?.full_name || 'Quản trị viên'}
           managerId={user?.id ? Number(user.id) : 1}
           onClose={() => {
             setIsReassignModalOpen(false)

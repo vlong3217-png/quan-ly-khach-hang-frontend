@@ -4,7 +4,7 @@ import type {
   NotificationChannelConfig,
 } from '../types/notification.ts'
 
-const STORAGE_KEY = 'crm_app_notifications_v1'
+const STORAGE_KEY = 'crm_app_notifications_v2'
 const PREFS_STORAGE_PREFIX = 'crm_notification_preferences_user_'
 
 const DEFAULT_PREFERENCES: NotificationChannelConfig[] = [
@@ -58,56 +58,12 @@ const DEFAULT_PREFERENCES: NotificationChannelConfig[] = [
   },
 ]
 
-const INITIAL_NOTIFICATIONS: AppNotification[] = [
-  {
-    id: 'notif-1',
-    type: 'LEAD_ASSIGNED',
-    title: 'Lead mới được phân bổ',
-    message: 'Bạn vừa được phân bổ khách hàng tiềm năng: "Trần Thị Mai (Công ty Tân Phát)". Hãy liên hệ trong vòng 4 giờ theo cam kết SLA.',
-    link_path: '/dashboard/lead-forms',
-    is_read: false,
-    created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 mins ago
-  },
-  {
-    id: 'notif-2',
-    type: 'QUOTE_PENDING_APPROVAL',
-    recipient_role: 'MANAGER',
-    title: 'Báo giá chờ phê duyệt chiết khấu',
-    message: 'Báo giá BG-2026-003 cho Tập đoàn Hòa Phát áp dụng chiết khấu 15% (vượt thẩm quyền nhân viên, yêu cầu Trưởng nhóm duyệt).',
-    link_path: '/dashboard/opportunities',
-    is_read: false,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-  },
-  {
-    id: 'notif-3',
-    type: 'CUSTOMER_FEEDBACK',
-    title: 'Khách hàng phản hồi báo giá',
-    message: 'Khách hàng Công ty Alpha Tech đã chấp thuận trực tuyến báo giá BG-2026-001. Có thể chuyển đổi sang Hợp đồng.',
-    link_path: '/dashboard/opportunities',
-    is_read: false,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
-  },
-  {
-    id: 'notif-4',
-    type: 'TASK_ASSIGNED',
-    title: 'Công việc mới được giao',
-    message: 'Trưởng nhóm vừa giao cho bạn công việc: "Chuẩn bị tài liệu demo giải pháp cho Beta Corp".',
-    link_path: '/dashboard/calendar',
-    is_read: false,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-  },
-  {
-    id: 'notif-5',
-    type: 'STALLED_OPPORTUNITY',
-    title: 'Cơ hội bị gắn cờ đình trệ',
-    message: 'Cơ hội "Nâng cấp bảo mật & Email Marketing Beta Corp" đã hơn 7 ngày chưa có hoạt động tương tác.',
-    link_path: '/dashboard/opportunities',
-    is_read: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), // 2 days ago
-  },
-]
+const INITIAL_NOTIFICATIONS: AppNotification[] = []
 
 function getStoredNotifications(): AppNotification[] {
+  try {
+    localStorage.removeItem('crm_app_notifications_v1')
+  } catch {}
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) return JSON.parse(raw)

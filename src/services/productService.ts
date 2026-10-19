@@ -1,101 +1,13 @@
 import type { Product, ProductFilterParams } from '../types/product.ts'
 
-const STORAGE_KEY = 'crm_products_pricing_data'
+const STORAGE_KEY = 'crm_products_pricing_data_v2'
 
-const INITIAL_PRODUCTS: Product[] = [
-  {
-    id: 'prod-001',
-    code: 'SP-001',
-    name: 'Phần mềm CRM Doanh Nghiệp Pro (Bản quyền vĩnh viễn)',
-    type: 'ONE_TIME',
-    unit: 'Gói',
-    list_price: 35000000,
-    floor_price: 28000000,
-    cost_price: 15000000,
-    status: 'ACTIVE',
-    has_quotes: true,
-    description: 'Hệ thống quản lý khách hàng trọn gói cho doanh nghiệp 50-200 user',
-    created_at: '2025-01-10T08:00:00Z',
-    updated_at: '2025-01-10T08:00:00Z',
-  },
-  {
-    id: 'prod-002',
-    code: 'SP-002',
-    name: 'Dịch vụ CRM Cloud Tiêu chuẩn (Thuê bao hàng tháng)',
-    type: 'SUBSCRIPTION',
-    unit: 'User/Tháng',
-    list_price: 250000,
-    floor_price: 190000,
-    cost_price: 100000,
-    status: 'ACTIVE',
-    has_quotes: true,
-    description: 'Gói thuê bao điện toán đám mây trả định kỳ theo tài khoản',
-    created_at: '2025-02-01T09:30:00Z',
-    updated_at: '2025-02-01T09:30:00Z',
-  },
-  {
-    id: 'prod-003',
-    code: 'SP-003',
-    name: 'Dịch vụ Cài đặt & Tích hợp On-Premise',
-    type: 'ONE_TIME',
-    unit: 'Dự án',
-    list_price: 15000000,
-    floor_price: 12000000,
-    cost_price: 6000000,
-    status: 'ACTIVE',
-    has_quotes: false,
-    description: 'Dịch vụ triển khai máy chủ riêng biệt tại văn phòng khách hàng',
-    created_at: '2025-02-15T10:00:00Z',
-    updated_at: '2025-02-15T10:00:00Z',
-  },
-  {
-    id: 'prod-004',
-    code: 'SP-004',
-    name: 'Gói SMS Brandname Chăm sóc khách hàng (10,000 tin)',
-    type: 'ONE_TIME',
-    unit: 'Gói',
-    list_price: 6000000,
-    floor_price: 5200000,
-    cost_price: 3500000,
-    status: 'ACTIVE',
-    has_quotes: true,
-    description: 'Tin nhắn thương hiệu định danh gửi tự động từ CRM',
-    created_at: '2025-03-01T14:00:00Z',
-    updated_at: '2025-03-01T14:00:00Z',
-  },
-  {
-    id: 'prod-005',
-    code: 'SP-005',
-    name: 'Khóa đào tạo Quản trị & Vận hành CRM nâng cao',
-    type: 'ONE_TIME',
-    unit: 'Buổi',
-    list_price: 5000000,
-    floor_price: 4000000,
-    cost_price: 2000000,
-    status: 'DISCONTINUED',
-    has_quotes: true,
-    description: 'Khóa đào tạo chuyên sâu (đã chuyển giao sang hình thức E-learning)',
-    created_at: '2025-01-05T08:00:00Z',
-    updated_at: '2025-03-20T16:00:00Z',
-  },
-  {
-    id: 'prod-006',
-    code: 'SP-006',
-    name: 'Gói Bảo trì & Hỗ trợ kỹ thuật 24/7 (Hàng năm)',
-    type: 'SUBSCRIPTION',
-    unit: 'Năm',
-    list_price: 18000000,
-    floor_price: 15000000,
-    cost_price: 7000000,
-    status: 'ACTIVE',
-    has_quotes: false,
-    description: 'Cam kết SLA 99.9%, hỗ trợ kỹ thuật trực tiếp không giới hạn',
-    created_at: '2025-03-25T11:00:00Z',
-    updated_at: '2025-03-25T11:00:00Z',
-  },
-]
+const INITIAL_PRODUCTS: Product[] = []
 
 function getStoredProducts(): Product[] {
+  try {
+    localStorage.removeItem('crm_products_pricing_data')
+  } catch {}
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {

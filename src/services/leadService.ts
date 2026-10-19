@@ -256,7 +256,7 @@ export const leadService = {
       campaign_id: payload.campaign_id,
       status: payload.status || 'NEW',
       owner_id: payload.owner_id || 1,
-      owner_name: payload.owner_id === 2 ? 'Trần Thị Bình' : payload.owner_id === 3 ? 'Lê Hoàng Cường' : 'Nguyễn Văn An',
+      owner_name: 'Admin',
       requirement: payload.requirement?.trim() || '',
       notes: payload.notes?.trim() || '',
       score,
@@ -1018,45 +1018,12 @@ export const leadService = {
 
   /* ──────────── User Story S4-06: Quy tắc phân bổ Lead tự động ──────────── */
   getDistributionRules(): import('../types/lead.ts').LeadDistributionRule[] {
-    const STORAGE_KEY = 'crm_lead_distribution_rules_v1'
-    const DEFAULT_RULES: import('../types/lead.ts').LeadDistributionRule[] = [
-      {
-        id: 'rule-1',
-        name: 'Phân bổ Lead Doanh nghiệp Công nghệ - Đội Kinh doanh 1',
-        type: 'INDUSTRY',
-        priority: 1,
-        is_active: true,
-        criteria: { industry: 'Công nghệ' },
-        assigned_team: 'Đội Kinh doanh 1',
-        assigned_user_ids: [1, 2],
-        assigned_user_names: ['Nguyễn Văn An', 'Trần Thị Bình'],
-        created_at: '2026-09-01T08:00:00Z',
-      },
-      {
-        id: 'rule-2',
-        name: 'Phân bổ Lead Khu vực Hà Nội & Miền Bắc',
-        type: 'TERRITORY',
-        priority: 2,
-        is_active: true,
-        criteria: { territory: 'Hà Nội' },
-        assigned_team: 'Đội Kinh doanh Miền Bắc',
-        assigned_user_ids: [2, 3],
-        assigned_user_names: ['Trần Thị Bình', 'Lê Hoàng Cường'],
-        created_at: '2026-09-05T09:30:00Z',
-      },
-      {
-        id: 'rule-3',
-        name: 'Phân bổ xoay vòng đều (Round-Robin) cho các NVKD còn lại',
-        type: 'ROUND_ROBIN',
-        priority: 3,
-        is_active: true,
-        criteria: {},
-        assigned_team: 'Toàn bộ phòng Kinh doanh',
-        assigned_user_ids: [1, 2, 3],
-        assigned_user_names: ['Nguyễn Văn An', 'Trần Thị Bình', 'Lê Hoàng Cường'],
-        created_at: '2026-09-10T10:00:00Z',
-      },
-    ]
+    const STORAGE_KEY = 'crm_lead_distribution_rules_v2'
+    const DEFAULT_RULES: import('../types/lead.ts').LeadDistributionRule[] = []
+
+    try {
+      localStorage.removeItem('crm_lead_distribution_rules_v1')
+    } catch {}
 
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
@@ -1067,7 +1034,7 @@ export const leadService = {
   },
 
   saveDistributionRules(rules: import('../types/lead.ts').LeadDistributionRule[]): void {
-    const STORAGE_KEY = 'crm_lead_distribution_rules_v1'
+    const STORAGE_KEY = 'crm_lead_distribution_rules_v2'
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rules))
     } catch {}

@@ -46,7 +46,7 @@ export default function WorkflowAutomationPage() {
   const [notifyTarget, setNotifyTarget] = useState<'CURRENT_OWNER' | 'MANAGER' | 'ALL_MEMBERS'>('CURRENT_OWNER')
 
   const [enableReassign, setEnableReassign] = useState(false)
-  const [reassignName, setReassignName] = useState('Nguyễn Văn A (Trưởng nhóm)')
+  const [reassignName, setReassignName] = useState('Admin (Quản trị viên)')
 
   const showToast = (msg: string) => {
     setToastMessage(msg)
@@ -115,7 +115,7 @@ export default function WorkflowAutomationPage() {
     setNotifyTarget('CURRENT_OWNER')
 
     setEnableReassign(false)
-    setReassignName('Nguyễn Văn A (Trưởng nhóm)')
+    setReassignName('Admin (Quản trị viên)')
 
     setIsModalOpen(true)
   }
@@ -838,9 +838,7 @@ export default function WorkflowAutomationPage() {
                             value={reassignName}
                             onChange={(e) => setReassignName(e.target.value)}
                           >
-                            <option value="Nguyễn Văn A (Trưởng nhóm)">Nguyễn Văn A (Trưởng nhóm kinh doanh)</option>
-                            <option value="Trần Thị B (Chuyên viên cấp cao)">Trần Thị B (Chuyên viên cấp cao)</option>
-                            <option value="Lê Văn C (Tư vấn giải pháp)">Lê Văn C (Tư vấn giải pháp)</option>
+                            <option value="Admin (Quản trị viên)">Admin (Quản trị viên)</option>
                           </select>
                         </div>
                       </div>

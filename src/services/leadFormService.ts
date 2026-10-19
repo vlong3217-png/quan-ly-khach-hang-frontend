@@ -10,7 +10,7 @@ import { API_BASE_URL } from './authService.ts'
 import type { PaginationParams } from '../types/pagination.ts'
 import { normalizePaginatedResponse } from '../types/pagination.ts'
 
-const STORAGE_KEY_FORMS = 'crm_lead_forms_data'
+const STORAGE_KEY_FORMS = 'crm_lead_forms_data_v2'
 const STORAGE_KEY_SUBMISSIONS = 'crm_lead_submissions_data'
 
 /* ──────────── Helper ──────────── */
@@ -46,60 +46,16 @@ async function parseErrorResponse(response: Response, defaultMessage: string): P
   return defaultMessage
 }
 
-/* ──────────── Dữ liệu khởi tạo mẫu ──────────── */
-const INITIAL_LEAD_FORMS: LeadForm[] = [
-  {
-    id: 'form-001',
-    code: 'FORM-WEB-01',
-    name: 'Biểu mẫu Đăng ký Tư vấn - Trang chủ Website',
-    title: 'Đăng ký tư vấn miễn phí giải pháp Quản lý Khách hàng CRM',
-    description: 'Vui lòng để lại thông tin để chuyên viên tư vấn liên hệ và demo hệ thống trong vòng 15 phút.',
-    submit_button_text: 'Đăng ký nhận tư vấn ngay',
-    success_message: 'Cảm ơn bạn đã đăng ký! Chuyên viên tư vấn của chúng tôi sẽ liên hệ lại với bạn trong ít phút.',
-    redirect_url: '',
-    is_active: true,
-    submissions_count: 6,
-    campaign_id: 'camp-001',
-    campaign_name: 'Chiến dịch Q4 Chuyển đổi số 2026',
-    created_at: '2026-09-15T08:30:00Z',
-    updated_at: '2026-10-01T10:00:00Z',
-  },
-  {
-    id: 'form-002',
-    code: 'FORM-TRIAL-02',
-    name: 'Biểu mẫu Dùng thử 14 ngày - Landing Page',
-    title: 'Trải nghiệm miễn phí 14 ngày đầy đủ tính năng CRM Doanh nghiệp',
-    description: 'Khởi tạo tài khoản dùng thử không cần thẻ tín dụng, hỗ trợ cài đặt và import dữ liệu ban đầu.',
-    submit_button_text: 'Bắt đầu dùng thử miễn phí',
-    success_message: 'Yêu cầu dùng thử của bạn đã được tiếp nhận. Chúng tôi đã gửi thông tin kích hoạt qua email!',
-    redirect_url: '',
-    is_active: true,
-    submissions_count: 4,
-    campaign_id: 'camp-002',
-    campaign_name: 'Quảng cáo Google Search Khách hàng B2B',
-    created_at: '2026-09-20T09:00:00Z',
-    updated_at: '2026-10-05T14:15:00Z',
-  },
-  {
-    id: 'form-003',
-    code: 'FORM-EBOOK-03',
-    name: 'Biểu mẫu Tải tài liệu Ebook Quản trị Sales B2B',
-    title: 'Tải cẩm nang: Tối ưu quy trình kinh doanh và chăm sóc khách hàng 2026',
-    description: 'Nhập thông tin doanh nghiệp để tải ngay tài liệu hướng dẫn chuẩn hóa đội ngũ kinh doanh B2B.',
-    submit_button_text: 'Tải tài liệu ngay (PDF)',
-    success_message: 'Đăng ký tải tài liệu thành công! Đường link tải cẩm nang đã được gửi tới hòm thư của bạn.',
-    redirect_url: '',
-    is_active: false,
-    submissions_count: 2,
-    created_at: '2026-09-28T11:00:00Z',
-    updated_at: '2026-10-07T16:20:00Z',
-  },
-]
+/* ──────────── Dữ liệu khởi tạo trống ──────────── */
+const INITIAL_LEAD_FORMS: LeadForm[] = []
 
 const INITIAL_SUBMISSIONS: LeadSubmission[] = []
 
 /* ──────────── LocalStorage Helpers ──────────── */
 export function getStoredForms(): LeadForm[] {
+  try {
+    localStorage.removeItem('crm_lead_forms_data')
+  } catch {}
   try {
     const raw = localStorage.getItem(STORAGE_KEY_FORMS)
     if (raw) return JSON.parse(raw)
