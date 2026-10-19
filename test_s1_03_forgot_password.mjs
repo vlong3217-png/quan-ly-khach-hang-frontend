@@ -28,8 +28,8 @@ function validateResetPassword(token, newPassword, confirmPassword) {
 
   if (!newPassword) {
     errors.newPassword = 'Vui lòng nhập mật khẩu mới.';
-  } else if (newPassword.length < 6) {
-    errors.newPassword = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+  } else if (newPassword.length < 8) {
+    errors.newPassword = 'Mật khẩu mới phải có ít nhất 8 ký tự.';
   }
 
   if (!confirmPassword) {
@@ -89,7 +89,7 @@ console.log('\n--- PHẦN 2: KIỂM THỬ VALIDATION ĐẶT LẠI MẬT KHẨU -
 
 // Test 2.1: Empty token
 {
-  const errors = validateResetPassword('', '123456', '123456');
+  const errors = validateResetPassword('', '12345678', '12345678');
   assert.strictEqual(errors.token, 'Vui lòng cung cấp mã token đặt lại mật khẩu.');
   assert.strictEqual(errors.newPassword, undefined);
   assert.strictEqual(errors.confirmPassword, undefined);
@@ -98,29 +98,29 @@ console.log('\n--- PHẦN 2: KIỂM THỬ VALIDATION ĐẶT LẠI MẬT KHẨU -
 
 // Test 2.2: Empty new password
 {
-  const errors = validateResetPassword('sample-token', '', '123456');
+  const errors = validateResetPassword('sample-token', '', '12345678');
   assert.strictEqual(errors.token, undefined);
   assert.strictEqual(errors.newPassword, 'Vui lòng nhập mật khẩu mới.');
   console.log('✔ Test 2.2 PASS: Mật khẩu mới để trống báo lỗi');
 }
 
-// Test 2.3: Password shorter than 6 characters
+// Test 2.3: Password shorter than 8 characters
 {
-  const errors = validateResetPassword('sample-token', '12345', '12345');
-  assert.strictEqual(errors.newPassword, 'Mật khẩu mới phải có ít nhất 6 ký tự.');
-  console.log('✔ Test 2.3 PASS: Mật khẩu dưới 6 ký tự bị từ chối');
+  const errors = validateResetPassword('sample-token', '1234567', '1234567');
+  assert.strictEqual(errors.newPassword, 'Mật khẩu mới phải có ít nhất 8 ký tự.');
+  console.log('✔ Test 2.3 PASS: Mật khẩu dưới 8 ký tự bị từ chối');
 }
 
 // Test 2.4: Empty confirm password
 {
-  const errors = validateResetPassword('sample-token', '123456', '');
+  const errors = validateResetPassword('sample-token', '12345678', '');
   assert.strictEqual(errors.confirmPassword, 'Vui lòng xác nhận mật khẩu mới.');
   console.log('✔ Test 2.4 PASS: Xác nhận mật khẩu để trống báo lỗi');
 }
 
 // Test 2.5: Password and Confirm password mismatch
 {
-  const errors = validateResetPassword('sample-token', '123456', '654321');
+  const errors = validateResetPassword('sample-token', '12345678', '87654321');
   assert.strictEqual(errors.confirmPassword, 'Mật khẩu xác nhận không khớp.');
   console.log('✔ Test 2.5 PASS: Hai mật khẩu không khớp hiển thị lỗi "Mật khẩu xác nhận không khớp."');
 }
