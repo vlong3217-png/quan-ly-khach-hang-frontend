@@ -33,9 +33,14 @@ export default function ContractsPage() {
   const [isCreatingRenewal, setIsCreatingRenewal] = useState<boolean>(false)
   const [detailContract, setDetailContract] = useState<Contract | null>(null)
 
-  const loadContracts = () => {
-    const list = contractService.getContracts()
-    setContracts(list)
+  const loadContracts = async () => {
+    try {
+      const list = await contractService.fetchContracts()
+      setContracts(list)
+    } catch {
+      const list = contractService.getContracts()
+      setContracts(list)
+    }
   }
 
   useEffect(() => {

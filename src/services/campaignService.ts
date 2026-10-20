@@ -9,7 +9,6 @@ import type { Lead } from '../types/lead.ts'
 import { API_BASE_URL } from './authService.ts'
 import { leadService } from './leadService.ts'
 import type { PaginationParams } from '../types/pagination.ts'
-import { normalizePaginatedResponse } from '../types/pagination.ts'
 
 const STORAGE_KEY_CAMPAIGNS = 'crm_campaigns_master_data'
 
@@ -66,15 +65,19 @@ export const campaignService = {
       })
       if (response.ok) {
         const data = await response.json()
-        const paginated = normalizePaginatedResponse<Campaign>(data, params?.page || 1, params?.limit || 10)
-        if (paginated.items.length > 0 || data.items || Array.isArray(data)) {
-          if (!params?.page || params.page === 1) {
-            saveStoredCampaigns(paginated.items)
-          }
-          return paginated.items
+        const items = data.items || (Array.isArray(data) ? data : [])
+        const mapped = items.map((c: any) => ({
+          ...c,
+          id: String(c.id),
+        }))
+        if (!params?.page || params.page === 1) {
+          saveStoredCampaigns(mapped)
         }
+        return mapped
       }
-    } catch {}
+    } catch (err) {
+      console.warn('Lỗi tải chiến dịch từ API:', err)
+    }
     return getStoredCampaigns()
   },
 
@@ -89,7 +92,9 @@ export const campaignService = {
       })
       if (response.ok) {
         const data = await response.json()
-        if (data && data.id) return data
+        if (data && data.id) {
+          return { ...data, id: String(data.id) }
+        }
       }
     } catch {}
     const list = getStoredCampaigns()
@@ -104,7 +109,49 @@ export const campaignService = {
     const nextCodeNumber = campaigns.length + 1
     const newCode = `CAMP-${String(nextCodeNumber).padStart(3, '0')}`
 
-    const newCampaign: Campaign = {
+    const startDateIso = payload.start_date.includes('T') ? payload.start_date : `${payload.start_date}T00:00:00`
+    const endDateIso = payload.end_date ? (payload.end_date.includes('T') ? payload.end_date : `${payload.end_date}T23:59:59`) : null
+
+    const apiPayload = {
+      code: newCode,
+      name: payload.name.trim(),
+      channel: payload.channel,
+      budget: Number(payload.budget) || 0,
+      actual_cost: Number(payload.actual_cost) || 0,
+      start_date: startDateIso,
+      end_date: endDateIso,
+      status: payload.status || 'ACTIVE',
+      target_leads: Number(payload.target_leads) || 0,
+      description: payload.description?.trim() || null,
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/campaigns`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(apiPayload),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        if (data && data.id) {
+          const mapped: Campaign = {
+            ...data,
+            id: String(data.id),
+          }
+          const updated = [mapped, ...campaigns]
+          saveStoredCampaigns(updated)
+          return mapped
+        }
+      } else {
+        const err = await response.json().catch(() => ({}))
+        const msg = err.detail ? (typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail)) : 'Lỗi tạo chiến dịch'
+        throw new Error(msg)
+      }
+    } catch (err: any) {
+      if (err.message && !err.message.includes('fetch')) throw err
+    }
+
+    const fallbackCampaign: Campaign = {
       id: `camp-${Date.now()}`,
       code: newCode,
       name: payload.name.trim(),
@@ -113,7 +160,7 @@ export const campaignService = {
       actual_cost: Number(payload.actual_cost) || 0,
       start_date: payload.start_date,
       end_date: payload.end_date,
-      status: payload.status || 'PLANNING',
+      status: payload.status || 'ACTIVE',
       target_leads: Number(payload.target_leads) || 0,
       actual_leads: 0,
       converted_leads: 0,
@@ -122,26 +169,9 @@ export const campaignService = {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/campaigns`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(newCampaign),
-      })
-      if (response.ok) {
-        const data = await response.json()
-        if (data && data.id) {
-          const updated = [data, ...campaigns]
-          saveStoredCampaigns(updated)
-          return data
-        }
-      }
-    } catch {}
-
-    const updated = [newCampaign, ...campaigns]
+    const updated = [fallbackCampaign, ...campaigns]
     saveStoredCampaigns(updated)
-    return newCampaign
+    return fallbackCampaign
   },
 
   /**
@@ -171,12 +201,19 @@ export const campaignService = {
       if (response.ok) {
         const data = await response.json()
         if (data && data.id) {
-          campaigns[index] = data
+          const mapped = { ...data, id: String(data.id) }
+          campaigns[index] = mapped
           saveStoredCampaigns(campaigns)
-          return data
+          return mapped
         }
+      } else {
+        const err = await response.json().catch(() => ({}))
+        const msg = err.detail ? (typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail)) : 'Lỗi cập nhật chiến dịch'
+        throw new Error(msg)
       }
-    } catch {}
+    } catch (err: any) {
+      if (err.message && !err.message.includes('fetch')) throw err
+    }
 
     campaigns[index] = updatedCampaign
     saveStoredCampaigns(campaigns)
@@ -188,11 +225,17 @@ export const campaignService = {
    */
   async deleteCampaign(id: string): Promise<void> {
     try {
-      await fetch(`${API_BASE_URL}/campaigns/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/campaigns/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       })
-    } catch {}
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        if (err.detail) throw new Error(typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail))
+      }
+    } catch (err: any) {
+      if (err.message && !err.message.includes('fetch')) throw err
+    }
 
     const campaigns = getStoredCampaigns().filter((c) => c.id !== id)
     saveStoredCampaigns(campaigns)

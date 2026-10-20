@@ -25,7 +25,7 @@ export default function PublicQuoteViewPage() {
 
   const templateConfig = templateConfigService.getConfig()
 
-  const loadQuote = () => {
+  const loadQuote = async () => {
     if (!quoteId) {
       setError('Đường dẫn không hợp lệ. Vui lòng kiểm tra lại liên kết báo giá.')
       setLoading(false)
@@ -33,7 +33,13 @@ export default function PublicQuoteViewPage() {
     }
 
     try {
-      const found = quoteService.getQuoteByToken(quoteId, token)
+      let found = quoteService.getQuoteByToken(quoteId, token)
+      if (!found) {
+        // Cố gắng tải từ backend để xem có tồn tại trên máy chủ không
+        await quoteService.fetchQuotes()
+        found = quoteService.getQuoteByToken(quoteId, token)
+      }
+
       if (!found) {
         setError('Báo giá không tồn tại hoặc liên kết đã bị hủy.')
       } else {

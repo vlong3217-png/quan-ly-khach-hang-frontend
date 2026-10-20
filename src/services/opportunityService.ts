@@ -333,7 +333,7 @@ export const opportunityService = {
       })
       if (response.ok) {
         const data = await response.json()
-        if (data && data.id) return data
+        if (data && data.id) return mapBackendToOpportunity(data)
       }
     } catch {}
 
@@ -344,30 +344,35 @@ export const opportunityService = {
   async updateOpportunity(id: string, patch: Partial<Opportunity>): Promise<Opportunity> {
     const list = getStoredOpportunities()
     const idx = list.findIndex((o) => o.id === id)
-    if (idx === -1) {
-      throw new Error('Không tìm thấy cơ hội bán hàng!')
+    let currentOpp: Opportunity | null = idx !== -1 ? list[idx] : null
+
+    if (!currentOpp) {
+      currentOpp = await this.getOpportunityById(id)
     }
 
-    const oldOpp = { ...list[idx] }
+    const oldOpp = currentOpp ? { ...currentOpp } : null
     const updatedOpp: Opportunity = {
-      ...list[idx],
+      ...(currentOpp || {}),
       ...patch,
+      id,
       updated_at: new Date().toISOString(),
-    }
+    } as Opportunity
 
     // Tự động ghi nhật ký thay đổi S6-01 (giai đoạn, giá trị, ngày chốt, người sở hữu)
-    try {
-      const userRaw = localStorage.getItem('user') || sessionStorage.getItem('user')
-      const currentUser = userRaw ? JSON.parse(userRaw) : null
-      opportunityHistoryService.recordOpportunityDiff(
-        oldOpp,
-        updatedOpp,
-        {
-          id: currentUser?.id ? Number(currentUser.id) : undefined,
-          name: currentUser?.full_name || 'Người dùng',
-        }
-      )
-    } catch {}
+    if (oldOpp) {
+      try {
+        const userRaw = localStorage.getItem('user') || sessionStorage.getItem('user')
+        const currentUser = userRaw ? JSON.parse(userRaw) : null
+        opportunityHistoryService.recordOpportunityDiff(
+          oldOpp,
+          updatedOpp,
+          {
+            id: currentUser?.id ? Number(currentUser.id) : undefined,
+            name: currentUser?.full_name || 'Người dùng',
+          }
+        )
+      } catch {}
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}/opportunities/${id}`, {
@@ -378,14 +383,23 @@ export const opportunityService = {
       if (response.ok) {
         const data = await response.json()
         if (data && data.id) {
-          list[idx] = data
+          const mapped = mapBackendToOpportunity(data)
+          if (idx !== -1) {
+            list[idx] = mapped
+          } else {
+            list.unshift(mapped)
+          }
           saveStoredOpportunities(list)
-          return data
+          return mapped
         }
       }
     } catch {}
 
-    list[idx] = updatedOpp
+    if (idx !== -1) {
+      list[idx] = updatedOpp
+    } else {
+      list.unshift(updatedOpp)
+    }
     saveStoredOpportunities(list)
     return updatedOpp
   },

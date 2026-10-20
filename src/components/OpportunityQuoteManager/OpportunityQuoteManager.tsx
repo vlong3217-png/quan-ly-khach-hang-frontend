@@ -55,12 +55,25 @@ export default function OpportunityQuoteManager({
   const [approvalError, setApprovalError] = useState<string | null>(null)
   const [isProcessingApproval, setIsProcessingApproval] = useState<boolean>(false)
 
-  const loadQuotes = () => {
+  const loadQuotes = async () => {
+    // Show cached or initial local data first
     const list = quoteService.getQuotes(opportunity.id)
     setQuotes(list)
     if (selectedQuoteDetail) {
       const refreshed = list.find((q) => q.id === selectedQuoteDetail.id)
       setSelectedQuoteDetail(refreshed || null)
+    }
+
+    // Fetch latest quotes from backend database
+    try {
+      const remoteList = await quoteService.fetchQuotes(opportunity.id)
+      setQuotes(remoteList)
+      if (selectedQuoteDetail) {
+        const refreshed = remoteList.find((q) => q.id === selectedQuoteDetail.id)
+        setSelectedQuoteDetail(refreshed || null)
+      }
+    } catch (err) {
+      console.warn('Lỗi tải danh sách báo giá:', err)
     }
   }
 

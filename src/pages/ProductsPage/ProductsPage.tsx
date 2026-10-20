@@ -41,13 +41,22 @@ export default function ProductsPage() {
     setTimeout(() => setToast(null), 3500)
   }
 
-  const loadProducts = () => {
-    const list = productService.getProducts({
-      search,
-      type: filterType,
-      status: filterStatus,
-    })
-    setProducts(list)
+  const loadProducts = async () => {
+    try {
+      const list = await productService.fetchProducts({
+        search,
+        type: filterType,
+        status: filterStatus,
+      })
+      setProducts(list)
+    } catch {
+      const list = productService.getProducts({
+        search,
+        type: filterType,
+        status: filterStatus,
+      })
+      setProducts(list)
+    }
   }
 
   useEffect(() => {
@@ -95,7 +104,7 @@ export default function ProductsPage() {
     setIsModalOpen(true)
   }
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     const errors: Record<string, string> = {}
     if (!formData.code.trim()) errors.code = 'Mã sản phẩm không được để trống'
@@ -116,27 +125,27 @@ export default function ProductsPage() {
 
     try {
       if (editingProduct) {
-        productService.updateProduct(editingProduct.id, {
+        await productService.updateProduct(editingProduct.id, {
           ...formData,
           // Nếu không phải GĐKD/Admin thì giữ nguyên giá vốn cũ
           cost_price: isSalesDirectorOrAdmin ? formData.cost_price : editingProduct.cost_price,
         })
         showToast(`Đã cập nhật sản phẩm "${formData.name}" thành công!`, 'success')
       } else {
-        productService.createProduct({
+        await productService.createProduct({
           ...formData,
           has_quotes: false,
         })
         showToast(`Đã thêm mới sản phẩm "${formData.name}" thành công!`, 'success')
       }
       setIsModalOpen(false)
-      loadProducts()
+      await loadProducts()
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra', 'error')
     }
   }
 
-  const handleDelete = (p: Product) => {
+  const handleDelete = async (p: Product) => {
     if (p.has_quotes) {
       showToast(
         'Sản phẩm đã xuất hiện trong báo giá của hệ thống! Không thể xóa, chỉ được chuyển sang "Ngừng kinh doanh".',
@@ -146,23 +155,23 @@ export default function ProductsPage() {
     }
     if (window.confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${p.name}"?`)) {
       try {
-        productService.deleteProduct(p.id)
+        await productService.deleteProduct(p.id)
         showToast(`Đã xóa sản phẩm "${p.name}" thành công!`, 'success')
-        loadProducts()
+        await loadProducts()
       } catch (err) {
         showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra', 'error')
       }
     }
   }
 
-  const handleToggleStatus = (p: Product) => {
+  const handleToggleStatus = async (p: Product) => {
     try {
-      const updated = productService.toggleDiscontinue(p.id)
+      const updated = await productService.toggleDiscontinue(p.id)
       showToast(
         `Đã chuyển trạng thái sản phẩm sang "${updated.status === 'ACTIVE' ? 'Đang kinh doanh' : 'Ngừng kinh doanh'}"!`,
         'success'
       )
-      loadProducts()
+      await loadProducts()
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra', 'error')
     }

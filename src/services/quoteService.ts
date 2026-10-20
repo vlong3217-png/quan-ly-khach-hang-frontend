@@ -142,6 +142,66 @@ function saveStoredQuotes(quotes: Quote[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(quotes))
 }
 
+import { API_BASE_URL } from './authService.ts'
+
+function getAuthToken(): string | null {
+  return (
+    localStorage.getItem('access_token') ||
+    sessionStorage.getItem('access_token') ||
+    localStorage.getItem('auth_token') ||
+    sessionStorage.getItem('auth_token')
+  )
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const token = getAuthToken()
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  if (token) {
+    headers['Authorization'] = `Bearer ${token.trim()}`
+  }
+  return headers
+}
+
+function mapBackendToQuote(b: any): Quote {
+  return {
+    id: String(b.id),
+    quote_number: b.quote_number,
+    version: 1,
+    is_active_version: true,
+    opportunity_id: String(b.opportunity_id || ''),
+    opportunity_title: b.opportunity_title || `Cơ hội #${b.opportunity_id}`,
+    customer_id: String(b.customer_id || 1),
+    customer_name: b.customer_name || 'Khách hàng',
+    status: (b.status || 'DRAFT') as QuoteStatus,
+    items: b.items || [],
+    subtotal: Number(b.subtotal || 0),
+    total_line_discount: Number(b.total_line_discount || 0),
+    overall_discount_type: b.overall_discount_type || 'PERCENT',
+    overall_discount_value: Number(b.overall_discount_value || 0),
+    total_discount_amount: Number(b.total_discount_amount || 0),
+    discount_percentage: Number(b.discount_percentage || 0),
+    vat_amount: Number(b.vat_amount || 0),
+    grand_total: Number(b.grand_total || b.amount || 0),
+    valid_until: b.valid_until || '',
+    payment_terms: b.payment_terms || 'Theo thỏa thuận',
+    delivery_terms: b.delivery_terms || '',
+    notes: b.notes || '',
+    requires_approval: Boolean(b.requires_discount_approval),
+    approval_level: (b.approval_level || 'NONE') as 'NONE' | 'MANAGER' | 'DIRECTOR',
+    approval_reason: b.approval_reason || undefined,
+    approval_history: b.approval_history || [],
+    access_token: `token-${b.id}`,
+    is_converted_to_contract: Boolean(b.is_converted_to_contract),
+    contract_id: b.contract_id ? String(b.contract_id) : undefined,
+    contract_number: b.contract_number || undefined,
+    created_by_name: 'Nhân viên kinh doanh',
+    created_at: b.created_at || new Date().toISOString(),
+    updated_at: b.updated_at || b.created_at || new Date().toISOString(),
+  }
+}
+
 export const quoteService = {
   getQuotes(opportunityId?: string): Quote[] {
     const all = getStoredQuotes()
@@ -149,9 +209,70 @@ export const quoteService = {
     return all.filter((q) => q.opportunity_id === opportunityId)
   },
 
+  async fetchQuotes(opportunityId?: string): Promise<Quote[]> {
+    try {
+      const query = new URLSearchParams()
+      query.set('limit', '100')
+      if (opportunityId && !isNaN(Number(opportunityId))) {
+        query.set('opportunity_id', opportunityId)
+      }
+
+      const response = await fetch(`${API_BASE_URL}/quotes?${query.toString()}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const rawList = Array.isArray(data) ? data : data.quotes || []
+        const mapped = rawList.map(mapBackendToQuote)
+        const local = getStoredQuotes()
+        const merged = [...mapped]
+        for (const loc of local) {
+          if (!merged.some((m) => m.id === loc.id)) {
+            merged.push(loc)
+          }
+        }
+        saveStoredQuotes(merged)
+        return this.getQuotes(opportunityId)
+      }
+    } catch (err) {
+      console.warn('Lỗi kết nối tải danh sách báo giá:', err)
+    }
+
+    return this.getQuotes(opportunityId)
+  },
+
   getQuoteById(id: string): Quote | null {
     const all = getStoredQuotes()
     return all.find((q) => q.id === id) || null
+  },
+
+  async fetchQuoteById(id: string): Promise<Quote | null> {
+    const local = this.getQuoteById(id)
+    const numericId = Number(id)
+    if (!isNaN(numericId) && numericId > 0) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/quotes/${numericId}`, {
+          method: 'GET',
+          headers: getAuthHeaders(),
+        })
+        if (response.ok) {
+          const data = await response.json()
+          const mapped = mapBackendToQuote(data)
+          const all = getStoredQuotes()
+          const idx = all.findIndex((q) => q.id === String(mapped.id))
+          if (idx !== -1) {
+            all[idx] = mapped
+          } else {
+            all.unshift(mapped)
+          }
+          saveStoredQuotes(all)
+          return mapped
+        }
+      } catch {}
+    }
+    return local
   },
 
   getQuoteByToken(quoteIdOrToken: string, token?: string): Quote | null {
@@ -276,6 +397,56 @@ export const quoteService = {
     all.unshift(newQuote)
     saveStoredQuotes(all)
 
+    // Gửi lên Backend để lưu vào database
+    const backendPayload: Record<string, any> = {
+      title: payload.opportunity_title ? `Báo giá cho ${payload.opportunity_title}` : `Báo giá #${payload.opportunity_id}`,
+      opportunity_id: Number(payload.opportunity_id) || null,
+      customer_id: Number(payload.customer_id) || null,
+      valid_until: payload.valid_until,
+      payment_terms: newQuote.payment_terms,
+      delivery_terms: newQuote.delivery_terms,
+      notes: newQuote.notes,
+      is_draft: isDraft,
+      overall_discount_type: newQuote.overall_discount_type,
+      overall_discount_value: newQuote.overall_discount_value,
+      items: calc.calculatedItems.map((it) => ({
+        product_id: it.product_id ? Number(it.product_id) || null : null,
+        product_code: it.product_code || '',
+        product_name: it.product_name,
+        unit: it.unit || 'Gói',
+        quantity: it.quantity,
+        unit_price: it.unit_price,
+        floor_price: it.floor_price,
+        discount_type: it.discount_type,
+        discount_value: it.discount_value,
+        vat_rate: it.vat_rate,
+        notes: '',
+      })),
+    }
+
+    try {
+      fetch(`${API_BASE_URL}/quotes`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(backendPayload),
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && data.id) {
+            const mapped = mapBackendToQuote(data)
+            const currentList = getStoredQuotes()
+            const idx = currentList.findIndex((q) => q.id === newQuote.id)
+            if (idx !== -1) {
+              currentList[idx] = mapped
+            } else {
+              currentList.unshift(mapped)
+            }
+            saveStoredQuotes(currentList)
+          }
+        })
+        .catch(() => {})
+    } catch {}
+
     // Log to Opportunity Timeline & History
     opportunityActivityService.createActivity({
       opportunity_id: payload.opportunity_id,
@@ -368,6 +539,18 @@ export const quoteService = {
 
     all[idx] = updated
     saveStoredQuotes(all)
+
+    const numericId = Number(quoteId)
+    if (!isNaN(numericId) && numericId > 0) {
+      try {
+        fetch(`${API_BASE_URL}/quotes/${numericId}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+        }).catch(() => {})
+      } catch {}
+    }
+
     return updated
   },
 
@@ -413,6 +596,17 @@ export const quoteService = {
 
     all[idx] = updated
     saveStoredQuotes(all)
+
+    const numericId = Number(quoteId)
+    if (!isNaN(numericId) && numericId > 0) {
+      try {
+        fetch(`${API_BASE_URL}/quotes/${numericId}/approve`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ comments: updatedHistory.comments }),
+        }).catch(() => {})
+      } catch {}
+    }
 
     opportunityActivityService.createActivity({
       opportunity_id: current.opportunity_id,
@@ -466,6 +660,17 @@ export const quoteService = {
     all[idx] = updated
     saveStoredQuotes(all)
 
+    const numericId = Number(quoteId)
+    if (!isNaN(numericId) && numericId > 0) {
+      try {
+        fetch(`${API_BASE_URL}/quotes/${numericId}/reject`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ comments: comments.trim() }),
+        }).catch(() => {})
+      } catch {}
+    }
+
     opportunityActivityService.createActivity({
       opportunity_id: current.opportunity_id,
       opportunity_title: current.opportunity_title,
@@ -518,6 +723,17 @@ export const quoteService = {
     all[idx] = updated
     saveStoredQuotes(all)
 
+    const numericId = Number(quoteId)
+    if (!isNaN(numericId) && numericId > 0) {
+      try {
+        fetch(`${API_BASE_URL}/quotes/${numericId}/return`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ comments: comments.trim() }),
+        }).catch(() => {})
+      } catch {}
+    }
+
     opportunityActivityService.createActivity({
       opportunity_id: current.opportunity_id,
       opportunity_title: current.opportunity_title,
@@ -564,6 +780,16 @@ export const quoteService = {
 
     all[idx] = updated
     saveStoredQuotes(all)
+
+    const numericId = Number(quoteId)
+    if (!isNaN(numericId) && numericId > 0) {
+      try {
+        fetch(`${API_BASE_URL}/quotes/${numericId}/send`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+        }).catch(() => {})
+      } catch {}
+    }
 
     opportunityActivityService.createActivity({
       opportunity_id: current.opportunity_id,
@@ -669,6 +895,16 @@ export const quoteService = {
   deleteQuote(id: string): void {
     const all = getStoredQuotes().filter((q) => q.id !== id)
     saveStoredQuotes(all)
+
+    const numericId = Number(id)
+    if (!isNaN(numericId) && numericId > 0) {
+      try {
+        fetch(`${API_BASE_URL}/quotes/${numericId}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+        }).catch(() => {})
+      } catch {}
+    }
   },
 
   /**

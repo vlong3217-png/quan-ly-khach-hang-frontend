@@ -268,21 +268,50 @@ export const leadService = {
       updated_at: new Date().toISOString(),
     }
 
+    const apiPayload = {
+      name: payload.full_name.trim(),
+      full_name: payload.full_name.trim(),
+      email: payload.email.trim() || null,
+      phone: payload.phone.trim() || null,
+      company: payload.company?.trim() || null,
+      company_name: payload.company?.trim() || null,
+      industry: payload.industry?.trim() || null,
+      source: payload.source || 'MANUAL',
+      status: payload.status || 'NEW',
+      campaign_id: payload.campaign_id ? Number(payload.campaign_id) : null,
+      owner_id: payload.owner_id ? Number(payload.owner_id) : 1,
+      interest: payload.requirement?.trim() || null,
+      notes: payload.notes?.trim() || null,
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/leads`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(newLead),
+        body: JSON.stringify(apiPayload),
       })
       if (response.ok) {
         const data = await response.json()
         if (data && data.id) {
-          const updated = [data, ...leads]
+          const mappedLead: Lead = {
+            ...newLead,
+            ...data,
+            id: String(data.id),
+            code: data.code || `LEAD-${String(data.id).padStart(3, '0')}`,
+            created_at: data.created_at || newLead.created_at,
+          }
+          const updated = [mappedLead, ...leads]
           saveStoredLeads(updated)
-          return data
+          return mappedLead
         }
+      } else {
+        const err = await response.json().catch(() => ({}))
+        const msg = err.detail ? (typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail)) : 'Lỗi tạo khách hàng tiềm năng'
+        throw new Error(msg)
       }
-    } catch {}
+    } catch (err: any) {
+      if (err.message && !err.message.includes('fetch')) throw err
+    }
 
     const updated = [newLead, ...leads]
     saveStoredLeads(updated)
@@ -304,21 +333,31 @@ export const leadService = {
       updated_at: new Date().toISOString(),
     }
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/leads/${id}`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(updatedLead),
-      })
-      if (response.ok) {
-        const data = await response.json()
-        if (data && data.id) {
-          leads[index] = data
-          saveStoredLeads(leads)
-          return data
+    const numId = Number(id)
+    if (!isNaN(numId)) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/leads/${numId}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+        })
+        if (response.ok) {
+          const data = await response.json()
+          if (data && data.id) {
+            const mapped = { ...updatedLead, ...data, id: String(data.id) }
+            leads[index] = mapped
+            saveStoredLeads(leads)
+            return mapped
+          }
+        } else {
+          const err = await response.json().catch(() => ({}))
+          const msg = err.detail ? (typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail)) : 'Lỗi cập nhật Lead'
+          throw new Error(msg)
         }
+      } catch (err: any) {
+        if (err.message && !err.message.includes('fetch')) throw err
       }
-    } catch {}
+    }
 
     leads[index] = updatedLead
     saveStoredLeads(leads)
@@ -329,12 +368,21 @@ export const leadService = {
    * Xóa Lead
    */
   async deleteLead(id: string): Promise<void> {
-    try {
-      await fetch(`${API_BASE_URL}/leads/${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-      })
-    } catch {}
+    const numId = Number(id)
+    if (!isNaN(numId)) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/leads/${numId}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+        })
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}))
+          if (err.detail) throw new Error(typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail))
+        }
+      } catch (err: any) {
+        if (err.message && !err.message.includes('fetch')) throw err
+      }
+    }
 
     const leads = getStoredLeads().filter((l) => l.id !== id)
     saveStoredLeads(leads)
