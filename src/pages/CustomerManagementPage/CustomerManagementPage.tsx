@@ -224,19 +224,37 @@ export default function CustomerManagementPage() {
   }, [])
 
   // Load danh sách khách hàng & dữ liệu liên quan
-  const loadCustomers = () => {
-    const list = customerService.getCustomers({
+  const loadCustomers = async () => {
+    // 1. Tải nhanh từ cache
+    const cachedList = customerService.getCustomers({
       search,
       status: filterStatus,
       industry: filterIndustry,
       company_size: filterCompanySize,
       corporate_structure: filterCorporateStructure || undefined,
     })
-    setAllCustomers(list)
+    setAllCustomers(cachedList)
     setContacts(customerService.getContacts(undefined, contactSearch))
     setDuplicateGroups(customerService.detectDuplicates())
     setTickets(customerService.getTickets())
     setPeriodicCareList(customerService.getPeriodicCareCustomers(periodicCareDays))
+
+    // 2. Đồng bộ từ Backend API qua mạng
+    try {
+      const apiCusts = await customerService.fetchCustomers({
+        search,
+        status: filterStatus,
+        industry: filterIndustry,
+        company_size: filterCompanySize,
+      })
+      if (apiCusts && apiCusts.length >= 0) {
+        setAllCustomers(apiCusts)
+      }
+      const apiContacts = await customerService.fetchContacts(undefined, contactSearch)
+      if (apiContacts) {
+        setContacts(apiContacts)
+      }
+    } catch {}
   }
 
   useEffect(() => {
@@ -335,7 +353,7 @@ export default function CustomerManagementPage() {
   }
 
   // Lưu khách hàng
-  const handleSubmitForm = (e: React.FormEvent) => {
+  const handleSubmitForm = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateForm()) return
 
@@ -346,7 +364,7 @@ export default function CustomerManagementPage() {
 
     try {
       if (editingCustomer) {
-        customerService.updateCustomer(editingCustomer.id, {
+        await customerService.updateCustomer(editingCustomer.id, {
           name: formData.name.trim(),
           tax_code: formData.tax_code.trim() || undefined,
           industry: formData.industry,
@@ -365,7 +383,7 @@ export default function CustomerManagementPage() {
         })
         showToast(`Đã cập nhật hồ sơ khách hàng "${formData.name.trim()}" thành công!`)
       } else {
-        customerService.createCustomer({
+        await customerService.createCustomer({
           name: formData.name.trim(),
           tax_code: formData.tax_code.trim() || undefined,
           industry: formData.industry,
@@ -385,19 +403,19 @@ export default function CustomerManagementPage() {
         showToast(`Đã thêm thành công khách hàng "${formData.name.trim()}"!`)
       }
       setIsModalOpen(false)
-      loadCustomers()
+      await loadCustomers()
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra', true)
     }
   }
 
   // Xóa khách hàng
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!deletingCustomer) return
-    const success = customerService.deleteCustomer(deletingCustomer.id)
+    const success = await customerService.deleteCustomer(deletingCustomer.id)
     if (success) {
       showToast(`Đã xóa khách hàng "${deletingCustomer.name}" (${deletingCustomer.code})!`)
-      loadCustomers()
+      await loadCustomers()
     }
     setDeletingCustomer(null)
   }
@@ -500,14 +518,14 @@ export default function CustomerManagementPage() {
     setIsContactModalOpen(true)
   }
 
-  const handleSaveContact = (e: React.FormEvent) => {
+  const handleSaveContact = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!contactForm.full_name.trim()) return showToast('Vui lòng nhập họ tên người liên hệ', true)
     const targetCust = allCustomers.find((c) => c.id === contactForm.customer_id)
     const custName = targetCust ? targetCust.name : 'Khách hàng'
 
     if (editingContact) {
-      customerService.updateContact(editingContact.id, {
+      await customerService.updateContact(editingContact.id, {
         customer_id: contactForm.customer_id,
         customer_name: custName,
         full_name: contactForm.full_name.trim(),
@@ -520,7 +538,7 @@ export default function CustomerManagementPage() {
       })
       showToast('Đã cập nhật thông tin người liên hệ thành công!')
     } else {
-      customerService.createContact({
+      await customerService.createContact({
         customer_id: contactForm.customer_id,
         customer_name: custName,
         full_name: contactForm.full_name.trim(),
@@ -534,7 +552,7 @@ export default function CustomerManagementPage() {
       showToast('Đã thêm người liên hệ mới thành công!')
     }
     setIsContactModalOpen(false)
-    loadCustomers()
+    await loadCustomers()
   }
 
   // Thực hiện chuyển người liên hệ sang cty mới (AC S3-02)

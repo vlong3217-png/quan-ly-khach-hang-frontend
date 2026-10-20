@@ -13,11 +13,30 @@ import type {
 } from '../types/customer.ts'
 import { API_BASE_URL } from './authService.ts'
 import type { PaginatedResponse, PaginationParams } from '../types/pagination.ts'
-import { normalizePaginatedResponse } from '../types/pagination.ts'
 
 const STORAGE_KEY = 'crm_enterprise_customers_data'
 
 const INITIAL_CUSTOMERS: CustomerEnterprise[] = []
+
+function getAuthToken(): string | null {
+  return (
+    localStorage.getItem('access_token') ||
+    sessionStorage.getItem('access_token') ||
+    localStorage.getItem('auth_token') ||
+    sessionStorage.getItem('auth_token')
+  )
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const token = getAuthToken()
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  if (token) {
+    headers['Authorization'] = `Bearer ${token.trim()}`
+  }
+  return headers
+}
 
 function getStoredCustomers(): CustomerEnterprise[] {
   try {
@@ -194,6 +213,58 @@ export const customerService = {
   },
 
   /**
+   * Tải danh sách khách hàng từ Backend API và đồng bộ vào cache
+   */
+  async fetchCustomers(params?: CustomerFilterParams): Promise<CustomerEnterprise[]> {
+    try {
+      const query = new URLSearchParams()
+      if (params?.search) query.set('search', params.search)
+      if (params?.status) query.set('status', params.status)
+      if (params?.industry) query.set('industry', params.industry)
+      if (params?.company_size) query.set('company_size', params.company_size)
+      if (params?.owner_id) query.set('owner_id', String(params.owner_id))
+      query.set('limit', '100')
+
+      const response = await fetch(`${API_BASE_URL}/customers?${query.toString()}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
+      if (response.ok) {
+        const raw = await response.json()
+        const items = raw.customers || raw.items || (Array.isArray(raw) ? raw : [])
+        if (Array.isArray(items)) {
+          const mapped: CustomerEnterprise[] = items.map((item: any) => ({
+            id: String(item.id),
+            code: item.code || `KH-${String(item.id).padStart(3, '0')}`,
+            name: item.name,
+            tax_code: item.tax_code || undefined,
+            industry: item.industry || '',
+            company_size: item.company_size || '',
+            website: item.website || undefined,
+            address: item.address || undefined,
+            phone: item.phone || undefined,
+            email: item.email || undefined,
+            owner_id: item.owner_id || 1,
+            owner_name: item.owner_name || 'Admin',
+            team_id: item.team_id || 1,
+            team_name: item.team_name || 'Đội Kinh Doanh 1',
+            status: item.status || 'POTENTIAL',
+            description: item.description || undefined,
+            parent_id: item.parent_company_id ? String(item.parent_company_id) : undefined,
+            created_at: item.created_at || new Date().toISOString(),
+            updated_at: item.updated_at || item.created_at || new Date().toISOString(),
+          }))
+          saveStoredCustomers(mapped)
+          return mapped
+        }
+      }
+    } catch (err) {
+      console.warn('Lỗi tải khách hàng từ API:', err)
+    }
+    return this.getCustomers(params)
+  },
+
+  /**
    * Lấy danh sách khách hàng dạng phân trang đồng bộ Backend API
    */
   async getPaginatedCustomers(params?: CustomerFilterParams & PaginationParams): Promise<PaginatedResponse<CustomerEnterprise>> {
@@ -210,19 +281,41 @@ export const customerService = {
       if (params?.company_size) query.set('company_size', params.company_size)
       if (params?.owner_id) query.set('owner_id', String(params.owner_id))
 
-      const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token')
       const response = await fetch(`${API_BASE_URL}/customers?${query.toString()}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: getAuthHeaders(),
       })
       if (response.ok) {
         const raw = await response.json()
-        const paginated = normalizePaginatedResponse<CustomerEnterprise>(raw, page, limit)
-        if (paginated.items.length > 0 || raw.items || Array.isArray(raw)) {
-          return paginated
+        const rawItems = raw.customers || raw.items || (Array.isArray(raw) ? raw : [])
+        const mappedItems: CustomerEnterprise[] = rawItems.map((item: any) => ({
+          id: String(item.id),
+          code: item.code || `KH-${String(item.id).padStart(3, '0')}`,
+          name: item.name,
+          tax_code: item.tax_code || undefined,
+          industry: item.industry || '',
+          company_size: item.company_size || '',
+          website: item.website || undefined,
+          address: item.address || undefined,
+          phone: item.phone || undefined,
+          email: item.email || undefined,
+          owner_id: item.owner_id || 1,
+          owner_name: item.owner_name || 'Admin',
+          team_id: item.team_id || 1,
+          team_name: item.team_name || 'Đội Kinh Doanh 1',
+          status: item.status || 'POTENTIAL',
+          description: item.description || undefined,
+          parent_id: item.parent_company_id ? String(item.parent_company_id) : undefined,
+          created_at: item.created_at || new Date().toISOString(),
+          updated_at: item.updated_at || item.created_at || new Date().toISOString(),
+        }))
+        const total = raw.total !== undefined ? raw.total : mappedItems.length
+        return {
+          items: mappedItems,
+          total,
+          page,
+          limit,
+          total_pages: Math.max(1, Math.ceil(total / limit)),
         }
       }
     } catch {}
@@ -259,9 +352,9 @@ export const customerService = {
   },
 
   /**
-   * Thêm mới khách hàng doanh nghiệp
+   * Thêm mới khách hàng doanh nghiệp (Đồng bộ Backend API & MySQL)
    */
-  createCustomer(data: Omit<CustomerEnterprise, 'id' | 'code' | 'created_at' | 'updated_at'>): CustomerEnterprise {
+  async createCustomer(data: Omit<CustomerEnterprise, 'id' | 'code' | 'created_at' | 'updated_at'>): Promise<CustomerEnterprise> {
     const list = getStoredCustomers()
 
     // Kiểm tra tính duy nhất của mã số thuế nếu có
@@ -269,7 +362,53 @@ export const customerService = {
       throw new Error(`Mã số thuế "${data.tax_code}" đã tồn tại trên hệ thống!`)
     }
 
-    // Tự sinh mã KH tiếp theo: KH-001, KH-002, ...
+    const payload = {
+      name: data.name,
+      tax_code: data.tax_code || null,
+      industry: data.industry || null,
+      company_size: data.company_size || null,
+      website: data.website || null,
+      address: data.address || null,
+      status: data.status || 'PROSPECT',
+      parent_company_id: data.parent_id ? Number(data.parent_id) : null,
+      email: data.email || null,
+      phone: data.phone || null,
+      owner_id: data.owner_id ? Number(data.owner_id) : null,
+      team_id: data.team_id ? Number(data.team_id) : null,
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/customers`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      })
+
+      if (response.ok) {
+        const item = await response.json()
+        const newCustomer: CustomerEnterprise = {
+          ...data,
+          id: String(item.id),
+          code: item.code || `KH-${String(item.id).padStart(3, '0')}`,
+          created_at: item.created_at || new Date().toISOString(),
+          updated_at: item.updated_at || new Date().toISOString(),
+        }
+        const updated = [newCustomer, ...list]
+        saveStoredCustomers(updated)
+        return newCustomer
+      } else {
+        const errData = await response.json().catch(() => ({}))
+        if (errData.detail) {
+          throw new Error(errData.detail)
+        }
+      }
+    } catch (err: any) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err
+      }
+    }
+
+    // Fallback nếu không gọi được API
     const maxNum = list.reduce((max, item) => {
       const match = item.code.match(/^KH-(\d+)$/)
       if (match) {
@@ -279,7 +418,6 @@ export const customerService = {
       return max
     }, 0)
     const nextCode = `KH-${String(maxNum + 1).padStart(3, '0')}`
-
     const now = new Date().toISOString()
     const newCustomer: CustomerEnterprise = {
       ...data,
@@ -288,34 +426,54 @@ export const customerService = {
       created_at: now,
       updated_at: now,
     }
-
     const updated = [newCustomer, ...list]
     saveStoredCustomers(updated)
-
-    if (data.parent_id) {
-      try {
-        this.setParentCompany(newCustomer.id, data.parent_id)
-      } catch (err) {
-        console.warn('Lỗi gán công ty mẹ khi tạo mới:', err)
-      }
-    }
-
     return newCustomer
   },
 
   /**
-   * Cập nhật thông tin khách hàng
+   * Cập nhật thông tin khách hàng (Đồng bộ Backend API & MySQL)
    */
-  updateCustomer(id: string, data: Partial<Omit<CustomerEnterprise, 'id' | 'code' | 'created_at'>>): CustomerEnterprise {
+  async updateCustomer(id: string, data: Partial<Omit<CustomerEnterprise, 'id' | 'code' | 'created_at'>>): Promise<CustomerEnterprise> {
     const list = getStoredCustomers()
     const index = list.findIndex((c) => c.id === id)
     if (index === -1) {
       throw new Error('Không tìm thấy khách hàng cần cập nhật!')
     }
 
-    // Kiểm tra tính duy nhất của mã số thuế nếu có
     if (data.tax_code && this.isTaxCodeDuplicate(data.tax_code, id)) {
       throw new Error(`Mã số thuế "${data.tax_code}" đã tồn tại trên một khách hàng khác!`)
+    }
+
+    const payload: Record<string, any> = {}
+    if (data.name !== undefined) payload.name = data.name
+    if (data.tax_code !== undefined) payload.tax_code = data.tax_code || null
+    if (data.industry !== undefined) payload.industry = data.industry || null
+    if (data.company_size !== undefined) payload.company_size = data.company_size || null
+    if (data.website !== undefined) payload.website = data.website || null
+    if (data.address !== undefined) payload.address = data.address || null
+    if (data.status !== undefined) payload.status = data.status
+    if (data.parent_id !== undefined) payload.parent_company_id = data.parent_id ? Number(data.parent_id) : null
+    if (data.email !== undefined) payload.email = data.email || null
+    if (data.phone !== undefined) payload.phone = data.phone || null
+    if (data.owner_id !== undefined) payload.owner_id = Number(data.owner_id)
+    if (data.team_id !== undefined) payload.team_id = Number(data.team_id)
+
+    const numId = Number(id)
+    if (!isNaN(numId)) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/customers/${numId}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+        })
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}))
+          if (errData.detail) throw new Error(errData.detail)
+        }
+      } catch (err: any) {
+        if (err.message && !err.message.includes('fetch')) throw err
+      }
     }
 
     const updatedCustomer: CustomerEnterprise = {
@@ -323,29 +481,25 @@ export const customerService = {
       ...data,
       updated_at: new Date().toISOString(),
     }
-
     list[index] = updatedCustomer
     saveStoredCustomers(list)
-
-    if (data.parent_id !== undefined) {
-      if (data.parent_id) {
-        try {
-          this.setParentCompany(id, data.parent_id)
-        } catch (err) {
-          console.warn('Lỗi gán công ty mẹ khi cập nhật:', err)
-        }
-      } else {
-        this.removeParentCompany(id)
-      }
-    }
-
     return updatedCustomer
   },
 
   /**
-   * Xóa khách hàng
+   * Xóa khách hàng (Đồng bộ Backend API & MySQL)
    */
-  deleteCustomer(id: string): boolean {
+  async deleteCustomer(id: string): Promise<boolean> {
+    const numId = Number(id)
+    if (!isNaN(numId)) {
+      try {
+        await fetch(`${API_BASE_URL}/customers/${numId}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+        })
+      } catch {}
+    }
+
     const list = getStoredCustomers()
     const filtered = list.filter((c) => c.id !== id)
     if (filtered.length === list.length) {
@@ -386,20 +540,100 @@ export const customerService = {
   },
 
   /**
-   * Thêm người liên hệ mới
-   * AC: Mỗi khách hàng có thể có một người là đầu mối chính
+   * Tải danh sách người liên hệ từ API và đồng bộ cache
    */
-  createContact(data: Omit<CustomerContact, 'id' | 'created_at' | 'updated_at'>): CustomerContact {
+  async fetchContacts(customerId?: string, search?: string): Promise<CustomerContact[]> {
+    try {
+      const query = new URLSearchParams()
+      if (customerId && !isNaN(Number(customerId))) {
+        query.set('customer_id', customerId)
+      }
+      query.set('limit', '100')
+
+      const response = await fetch(`${API_BASE_URL}/contacts?${query.toString()}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
+      if (response.ok) {
+        const raw = await response.json()
+        const items = Array.isArray(raw) ? raw : []
+        if (items.length > 0) {
+          const mapped: CustomerContact[] = items.map((c: any) => ({
+            id: String(c.id),
+            customer_id: String(c.customer_id),
+            customer_name: c.customer_name || '',
+            full_name: c.name,
+            title: c.position || '',
+            email: c.email || '',
+            phone: c.phone || '',
+            buying_role: c.decision_role || 'DECISION_MAKER',
+            is_primary: Boolean(c.is_primary),
+            notes: c.notes || '',
+            created_at: c.created_at || new Date().toISOString(),
+            updated_at: c.updated_at || new Date().toISOString(),
+            history: (c.history || []).map((h: any) => ({
+              from_customer_id: h.from_customer_id ? String(h.from_customer_id) : '',
+              from_customer_name: '',
+              to_customer_id: h.to_customer_id ? String(h.to_customer_id) : '',
+              to_customer_name: '',
+              transferred_at: h.timestamp || new Date().toISOString(),
+              reason: h.note || '',
+            })),
+          }))
+          saveStoredContacts(mapped)
+          return this.getContacts(customerId, search)
+        }
+      }
+    } catch {}
+    return this.getContacts(customerId, search)
+  },
+
+  /**
+   * Thêm người liên hệ mới (Đồng bộ Backend API & MySQL)
+   */
+  async createContact(data: Omit<CustomerContact, 'id' | 'created_at' | 'updated_at'>): Promise<CustomerContact> {
     const list = getStoredContacts()
     const now = new Date().toISOString()
 
-    // Nếu đánh dấu là primary thì bỏ primary của người khác thuộc cùng khách hàng
     if (data.is_primary) {
       list.forEach((c) => {
         if (c.customer_id === data.customer_id) {
           c.is_primary = false
         }
       })
+    }
+
+    const numCustomerId = Number(data.customer_id)
+    if (!isNaN(numCustomerId)) {
+      try {
+        const payload = {
+          customer_id: numCustomerId,
+          name: data.full_name,
+          phone: data.phone,
+          email: data.email || null,
+          position: data.title || null,
+          decision_role: data.buying_role || 'DECISION_MAKER',
+          is_primary: Boolean(data.is_primary),
+          notes: data.notes || null,
+        }
+        const response = await fetch(`${API_BASE_URL}/contacts`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+        })
+        if (response.ok) {
+          const item = await response.json()
+          const newContact: CustomerContact = {
+            ...data,
+            id: String(item.id),
+            created_at: item.created_at || now,
+            updated_at: item.updated_at || now,
+          }
+          const updated = [newContact, ...list]
+          saveStoredContacts(updated)
+          return newContact
+        }
+      } catch {}
     }
 
     const newContact: CustomerContact = {
@@ -415,9 +649,9 @@ export const customerService = {
   },
 
   /**
-   * Cập nhật người liên hệ
+   * Cập nhật người liên hệ (Đồng bộ Backend API & MySQL)
    */
-  updateContact(id: string, data: Partial<Omit<CustomerContact, 'id' | 'created_at'>>): CustomerContact {
+  async updateContact(id: string, data: Partial<Omit<CustomerContact, 'id' | 'created_at'>>): Promise<CustomerContact> {
     const list = getStoredContacts()
     const idx = list.findIndex((c) => c.id === id)
     if (idx === -1) throw new Error('Không tìm thấy người liên hệ!')
@@ -428,6 +662,26 @@ export const customerService = {
           c.is_primary = false
         }
       })
+    }
+
+    const numId = Number(id)
+    if (!isNaN(numId)) {
+      try {
+        const payload: Record<string, any> = {}
+        if (data.full_name) payload.name = data.full_name
+        if (data.phone) payload.phone = data.phone
+        if (data.email !== undefined) payload.email = data.email
+        if (data.title !== undefined) payload.position = data.title
+        if (data.buying_role) payload.decision_role = data.buying_role
+        if (data.is_primary !== undefined) payload.is_primary = Boolean(data.is_primary)
+        if (data.notes !== undefined) payload.notes = data.notes
+
+        await fetch(`${API_BASE_URL}/contacts/${numId}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+        })
+      } catch {}
     }
 
     const updated: CustomerContact = {
@@ -441,9 +695,19 @@ export const customerService = {
   },
 
   /**
-   * Xóa người liên hệ
+   * Xóa người liên hệ (Đồng bộ Backend API & MySQL)
    */
-  deleteContact(id: string): boolean {
+  async deleteContact(id: string): Promise<boolean> {
+    const numId = Number(id)
+    if (!isNaN(numId)) {
+      try {
+        await fetch(`${API_BASE_URL}/contacts/${numId}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+        })
+      } catch {}
+    }
+
     const list = getStoredContacts()
     const filtered = list.filter((c) => c.id !== id)
     if (filtered.length === list.length) return false

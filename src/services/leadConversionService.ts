@@ -233,7 +233,7 @@ export const leadConversionService = {
       }
 
       const currentUser = getLoggedInUser()
-      const newCustomer = customerService.createCustomer({
+      const newCustomer = await customerService.createCustomer({
         name: customerName,
         tax_code: payload.tax_code?.trim() || undefined,
         industry: payload.industry || currentLead.industry || 'Công nghệ thông tin & Viễn thông',
@@ -252,7 +252,7 @@ export const leadConversionService = {
 
       // Tự động tạo người liên hệ đại diện (CustomerContact) từ thông tin Lead
       try {
-        customerService.createContact({
+        await customerService.createContact({
           customer_id: newCustomer.id,
           customer_name: newCustomer.name,
           full_name: payload.contact_name?.trim() || currentLead.full_name,
