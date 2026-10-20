@@ -34,7 +34,6 @@ export default function ExecutiveDashboard() {
       {/* Role Switcher Toolbar (Allows reviewing all 3 tiers as requested in S8-04) */}
       <div className="role-preview-toolbar">
         <div className="role-switcher-title">
-          <span>📊</span>
           <span>Chế độ Dashboard theo vai trò</span>
         </div>
 
@@ -63,7 +62,7 @@ export default function ExecutiveDashboard() {
         </div>
 
         <div className="load-time-badge" title="Đạt tiêu chí chấp nhận: Toàn bộ dữ liệu tải xong dưới 2 giây">
-          <span>⚡ Tải xong: {loadTimeMs}ms (&lt; 2s)</span>
+          <span>Tải xong: {loadTimeMs}ms (&lt; 2s)</span>
         </div>
       </div>
 
@@ -111,7 +110,6 @@ export default function ExecutiveDashboard() {
             <div className="dashboard-panel">
               <div className="dashboard-panel-header">
                 <h3 className="panel-title">
-                  <span>📅</span>
                   <span>Công việc hôm nay của tôi (Today's Tasks)</span>
                 </h3>
                 <button
@@ -125,7 +123,6 @@ export default function ExecutiveDashboard() {
               </div>
 
               <div style={{ textAlign: 'center', padding: '36px 16px', color: '#64748b' }}>
-                <span style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }}>📋</span>
                 <p style={{ margin: 0, fontSize: '0.875rem' }}>Chưa có công việc nào cần xử lý hôm nay.</p>
                 <button
                   type="button"
@@ -142,7 +139,6 @@ export default function ExecutiveDashboard() {
             <div className="dashboard-panel">
               <div className="dashboard-panel-header">
                 <h3 className="panel-title">
-                  <span>🎯</span>
                   <span>Lead mới chưa liên hệ (SLA Compliance)</span>
                 </h3>
                 <button
@@ -156,7 +152,6 @@ export default function ExecutiveDashboard() {
               </div>
 
               <div style={{ textAlign: 'center', padding: '36px 16px', color: '#64748b' }}>
-                <span style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }}>✅</span>
                 <p style={{ margin: 0, fontSize: '0.875rem' }}>Toàn bộ lead đã được xử lý hoặc chưa có lead mới.</p>
                 <button
                   type="button"
@@ -216,7 +211,6 @@ export default function ExecutiveDashboard() {
             <div className="dashboard-panel">
               <div className="dashboard-panel-header">
                 <h3 className="panel-title">
-                  <span>🏆</span>
                   <span>Xếp hạng thành viên trong nhóm (Team Leaderboard)</span>
                 </h3>
                 <button
@@ -230,7 +224,6 @@ export default function ExecutiveDashboard() {
               </div>
 
               <div style={{ textAlign: 'center', padding: '36px 16px', color: '#64748b' }}>
-                <span style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }}>🏅</span>
                 <p style={{ margin: 0, fontSize: '0.875rem' }}>Chưa có số liệu phát sinh từ thành viên trong nhóm.</p>
               </div>
             </div>
@@ -239,13 +232,11 @@ export default function ExecutiveDashboard() {
             <div className="dashboard-panel">
               <div className="dashboard-panel-header">
                 <h3 className="panel-title">
-                  <span>⚠️</span>
                   <span>Cơ hội đình trệ & Công việc quá hạn</span>
                 </h3>
               </div>
 
               <div style={{ textAlign: 'center', padding: '36px 16px', color: '#64748b' }}>
-                <span style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }}>👍</span>
                 <p style={{ margin: 0, fontSize: '0.875rem' }}>Đội ngũ đang vận hành đúng tiến độ. Không có việc hoặc cơ hội nào quá hạn.</p>
               </div>
             </div>
@@ -297,14 +288,12 @@ export default function ExecutiveDashboard() {
             <div className="dashboard-panel">
               <div className="dashboard-panel-header">
                 <h3 className="panel-title">
-                  <span>📈</span>
                   <span>Giá trị Pipeline theo giai đoạn (Pipeline by Stage)</span>
                 </h3>
                 <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Tổng: 0 ₫</span>
               </div>
 
               <div style={{ textAlign: 'center', padding: '40px 16px', color: '#64748b' }}>
-                <span style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }}>📊</span>
                 <p style={{ margin: 0, fontSize: '0.875rem' }}>Chưa có cơ hội bán hàng nào trong chu kỳ Pipeline.</p>
                 <button
                   type="button"
@@ -321,13 +310,11 @@ export default function ExecutiveDashboard() {
             <div className="dashboard-panel">
               <div className="dashboard-panel-header">
                 <h3 className="panel-title">
-                  <span>📊</span>
                   <span>Doanh số đã chốt theo tháng (Monthly Trend)</span>
                 </h3>
               </div>
 
               <div style={{ textAlign: 'center', padding: '40px 16px', color: '#64748b' }}>
-                <span style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }}>📉</span>
                 <p style={{ margin: 0, fontSize: '0.875rem' }}>Hệ thống sẵn sàng ghi nhận doanh thu mới khi các hợp đồng được ký duyệt.</p>
               </div>
             </div>

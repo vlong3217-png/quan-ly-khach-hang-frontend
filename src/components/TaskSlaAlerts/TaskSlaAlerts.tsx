@@ -40,15 +40,6 @@ const IconCheck = () => (
   </svg>
 )
 
-const IconUsers = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-)
-
 const IconSettings = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="3" />
@@ -258,7 +249,7 @@ export default function TaskSlaAlerts({
                   onClick={onNavigateToOpportunities}
                   title="Mở Cơ hội bán hàng"
                 >
-                  🎯 Xem Cơ hội
+                  Xem Cơ hội
                 </button>
               )}
               <button
@@ -280,9 +271,9 @@ export default function TaskSlaAlerts({
                   <div className="overdue-info">
                     <h4 className="task-title-txt">{t.title}</h4>
                     <div className="task-meta-txt">
-                      <span>🕒 Hạn chót: <strong>{t.due_date} {t.due_time || ''}</strong></span>
-                      {t.customer_name && <span>🏢 Khách: <strong>{t.customer_name}</strong></span>}
-                      {t.opportunity_title && <span>🎯 Deal: <strong>{t.opportunity_title}</strong></span>}
+                      <span>Hạn chót: <strong>{t.due_date} {t.due_time || ''}</strong></span>
+                      {t.customer_name && <span>Khách: <strong>{t.customer_name}</strong></span>}
+                      {t.opportunity_title && <span>Deal: <strong>{t.opportunity_title}</strong></span>}
                     </div>
                   </div>
                 </div>
@@ -316,7 +307,7 @@ export default function TaskSlaAlerts({
               className="btn btn-link btn-sm"
               onClick={() => setIsConfigOpen(true)}
             >
-              ⚙️ Đổi mốc nhắc
+              Đổi mốc nhắc
             </button>
           </div>
 
@@ -326,7 +317,7 @@ export default function TaskSlaAlerts({
                 <div className="chip-content">
                   <strong>{t.title}</strong>
                   <span className="due-info">Hạn: {t.due_date} {t.due_time || ''}</span>
-                  {t.customer_name && <span className="cust-info">🏢 {t.customer_name}</span>}
+                  {t.customer_name && <span className="cust-info">{t.customer_name}</span>}
                 </div>
                 <button
                   type="button"
@@ -347,9 +338,6 @@ export default function TaskSlaAlerts({
         <div className="manager-team-sla-card" id="manager-team-sla-card">
           <div className="manager-sla-header">
             <div className="title-left">
-              <div className="icon-badge">
-                <IconUsers />
-              </div>
               <div>
                 <h3>Theo dõi việc quá hạn thành viên nhóm (Dành cho Trưởng nhóm)</h3>
                 <span className="sub-text">

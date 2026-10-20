@@ -756,7 +756,6 @@ function DashboardPage() {
         onClick={() => setIsQuickCallModalOpen(true)}
         title="Ghi nhanh cuộc gọi 3 chạm trên điện thoại (S6-10)"
       >
-        <span>📞</span>
         <span>Ghi nhanh cuộc gọi</span>
       </button>
 
