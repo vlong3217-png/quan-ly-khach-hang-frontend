@@ -71,23 +71,23 @@ export default function OpportunityQuoteManager({
   const getStatusBadge = (status: QuoteStatus) => {
     switch (status) {
       case 'DRAFT':
-        return <span className="quote-status-badge draft">🟡 Bản nháp</span>
+        return <span className="quote-status-badge draft">Bản nháp</span>
       case 'PENDING_APPROVAL':
-        return <span className="quote-status-badge pending">🟠 Chờ duyệt chiết khấu</span>
+        return <span className="quote-status-badge pending">Chờ duyệt chiết khấu</span>
       case 'APPROVED':
-        return <span className="quote-status-badge approved">🟢 Đã phê duyệt</span>
+        return <span className="quote-status-badge approved">Đã phê duyệt</span>
       case 'REJECTED':
-        return <span className="quote-status-badge rejected">🔴 Bị từ chối</span>
+        return <span className="quote-status-badge rejected">Bị từ chối</span>
       case 'RETURNED':
-        return <span className="quote-status-badge returned">🟣 Yêu cầu sửa lại</span>
+        return <span className="quote-status-badge returned">Yêu cầu sửa lại</span>
       case 'SENT':
-        return <span className="quote-status-badge sent">🔵 Đã gửi khách</span>
+        return <span className="quote-status-badge sent">Đã gửi khách</span>
       case 'ACCEPTED':
-        return <span className="quote-status-badge accepted">🟢 Khách đã chấp nhận</span>
+        return <span className="quote-status-badge accepted">Khách đã chấp nhận</span>
       case 'DECLINED':
-        return <span className="quote-status-badge declined">🔴 Khách từ chối</span>
+        return <span className="quote-status-badge declined">Khách từ chối</span>
       case 'EXPIRED':
-        return <span className="quote-status-badge expired">⚫ Hết hiệu lực</span>
+        return <span className="quote-status-badge expired">Hết hiệu lực</span>
       default:
         return <span className="quote-status-badge">{status}</span>
     }
@@ -194,7 +194,7 @@ export default function OpportunityQuoteManager({
                 setIsComparisonOpen(true)
               }}
             >
-              ⚖️ So sánh phiên bản (S7-03)
+              So sánh phiên bản (S7-03)
             </button>
           )}
           {!readOnly && (
@@ -216,7 +216,6 @@ export default function OpportunityQuoteManager({
       {/* Quotes List Table */}
       {quotes.length === 0 ? (
         <div className="quote-manager-empty-state">
-          <span className="empty-icon">📑</span>
           <h5>Chưa có báo giá nào cho cơ hội này</h5>
           <p>
             Bạn có thể kế thừa các dòng sản phẩm đã chọn để tạo báo giá chuyên nghiệp và gửi khách hàng trong buổi chiều!
@@ -256,7 +255,7 @@ export default function OpportunityQuoteManager({
                     <strong className="quote-num-txt">{q.quote_number}</strong>
                     {q.requires_approval && q.status === 'PENDING_APPROVAL' && (
                       <span className="approval-req-tag" title={q.approval_reason}>
-                        ⚠️ Cần duyệt ({q.approval_level === 'DIRECTOR' ? 'Giám đốc' : 'Trưởng nhóm'})
+                        Cần duyệt ({q.approval_level === 'DIRECTOR' ? 'Giám đốc' : 'Trưởng nhóm'})
                       </span>
                     )}
                   </td>
@@ -285,7 +284,7 @@ export default function OpportunityQuoteManager({
                         onClick={() => setSelectedQuoteDetail(q)}
                         title="Xem chi tiết"
                       >
-                        👁️ Xem
+                        Xem
                       </button>
 
                       {/* S7-05: Export PDF Button */}
@@ -296,7 +295,7 @@ export default function OpportunityQuoteManager({
                         onClick={() => setPdfExportQuote(q)}
                         title="Xuất báo giá ra PDF theo mẫu công ty (S7-05 AC)"
                       >
-                        🖨️ PDF
+                        PDF
                       </button>
 
                       {/* S7-02: Approval Action Buttons for Managers */}
@@ -308,7 +307,7 @@ export default function OpportunityQuoteManager({
                             onClick={() => handleOpenApproval(q, 'APPROVE')}
                             title="Phê duyệt báo giá"
                           >
-                            ✓ Duyệt
+                            Duyệt
                           </button>
                           <button
                             type="button"
@@ -316,7 +315,7 @@ export default function OpportunityQuoteManager({
                             onClick={() => handleOpenApproval(q, 'RETURN')}
                             title="Yêu cầu sửa lại"
                           >
-                            ↩️ Trả lại
+                            Trả lại
                           </button>
                           <button
                             type="button"
@@ -324,7 +323,7 @@ export default function OpportunityQuoteManager({
                             onClick={() => handleOpenApproval(q, 'REJECT')}
                             title="Từ chối duyệt"
                           >
-                            ✕
+                            Từ chối
                           </button>
                         </div>
                       )}
@@ -338,7 +337,7 @@ export default function OpportunityQuoteManager({
                           onClick={() => handleSendToCustomer(q)}
                           title="Gửi báo giá kèm liên kết cho khách"
                         >
-                          📤 Gửi khách
+                          Gửi khách
                         </button>
                       )}
 
@@ -355,7 +354,7 @@ export default function OpportunityQuoteManager({
                           }}
                           title="Sao chép liên kết xem và phản hồi báo giá trực tuyến (S7-06 AC)"
                         >
-                          🔗 Link
+                          Link
                         </button>
                       )}
 
@@ -368,7 +367,7 @@ export default function OpportunityQuoteManager({
                           onClick={() => setConvertToContractQuote(q)}
                           title="Chuyển đổi báo giá thành Hợp đồng (S7-04 AC)"
                         >
-                          📜 Tạo Hợp đồng
+                          Tạo Hợp đồng
                         </button>
                       )}
 
@@ -379,7 +378,7 @@ export default function OpportunityQuoteManager({
                           disabled
                           title="Chỉ báo giá đã duyệt mới gửi được cho khách (S7-02 AC)"
                         >
-                          🔒 Chờ duyệt
+                          Chờ duyệt
                         </button>
                       )}
 
@@ -396,7 +395,7 @@ export default function OpportunityQuoteManager({
                           }}
                           title="So sánh phiên bản này với bản khác"
                         >
-                          ⚖️ So sánh
+                          So sánh
                         </button>
                       )}
 
@@ -408,7 +407,7 @@ export default function OpportunityQuoteManager({
                           onClick={() => handleCreateNewVersion(q)}
                           title="Tạo phiên bản sửa đổi mới v[N+1] (S7-03 AC)"
                         >
-                          ➕ Bản mới (v{q.version + 1})
+                          Bản mới (v{q.version + 1})
                         </button>
                       )}
 
@@ -436,7 +435,7 @@ export default function OpportunityQuoteManager({
                           }}
                           title="Sửa bản nháp"
                         >
-                          ✏️ Sửa nháp
+                          Sửa nháp
                         </button>
                       )}
 
@@ -447,7 +446,7 @@ export default function OpportunityQuoteManager({
                           onClick={() => handleDelete(q.id, q.quote_number)}
                           title="Xóa bản nháp"
                         >
-                          🗑️
+                          Xóa
                         </button>
                       )}
                     </div>
@@ -598,8 +597,8 @@ export default function OpportunityQuoteManager({
               {/* ── S7-02 AC: LỊCH SỬ DUYỆT KHÔNG SỬA VÀ KHÔNG XÓA ĐƯỢC ── */}
               <div className="preview-approval-history-section">
                 <div className="history-head">
-                  <h5>📜 Lịch sử phê duyệt & Kiểm soát chiết khấu (Bất biến)</h5>
-                  <span className="audit-lock-badge">🔒 Bất biến (Không sửa / không xóa)</span>
+                  <h5>Lịch sử phê duyệt & Kiểm soát chiết khấu (Bất biến)</h5>
+                  <span className="audit-lock-badge">Bất biến (Không sửa / không xóa)</span>
                 </div>
 
                 {selectedQuoteDetail.approval_history.length === 0 ? (
@@ -610,11 +609,11 @@ export default function OpportunityQuoteManager({
                       <div key={hist.id || idx} className="history-log-row">
                         <div className="log-action-col">
                           <span className={`hist-action-tag ${hist.action.toLowerCase()}`}>
-                            {hist.action === 'APPROVED' && '✅ ĐÃ DUYỆT'}
-                            {hist.action === 'AUTO_APPROVED' && '⚡ TỰ ĐỘNG THÔNG QUA'}
-                            {hist.action === 'REJECTED' && '❌ TỪ CHỐI'}
-                            {hist.action === 'RETURNED' && '↩️ YÊU CẦU SỬA'}
-                            {hist.action === 'SUBMITTED' && '📤 GỬI DUYỆT'}
+                            {hist.action === 'APPROVED' && 'ĐÃ DUYỆT'}
+                            {hist.action === 'AUTO_APPROVED' && 'TỰ ĐỘNG THÔNG QUA'}
+                            {hist.action === 'REJECTED' && 'TỪ CHỐI'}
+                            {hist.action === 'RETURNED' && 'YÊU CẦU SỬA'}
+                            {hist.action === 'SUBMITTED' && 'GỬI DUYỆT'}
                           </span>
                         </div>
                         <div className="log-details-col">
@@ -638,7 +637,7 @@ export default function OpportunityQuoteManager({
                 id="btn-modal-export-pdf"
                 onClick={() => setPdfExportQuote(selectedQuoteDetail)}
               >
-                🖨️ Xuất PDF theo mẫu (S7-05)
+                Xuất PDF theo mẫu (S7-05)
               </button>
               {(selectedQuoteDetail.status === 'ACCEPTED' || selectedQuoteDetail.status === 'APPROVED') && !readOnly && (
                 <button
@@ -650,7 +649,7 @@ export default function OpportunityQuoteManager({
                     setConvertToContractQuote(target)
                   }}
                 >
-                  📜 Chuyển thành Hợp đồng (S7-04)
+                  Chuyển thành Hợp đồng (S7-04)
                 </button>
               )}
               {selectedQuoteDetail.status === 'APPROVED' && !readOnly && (
@@ -659,7 +658,7 @@ export default function OpportunityQuoteManager({
                   className="btn btn-primary"
                   onClick={() => handleSendToCustomer(selectedQuoteDetail)}
                 >
-                  📤 Gửi báo giá cho khách hàng
+                  Gửi báo giá cho khách hàng
                 </button>
               )}
               <button
@@ -685,9 +684,9 @@ export default function OpportunityQuoteManager({
           >
             <div className="dialog-header">
               <h3>
-                {approvalActionType === 'APPROVE' && '✅ Phê duyệt báo giá'}
-                {approvalActionType === 'RETURN' && '↩️ Yêu cầu sửa lại báo giá'}
-                {approvalActionType === 'REJECT' && '❌ Từ chối duyệt báo giá'}
+                {approvalActionType === 'APPROVE' && 'Phê duyệt báo giá'}
+                {approvalActionType === 'RETURN' && 'Yêu cầu sửa lại báo giá'}
+                {approvalActionType === 'REJECT' && 'Từ chối duyệt báo giá'}
               </h3>
               <button type="button" className="close-btn" onClick={() => setApprovalModalQuote(null)}>
                 ✕
@@ -791,7 +790,7 @@ export default function OpportunityQuoteManager({
           quote={convertToContractQuote}
           onClose={() => setConvertToContractQuote(null)}
           onSuccess={async (contractNumber) => {
-            alert(`🎉 Chúc mừng! Đã chuyển đổi thành công Hợp đồng số ${contractNumber}.\nCơ hội đã tự động chuyển sang Đóng Thắng (Closed Won)!`)
+            alert(`Chúc mừng! Đã chuyển đổi thành công Hợp đồng số ${contractNumber}.\nCơ hội đã tự động chuyển sang Đóng Thắng (Closed Won)!`)
             loadQuotes()
             const refreshedOpp = await opportunityService.getOpportunityById(opportunity.id)
             if (refreshedOpp && onOpportunityUpdated) {
@@ -822,7 +821,7 @@ export default function OpportunityQuoteManager({
             aria-modal="true"
           >
             <div className="dialog-header">
-              <h3>📧 Gửi email kèm liên kết xem báo giá (S7-06)</h3>
+              <h3>Gửi email kèm liên kết xem báo giá (S7-06)</h3>
               <button
                 type="button"
                 className="close-btn"
@@ -924,7 +923,7 @@ export default function OpportunityQuoteManager({
                   }
                 }}
               >
-                {isSendingEmail ? 'Đang gửi...' : '📤 Gửi email cho khách'}
+                {isSendingEmail ? 'Đang gửi...' : 'Gửi email cho khách'}
               </button>
             </div>
           </div>

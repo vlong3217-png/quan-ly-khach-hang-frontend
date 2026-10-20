@@ -93,7 +93,6 @@ export default function ConvertToContractModal({
       >
         <div className="modal-header">
           <div className="title-group">
-            <span className="icon-badge">📑➔📜</span>
             <div>
               <h3 id="convert-contract-title">Chuyển báo giá thành Hợp đồng (S7-04)</h3>
               <span className="sub-title">
@@ -128,7 +127,7 @@ export default function ConvertToContractModal({
                 <span className="val">{formatCurrencyVND(quote.grand_total)}</span>
               </div>
               <div className="auto-won-hint">
-                🎯 <em>Lưu ý: Cơ hội sẽ tự động chuyển sang trạng thái <strong>Đóng Thắng (Closed Won)</strong> với doanh số thực tế đúng bằng {formatCurrencyVND(quote.grand_total)}.</em>
+                <em>Lưu ý: Cơ hội sẽ tự động chuyển sang trạng thái <strong>Đóng Thắng (Closed Won)</strong> với doanh số thực tế đúng bằng {formatCurrencyVND(quote.grand_total)}.</em>
               </div>
             </div>
 
@@ -231,7 +230,7 @@ export default function ConvertToContractModal({
               id="btn-confirm-convert-contract"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Đang chuyển đổi...' : '✓ Xác nhận chuyển thành Hợp đồng'}
+              {isSubmitting ? 'Đang chuyển đổi...' : 'Xác nhận chuyển thành Hợp đồng'}
             </button>
           </div>
         </form>
