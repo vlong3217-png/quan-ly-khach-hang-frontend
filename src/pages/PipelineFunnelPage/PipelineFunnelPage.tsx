@@ -196,7 +196,7 @@ export default function PipelineFunnelPage() {
                           </span>
                           <span>•</span>
                           <span className="stage-days-badge">
-                            ⏱ Thời gian ngâm TB: {st.avg_days_in_stage} ngày
+                            Thời gian ngâm TB: {st.avg_days_in_stage} ngày
                           </span>
                         </div>
                       </div>
