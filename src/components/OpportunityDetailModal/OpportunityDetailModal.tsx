@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import type { Opportunity } from '../../types/opportunity.ts'
 import type { PipelineStage } from '../../types/pipeline.ts'
 import { pipelineService } from '../../services/pipelineService.ts'
@@ -202,7 +202,7 @@ export default function OpportunityDetailModal({
       await opportunityActivityService.createActivity({
         opportunity_id: currentOpp.id,
         type: 'SYSTEM',
-        title: `🎉 Đóng Thắng cơ hội (Deal Won): ${formatCurrency(rev)}`,
+        title: `Đóng Thắng cơ hội (Deal Won): ${formatCurrency(rev)}`,
         content: `Cơ hội đã được chốt thành công ngày ${actualCloseDateInput}. Giá trị thực tế: ${formatCurrency(rev)}${selectedWinReason ? ` | Lý do thắng: ${selectedWinReason.name}` : ''}. Doanh số được tính vào chỉ tiêu của ${currentOpp.owner_name}.`,
         performed_by_id: user?.id ? Number(user.id) : 1,
         performed_by_name: user?.full_name || 'Nhân viên kinh doanh',
@@ -291,7 +291,7 @@ export default function OpportunityDetailModal({
       await opportunityActivityService.createActivity({
         opportunity_id: currentOpp.id,
         type: 'SYSTEM',
-        title: `🔓 Trưởng nhóm mở lại cơ hội bán hàng`,
+        title: `Trưởng nhóm mở lại cơ hội bán hàng`,
         content: `Cơ hội đã được mở lại sang giai đoạn "${targetStage?.name || 'Đàm phán hợp đồng'}". Lý do mở lại: "${reopenReasonInput.trim()}". Thực hiện bởi: ${user?.full_name || 'Trưởng nhóm'}.`,
         performed_by_id: user?.id ? Number(user.id) : 1,
         performed_by_name: user?.full_name || 'Trưởng nhóm',
@@ -340,7 +340,7 @@ export default function OpportunityDetailModal({
         {/* Toast thông báo */}
         {notice && (
           <div className="opp-toast-notice">
-            <span>✓ {notice}</span>
+            <span>{notice}</span>
           </div>
         )}
 
@@ -457,7 +457,7 @@ export default function OpportunityDetailModal({
               ) : (
                 <div className="opp-closed-status-pill">
                   <span className={`pill-badge badge-${currentOpp.status.toLowerCase()}`}>
-                    {currentOpp.status === 'WON' ? '✓ ĐÃ ĐÓNG THẮNG' : '✕ ĐÃ ĐÓNG THUA'}
+                    {currentOpp.status === 'WON' ? 'ĐÃ ĐÓNG THẮNG' : 'ĐÃ ĐÓNG THUA'}
                   </span>
                   {isManagerOrAdmin && (
                     <button
@@ -467,7 +467,7 @@ export default function OpportunityDetailModal({
                       title="Mở lại cơ hội bán hàng"
                       id="btn-reopen-opportunity"
                     >
-                      🔓 Mở lại cơ hội
+                      Mở lại cơ hội
                     </button>
                   )}
                 </div>
@@ -696,7 +696,7 @@ export default function OpportunityDetailModal({
                           </div>
                         )}
                         <div className="detail-item full-row note-quota-counted">
-                          <span>✓ Doanh số này đã được tự động tính vào chỉ tiêu của nhân viên <strong>{currentOpp.owner_name}</strong>.</span>
+                          <span>Doanh số này đã được tự động tính vào chỉ tiêu của nhân viên <strong>{currentOpp.owner_name}</strong>.</span>
                         </div>
                       </>
                     ) : (
@@ -879,7 +879,7 @@ export default function OpportunityDetailModal({
                           <strong>Lý do ghi đè:</strong> <em>"{ovr.reason}"</em>
                         </div>
                         <div style={{ fontSize: '0.75rem', color: '#b45309', background: '#ffedd5', padding: '4px 8px', borderRadius: '4px' }}>
-                          ⚠️ Điều kiện chưa thỏa mãn tại thời điểm duyệt: {ovr.unmet_conditions.join('; ')}
+                          Điều kiện chưa thỏa mãn tại thời điểm duyệt: {ovr.unmet_conditions.join('; ')}
                         </div>
                       </div>
                     ))}
