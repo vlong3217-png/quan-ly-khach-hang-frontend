@@ -85,7 +85,7 @@ export default function PublicQuoteViewPage() {
       setDecisionType(null)
       setSubmissionSuccess(
         decisionType === 'ACCEPT'
-          ? '🎉 Cảm ơn Quý khách đã chấp thuận báo giá! Đội ngũ kinh doanh sẽ liên hệ ngay để hoàn tất hợp đồng.'
+          ? 'Cảm ơn Quý khách đã chấp thuận báo giá! Đội ngũ kinh doanh sẽ liên hệ ngay để hoàn tất hợp đồng.'
           : 'Chúng tôi đã ghi nhận phản hồi từ chối của Quý khách. Xin chân thành cảm ơn sự quan tâm của Quý khách!'
       )
     } catch (err: any) {
@@ -99,7 +99,7 @@ export default function PublicQuoteViewPage() {
     return (
       <div className="public-quote-page-wrapper">
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <h3>⏳ Đang tải thông tin báo giá trực tuyến...</h3>
+          <h3>Đang tải thông tin báo giá trực tuyến...</h3>
         </div>
       </div>
     )
@@ -110,7 +110,7 @@ export default function PublicQuoteViewPage() {
       <div className="public-quote-page-wrapper">
         <div className="public-quote-container">
           <div className="quote-status-banner declined" style={{ justifyContent: 'center' }}>
-            <span>⚠️ {error || 'Không tìm thấy báo giá.'}</span>
+            <span>{error || 'Không tìm thấy báo giá.'}</span>
           </div>
         </div>
       </div>
@@ -154,7 +154,7 @@ export default function PublicQuoteViewPage() {
               onClick={() => window.print()}
               title="In tài liệu"
             >
-              🖨️ In tài liệu
+              In tài liệu
             </button>
           </div>
         </div>
@@ -170,13 +170,13 @@ export default function PublicQuoteViewPage() {
         <div className={`quote-status-banner ${quote.status.toLowerCase()}`}>
           <div>
             <strong>Trạng thái báo giá: </strong>
-            {quote.status === 'ACCEPTED' && '🟢 ĐÃ CHẤP THUẬN'}
-            {quote.status === 'DECLINED' && '🔴 ĐÃ TỪ CHỐI'}
-            {quote.status === 'EXPIRED' && '⚫ ĐÃ HẾT HẠN HIỆU LỰC'}
+            {quote.status === 'ACCEPTED' && 'ĐÃ CHẤP THUẬN'}
+            {quote.status === 'DECLINED' && 'ĐÃ TỪ CHỐI'}
+            {quote.status === 'EXPIRED' && 'ĐÃ HẾT HẠN HIỆU LỰC'}
             {(quote.status === 'SENT' || quote.status === 'APPROVED') &&
-              '🔵 ĐANG CHỜ PHẢN HỒI TỪ QUÝ KHÁCH'}
-            {quote.status === 'DRAFT' && '🟡 BẢN NHÁP'}
-            {quote.status === 'PENDING_APPROVAL' && '🟠 ĐANG CHỜ PHÊ DUYỆT NỘI BỘ'}
+              'ĐANG CHỜ PHẢN HỒI TỪ QUÝ KHÁCH'}
+            {quote.status === 'DRAFT' && 'BẢN NHÁP'}
+            {quote.status === 'PENDING_APPROVAL' && 'ĐANG CHỜ PHÊ DUYỆT NỘI BỘ'}
           </div>
           <div style={{ fontSize: '0.85rem' }}>
             Hiệu lực đến ngày: <strong>{quote.valid_until}</strong>
@@ -339,8 +339,8 @@ export default function PublicQuoteViewPage() {
             <div>
               <strong>
                 {quote.status === 'ACCEPTED'
-                  ? '✓ Quý khách đã chấp nhận báo giá này'
-                  : '✕ Quý khách đã từ chối báo giá này'}
+                  ? 'Quý khách đã chấp nhận báo giá này'
+                  : 'Quý khách đã từ chối báo giá này'}
               </strong>
               {quote.customer_feedback && <p>Ý kiến phản hồi: "{quote.customer_feedback}"</p>}
               <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
@@ -366,7 +366,7 @@ export default function PublicQuoteViewPage() {
                 id="btn-customer-accept-quote"
                 onClick={() => handleOpenDecision('ACCEPT')}
               >
-                ✓ Đồng ý / Chấp nhận báo giá
+                Đồng ý / Chấp nhận báo giá
               </button>
               <button
                 type="button"
@@ -374,7 +374,7 @@ export default function PublicQuoteViewPage() {
                 id="btn-customer-decline-quote"
                 onClick={() => handleOpenDecision('DECLINE')}
               >
-                ✕ Từ chối báo giá
+                Từ chối báo giá
               </button>
             </div>
           </div>
@@ -391,8 +391,8 @@ export default function PublicQuoteViewPage() {
             >
               <h3>
                 {decisionType === 'ACCEPT'
-                  ? '✅ Xác nhận chấp nhận báo giá'
-                  : '❌ Xác nhận từ chối báo giá'}
+                  ? 'Xác nhận chấp nhận báo giá'
+                  : 'Xác nhận từ chối báo giá'}
               </h3>
 
               <form onSubmit={handleSubmitDecision}>
