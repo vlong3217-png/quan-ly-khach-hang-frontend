@@ -9,7 +9,9 @@ import type {
 
 export const API_BASE_URL =
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
-  'https://quan-ly-khach-hang-backend.onrender.com'
+  (typeof import.meta !== 'undefined' && import.meta.env?.DEV
+    ? 'http://127.0.0.1:8000'
+    : 'https://quan-ly-khach-hang-backend.onrender.com')
 
 /**
  * Helper to parse backend error responses safely
