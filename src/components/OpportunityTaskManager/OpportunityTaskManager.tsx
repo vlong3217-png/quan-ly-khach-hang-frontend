@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type {
   OpportunityTask,
   OpportunityTaskStatus,
@@ -429,7 +429,7 @@ export default function OpportunityTaskManager({
         {overdueCount > 0 && (
           <div className="task-kpi-item text-danger">
             <span className="kpi-num">{overdueCount}</span>
-            <span className="kpi-txt">⚠️ Quá hạn chót</span>
+            <span className="kpi-txt">Quá hạn chót</span>
           </div>
         )}
       </div>
@@ -505,7 +505,7 @@ export default function OpportunityTaskManager({
         </div>
       ) : error ? (
         <div className="task-state-box error-state">
-          <div className="error-icon">⚠️</div>
+          <div className="error-icon">!</div>
           <p>{error}</p>
           <button type="button" className="btn btn-secondary" onClick={loadTasks}>
             Thử lại
@@ -565,7 +565,7 @@ export default function OpportunityTaskManager({
 
                       {isPostponed && (
                         <span className="postponed-badge" style={{ background: '#fef3c7', color: '#b45309', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
-                          ⏳ Đã hoãn
+                          Đã hoãn
                         </span>
                       )}
 
@@ -586,8 +586,8 @@ export default function OpportunityTaskManager({
                   {/* S6-06: Gắn với Khách hàng hoặc Cơ hội */}
                   {(task.customer_name || task.opportunity_title) && (
                     <div style={{ fontSize: '0.8rem', color: '#6366f1', margin: '2px 0 6px 0', display: 'flex', gap: '8px' }}>
-                      {task.customer_name && <span>🏢 Khách: <strong>{task.customer_name}</strong></span>}
-                      {task.opportunity_title && <span>🎯 Deal: <strong>{task.opportunity_title}</strong></span>}
+                      {task.customer_name && <span>Khách: <strong>{task.customer_name}</strong></span>}
+                      {task.opportunity_title && <span>Deal: <strong>{task.opportunity_title}</strong></span>}
                     </div>
                   )}
 
@@ -643,7 +643,7 @@ export default function OpportunityTaskManager({
                       onClick={() => handleOpenPostpone(task)}
                       title="Hoãn công việc kèm lý do (S6-06)"
                     >
-                      ⏳ Hoãn
+                      Hoãn
                     </button>
                   )}
                   <button
@@ -693,7 +693,7 @@ export default function OpportunityTaskManager({
               <div className="modal-body">
                 {formError && (
                   <div className="modal-alert-error" role="alert">
-                    <span>⚠️ {formError}</span>
+                    <span>{formError}</span>
                   </div>
                 )}
 
@@ -912,7 +912,7 @@ export default function OpportunityTaskManager({
             aria-modal="true"
           >
             <div className="modal-header">
-              <h3>⏳ Hoãn công việc (S6-06)</h3>
+              <h3>Hoãn công việc (S6-06)</h3>
               <button
                 type="button"
                 className="modal-close-btn"
@@ -926,7 +926,7 @@ export default function OpportunityTaskManager({
               <div className="modal-body">
                 {postponeError && (
                   <div className="modal-alert-error" role="alert">
-                    <span>⚠️ {postponeError}</span>
+                    <span>{postponeError}</span>
                   </div>
                 )}
 
