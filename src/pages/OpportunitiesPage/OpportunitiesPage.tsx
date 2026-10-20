@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type {
   Opportunity,
   CreateOpportunityPayload,
@@ -19,6 +19,8 @@ import ReassignOpportunityModal from '../../components/ReassignOpportunityModal/
 import StageGateEnforcementModal from '../../components/StageGateEnforcementModal/StageGateEnforcementModal.tsx'
 import { opportunityActivityService } from '../../services/opportunityActivityService.ts'
 import { opportunityExportService } from '../../services/opportunityExportService.ts'
+import { customerService } from '../../services/customerService.ts'
+import { getMockUsers } from '../../services/userService.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import TableActionMenu from '../../components/TableActionMenu/TableActionMenu.tsx'
 import './OpportunitiesPage.css'
@@ -82,8 +84,11 @@ export default function OpportunitiesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false)
   const [createSubmitting, setCreateSubmitting] = useState<boolean>(false)
   const [createError, setCreateError] = useState<string | null>(null)
+  const [availableCustomers, setAvailableCustomers] = useState<any[]>([])
+  const [availableUsers, setAvailableUsers] = useState<any[]>([])
   const [newOppForm, setNewOppForm] = useState<{
     title: string
+    customer_id: string
     customer_name: string
     contact_name: string
     contact_phone: string
@@ -92,9 +97,12 @@ export default function OpportunitiesPage() {
     expected_revenue: string
     expected_close_date: string
     source: string
+    owner_id: string
+    owner_name: string
     description: string
   }>({
     title: '',
+    customer_id: '',
     customer_name: '',
     contact_name: '',
     contact_phone: '',
@@ -103,6 +111,8 @@ export default function OpportunitiesPage() {
     expected_revenue: '50000000',
     expected_close_date: '',
     source: 'Website',
+    owner_id: '',
+    owner_name: '',
     description: '',
   })
 
@@ -305,20 +315,74 @@ export default function OpportunitiesPage() {
   const handleOpenCreateModal = () => {
     const today = new Date()
     const future = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
+    
+    // Nạp danh sách khách hàng và nhân viên từ hệ thống
+    const custs = customerService.getCustomers()
+    const usrs = getMockUsers()
+    setAvailableCustomers(custs)
+    setAvailableUsers(usrs)
+
+    const firstCust = custs[0]
+    const defaultOwnerId = user?.id ? String(user.id) : (usrs[0] ? String(usrs[0].id) : '1')
+    const defaultOwnerName = user?.full_name || usrs[0]?.full_name || 'Quản trị viên'
+    const firstCustContacts = firstCust ? customerService.getContacts(firstCust.id) : []
+    const primaryContact = firstCustContacts[0]
+
     setNewOppForm({
       title: '',
-      customer_name: '',
-      contact_name: '',
-      contact_phone: '',
-      contact_email: '',
+      customer_id: firstCust ? firstCust.id : '',
+      customer_name: firstCust ? firstCust.name : '',
+      contact_name: primaryContact?.full_name || '',
+      contact_phone: primaryContact?.phone || firstCust?.phone || '',
+      contact_email: primaryContact?.email || firstCust?.email || '',
       stage_id: stages[0]?.id || 'stage-1',
       expected_revenue: '50000000',
       expected_close_date: future.toISOString().split('T')[0],
       source: 'Website',
+      owner_id: defaultOwnerId,
+      owner_name: defaultOwnerName,
       description: '',
     })
     setCreateError(null)
     setIsCreateModalOpen(true)
+  }
+
+  // Khi người dùng chọn khách hàng từ dropdown
+  const handleSelectCustomer = (customerId: string) => {
+    if (customerId === '__NEW__') {
+      setNewOppForm((prev) => ({
+        ...prev,
+        customer_id: '',
+        customer_name: '',
+        contact_name: '',
+        contact_phone: '',
+        contact_email: '',
+      }))
+      return
+    }
+    const found = availableCustomers.find((c) => c.id === customerId)
+    if (found) {
+      const contacts = customerService.getContacts(found.id)
+      const primary = contacts.find((ct) => ct.is_primary) || contacts[0]
+      setNewOppForm((prev) => ({
+        ...prev,
+        customer_id: found.id,
+        customer_name: found.name,
+        contact_name: primary?.full_name || prev.contact_name,
+        contact_phone: primary?.phone || found.phone || prev.contact_phone,
+        contact_email: primary?.email || found.email || prev.contact_email,
+      }))
+    }
+  }
+
+  // Khi người dùng chọn người phụ trách từ dropdown
+  const handleSelectOwner = (ownerIdStr: string) => {
+    const foundUser = availableUsers.find((u) => String(u.id) === ownerIdStr)
+    setNewOppForm((prev) => ({
+      ...prev,
+      owner_id: ownerIdStr,
+      owner_name: foundUser?.full_name || prev.owner_name,
+    }))
   }
 
   // Submit tạo mới
@@ -329,7 +393,7 @@ export default function OpportunitiesPage() {
       return
     }
     if (!newOppForm.customer_name.trim()) {
-      setCreateError('Vui lòng nhập tên khách hàng / doanh nghiệp.')
+      setCreateError('Vui lòng nhập hoặc chọn khách hàng.')
       return
     }
 
@@ -340,7 +404,7 @@ export default function OpportunitiesPage() {
       const selectedStage = stages.find((s) => s.id === newOppForm.stage_id)
       const payload: CreateOpportunityPayload = {
         title: newOppForm.title.trim(),
-        customer_id: `cust-${Date.now()}`,
+        customer_id: newOppForm.customer_id || `cust-${Date.now()}`,
         customer_name: newOppForm.customer_name.trim(),
         contact_name: newOppForm.contact_name.trim() || undefined,
         contact_phone: newOppForm.contact_phone.trim() || undefined,
@@ -352,8 +416,8 @@ export default function OpportunitiesPage() {
         expected_close_date: newOppForm.expected_close_date || new Date().toISOString().split('T')[0],
         source: newOppForm.source,
         description: newOppForm.description.trim(),
-        owner_id: user?.id ? Number(user.id) : 1,
-        owner_name: user?.full_name || 'Người dùng',
+        owner_id: newOppForm.owner_id ? Number(newOppForm.owner_id) : (user?.id ? Number(user.id) : 1),
+        owner_name: newOppForm.owner_name || user?.full_name || 'Người dùng',
       }
 
       const created = await opportunityService.createOpportunity(payload)
@@ -1403,7 +1467,47 @@ export default function OpportunitiesPage() {
 
                 <div className="form-row-2">
                   <div className="form-group">
-                    <label>Tên khách hàng / Công ty *</label>
+                    <label>Chọn Khách hàng / Doanh nghiệp *</label>
+                    <select
+                      className="form-control"
+                      value={newOppForm.customer_id || (newOppForm.customer_name ? '__CUSTOM__' : '__NEW__')}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        if (val === '__NEW__' || val === '__CUSTOM__') {
+                          handleSelectCustomer('__NEW__')
+                        } else {
+                          handleSelectCustomer(val)
+                        }
+                      }}
+                    >
+                      <option value="__NEW__">-- Thêm mới / Nhập tay --</option>
+                      {availableCustomers.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} {c.tax_code ? `(${c.tax_code})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Người phụ trách (Sales Rep) *</label>
+                    <select
+                      className="form-control"
+                      value={newOppForm.owner_id}
+                      onChange={(e) => handleSelectOwner(e.target.value)}
+                    >
+                      {availableUsers.map((u) => (
+                        <option key={u.id} value={String(u.id)}>
+                          {u.full_name} ({u.team || 'Kinh doanh'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row-2">
+                  <div className="form-group">
+                    <label>Tên khách hàng hiển thị *</label>
                     <input
                       type="text"
                       required

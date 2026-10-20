@@ -5,26 +5,127 @@ import type {
   ProductivityFilter,
   ProductivitySummary,
 } from '../types/teamProductivity.ts'
-
-const STORAGE_KEY_PRODUCTIVITY = 'crm_team_productivity_data_v2'
-const STORAGE_KEY_LEAD_SLA = 'crm_lead_sla_details_v2'
-
-const INITIAL_MEMBERS: MemberProductivity[] = []
-
-const INITIAL_LEAD_SLAS: LeadSlaDetail[] = []
+import { getMockUsers } from './userService.ts'
+import { getStoredLeads } from './leadService.ts'
+import { getStoredOpportunities } from './opportunityService.ts'
+import { quoteService } from './quoteService.ts'
 
 export const teamProductivityService = {
+  /**
+   * Tính toán năng suất động của các thành viên dựa trên dữ liệu người dùng thực tế,
+   * số Lead được bàn giao, số Báo giá đã lập, và số Cơ hội bán hàng đang xử lý.
+   */
   getMembersProductivity(filter?: ProductivityFilter): MemberProductivity[] {
-    try {
-      localStorage.removeItem('crm_team_productivity_data_v1')
-    } catch {
-      // ignore
+    const users = getMockUsers()
+    const leads = getStoredLeads()
+    const opps = getStoredOpportunities()
+    const quotes = quoteService.getQuotes()
+
+    // Phân loại Lead theo người phụ trách
+    const leadsByUser = new Map<number, typeof leads>()
+    for (const l of leads) {
+      const uId = l.owner_id ? Number(l.owner_id) : 1
+      const cur = leadsByUser.get(uId) || []
+      cur.push(l)
+      leadsByUser.set(uId, cur)
     }
-    const raw = localStorage.getItem(STORAGE_KEY_PRODUCTIVITY)
-    let list: MemberProductivity[] = raw ? JSON.parse(raw) : INITIAL_MEMBERS
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY_PRODUCTIVITY, JSON.stringify(INITIAL_MEMBERS))
+
+    // Phân loại Báo giá theo người lập/phụ trách
+    const quotesByUser = new Map<number, number>()
+    for (const q of quotes) {
+      const uId = q.created_by_id ? Number(q.created_by_id) : 1
+      quotesByUser.set(uId, (quotesByUser.get(uId) || 0) + 1)
     }
+
+    // Phân loại Cơ hội theo người phụ trách
+    const oppsByUser = new Map<number, number>()
+    for (const opp of opps) {
+      const uId = opp.owner_id ? Number(opp.owner_id) : 1
+      oppsByUser.set(uId, (oppsByUser.get(uId) || 0) + 1)
+    }
+
+    const members: MemberProductivity[] = users.map((u) => {
+      const uId = Number(u.id)
+      const userLeads = leadsByUser.get(uId) || []
+      const quotesCount = quotesByUser.get(uId) || 0
+      const oppsCount = oppsByUser.get(uId) || 0
+
+      let teamId = 1
+      let teamName = u.team || 'Đội Kinh Doanh 1'
+      if (teamName.includes('2') || teamName.toLowerCase().includes('miền nam')) {
+        teamId = 2
+      } else if (teamName.includes('3') || teamName.toLowerCase().includes('miền trung')) {
+        teamId = 3
+      }
+
+      // Thống kê SLA Leads của nhân viên
+      const leadsAssigned = userLeads.length
+      const leadsInSla = userLeads.filter(
+        (l) => l.assignment_status === 'ACCEPTED' || l.status !== 'NEW' || l.sla_status === 'ON_TIME'
+      ).length
+      const leadsOverdue = Math.max(0, leadsAssigned - leadsInSla)
+      const slaRate = leadsAssigned > 0 ? Number(((leadsInSla / leadsAssigned) * 100).toFixed(1)) : 100
+
+      // Ước tính số cuộc gọi và gặp gỡ dựa trên số lượng tương tác deal & lead
+      const callsCount = leadsAssigned * 2 + oppsCount * 3
+      const meetingsCount = Math.floor(oppsCount * 1.5)
+      const totalActivities = callsCount + meetingsCount + quotesCount
+
+      const weeklyActivities = [
+        {
+          week_number: 1,
+          week_label: 'Tuần 1 (01/10 - 07/10)',
+          calls: Math.ceil(callsCount * 0.25),
+          meetings: Math.ceil(meetingsCount * 0.25),
+          quotes_sent: Math.ceil(quotesCount * 0.25),
+          total_activities: Math.ceil(totalActivities * 0.25),
+        },
+        {
+          week_number: 2,
+          week_label: 'Tuần 2 (08/10 - 14/10)',
+          calls: Math.ceil(callsCount * 0.25),
+          meetings: Math.ceil(meetingsCount * 0.25),
+          quotes_sent: Math.ceil(quotesCount * 0.25),
+          total_activities: Math.ceil(totalActivities * 0.25),
+        },
+        {
+          week_number: 3,
+          week_label: 'Tuần 3 (15/10 - 21/10)',
+          calls: Math.ceil(callsCount * 0.25),
+          meetings: Math.ceil(meetingsCount * 0.25),
+          quotes_sent: Math.ceil(quotesCount * 0.25),
+          total_activities: Math.ceil(totalActivities * 0.25),
+        },
+        {
+          week_number: 4,
+          week_label: 'Tuần 4 (22/10 - 28/10)',
+          calls: Math.max(0, callsCount - Math.ceil(callsCount * 0.75)),
+          meetings: Math.max(0, meetingsCount - Math.ceil(meetingsCount * 0.75)),
+          quotes_sent: Math.max(0, quotesCount - Math.ceil(quotesCount * 0.75)),
+          total_activities: Math.max(0, totalActivities - Math.ceil(totalActivities * 0.75)),
+        },
+      ]
+
+      return {
+        user_id: uId,
+        user_name: u.full_name || u.email,
+        team_id: teamId,
+        team_name: teamName,
+        role: u.role || 'STAFF',
+        total_calls: callsCount,
+        total_meetings: meetingsCount,
+        total_quotes_sent: quotesCount,
+        total_activities: totalActivities,
+        leads_assigned: leadsAssigned,
+        leads_responded_in_sla: leadsInSla,
+        leads_overdue_sla: leadsOverdue,
+        sla_compliance_rate: slaRate,
+        avg_response_time_hours: leadsAssigned > 0 ? 1.5 : 0,
+        weekly_activities: weeklyActivities,
+      }
+    })
+
+    let list = [...members]
 
     if (!filter) return list
 
@@ -36,32 +137,46 @@ export const teamProductivityService = {
     }
     if (filter.search_keyword && filter.search_keyword.trim() !== '') {
       const q = filter.search_keyword.toLowerCase().trim()
-      list = list.filter((m) => m.user_name.toLowerCase().includes(q) || m.team_name.toLowerCase().includes(q))
+      list = list.filter(
+        (m) => m.user_name.toLowerCase().includes(q) || m.team_name.toLowerCase().includes(q)
+      )
     }
 
     return list
   },
 
   getLeadSlaDetails(filter?: ProductivityFilter): LeadSlaDetail[] {
-    try {
-      localStorage.removeItem('crm_lead_sla_details_v1')
-    } catch {
-      // ignore
-    }
-    const raw = localStorage.getItem(STORAGE_KEY_LEAD_SLA)
-    let list: LeadSlaDetail[] = raw ? JSON.parse(raw) : INITIAL_LEAD_SLAS
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY_LEAD_SLA, JSON.stringify(INITIAL_LEAD_SLAS))
-    }
+    const leads = getStoredLeads()
+    const users = getMockUsers()
+    const userMap = new Map(users.map((u) => [Number(u.id), u.full_name || u.email]))
 
-    if (!filter) return list
+    const list: LeadSlaDetail[] = leads.map((l) => {
+      const ownerId = l.owner_id ? Number(l.owner_id) : 1
+      const isWithin = l.assignment_status === 'ACCEPTED' || l.status !== 'NEW' || l.sla_status === 'ON_TIME'
+      return {
+        id: l.id,
+        lead_name: l.full_name,
+        company: l.company || 'Công ty Chưa cập nhật',
+        assigned_to_id: ownerId,
+        assigned_to_name: userMap.get(ownerId) || l.owner_name || 'Admin',
+        created_at: l.created_at || new Date().toISOString(),
+        first_responded_at: l.assigned_at,
+        sla_limit_hours: l.sla_hours || 24,
+        actual_duration_hours: 1.5,
+        is_within_sla: isWithin,
+        status: isWithin ? 'IN_SLA' : 'OVERDUE',
+      }
+    })
+
+    let filtered = [...list]
+    if (!filter) return filtered
 
     if (filter.user_id && filter.user_id !== 'ALL') {
-      list = list.filter((l) => l.assigned_to_id === Number(filter.user_id))
+      filtered = filtered.filter((l) => l.assigned_to_id === Number(filter.user_id))
     }
     if (filter.search_keyword && filter.search_keyword.trim() !== '') {
       const q = filter.search_keyword.toLowerCase().trim()
-      list = list.filter(
+      filtered = filtered.filter(
         (l) =>
           l.lead_name.toLowerCase().includes(q) ||
           l.company.toLowerCase().includes(q) ||
@@ -69,7 +184,7 @@ export const teamProductivityService = {
       )
     }
 
-    return list
+    return filtered
   },
 
   calculateSummary(members: MemberProductivity[]): ProductivitySummary {
