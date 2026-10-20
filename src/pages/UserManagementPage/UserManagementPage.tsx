@@ -1009,18 +1009,24 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
               {/* Team */}
               <div className="user-mgmt-form-group">
                 <label className="user-mgmt-form-label" htmlFor="form-team">
-                  Nhóm / Team
+                  Nhóm / Team (Phòng ban)
                 </label>
                 <input
                   type="text"
                   id="form-team"
+                  list="available-teams-list"
                   className="user-mgmt-form-input"
-                  placeholder="VD: Kinh doanh, Kỹ thuật, Hỗ trợ..."
+                  placeholder="Chọn hoặc nhập phòng ban (VD: Đội Sales Doanh nghiệp...)"
                   value={formData.team}
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, team: e.target.value }))
                   }
                 />
+                <datalist id="available-teams-list">
+                  {teams.map((t) => (
+                    <option key={t} value={t} />
+                  ))}
+                </datalist>
               </div>
 
               {/* Password (only when creating) */}

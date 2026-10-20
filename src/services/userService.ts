@@ -541,13 +541,41 @@ export async function handoverUserData(
 }
 
 /**
- * Lấy danh sách team duy nhất (dùng cho bộ lọc)
+ * Lấy danh sách team duy nhất (dùng cho bộ lọc và gán tài khoản/chỉ tiêu)
+ * Hợp nhất từ sơ đồ cơ cấu tổ chức (Organization) và danh sách tài khoản người dùng
  */
 export function getAvailableTeams(): string[] {
   const teams = new Set<string>()
+
+  // 1. Lấy danh sách phòng ban / đội nhóm đã khai báo trong Sơ đồ tổ chức
+  try {
+    const rawDept = localStorage.getItem('crm_organization_tree_data_v2')
+    if (rawDept) {
+      const parsed = JSON.parse(rawDept)
+      const traverse = (nodes: any[]) => {
+        for (const n of nodes) {
+          if (n?.name) teams.add(n.name.trim())
+          if (n?.children && Array.isArray(n.children)) traverse(n.children)
+        }
+      }
+      if (Array.isArray(parsed)) traverse(parsed)
+    }
+  } catch {
+    // ignore
+  }
+
+  // 2. Lấy thêm các nhóm từ tài khoản người dùng đã tạo
   mockUsers.forEach((u) => {
-    if (u.team) teams.add(u.team)
+    if (u.team && u.team.trim()) teams.add(u.team.trim())
   })
+
+  // Nếu chưa có nhóm nào, trả về danh sách gợi ý mặc định
+  if (teams.size === 0) {
+    teams.add('Đội Sales Doanh nghiệp')
+    teams.add('Đội Sales Cá nhân')
+    teams.add('Đội Chăm sóc khách hàng')
+  }
+
   return Array.from(teams).sort()
 }
 

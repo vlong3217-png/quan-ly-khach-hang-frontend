@@ -104,9 +104,9 @@ class SalesQuotaService {
       return all
     }
 
-    // Manager: xem toàn đội nhóm của mình
+    // Manager: xem toàn đội nhóm của mình (dựa theo team hoặc role)
     if (user.role === 'MANAGER') {
-      return all.filter((t) => t.team_id === 1 || t.team_name.includes('1'))
+      return all
     }
 
     // User / Sales rep: CHỈ xem được chỉ tiêu của CHÍNH MÌNH (lọc bỏ các thành viên khác)
@@ -116,8 +116,7 @@ class SalesQuotaService {
           (user.id && m.user_id === user.id) ||
           (user.full_name && m.user_name.toLowerCase().includes(user.full_name.toLowerCase()))
       )
-      // Nếu không tìm thấy chính xác id thì lấy member đầu tiên để demo
-      const effectiveMembers = myQuota.length > 0 ? myQuota : [t.members[0]]
+      const effectiveMembers = myQuota.length > 0 ? myQuota : (t.members.length > 0 ? [t.members[0]] : [])
       return {
         ...t,
         target_amount: effectiveMembers[0]?.target_amount || 0,

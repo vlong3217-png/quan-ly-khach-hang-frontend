@@ -8,6 +8,8 @@ import type {
   MemberQuota,
 } from '../../types/salesQuota.ts'
 import { salesQuotaService } from '../../services/salesQuotaService.ts'
+import { getAvailableTeams, getUsers } from '../../services/userService.ts'
+import type { UserAccount } from '../../types/user.ts'
 import './SalesQuotasPage.css'
 
 export default function SalesQuotasPage() {
@@ -34,6 +36,9 @@ export default function SalesQuotasPage() {
   const [formIsLocked, setFormIsLocked] = useState<boolean>(false)
   const [auditReason, setAuditReason] = useState<string>('')
 
+  const [allUsers, setAllUsers] = useState<UserAccount[]>([])
+  const [availableTeams, setAvailableTeams] = useState<string[]>([])
+
   const isSalesRep = user?.role === 'USER'
   const isManagerOrAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'DIRECTOR'
 
@@ -42,7 +47,7 @@ export default function SalesQuotasPage() {
     setTimeout(() => setToastMessage(null), 3500)
   }
 
-  const loadData = () => {
+  const loadData = async () => {
     const list = salesQuotaService.getQuotasForUser({
       id: user?.id,
       role: user?.role,
@@ -50,6 +55,18 @@ export default function SalesQuotasPage() {
     })
     setQuotas(list)
     setAuditLogs(salesQuotaService.getAuditLogs())
+
+    // Nạp danh sách team động và danh sách tài khoản
+    const teams = getAvailableTeams()
+    setAvailableTeams(teams)
+    try {
+      const res = await getUsers()
+      if (res?.users) {
+        setAllUsers(res.users)
+      }
+    } catch {
+      // ignore
+    }
   }
 
   useEffect(() => {
@@ -64,6 +81,47 @@ export default function SalesQuotasPage() {
     }
   }, [user?.id, user?.role, user?.full_name])
 
+  // Lấy danh sách thành viên thuộc team được chọn (hoặc tất cả nếu không phân nhóm)
+  const getMembersForTeam = (teamName: string, existingMembers: MemberQuota[] = []): MemberQuota[] => {
+    const existingMap = new Map(existingMembers.map((m) => [m.user_id, m]))
+    const matchedUsers = allUsers.filter(
+      (u) => !teamName || (u.team && u.team.trim().toLowerCase() === teamName.trim().toLowerCase())
+    )
+
+    // Nếu có nhân viên trong team này
+    if (matchedUsers.length > 0) {
+      return matchedUsers.map((u) => {
+        const ex = existingMap.get(u.id)
+        return {
+          user_id: u.id,
+          user_name: u.full_name,
+          role: u.role === 'ADMIN' ? 'Quản trị viên' : u.role === 'MANAGER' ? 'Trưởng nhóm' : 'Nhân viên kinh doanh',
+          target_amount: ex ? ex.target_amount : 0,
+          achieved_amount: ex ? ex.achieved_amount : 0,
+        }
+      })
+    }
+
+    // Nếu không khớp nhân viên nào, giữ lại danh sách cũ hoặc trả về rỗng
+    return existingMembers
+  }
+
+  // Khi người dùng đổi đội nhóm trong modal
+  const handleTeamChange = (teamName: string) => {
+    setFormTeamName(teamName)
+    // Tự sinh ID số tương ứng cho team
+    const tIndex = availableTeams.indexOf(teamName)
+    const tId = tIndex >= 0 ? tIndex + 1 : Date.now() % 10000
+    setFormTeamId(tId)
+
+    // Tự động tải danh sách thành viên thực tế của team đó
+    const members = getMembersForTeam(teamName, formMembers)
+    setFormMembers(members)
+    // Tự động cộng tổng chỉ tiêu của các thành viên
+    const sum = members.reduce((acc, m) => acc + (Number(m.target_amount) || 0), 0)
+    setFormTargetAmount(sum)
+  }
+
   // Open Edit Modal for a Team Quota
   const handleOpenEdit = (q: TeamQuota) => {
     setEditingQuotaId(q.id)
@@ -73,7 +131,10 @@ export default function SalesQuotasPage() {
     setFormPeriodCode(q.period_code)
     setFormPeriodLabel(q.period_label)
     setFormTargetAmount(q.target_amount)
-    setFormMembers(JSON.parse(JSON.stringify(q.members)))
+    
+    // Nếu quota đã có members thì dùng, đồng thời bổ sung thêm các thành viên mới tạo trong team nếu có
+    const currentTeamMembers = getMembersForTeam(q.team_name, q.members)
+    setFormMembers(currentTeamMembers.length > 0 ? currentTeamMembers : JSON.parse(JSON.stringify(q.members)))
     setFormIsLocked(q.is_locked)
     setAuditReason('')
     setIsEditModalOpen(true)
@@ -81,9 +142,12 @@ export default function SalesQuotasPage() {
 
   // Open Create New Quota
   const handleOpenCreate = () => {
+    const defaultTeam = availableTeams[0] || 'Đội Sales Doanh nghiệp'
+    const defaultMembers = getMembersForTeam(defaultTeam)
+
     setEditingQuotaId(null)
     setFormTeamId(1)
-    setFormTeamName('')
+    setFormTeamName(defaultTeam)
     setFormPeriodType(periodType)
     setFormPeriodCode(selectedPeriodCode)
     setFormPeriodLabel(
@@ -93,8 +157,8 @@ export default function SalesQuotasPage() {
         ? 'Quý 4/2026'
         : selectedPeriodCode
     )
-    setFormTargetAmount(0)
-    setFormMembers([])
+    setFormMembers(defaultMembers)
+    setFormTargetAmount(defaultMembers.reduce((acc, m) => acc + (Number(m.target_amount) || 0), 0))
     setFormIsLocked(false)
     setAuditReason('')
     setIsEditModalOpen(true)
@@ -102,9 +166,10 @@ export default function SalesQuotasPage() {
 
   // Handle member target change inside modal
   const handleMemberTargetChange = (userId: number, val: number) => {
-    setFormMembers((prev) =>
-      prev.map((m) => (m.user_id === userId ? { ...m, target_amount: val } : m))
-    )
+    setFormMembers((prev) => {
+      const updated = prev.map((m) => (m.user_id === userId ? { ...m, target_amount: val } : m))
+      return updated
+    })
   }
 
   // Auto-balance team target to sum of members
@@ -457,15 +522,14 @@ export default function SalesQuotasPage() {
                     <label>Đội nhóm áp dụng:</label>
                     <select
                       className="form-select-custom"
-                      value={formTeamId}
-                      onChange={(e) => {
-                        const tId = Number(e.target.value)
-                        setFormTeamId(tId)
-                        setFormTeamName(tId === 1 ? 'Đội Kinh Doanh 1' : 'Đội Khách Hàng Doanh Nghiệp (Enterprise)')
-                      }}
+                      value={formTeamName}
+                      onChange={(e) => handleTeamChange(e.target.value)}
                     >
-                      <option value={1}>Đội Kinh Doanh 1</option>
-                      <option value={2}>Đội Khách Hàng Doanh Nghiệp (Enterprise)</option>
+                      {availableTeams.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -536,28 +600,38 @@ export default function SalesQuotasPage() {
                 <div className="section-box">
                   <div className="section-title">
                     <span>Phân bổ chỉ tiêu chi tiết cho từng thành viên:</span>
+                    <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 400 }}>
+                      ({formMembers.length} nhân sự thuộc {formTeamName || 'nhóm'})
+                    </span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {formMembers.map((m) => (
-                      <div key={m.user_id} className="member-target-row">
-                        <div>
-                          <strong>{m.user_name}</strong>
-                          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Vai trò: {m.role}</div>
-                        </div>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Chỉ tiêu cá nhân:</div>
-                        <div>
-                          <input
-                            type="number"
-                            step="1000000"
-                            min="0"
-                            className="form-input-custom"
-                            value={m.target_amount}
-                            onChange={(e) => handleMemberTargetChange(m.user_id, Number(e.target.value))}
-                            required
-                          />
-                        </div>
+                    {formMembers.length === 0 ? (
+                      <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '8px', color: '#64748b', fontSize: '0.85rem', textAlign: 'center' }}>
+                        Đội nhóm này hiện chưa có nhân viên nào được gán ở tab <strong>Quản lý tài khoản</strong>.<br />
+                        Bạn có thể nhập trực tiếp <em>Chỉ tiêu của toàn nhóm</em> ở mục trên.
                       </div>
-                    ))}
+                    ) : (
+                      formMembers.map((m) => (
+                        <div key={m.user_id} className="member-target-row">
+                          <div>
+                            <strong>{m.user_name}</strong>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Vai trò: {m.role}</div>
+                          </div>
+                          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Chỉ tiêu cá nhân:</div>
+                          <div>
+                            <input
+                              type="number"
+                              step="1000000"
+                              min="0"
+                              className="form-input-custom"
+                              value={m.target_amount}
+                              onChange={(e) => handleMemberTargetChange(m.user_id, Number(e.target.value))}
+                              required
+                            />
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 
