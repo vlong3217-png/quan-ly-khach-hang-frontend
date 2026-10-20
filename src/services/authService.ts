@@ -7,11 +7,14 @@ import type {
   ChangePasswordResponse,
 } from '../types/auth.ts'
 
-export const API_BASE_URL =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
+const rawApiUrl =
+  (typeof import.meta !== 'undefined' &&
+    (import.meta.env?.VITE_API_BASE_URL || import.meta.env?.VITE_API_URL)) ||
   (typeof import.meta !== 'undefined' && import.meta.env?.DEV
     ? 'http://127.0.0.1:8000'
-    : 'https://quan-ly-khach-hang-backend.onrender.com')
+    : 'https://n5quanlykhachhangbackend.vercel.app')
+
+export const API_BASE_URL = String(rawApiUrl).replace(/\/+$/, '')
 
 /**
  * Helper to parse backend error responses safely
