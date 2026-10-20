@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Opportunity } from '../../types/opportunity.ts'
 import type {
   OpportunityAttachment,
@@ -49,15 +49,9 @@ export default function OpportunityAttachments({
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
   }
 
-  const getFileIcon = (fileName: string) => {
-    const ext = fileName.split('.').pop()?.toLowerCase() || ''
-    if (['pdf'].includes(ext)) return '📕'
-    if (['doc', 'docx'].includes(ext)) return '📘'
-    if (['xls', 'xlsx', 'csv'].includes(ext)) return '📗'
-    if (['ppt', 'pptx'].includes(ext)) return '📙'
-    if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) return '🖼️'
-    if (['zip', 'rar', '7z'].includes(ext)) return '📦'
-    return '📄'
+  const getFileBadge = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toUpperCase() || 'FILE'
+    return ext
   }
 
   const handleFilesSelected = async (files: FileList | null) => {
@@ -238,7 +232,7 @@ export default function OpportunityAttachments({
             onClick={loadAttachments}
             title="Làm mới"
           >
-            ↻ Làm mới
+            Làm mới
           </button>
         </div>
 
@@ -256,7 +250,7 @@ export default function OpportunityAttachments({
           <div className="attachment-items">
             {attachments.map((att) => (
               <div key={att.id} className="attachment-item-row">
-                <div className="att-file-icon">{getFileIcon(att.file_name)}</div>
+                <div className="att-file-icon">{getFileBadge(att.file_name)}</div>
 
                 <div className="att-file-info">
                   <div className="att-name-line">
@@ -271,11 +265,11 @@ export default function OpportunityAttachments({
 
                   <div className="att-meta-line">
                     <span className="att-uploader">
-                      👤 Tải lên bởi: <strong>{att.uploaded_by_name}</strong>
+                      Tải lên bởi: <strong>{att.uploaded_by_name}</strong>
                     </span>
                     <span className="meta-sep">·</span>
                     <span className="att-time">
-                      🕒 {new Date(att.uploaded_at).toLocaleString('vi-VN')}
+                      {new Date(att.uploaded_at).toLocaleString('vi-VN')}
                     </span>
                   </div>
                 </div>
@@ -288,7 +282,7 @@ export default function OpportunityAttachments({
                       onClick={() => handleDownload(att)}
                       title="Tải xuống tài liệu"
                     >
-                      ⬇️ Tải xuống
+                      Tải xuống
                     </button>
                   ) : (
                     <button
@@ -297,7 +291,7 @@ export default function OpportunityAttachments({
                       disabled
                       title="Chỉ Người sở hữu hoặc Thành viên được chia sẻ mới được tải"
                     >
-                      🔒 Bị khóa
+                      Bị khóa
                     </button>
                   )}
 
@@ -307,7 +301,7 @@ export default function OpportunityAttachments({
                     onClick={() => handleDelete(att)}
                     title="Xóa tệp"
                   >
-                    🗑️
+                    Xóa
                   </button>
                 </div>
               </div>
