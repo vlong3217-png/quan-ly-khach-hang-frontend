@@ -74,7 +74,6 @@ export default function PdfExportModal({
       >
         <div className="pdf-export-modal-header">
           <div className="header-left">
-            <span style={{ fontSize: '20px' }}>📄</span>
             <div>
               <h4 id="pdf-modal-title">
                 {isQuote ? 'Xuất Báo giá ra PDF (S7-05)' : 'Xuất Hợp đồng ra PDF (S7-05)'}
@@ -96,7 +95,7 @@ export default function PdfExportModal({
               }}
               title="Cấu hình thông tin công ty và mẫu in (S7-05 AC)"
             >
-              ⚙️ {isConfigDrawerOpen ? 'Đóng cấu hình' : 'Tùy chỉnh mẫu'}
+              {isConfigDrawerOpen ? 'Đóng cấu hình' : 'Tùy chỉnh mẫu'}
             </button>
             <button
               type="button"
@@ -105,7 +104,7 @@ export default function PdfExportModal({
               onClick={handlePrint}
               title="In hoặc Lưu dưới dạng PDF (Ctrl + P)"
             >
-              🖨️ In / Tải PDF
+              In / Tải PDF
             </button>
             <button
               type="button"
@@ -122,7 +121,7 @@ export default function PdfExportModal({
           {/* Side Drawer for Template Customization */}
           {isConfigDrawerOpen && (
             <div className="template-config-drawer">
-              <h5>⚙️ Cấu hình mẫu tài liệu (S7-05)</h5>
+              <h5>Cấu hình mẫu tài liệu (S7-05)</h5>
               <div className="config-form-group">
                 <label>Tên công ty:</label>
                 <input
@@ -207,7 +206,7 @@ export default function PdfExportModal({
                   style={{ flex: 1, padding: '6px' }}
                   onClick={handleSaveConfig}
                 >
-                  💾 Lưu mẫu
+                  Lưu mẫu
                 </button>
                 <button
                   type="button"
