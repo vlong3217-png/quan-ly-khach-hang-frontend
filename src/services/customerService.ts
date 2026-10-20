@@ -1,6 +1,7 @@
 import type {
   CustomerEnterprise,
   CustomerFilterParams,
+  CustomerStatus,
   CustomerContact,
   ContactHistoryEntry,
   CustomerDeal,
@@ -13,6 +14,56 @@ import type {
 } from '../types/customer.ts'
 import { API_BASE_URL } from './authService.ts'
 import type { PaginatedResponse, PaginationParams } from '../types/pagination.ts'
+
+export const toBackendCustomerStatus = (status?: string): string => {
+  if (!status) return 'PROSPECT'
+  switch (status.toUpperCase()) {
+    case 'POTENTIAL':
+    case 'PROSPECT':
+      return 'PROSPECT'
+    case 'ACTIVE_CUSTOMER':
+    case 'CUSTOMER':
+      return 'CUSTOMER'
+    case 'STOPPED':
+    case 'DISCONTINUED':
+      return 'DISCONTINUED'
+    case 'IN_TRANSACTION':
+      return 'IN_TRANSACTION'
+    default:
+      return status
+  }
+}
+
+export const toFrontendCustomerStatus = (status?: string): CustomerStatus => {
+  if (!status) return 'POTENTIAL'
+  switch (status.toUpperCase()) {
+    case 'PROSPECT':
+    case 'POTENTIAL':
+      return 'POTENTIAL'
+    case 'CUSTOMER':
+    case 'ACTIVE_CUSTOMER':
+      return 'ACTIVE_CUSTOMER'
+    case 'DISCONTINUED':
+    case 'STOPPED':
+      return 'STOPPED'
+    case 'IN_TRANSACTION':
+      return 'IN_TRANSACTION'
+    default:
+      return 'POTENTIAL'
+  }
+}
+
+function extractErrorMessage(errData: any, status: number): string {
+  if (errData?.detail) {
+    if (typeof errData.detail === 'string') return errData.detail
+    if (Array.isArray(errData.detail)) {
+      return errData.detail.map((d: any) => `${d.loc ? d.loc.join('.') + ': ' : ''}${d.msg || d}`).join('; ')
+    }
+    return JSON.stringify(errData.detail)
+  }
+  return `Lỗi máy chủ (${status})`
+}
+
 
 const STORAGE_KEY = 'crm_enterprise_customers_data'
 
@@ -219,7 +270,7 @@ export const customerService = {
     try {
       const query = new URLSearchParams()
       if (params?.search) query.set('search', params.search)
-      if (params?.status) query.set('status', params.status)
+      if (params?.status) query.set('status', toBackendCustomerStatus(params.status))
       if (params?.industry) query.set('industry', params.industry)
       if (params?.company_size) query.set('company_size', params.company_size)
       if (params?.owner_id) query.set('owner_id', String(params.owner_id))
@@ -248,7 +299,7 @@ export const customerService = {
             owner_name: item.owner_name || 'Admin',
             team_id: item.team_id || 1,
             team_name: item.team_name || 'Đội Kinh Doanh 1',
-            status: item.status || 'POTENTIAL',
+            status: toFrontendCustomerStatus(item.status),
             description: item.description || undefined,
             parent_id: item.parent_company_id ? String(item.parent_company_id) : undefined,
             created_at: item.created_at || new Date().toISOString(),
@@ -276,7 +327,7 @@ export const customerService = {
       query.set('page', String(page))
       query.set('limit', String(limit))
       if (params?.search) query.set('search', params.search)
-      if (params?.status) query.set('status', params.status)
+      if (params?.status) query.set('status', toBackendCustomerStatus(params.status))
       if (params?.industry) query.set('industry', params.industry)
       if (params?.company_size) query.set('company_size', params.company_size)
       if (params?.owner_id) query.set('owner_id', String(params.owner_id))
@@ -303,7 +354,7 @@ export const customerService = {
           owner_name: item.owner_name || 'Admin',
           team_id: item.team_id || 1,
           team_name: item.team_name || 'Đội Kinh Doanh 1',
-          status: item.status || 'POTENTIAL',
+          status: toFrontendCustomerStatus(item.status),
           description: item.description || undefined,
           parent_id: item.parent_company_id ? String(item.parent_company_id) : undefined,
           created_at: item.created_at || new Date().toISOString(),
@@ -369,7 +420,7 @@ export const customerService = {
       company_size: data.company_size || null,
       website: data.website || null,
       address: data.address || null,
-      status: data.status || 'PROSPECT',
+      status: toBackendCustomerStatus(data.status),
       parent_company_id: data.parent_id ? Number(data.parent_id) : null,
       email: data.email || null,
       phone: data.phone || null,
@@ -390,6 +441,7 @@ export const customerService = {
           ...data,
           id: String(item.id),
           code: item.code || `KH-${String(item.id).padStart(3, '0')}`,
+          status: toFrontendCustomerStatus(item.status || data.status),
           created_at: item.created_at || new Date().toISOString(),
           updated_at: item.updated_at || new Date().toISOString(),
         }
@@ -398,9 +450,8 @@ export const customerService = {
         return newCustomer
       } else {
         const errData = await response.json().catch(() => ({}))
-        if (errData.detail) {
-          throw new Error(errData.detail)
-        }
+        const errorMsg = extractErrorMessage(errData, response.status)
+        throw new Error(errorMsg)
       }
     } catch (err: any) {
       if (err.message && !err.message.includes('fetch')) {
@@ -452,7 +503,7 @@ export const customerService = {
     if (data.company_size !== undefined) payload.company_size = data.company_size || null
     if (data.website !== undefined) payload.website = data.website || null
     if (data.address !== undefined) payload.address = data.address || null
-    if (data.status !== undefined) payload.status = data.status
+    if (data.status !== undefined) payload.status = toBackendCustomerStatus(data.status)
     if (data.parent_id !== undefined) payload.parent_company_id = data.parent_id ? Number(data.parent_id) : null
     if (data.email !== undefined) payload.email = data.email || null
     if (data.phone !== undefined) payload.phone = data.phone || null
@@ -469,7 +520,8 @@ export const customerService = {
         })
         if (!response.ok) {
           const errData = await response.json().catch(() => ({}))
-          if (errData.detail) throw new Error(errData.detail)
+          const errorMsg = extractErrorMessage(errData, response.status)
+          throw new Error(errorMsg)
         }
       } catch (err: any) {
         if (err.message && !err.message.includes('fetch')) throw err
