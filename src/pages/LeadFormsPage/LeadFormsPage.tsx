@@ -2223,7 +2223,7 @@ export default function LeadFormsPage() {
                 </thead>
                 <tbody>
                   {paginatedLeads.map((l, index) => {
-                    const statusCfg = LEAD_STATUS_CONFIG[l.status]
+                    const statusCfg = (l.status && LEAD_STATUS_CONFIG[l.status]) || LEAD_STATUS_CONFIG.NEW
                     const tier = l.score_tier || 'WARM'
                     const seg = l.segment || 'HIGH_POTENTIAL'
                     const segCfg = LEAD_SEGMENT_CONFIG[seg]
@@ -2319,9 +2319,9 @@ export default function LeadFormsPage() {
                           <select
                             className="lead-status-dropdown"
                             style={{
-                              backgroundColor: statusCfg.bg,
-                              color: statusCfg.color,
-                              borderColor: statusCfg.border,
+                              backgroundColor: statusCfg?.bg || '#eff6ff',
+                              color: statusCfg?.color || '#2563eb',
+                              borderColor: statusCfg?.border || '#bfdbfe',
                             }}
                             value={l.status}
                             onChange={(e) => handleUpdateLeadStatus(l.id, e.target.value as LeadStatus)}

@@ -8,20 +8,26 @@
  * • Phân quyền dữ liệu sở hữu: Nhân viên chỉ thấy khách hàng mình sở hữu; Trưởng nhóm thấy toàn nhóm; Admin thấy toàn bộ
  */
 
-export type CustomerStatus = 'POTENTIAL' | 'IN_TRANSACTION' | 'ACTIVE_CUSTOMER' | 'STOPPED'
+export type CustomerStatus = 'POTENTIAL' | 'IN_TRANSACTION' | 'ACTIVE_CUSTOMER' | 'STOPPED' | 'PROSPECT' | 'CUSTOMER' | 'DISCONTINUED'
 
-export const CUSTOMER_STATUS_LABELS: Record<CustomerStatus, string> = {
+export const CUSTOMER_STATUS_LABELS: Record<string, string> = {
   POTENTIAL: 'Tiềm năng',
+  PROSPECT: 'Tiềm năng',
   IN_TRANSACTION: 'Đang giao dịch',
   ACTIVE_CUSTOMER: 'Khách hàng',
+  CUSTOMER: 'Khách hàng',
   STOPPED: 'Ngừng hợp tác',
+  DISCONTINUED: 'Ngừng hợp tác',
 }
 
-export const CUSTOMER_STATUS_COLORS: Record<CustomerStatus, { bg: string; color: string; border: string }> = {
+export const CUSTOMER_STATUS_COLORS: Record<string, { bg: string; color: string; border: string }> = {
   POTENTIAL: { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
+  PROSPECT: { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
   IN_TRANSACTION: { bg: '#fffbeb', color: '#d97706', border: '#fde68a' },
   ACTIVE_CUSTOMER: { bg: '#ecfdf5', color: '#059669', border: '#a7f3d0' },
+  CUSTOMER: { bg: '#ecfdf5', color: '#059669', border: '#a7f3d0' },
   STOPPED: { bg: '#f1f5f9', color: '#64748b', border: '#cbd5e1' },
+  DISCONTINUED: { bg: '#f1f5f9', color: '#64748b', border: '#cbd5e1' },
 }
 
 export interface CustomerEnterprise {

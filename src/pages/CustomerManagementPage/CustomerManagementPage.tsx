@@ -1384,7 +1384,11 @@ export default function CustomerManagementPage() {
                   ) : (
                     pagedCustomers.map((cust) => {
                       const isMine = cust.owner_id === user?.id
-                      const statusColor = CUSTOMER_STATUS_COLORS[cust.status]
+                      const statusColor = (cust.status && CUSTOMER_STATUS_COLORS[cust.status]) || {
+                        bg: '#eff6ff',
+                        color: '#2563eb',
+                        border: '#bfdbfe',
+                      }
                       const isAtRisk = customerService.isCustomerAtRisk(cust.id)
                       const groupSummary = customerService.getGroupContractTotal(cust.id)
                       const parentRel = customerService.getParentRelation(cust.id)
@@ -1449,7 +1453,7 @@ export default function CustomerManagementPage() {
                               }}
                             >
                               <span className="cust-status-dot" />
-                              {CUSTOMER_STATUS_LABELS[cust.status]}
+                              {CUSTOMER_STATUS_LABELS[cust.status] || cust.status || 'Tiềm năng'}
                             </span>
                             {/* AC S3-08: Cờ rủi ro rời bỏ tự động */}
                             {isAtRisk && (
@@ -1593,7 +1597,11 @@ export default function CustomerManagementPage() {
                   </tr>
                 ) : (
                   contacts.map((ct) => {
-                    const badge = BUYING_ROLE_BADGES[ct.buying_role]
+                    const badge = (ct.buying_role && BUYING_ROLE_BADGES[ct.buying_role]) || {
+                      bg: '#eff6ff',
+                      color: '#1d4ed8',
+                      border: '#bfdbfe',
+                    }
                     return (
                       <tr key={ct.id}>
                         <td>
@@ -1620,7 +1628,7 @@ export default function CustomerManagementPage() {
                               border: `1px solid ${badge.border}`,
                             }}
                           >
-                            {BUYING_ROLE_LABELS[ct.buying_role]}
+                            {BUYING_ROLE_LABELS[ct.buying_role] || ct.buying_role || 'Người ảnh hưởng'}
                           </span>
                         </td>
                         <td>
