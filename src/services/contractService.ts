@@ -150,7 +150,7 @@ export const contractService = {
 
       if (response.ok) {
         const data = await response.json()
-        const rawList = Array.isArray(data) ? data : data.contracts || []
+        const rawList = Array.isArray(data) ? data : (data.contracts || data.items || data.data || [])
         const mapped = rawList.map(mapBackendToContract)
         saveStoredContracts(mapped)
         return this.getContracts(opportunityId, customerId)

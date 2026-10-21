@@ -102,7 +102,7 @@ export const productService = {
 
       if (response.ok) {
         const data = await response.json()
-        const rawList = Array.isArray(data) ? data : data.products || []
+        const rawList = Array.isArray(data) ? data : (data.products || data.items || data.data || [])
         const mapped = rawList.map(mapBackendToProduct)
         saveProducts(mapped)
         return mapped

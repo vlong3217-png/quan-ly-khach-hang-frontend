@@ -65,7 +65,7 @@ export function normalizePaginatedResponse<T>(
   }
 
   // 3. Format bọc data / results / users / logs
-  const candidateArray = raw.data || raw.results || raw.users || raw.leads || raw.opportunities || []
+  const candidateArray = raw.data || raw.results || raw.users || raw.leads || raw.opportunities || raw.campaigns || raw.products || raw.quotes || raw.contracts || raw.customers || []
   if (Array.isArray(candidateArray)) {
     const total = typeof raw.total === 'number' ? raw.total : candidateArray.length
     const page = typeof raw.page === 'number' ? raw.page : defaultPage
