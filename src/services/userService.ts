@@ -67,7 +67,6 @@ export function getMockUsers(): UserAccount[] {
   return [...mockUsers]
 }
 
-let nextId = Math.max(10, ...mockUsers.map((u) => u.id + 1))
 
 /* ──────────── Helpers ──────────── */
 function getAuthToken(): string | null {
@@ -128,7 +127,7 @@ export async function getUsers(params?: {
     const res = await fetch(`${API_BASE_URL}/users?${query.toString()}`, {
       method: 'GET',
       headers: getAuthHeaders(),
-      signal: AbortSignal.timeout(4000), // Timeout nhanh 4s, nếu backend chậm/ngủ thì dùng ngay cache local
+      signal: AbortSignal.timeout(15000), // Timeout 15s cho phép kết nối đám mây an toàn
     })
 
     if (res.ok) {
@@ -164,20 +163,14 @@ export async function getUsers(params?: {
         }
       })
 
-      // Hợp nhất danh sách backend với các tài khoản được tạo trên client/local để không bao giờ bị mất dữ liệu
-      const localCurrentUsers = getInitialUsers()
-      const backendEmails = new Set(mappedUsers.map((u) => u.email.toLowerCase()))
-      const clientOnlyUsers = localCurrentUsers.filter((u) => !backendEmails.has(u.email.toLowerCase()))
-      const mergedUsers: UserAccount[] = [...mappedUsers, ...clientOnlyUsers]
+      // Đồng bộ trực tiếp từ máy chủ đám mây để tất cả thiết bị hiển thị dữ liệu như nhau
+      mockUsers = mappedUsers
+      saveUsersToStorage(mappedUsers)
 
-      // Cập nhật và lưu vào storage cache
-      mockUsers = mergedUsers
-      saveUsersToStorage(mergedUsers)
-
-      const total = typeof data.total === 'number' ? Math.max(data.total, mergedUsers.length) : mergedUsers.length
+      const total = typeof data.total === 'number' ? data.total : mappedUsers.length
       return {
         success: true,
-        users: mergedUsers,
+        users: mappedUsers,
         total,
         page: data.page ?? params?.page ?? 1,
         limit: data.limit ?? params?.limit ?? 10,
@@ -236,7 +229,7 @@ export async function createUser(payload: CreateUserRequest): Promise<UserRespon
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(backendBody),
-      signal: AbortSignal.timeout(4000), // Timeout nhanh 4s nếu Render backend ngủ, tránh treo UI
+      signal: AbortSignal.timeout(15000), // Timeout 15s cho phép kết nối máy chủ đám mây
     })
 
     if (response.ok) {
@@ -254,43 +247,22 @@ export async function createUser(payload: CreateUserRequest): Promise<UserRespon
       }
     } else {
       const errData = await response.json().catch(() => null)
-      if (errData?.detail) {
-        const errorMsg = Array.isArray(errData.detail)
-          ? errData.detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ')
-          : String(errData.detail)
-        throw new Error(errorMsg)
-      }
+      const errorMsg = errData?.detail
+        ? (Array.isArray(errData.detail)
+            ? errData.detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ')
+            : String(errData.detail))
+        : 'Không thể tạo tài khoản trên máy chủ.'
+      throw new Error(errorMsg)
     }
   } catch (err: any) {
-    // Nếu là lỗi nghiệp vụ (như trùng email, sai định dạng) do backend trả về thì throw
-    if (err?.message && !err.message.includes('fetch') && !err.message.toLowerCase().includes('time') && !err.name?.includes('Abort') && !err.name?.includes('Timeout')) {
-      throw err
-    }
-    console.warn('Backend /users request timed out or unavailable, saving locally:', err)
-  }
-
-  // Nếu backend thành công hoặc nếu offline:
-  if (!createdUser) {
-    if (mockUsers.some((u) => u.email === payload.email)) {
-      throw new Error('Email đã được sử dụng bởi tài khoản khác.')
-    }
-    createdUser = {
-      id: nextId++,
-      full_name: payload.full_name,
-      email: payload.email,
-      phone: payload.phone,
-      role: payload.role,
-      team: payload.team,
-      status: 'active',
-      is_active: true,
-      created_at: new Date().toISOString(),
-    }
+    if (err instanceof Error) throw err
+    throw new Error('Lỗi kết nối máy chủ khi tạo tài khoản. Vui lòng thử lại.')
   }
 
   mockUsers = [createdUser, ...mockUsers.filter((u) => u.id !== createdUser!.id && u.email !== createdUser!.email)]
   saveUsersToStorage(mockUsers)
 
-  return { success: true, message: 'Tạo tài khoản thành công.', user: createdUser }
+  return { success: true, message: 'Tạo tài khoản thành công trên hệ thống.', user: createdUser }
 }
 
 /**
