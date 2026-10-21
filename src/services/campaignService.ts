@@ -65,7 +65,7 @@ export const campaignService = {
       })
       if (response.ok) {
         const data = await response.json()
-        const items = data.items || (Array.isArray(data) ? data : [])
+        const items = data.campaigns || data.items || data.data || (Array.isArray(data) ? data : [])
         const mapped = items.map((c: any) => ({
           ...c,
           id: String(c.id),

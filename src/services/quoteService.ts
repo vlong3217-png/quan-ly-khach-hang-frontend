@@ -224,7 +224,7 @@ export const quoteService = {
 
       if (response.ok) {
         const data = await response.json()
-        const rawList = Array.isArray(data) ? data : data.quotes || []
+        const rawList = Array.isArray(data) ? data : (data.quotes || data.items || data.data || [])
         const mapped = rawList.map(mapBackendToQuote)
         const local = getStoredQuotes()
         const merged = [...mapped]
