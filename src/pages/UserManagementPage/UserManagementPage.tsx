@@ -8,7 +8,6 @@ import {
   getAvailableTeams,
   updateUserStatus,
   getUserAssignedData,
-  getMockUsers,
 } from '../../services/userService.ts'
 import type {
   UserAccount,
@@ -232,9 +231,36 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
   const navigate = useNavigate()
 
   // Data
-  const [users, setUsers] = useState<UserAccount[]>(() => getMockUsers())
-  const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const [users, setUsers] = useState<UserAccount[]>(() => {
+    try {
+      const raw = localStorage.getItem('crm_users_cache')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch {}
+    return []
+  })
+  const [total, setTotal] = useState<number>(() => {
+    try {
+      const raw = localStorage.getItem('crm_users_cache')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) return parsed.length
+      }
+    } catch {}
+    return 0
+  })
+  const [loading, setLoading] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem('crm_users_cache')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed) && parsed.length > 0) return false
+      }
+    } catch {}
+    return true
+  })
   const [error, setError] = useState<string | null>(null)
 
   // Filters
@@ -300,8 +326,8 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
   }, [])
 
   /* --- Fetch users --- */
-  const fetchUsers = useCallback(async () => {
-    /* background refresh */
+  const fetchUsers = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true)
     setError(null)
     try {
       const res = await getUsers({
@@ -309,19 +335,20 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
         role: filterRole || undefined,
         status: filterStatus || undefined,
         team: filterTeam || undefined,
+        limit: 100,
       })
       setUsers(res.users)
       setTotal(res.total)
       setTeams(getAvailableTeams())
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra.')
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi tải danh sách.')
     } finally {
       setLoading(false)
     }
   }, [search, filterRole, filterStatus, filterTeam])
 
   useEffect(() => {
-    fetchUsers()
+    fetchUsers(users.length === 0)
   }, [fetchUsers])
 
   /* --- Search debounce --- */
@@ -715,7 +742,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
               <button
                 type="button"
                 className="user-mgmt-retry-btn"
-                onClick={fetchUsers}
+                onClick={() => fetchUsers(true)}
               >
                 Thử lại
               </button>

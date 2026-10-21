@@ -28,19 +28,7 @@ function getInitialUsers(): UserAccount[] {
   } catch {
     // ignore
   }
-  return [
-    {
-      id: 1,
-      full_name: 'Quản trị viên',
-      email: 'vlong3217@gmail.com',
-      phone: '0901234567',
-      role: 'ADMIN',
-      team: 'Ban Giám đốc',
-      status: 'active',
-      is_active: true,
-      created_at: '2025-01-15T08:00:00Z',
-    },
-  ]
+  return []
 }
 
 function saveUsersToStorage(users: UserAccount[]) {
@@ -163,9 +151,12 @@ export async function getUsers(params?: {
         }
       })
 
-      // Đồng bộ trực tiếp từ máy chủ đám mây để tất cả thiết bị hiển thị dữ liệu như nhau
-      mockUsers = mappedUsers
-      saveUsersToStorage(mappedUsers)
+      // Đồng bộ trực tiếp từ máy chủ đám mây để tất cả thiết bị hiển thị dữ liệu như nhau (chỉ lưu cache khi không bị lọc)
+      const isFiltered = Boolean(params?.search || params?.role || params?.status || params?.team)
+      if (!isFiltered && mappedUsers.length > 0) {
+        mockUsers = mappedUsers
+        saveUsersToStorage(mappedUsers)
+      }
 
       const total = typeof data.total === 'number' ? data.total : mappedUsers.length
       return {
