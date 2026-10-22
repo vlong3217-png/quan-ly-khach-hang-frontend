@@ -1250,3 +1250,65 @@
     align-items: flex-start;
   }
 }
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 0 12px;
+  }
+
+  .dashboard-header-inner {
+    height: 56px;
+  }
+
+  .dashboard-user-area {
+    gap: 6px;
+  }
+
+  .dashboard-user-info {
+    height: 34px;
+    padding: 0 8px;
+  }
+
+  .dashboard-change-pwd-btn span,
+  .dashboard-logout-btn span {
+    display: none;
+  }
+
+  .dashboard-change-pwd-btn,
+  .dashboard-logout-btn {
+    padding: 0 10px;
+    height: 34px;
+  }
+
+  .dashboard-welcome-card {
+    padding: 18px 16px;
+  }
+
+  .dashboard-welcome-card h1 {
+    font-size: 19px;
+  }
+
+  .dashboard-info-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-main {
+    padding: 12px 10px;
+    gap: 16px;
+  }
+
+  .role-buttons-group {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .role-btn {
+    text-align: center;
+    padding: 6px 4px;
+    font-size: 11.5px;
+  }
+}

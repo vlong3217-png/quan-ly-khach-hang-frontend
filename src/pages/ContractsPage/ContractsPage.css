@@ -266,3 +266,44 @@
   margin-bottom: 12px;
   display: block;
 }
+
+/* ── Mobile Responsive Adjustments (S7-07) ── */
+@media (max-width: 768px) {
+  .contracts-page-container {
+    padding: 14px 12px;
+  }
+
+  .contracts-header-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .threshold-control-box {
+    justify-content: space-between;
+  }
+
+  .contracts-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .contracts-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .contract-tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .search-input-box {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .contracts-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

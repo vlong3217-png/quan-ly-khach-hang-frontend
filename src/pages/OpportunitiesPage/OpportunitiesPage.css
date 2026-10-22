@@ -1007,4 +1007,68 @@
   border-color: #7c3aed;
 }
 
+/* ── Mobile Responsive Adjustments (S5-01 to S5-08) ── */
+@media (max-width: 768px) {
+  .opportunities-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .header-actions button {
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
+  }
+
+  .opp-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .opp-main-tabs {
+    width: 100%;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .opp-saved-filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .saved-filter-chips {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .filter-controls-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input-wrapper {
+    width: 100%;
+  }
+
+  .filter-dropdowns {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .filter-dropdowns select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .opp-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 
