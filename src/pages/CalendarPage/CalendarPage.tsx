@@ -655,8 +655,7 @@ export default function CalendarPage() {
       {isCreateModalOpen && (
         <div className="calendar-modal-overlay" onClick={() => setIsCreateModalOpen(false)}>
           <div
-            className="calendar-modal-card"
-            style={{ maxWidth: '540px' }}
+            className="calendar-modal-card calendar-create-modal"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -672,7 +671,7 @@ export default function CalendarPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCreateSubmit}>
+            <form className="calendar-create-form" onSubmit={handleCreateSubmit}>
               <div className="modal-body">
                 {/* Chọn loại sự kiện */}
                 <div className="form-group">
@@ -714,7 +713,7 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Ngày & Giờ & Thời lượng */}
-                <div className="form-row-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                <div className="form-row-3">
                   <div className="form-group">
                     <label htmlFor="calendar-new-date">Ngày *</label>
                     <input
