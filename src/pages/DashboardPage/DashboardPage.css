@@ -19,6 +19,10 @@
   min-height: 100vh;
 }
 
+.sidebar-mobile-backdrop {
+  display: none;
+}
+
 /* ---------- Header / Navbar ---------- */
 .dashboard-header {
   background: rgba(255, 255, 255, 0.95);
@@ -64,6 +68,19 @@
   background: #eff6ff;
   color: #2563eb;
   border-color: rgba(37, 99, 235, 0.3);
+}
+
+@media (max-width: 768px) {
+  .sidebar-mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    padding: 0;
+    border: 0;
+    background: rgba(15, 23, 42, 0.38);
+    cursor: default;
+  }
 }
 
 /* Brand in Header */

@@ -94,7 +94,21 @@ function DashboardPage() {
 
   // State quản lý menu đang chọn và trạng thái đóng mở của Sidebar
   const [activeMenuId, setActiveMenuId] = useState<string>('menu-dashboard')
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false)
+  const [isMobileViewport, setIsMobileViewport] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+  )
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(isMobileViewport)
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia('(max-width: 768px)')
+    const handleViewportChange = (event: MediaQueryListEvent) => {
+      setIsMobileViewport(event.matches)
+      setIsSidebarCollapsed(event.matches)
+    }
+
+    mobileQuery.addEventListener('change', handleViewportChange)
+    return () => mobileQuery.removeEventListener('change', handleViewportChange)
+  }, [])
 
   // Đặt tiêu đề tab trình duyệt
   useEffect(() => {
@@ -169,6 +183,7 @@ function DashboardPage() {
   // Xử lý click chọn menu trên Sidebar
   const handleSelectMenu = (item: MenuItem) => {
     setActiveMenuId(item.id)
+    if (isMobileViewport) setIsSidebarCollapsed(true)
     if (item.path) {
       navigate(item.path)
     }
@@ -256,6 +271,14 @@ function DashboardPage() {
         onSelectMenu={handleSelectMenu}
         isCollapsed={isSidebarCollapsed}
       />
+      {!isSidebarCollapsed && (
+        <button
+          type="button"
+          className="sidebar-mobile-backdrop"
+          aria-label="Đóng menu điều hướng"
+          onClick={() => setIsSidebarCollapsed(true)}
+        />
+      )}
 
       {/* ── 2. WORKSPACE CONTENT AREA ── */}
       <div className="dashboard-content-area">
@@ -270,6 +293,8 @@ function DashboardPage() {
                 onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                 title={isSidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
                 aria-label="Thu gọn hoặc mở rộng menu"
+                aria-expanded={!isSidebarCollapsed}
+                aria-controls="main-sidebar"
               >
                 <IconMenu />
               </button>
