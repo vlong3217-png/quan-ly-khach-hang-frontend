@@ -2518,12 +2518,13 @@ export default function LeadFormsPage() {
           ───────────────────────────────────────────────────────────── */}
       {activeTab === 'LEAD_SLA_DISTRIBUTION' && (
         <div className="lead-card-panel lead-sla-panel" id="lead-sla-panel">
-          {/* Header Panel */}
-          <div className="lead-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px', marginBottom: '18px' }}>
-            <div style={{ display: 'none' }}>
+          <div className="lead-panel-toolbar">
+            <div className="lead-panel-heading">
+              <h3>Phân bổ Lead &amp; SLA</h3>
+              <p>Theo dõi trạng thái tiếp nhận và thời hạn phản hồi của Lead.</p>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="lead-panel-actions">
               {/* Nút Cấu hình quy tắc phân bổ */}
               <button
                 type="button"
@@ -2630,7 +2631,7 @@ export default function LeadFormsPage() {
           </div>
 
           {/* Bảng Danh sách Phân bổ SLA */}
-          <div className="lead-table-responsive" style={{ marginTop: '16px' }}>
+          <div className="lead-table-responsive sla-table-responsive">
             <table className="lead-data-table sla-lead-table">
               <thead>
                 <tr>
@@ -2819,11 +2820,12 @@ export default function LeadFormsPage() {
 
       {activeTab === 'LEAD_SCORING' && (
         <div className="lead-card-panel lead-scoring-panel" id="lead-scoring-panel">
-          {/* Header Panel */}
-          <div className="lead-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
-            <div style={{ display: 'none' }}>
+          <div className="lead-panel-toolbar">
+            <div className="lead-panel-heading">
+              <h3>Chấm điểm &amp; phân loại Lead</h3>
+              <p>Ưu tiên chăm sóc theo mức độ tiềm năng và nhóm khách hàng.</p>
             </div>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div className="lead-panel-actions">
               {canManageScoring && (
                 <button
                   type="button"
@@ -3108,7 +3110,12 @@ export default function LeadFormsPage() {
           ───────────────────────────────────────────────────────────── */}
       {activeTab === 'LEAD_CONVERSION' && (
         <div className="lead-card-panel lead-scoring-panel" id="panel-lead-conversion">
-          <div className="scoring-summary-cards">
+          <div className="lead-panel-heading">
+            <h3>Chuyển đổi Lead</h3>
+            <p>Tổng quan hiệu quả chuyển đổi và các Lead đang chờ xử lý.</p>
+          </div>
+
+          <div className="scoring-summary-cards lead-conversion-kpis">
             <div className="scoring-stat-card">
               <div className="scoring-stat-info">
                 <span className="scoring-stat-value">{stats.convertedLeads}</span>
@@ -3133,13 +3140,13 @@ export default function LeadFormsPage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+          <div className="lead-conversion-content">
+            <div className="lead-section-heading">
               <div>
-                <h3 style={{ margin: 0, fontSize: '15px', color: '#0f172a' }}>
+                <h4>
                   Khách hàng tiềm năng sẵn sàng chuyển đổi
-                </h3>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748b' }}>
+                </h4>
+                <p>
                   Bấm "Chuyển đổi" để tạo hồ sơ Khách hàng doanh nghiệp trong danh bạ và tạo Cơ hội bán hàng (Opportunity) vào Pipeline.
                 </p>
               </div>
@@ -3225,7 +3232,7 @@ export default function LeadFormsPage() {
 
             {/* Danh sách Lead đã chuyển đổi thành công */}
             {leads.filter((l) => l.status === 'CONVERTED').length > 0 && (
-              <div style={{ marginTop: '24px' }}>
+              <div className="lead-conversion-history">
                 <div style={{ marginBottom: '12px' }}>
                   <h4 style={{ margin: 0, fontSize: '14.5px', fontWeight: 700, color: '#047857' }}>
                     Lịch sử Lead đã chuyển đổi thành công ({leads.filter((l) => l.status === 'CONVERTED').length})
