@@ -292,6 +292,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
   const [targetUser, setTargetUser] = useState<UserAccount | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [lockReason, setLockReason] = useState('')
 
   // S1-10: Data Handover States (Bàn giao dữ liệu khi khóa tài khoản)
   const [handoverEnabled, setHandoverEnabled] = useState(false)
@@ -411,6 +412,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
     setTargetUser(u)
     setLockModalOpen(true)
     setActionError(null)
+    setLockReason('')
     setHandoverEnabled(false)
     setHandoverUserId('')
     setLoadingAssignedItems(true)
@@ -435,6 +437,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
     setLockModalOpen(false)
     setTargetUser(null)
     setActionError(null)
+    setLockReason('')
     setHandoverEnabled(false)
     setHandoverUserId('')
     setUserAssignedItems([])
@@ -443,6 +446,12 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
   /* Thực hiện khóa tài khoản */
   const handleConfirmLock = async () => {
     if (!targetUser) return
+
+    const trimmedReason = lockReason.trim()
+    if (!trimmedReason) {
+      setActionError('Vui lòng nhập lý do khóa tài khoản.')
+      return
+    }
 
     // Kiểm tra bàn giao dữ liệu nếu bật tùy chọn bàn giao
     let handoverTargetId: number | null = null
@@ -462,7 +471,7 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
     setActionError(null)
 
     try {
-      const response = await updateUserStatus(targetUser.id, 'LOCKED', handoverTargetId)
+      const response = await updateUserStatus(targetUser.id, 'LOCKED', handoverTargetId, trimmedReason)
       showToast(response.message || `Đã khóa tài khoản "${targetUser.full_name}" thành công!`, 'success')
       closeLockModal()
       fetchUsers()
@@ -1185,6 +1194,26 @@ function UserManagementPage({ embedded = false }: UserManagementPageProps) {
                 <p>
                   <strong>Lưu ý:</strong> Sau khi khóa, tài khoản này sẽ không thể đăng nhập vào hệ thống. Các phiên làm việc hiện tại sẽ bị vô hiệu hóa.
                 </p>
+              </div>
+
+              <div className="lock-reason-group">
+                <label className="user-mgmt-form-label" htmlFor="lock-reason-input">
+                  Lý do khóa tài khoản<span className="user-mgmt-form-required">*</span>
+                </label>
+                <textarea
+                  id="lock-reason-input"
+                  className="user-mgmt-form-textarea"
+                  value={lockReason}
+                  onChange={(e) => {
+                    setLockReason(e.target.value)
+                    setActionError(null)
+                  }}
+                  placeholder="Nhập lý do khóa tài khoản..."
+                  maxLength={1000}
+                  rows={3}
+                  disabled={actionLoading}
+                  required
+                />
               </div>
 
               {/* S1-10 Chức năng Bàn giao dữ liệu (Data Handover) */}

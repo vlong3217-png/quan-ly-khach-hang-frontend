@@ -610,7 +610,8 @@
 }
 
 .user-mgmt-form-input,
-.user-mgmt-form-select {
+.user-mgmt-form-select,
+.user-mgmt-form-textarea {
   width: 100%;
   padding: 10px 14px;
   font-size: 14px;
@@ -624,20 +625,23 @@
 }
 
 .user-mgmt-form-input:focus,
-.user-mgmt-form-select:focus {
+.user-mgmt-form-select:focus,
+.user-mgmt-form-textarea:focus {
   border-color: var(--accent-border);
   background: #fff;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
 }
 
 .user-mgmt-form-input.input-error,
-.user-mgmt-form-select.input-error {
+.user-mgmt-form-select.input-error,
+.user-mgmt-form-textarea.input-error {
   border-color: #fca5a5;
   background: #fef2f2;
 }
 
 .user-mgmt-form-input.input-error:focus,
-.user-mgmt-form-select.input-error:focus {
+.user-mgmt-form-select.input-error:focus,
+.user-mgmt-form-textarea.input-error:focus {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
 }
 
@@ -648,6 +652,12 @@
   background-position: right 12px center;
   padding-right: 36px;
   cursor: pointer;
+}
+
+.user-mgmt-form-textarea {
+  min-height: 88px;
+  line-height: 1.5;
+  resize: vertical;
 }
 
 .user-mgmt-form-error {
@@ -1083,6 +1093,10 @@
   color: #92400e;
   margin-bottom: 18px;
   line-height: 1.5;
+}
+
+.lock-reason-group {
+  margin-bottom: 18px;
 }
 
 .unlock-notice-card {

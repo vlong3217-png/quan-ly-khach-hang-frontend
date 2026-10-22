@@ -341,7 +341,8 @@ export async function getUserAssignedData(userId: number): Promise<HandoverItem[
 export async function updateUserStatus(
   userId: number,
   status: 'ACTIVE' | 'LOCKED',
-  handoverToUserId?: number | null
+  handoverToUserId?: number | null,
+  reason?: string
 ): Promise<UserStatusResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/users/${userId}/status`, {
@@ -350,6 +351,7 @@ export async function updateUserStatus(
       body: JSON.stringify({
         status,
         handover_to_user_id: handoverToUserId || null,
+        ...(status === 'LOCKED' && reason?.trim() ? { reason: reason.trim() } : {}),
       }),
       signal: AbortSignal.timeout(30000),
     })
