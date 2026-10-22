@@ -1344,3 +1344,112 @@
   color: #0f172a;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
+
+/* ── 6. Mobile & Tablet Responsive Adjustments (S3-01 to S3-09) ── */
+@media (max-width: 768px) {
+  .customer-header-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .customer-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .customer-header-actions button {
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
+  }
+
+  .customer-nav-tabs {
+    width: 100%;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .customer-tab-btn {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+
+  .customer-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .customer-filters-panel {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .customer-search-box {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .customer-filter-select {
+    width: 100%;
+  }
+
+  .scope-indicator-pill {
+    align-self: flex-start;
+  }
+
+  .cust-form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .cust-modal-body {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .cust-modal-header {
+    padding: 14px 18px;
+  }
+
+  .cust-modal-footer {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+
+  .cust-modal-footer button {
+    flex: 1;
+  }
+
+  .dup-compare-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .c360-header {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .c360-kpis-bar {
+    grid-template-columns: 1fr;
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .customer-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-header-info h2 {
+    font-size: 18px;
+  }
+
+  .cust-toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    font-size: 12.5px;
+  }
+}

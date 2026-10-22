@@ -272,3 +272,53 @@ body:has(.cust-modal-backdrop) {
   overflow: hidden !important;
 }
 
+/* ── 4. Global Responsive Foundations (Mobile / Tablet) ── */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Đảm bảo media, images và canvas không gây tràn layout */
+img, svg, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Đảm bảo các container bảng cuộn ngang riêng biệt trên màn hình nhỏ */
+.table-responsive,
+.customer-table-responsive,
+.products-table-wrapper,
+.contracts-table-card,
+.opp-table-card,
+[class*="table-responsive"],
+[class*="-table-wrapper"],
+[class*="-table-card"] {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Cải thiện kích thước tối thiểu cho vùng chạm cảm ứng trên màn hình hẹp */
+@media (max-width: 768px) {
+  /* Tối ưu các hàng nút thao tác và bộ lọc */
+  .crm-flex-wrap-mobile {
+    flex-wrap: wrap !important;
+  }
+
+  /* Đảm bảo các modal không tràn ngoài mép màn hình */
+  [class*="modal-content"],
+  [class*="modal-card"],
+  .cust-modal-content,
+  .c360-modal-content {
+    max-width: calc(100vw - 24px) !important;
+    margin: 0 auto;
+    border-radius: 12px;
+  }
+
+  /* Dropdown và popup menu căn chỉnh trong viewport */
+  .action-dropdown-menu,
+  .cust-more-menu {
+    max-width: calc(100vw - 32px);
+  }
+}
+
