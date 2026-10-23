@@ -17,6 +17,14 @@
   flex-direction: column;
   min-width: 0;
   min-height: 100vh;
+  width: calc(100% - 270px);
+  margin-left: 270px;
+  transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-layout.sidebar-collapsed .dashboard-content-area {
+  width: calc(100% - 76px);
+  margin-left: 76px;
 }
 
 .sidebar-mobile-backdrop {
@@ -1252,6 +1260,12 @@
 }
 
 @media (max-width: 768px) {
+  .dashboard-content-area,
+  .dashboard-layout.sidebar-collapsed .dashboard-content-area {
+    width: 100%;
+    margin-left: 0;
+  }
+
   .dashboard-header {
     padding: 0 12px;
   }

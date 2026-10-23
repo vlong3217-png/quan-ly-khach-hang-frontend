@@ -264,7 +264,7 @@ function DashboardPage() {
     activeMenuId.startsWith('menu-users-')
 
   return (
-    <div className="dashboard-layout">
+    <div className={`dashboard-layout ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       {/* ── 1. SIDEBAR PHÂN QUYỀN THEO ROLE (User Story S1-06) ── */}
       <Sidebar
         activeMenuId={activeMenuId}
