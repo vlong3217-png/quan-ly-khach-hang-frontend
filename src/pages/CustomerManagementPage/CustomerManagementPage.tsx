@@ -21,6 +21,7 @@ import {
 } from '../../types/customer.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import Customer360Timeline from '../../components/Customer360Timeline/Customer360Timeline.tsx'
+import Pagination from '../../components/ui/Pagination.tsx'
 import './CustomerManagementPage.css'
 
 /* ──────────── Icons ──────────── */
@@ -184,7 +185,7 @@ export default function CustomerManagementPage() {
 
   // Phân trang
   const [currentPage, setCurrentPage] = useState(1)
-  const pageSize = 10
+  const [pageSize, setPageSize] = useState(10)
 
   const showToast = (message: string, isError = false) => {
     setToast({ message, isError })
@@ -1521,31 +1522,21 @@ export default function CustomerManagementPage() {
               </table>
             </div>
 
-            {/* Phân trang */}
+            {/* Phân trang đồng bộ giống như phân trang email */}
             {scopedCustomers.length > 0 && (
-              <div style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9' }}>
-                <span style={{ fontSize: '13px', color: '#64748b' }}>
-                  Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, scopedCustomers.length)}</strong> - <strong>{Math.min(currentPage * pageSize, scopedCustomers.length)}</strong> / <strong>{scopedCustomers.length}</strong> khách hàng
-                </span>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  >
-                    Trước
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    disabled={currentPage >= totalPages}
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  >
-                    Sau
-                  </button>
-                </div>
-              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={scopedCustomers.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={(sz: number) => {
+                  setPageSize(sz)
+                  setCurrentPage(1)
+                }}
+                pageSizeOptions={[5, 10, 20, 50]}
+                itemName="khách hàng"
+              />
             )}
           </div>
         </>
