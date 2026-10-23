@@ -76,6 +76,87 @@ const IconLink = () => (
   </svg>
 )
 
+type CustomerListKey = 'contacts' | 'duplicates' | 'tickets' | 'periodic'
+
+interface CustomerListPageState {
+  page: number
+  pageSize: number
+  total: number
+}
+
+function CustomerListPagination({
+  page,
+  pageSize,
+  total,
+  label,
+  onPageChange,
+  onPageSizeChange,
+}: {
+  page: number
+  pageSize: number
+  total: number
+  label: string
+  onPageChange: (page: number) => void
+  onPageSizeChange: (pageSize: number) => void
+}) {
+  if (total === 0) return null
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const start = Math.min((page - 1) * pageSize + 1, total)
+  const end = Math.min(page * pageSize, total)
+
+  return (
+    <div className="customer-pagination" style={{ margin: '16px 20px 20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+      <div className="customer-pagination-info">
+        <span>
+          Hiển thị <strong>{start}</strong> - <strong>{end}</strong> trên tổng số <strong>{total}</strong> {label}
+        </span>
+        <div className="customer-pagination-size">
+          <label>Số dòng:</label>
+          <select
+            className="customer-pagination-select"
+            value={pageSize}
+            onChange={(event) => onPageSizeChange(Number(event.target.value))}
+          >
+            {[10, 20, 50].map((size) => <option key={size} value={size}>{size} / trang</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="customer-pagination-controls">
+        <button
+          type="button"
+          className="customer-page-btn nav-btn"
+          disabled={page <= 1}
+          onClick={() => onPageChange(Math.max(1, page - 1))}
+        >
+          Trước
+        </button>
+        <div className="customer-page-numbers">
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+            <button
+              key={pageNumber}
+              type="button"
+              className={`customer-page-btn page-num ${pageNumber === page ? 'active' : ''}`}
+              aria-current={pageNumber === page ? 'page' : undefined}
+              onClick={() => onPageChange(pageNumber)}
+            >
+              {pageNumber}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          className="customer-page-btn nav-btn"
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+        >
+          Sau
+        </button>
+      </div>
+    </div>
+  )
+}
+
 
 export default function CustomerManagementPage() {
   const { user } = useAuth()
@@ -164,6 +245,13 @@ export default function CustomerManagementPage() {
   // S3-09 Periodic care state
   const [periodicCareDays, setPeriodicCareDays] = useState(30)
   const [periodicCareList, setPeriodicCareList] = useState<PeriodicCareCustomer[]>([])
+  const [customerListPages, setCustomerListPages] = useState<Record<CustomerListKey, CustomerListPageState>>({
+    contacts: { page: 1, pageSize: 10, total: 0 },
+    duplicates: { page: 1, pageSize: 10, total: 0 },
+    tickets: { page: 1, pageSize: 10, total: 0 },
+    periodic: { page: 1, pageSize: 10, total: 0 },
+  })
+  const [customerListsRefresh, setCustomerListsRefresh] = useState(0)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -189,6 +277,18 @@ export default function CustomerManagementPage() {
   const showToast = (message: string, isError = false) => {
     setToast({ message, isError })
     setTimeout(() => setToast(null), 3500)
+  }
+
+  const updateCustomerListPage = (key: CustomerListKey, changes: Partial<CustomerListPageState>) => {
+    setCustomerListPages((previous) => {
+      const nextPage = { ...previous[key], ...changes }
+      if (
+        nextPage.page === previous[key].page &&
+        nextPage.pageSize === previous[key].pageSize &&
+        nextPage.total === previous[key].total
+      ) return previous
+      return { ...previous, [key]: nextPage }
+    })
   }
 
   // Load Master Data
@@ -238,6 +338,11 @@ export default function CustomerManagementPage() {
     setDuplicateGroups(customerService.detectDuplicates())
     setTickets(customerService.getTickets())
     setPeriodicCareList(customerService.getPeriodicCareCustomers(periodicCareDays))
+    updateCustomerListPage('contacts', { total: customerService.getContacts(undefined, contactSearch).length })
+    updateCustomerListPage('duplicates', { total: customerService.detectDuplicates().length })
+    updateCustomerListPage('tickets', { total: customerService.getTickets().length })
+    updateCustomerListPage('periodic', { total: customerService.getPeriodicCareCustomers(periodicCareDays).length })
+    setCustomerListsRefresh((value) => value + 1)
 
     // 2. Đồng bộ từ Backend API qua mạng
     try {
@@ -250,17 +355,56 @@ export default function CustomerManagementPage() {
       if (apiCusts && apiCusts.length >= 0) {
         setAllCustomers(apiCusts)
       }
-      const apiContacts = await customerService.fetchContacts(undefined, contactSearch)
-      if (apiContacts) {
-        setContacts(apiContacts)
-      }
     } catch {}
   }
 
   useEffect(() => {
     loadCustomers()
     setCurrentPage(1)
+    updateCustomerListPage('contacts', { page: 1 })
+    updateCustomerListPage('periodic', { page: 1 })
   }, [search, filterStatus, filterIndustry, filterCompanySize, filterCorporateStructure, contactSearch, periodicCareDays])
+
+  const activeCustomerListKey: CustomerListKey | null =
+    activeTab === 'CONTACTS' ? 'contacts'
+      : activeTab === 'MERGE' ? 'duplicates'
+        : activeTab === 'SUPPORT' ? 'tickets'
+          : activeTab === 'PERIODIC' ? 'periodic'
+            : null
+  const activeCustomerListPage = activeCustomerListKey ? customerListPages[activeCustomerListKey] : null
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadActiveListPage = async () => {
+      const key = activeCustomerListKey
+      if (!key) return
+
+      const { page, pageSize } = customerListPages[key]
+      const result = key === 'contacts'
+        ? await customerService.fetchContactsPage(page, pageSize, contactSearch)
+        : key === 'duplicates'
+          ? await customerService.fetchDuplicateGroupsPage(page, pageSize)
+          : key === 'tickets'
+            ? await customerService.fetchTicketsPage(page, pageSize)
+            : await customerService.fetchPeriodicCarePage(periodicCareDays, page, pageSize)
+
+      if (cancelled) return
+      if (key === 'contacts') setContacts(result.items as CustomerContact[])
+      if (key === 'duplicates') setDuplicateGroups(result.items as DuplicateCustomerGroup[])
+      if (key === 'tickets') setTickets(result.items as SupportTicket[])
+      if (key === 'periodic') setPeriodicCareList(result.items as PeriodicCareCustomer[])
+
+      const lastPage = Math.max(1, result.total_pages)
+      updateCustomerListPage(key, {
+        total: result.total,
+        page: Math.min(page, lastPage),
+      })
+    }
+
+    loadActiveListPage()
+    return () => { cancelled = true }
+  }, [activeCustomerListKey, activeCustomerListPage?.page, activeCustomerListPage?.pageSize, contactSearch, periodicCareDays, customerListsRefresh])
 
   // Lọc theo phạm vi dữ liệu sở hữu
   const scopedCustomers = useMemo(() => {
@@ -1198,7 +1342,7 @@ export default function CustomerManagementPage() {
           onClick={() => setActiveTab('CONTACTS')}
         >
           Người liên hệ & Quyết định mua
-          <span className="tab-badge">{contacts.length}</span>
+          <span className="tab-badge">{customerListPages.contacts.total}</span>
         </button>
 
         <button
@@ -1207,7 +1351,7 @@ export default function CustomerManagementPage() {
           onClick={() => setActiveTab('MERGE')}
         >
           Cảnh báo & Gộp trùng
-          {duplicateGroups.length > 0 && <span className="tab-badge warning">{duplicateGroups.length}</span>}
+          {customerListPages.duplicates.total > 0 && <span className="tab-badge warning">{customerListPages.duplicates.total}</span>}
         </button>
 
         <button
@@ -1225,7 +1369,7 @@ export default function CustomerManagementPage() {
           onClick={() => setActiveTab('PERIODIC')}
         >
           Chăm sóc định kỳ
-          <span className="tab-badge">{periodicCareList.length}</span>
+          <span className="tab-badge">{customerListPages.periodic.total}</span>
         </button>
       </div>
 
@@ -1625,7 +1769,7 @@ export default function CustomerManagementPage() {
                 </tr>
               </thead>
               <tbody>
-                {contacts.length === 0 ? (
+                {customerListPages.contacts.total === 0 ? (
                   <tr>
                     <td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>
                       Chưa có người liên hệ nào.
@@ -1735,6 +1879,14 @@ export default function CustomerManagementPage() {
               </tbody>
             </table>
           </div>
+          <CustomerListPagination
+            page={customerListPages.contacts.page}
+            pageSize={customerListPages.contacts.pageSize}
+            total={customerListPages.contacts.total}
+            label="người liên hệ"
+            onPageChange={(page) => updateCustomerListPage('contacts', { page })}
+            onPageSizeChange={(pageSize) => updateCustomerListPage('contacts', { page: 1, pageSize })}
+          />
         </div>
       )}
 
@@ -1750,7 +1902,7 @@ export default function CustomerManagementPage() {
             </p>
           </div>
 
-          {duplicateGroups.length === 0 ? (
+          {customerListPages.duplicates.total === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
               <p style={{ margin: 0, fontWeight: 600, color: '#059669', fontSize: '15px' }}>
                 Tuyệt vời! Không phát hiện bản ghi khách hàng nào bị trùng lặp trên hệ thống.
@@ -1792,6 +1944,14 @@ export default function CustomerManagementPage() {
               ))}
             </div>
           )}
+          <CustomerListPagination
+            page={customerListPages.duplicates.page}
+            pageSize={customerListPages.duplicates.pageSize}
+            total={customerListPages.duplicates.total}
+            label="nhóm trùng lặp"
+            onPageChange={(page) => updateCustomerListPage('duplicates', { page })}
+            onPageSizeChange={(pageSize) => updateCustomerListPage('duplicates', { page: 1, pageSize })}
+          />
         </div>
       )}
 
@@ -1837,7 +1997,7 @@ export default function CustomerManagementPage() {
                 </tr>
               </thead>
               <tbody>
-                {tickets.length === 0 ? (
+                {customerListPages.tickets.total === 0 ? (
                   <tr>
                     <td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>
                       Chưa có yêu cầu hỗ trợ nào.
@@ -1903,6 +2063,14 @@ export default function CustomerManagementPage() {
               </tbody>
             </table>
           </div>
+          <CustomerListPagination
+            page={customerListPages.tickets.page}
+            pageSize={customerListPages.tickets.pageSize}
+            total={customerListPages.tickets.total}
+            label="yêu cầu hỗ trợ"
+            onPageChange={(page) => updateCustomerListPage('tickets', { page })}
+            onPageSizeChange={(pageSize) => updateCustomerListPage('tickets', { page: 1, pageSize })}
+          />
         </div>
       )}
 
@@ -1945,7 +2113,7 @@ export default function CustomerManagementPage() {
                 </tr>
               </thead>
               <tbody>
-                {periodicCareList.length === 0 ? (
+                {customerListPages.periodic.total === 0 ? (
                   <tr>
                     <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#059669', fontWeight: 600 }}>
                       Rất tốt! Không có khách hàng nào bị bỏ quên quá {periodicCareDays} ngày.
@@ -2022,6 +2190,14 @@ export default function CustomerManagementPage() {
               </tbody>
             </table>
           </div>
+          <CustomerListPagination
+            page={customerListPages.periodic.page}
+            pageSize={customerListPages.periodic.pageSize}
+            total={customerListPages.periodic.total}
+            label="khách hàng"
+            onPageChange={(page) => updateCustomerListPage('periodic', { page })}
+            onPageSizeChange={(pageSize) => updateCustomerListPage('periodic', { page: 1, pageSize })}
+          />
         </div>
       )}
 

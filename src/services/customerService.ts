@@ -13,7 +13,7 @@ import type {
   PeriodicCareCustomer,
 } from '../types/customer.ts'
 import { API_BASE_URL } from './authService.ts'
-import type { PaginatedResponse, PaginationParams } from '../types/pagination.ts'
+import { normalizePaginatedResponse, type PaginatedResponse, type PaginationParams } from '../types/pagination.ts'
 
 export const toBackendCustomerStatus = (status?: string): string => {
   if (!status) return 'PROSPECT'
@@ -87,6 +87,110 @@ function getAuthHeaders(): Record<string, string> {
     headers['Authorization'] = `Bearer ${token.trim()}`
   }
   return headers
+}
+
+function makeLocalPage<T>(items: T[], page: number, limit: number): PaginatedResponse<T> {
+  const total = items.length
+  const start = (page - 1) * limit
+  return {
+    items: items.slice(start, start + limit),
+    total,
+    page,
+    limit,
+    total_pages: Math.max(1, Math.ceil(total / limit)),
+  }
+}
+
+function mapApiCustomer(customer: any): CustomerEnterprise {
+  const id = String(customer.id)
+  const cached = getStoredCustomers().find((item) => item.id === id)
+  return {
+    ...cached,
+    id,
+    code: customer.code || cached?.code || `KH-${id.padStart(3, '0')}`,
+    name: customer.name || cached?.name || '',
+    tax_code: customer.tax_code || cached?.tax_code,
+    industry: customer.industry || cached?.industry || '',
+    company_size: customer.company_size || cached?.company_size || '',
+    website: customer.website || cached?.website,
+    address: customer.address || cached?.address,
+    phone: customer.phone || cached?.phone,
+    email: customer.email || cached?.email,
+    owner_id: Number(customer.owner_id ?? cached?.owner_id ?? 0),
+    owner_name: customer.owner_name || cached?.owner_name || 'Chưa phân bổ',
+    team_id: Number(customer.team_id ?? cached?.team_id ?? 0),
+    team_name: customer.team_name || cached?.team_name || '',
+    status: toFrontendCustomerStatus(customer.status || cached?.status),
+    description: customer.description || cached?.description,
+    parent_id: customer.parent_company_id ? String(customer.parent_company_id) : cached?.parent_id,
+    created_at: customer.created_at || cached?.created_at || new Date().toISOString(),
+    updated_at: customer.updated_at || cached?.updated_at || customer.created_at || new Date().toISOString(),
+  }
+}
+
+function mapApiContact(contact: any): CustomerContact {
+  return {
+    id: String(contact.id),
+    customer_id: String(contact.customer_id),
+    customer_name: contact.customer_name || '',
+    full_name: contact.name || '',
+    title: contact.position || '',
+    email: contact.email || '',
+    phone: contact.phone || '',
+    buying_role: contact.decision_role || 'DECISION_MAKER',
+    is_primary: Boolean(contact.is_primary),
+    notes: contact.notes || '',
+    created_at: contact.created_at || new Date().toISOString(),
+    updated_at: contact.updated_at || new Date().toISOString(),
+    history: (contact.history || []).map((entry: any) => ({
+      from_customer_id: entry.from_customer_id ? String(entry.from_customer_id) : '',
+      from_customer_name: entry.from_customer_name || '',
+      to_customer_id: entry.to_customer_id ? String(entry.to_customer_id) : '',
+      to_customer_name: entry.to_customer_name || '',
+      transferred_at: entry.timestamp || new Date().toISOString(),
+      reason: entry.note || '',
+    })),
+  }
+}
+
+function mapApiTicket(ticket: any): SupportTicket {
+  const createdAt = ticket.created_at || new Date().toISOString()
+  const backendStatus = String(ticket.status || 'OPEN').toUpperCase()
+  const assignedTo = ticket.assigned_to ?? ticket.assignee_id
+  return {
+    id: String(ticket.id),
+    customer_id: String(ticket.customer_id),
+    customer_name: ticket.customer_name || '',
+    title: ticket.title || '',
+    priority: ticket.priority || 'MEDIUM',
+    status: backendStatus === 'OPEN' ? 'NEW' : backendStatus as SupportTicket['status'],
+    assignee_name: ticket.assignee_name || (typeof assignedTo === 'string' && Number.isNaN(Number(assignedTo)) ? assignedTo : ''),
+    assignee_id: Number(ticket.assignee_id ?? assignedTo ?? 0),
+    description: ticket.description || '',
+    created_at: createdAt,
+    updated_at: ticket.updated_at || createdAt,
+  }
+}
+
+function mapApiPeriodicCareItem(item: any): PeriodicCareCustomer {
+  const cachedCustomer = getStoredCustomers().find((customer) => customer.id === String(item.customer_id))
+  const sourceCustomer = item.customer || {
+    id: item.customer_id,
+    name: item.customer_name,
+    tax_code: item.tax_code,
+    status: item.status,
+    owner_id: item.owner_id,
+    owner_name: item.owner_name,
+    team_id: cachedCustomer?.team_id,
+    team_name: cachedCustomer?.team_name,
+  }
+  return {
+    customer: mapApiCustomer(sourceCustomer),
+    last_interaction_date: item.last_interaction_date || new Date().toISOString(),
+    days_without_interaction: Number(item.days_without_interaction ?? item.days_since_last_interaction ?? 0),
+    contract_value: Number(item.contract_value ?? item.total_contract_value ?? 0),
+    is_contacted_today: Boolean(item.is_contacted_today),
+  }
 }
 
 function getStoredCustomers(): CustomerEnterprise[] {
@@ -638,6 +742,79 @@ export const customerService = {
       }
     } catch {}
     return this.getContacts(customerId, search)
+  },
+
+  async fetchContactsPage(page: number, limit: number, search = ''): Promise<PaginatedResponse<CustomerContact>> {
+    try {
+      const query = new URLSearchParams({ page: String(page), limit: String(limit) })
+      if (search.trim()) query.set('search', search.trim())
+      const response = await fetch(`${API_BASE_URL}/contacts?${query}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
+      if (response.ok) {
+        const data = normalizePaginatedResponse<any>(await response.json(), page, limit)
+        return { ...data, items: data.items.map(mapApiContact) }
+      }
+    } catch {}
+    return makeLocalPage(this.getContacts(undefined, search), page, limit)
+  },
+
+  async fetchDuplicateGroupsPage(page: number, limit: number): Promise<PaginatedResponse<DuplicateCustomerGroup>> {
+    try {
+      const query = new URLSearchParams({ page: String(page), limit: String(limit) })
+      const response = await fetch(`${API_BASE_URL}/customers/duplicate-groups?${query}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
+      if (response.ok) {
+        const data = normalizePaginatedResponse<any>(await response.json(), page, limit)
+        return {
+          ...data,
+          items: data.items.map((group) => ({
+            id: String(group.id),
+            match_reason: group.match_reason,
+            match_field_value: group.match_field_value,
+            customers: (group.customers || []).map(mapApiCustomer),
+          })),
+        }
+      }
+    } catch {}
+    return makeLocalPage(this.detectDuplicates(), page, limit)
+  },
+
+  async fetchTicketsPage(page: number, limit: number): Promise<PaginatedResponse<SupportTicket>> {
+    try {
+      const query = new URLSearchParams({ page: String(page), limit: String(limit) })
+      const response = await fetch(`${API_BASE_URL}/tickets?${query}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
+      if (response.ok) {
+        const data = normalizePaginatedResponse<any>(await response.json(), page, limit)
+        return { ...data, items: data.items.map(mapApiTicket) }
+      }
+    } catch {}
+    return makeLocalPage(this.getTickets(), page, limit)
+  },
+
+  async fetchPeriodicCarePage(
+    days: number,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedResponse<PeriodicCareCustomer>> {
+    try {
+      const query = new URLSearchParams({ days: String(days), page: String(page), limit: String(limit) })
+      const response = await fetch(`${API_BASE_URL}/customers/periodic-care?${query}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
+      if (response.ok) {
+        const data = normalizePaginatedResponse<any>(await response.json(), page, limit)
+        return { ...data, items: data.items.map(mapApiPeriodicCareItem) }
+      }
+    } catch {}
+    return makeLocalPage(this.getPeriodicCareCustomers(days), page, limit)
   },
 
   /**
