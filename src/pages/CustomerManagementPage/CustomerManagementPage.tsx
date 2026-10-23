@@ -184,7 +184,7 @@ export default function CustomerManagementPage() {
 
   // Phân trang
   const [currentPage, setCurrentPage] = useState(1)
-  const pageSize = 10
+  const [pageSize, setPageSize] = useState(10)
 
   const showToast = (message: string, isError = false) => {
     setToast({ message, isError })
@@ -1523,24 +1523,60 @@ export default function CustomerManagementPage() {
 
             {/* Phân trang */}
             {scopedCustomers.length > 0 && (
-              <div style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9' }}>
-                <span style={{ fontSize: '13px', color: '#64748b' }}>
-                  Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, scopedCustomers.length)}</strong> - <strong>{Math.min(currentPage * pageSize, scopedCustomers.length)}</strong> / <strong>{scopedCustomers.length}</strong> khách hàng
-                </span>
-                <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="customer-pagination" style={{ margin: '16px 20px 20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+                <div className="customer-pagination-info">
+                  <span>
+                    Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, scopedCustomers.length)}</strong> -{' '}
+                    <strong>{Math.min(currentPage * pageSize, scopedCustomers.length)}</strong> trên tổng số{' '}
+                    <strong>{scopedCustomers.length}</strong> khách hàng
+                  </span>
+                  <div className="customer-pagination-size">
+                    <label htmlFor="customer-page-size-select">Hiển thị:</label>
+                    <select
+                      id="customer-page-size-select"
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value))
+                        setCurrentPage(1)
+                      }}
+                      className="customer-pagination-select"
+                    >
+                      <option value={5}>5 khách hàng / trang</option>
+                      <option value={10}>10 khách hàng / trang</option>
+                      <option value={20}>20 khách hàng / trang</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="customer-pagination-controls">
                   <button
                     type="button"
-                    className="btn btn-secondary"
                     disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+                    className="customer-page-btn nav-btn"
                   >
                     Trước
                   </button>
+
+                  <div className="customer-page-numbers">
+                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => setCurrentPage(page)}
+                        className={`customer-page-btn page-num ${currentPage === page ? 'active' : ''}`}
+                        aria-current={currentPage === page ? 'page' : undefined}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+
                   <button
                     type="button"
-                    className="btn btn-secondary"
-                    disabled={currentPage >= totalPages}
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((page) => Math.min(page + 1, totalPages))}
+                    className="customer-page-btn nav-btn"
                   >
                     Sau
                   </button>
