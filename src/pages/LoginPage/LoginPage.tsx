@@ -63,12 +63,6 @@ const IconAlertCircle = () => (
   </svg>
 )
 
-const IconShield = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-  </svg>
-)
-
 /* ──────────── Validation helpers ──────────── */
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -255,28 +249,89 @@ function LoginPage() {
   /* ---- Render ---- */
   return (
     <div className="login-page">
-      <div className="login-card">
-        {/* Header */}
-        <div className="login-header">
-          <div className="login-logo" aria-hidden="true">
-            <IconShield />
+      <div className="login-shell">
+        <section className="login-brand-panel" aria-label="Giới thiệu hệ thống quản lý khách hàng">
+          <div className="login-brand">
+            <img src="/favicon.svg" alt="" />
+            <span>Quản lý khách hàng</span>
           </div>
-          <h1>Đăng nhập</h1>
-          <p className="login-subtitle">Vui lòng đăng nhập để tiếp tục sử dụng hệ thống</p>
-        </div>
-
-        {/* General error banner - chỉ hiển thị khi có lỗi thực sự */}
-        {errors.general && (
-          <div className="login-error-banner" role="alert" id="login-error-banner">
-            <IconAlertCircle />
-            <span>{errors.general}</span>
+          <div className="login-header">
+            <span className="login-product-kicker">NỀN TẢNG CRM</span>
+            <h2>Kết nối khách hàng. Phát triển kinh doanh.</h2>
+            <p>Quản lý khách hàng, cơ hội và hoạt động chăm sóc trên cùng một hệ thống.</p>
           </div>
-        )}
 
+          <ul className="login-benefits">
+            <li>
+              <span className="login-benefit-check"><IconCheck /></span>
+              Theo dõi khách hàng từ tiếp nhận đến chuyển đổi
+            </li>
+            <li>
+              <span className="login-benefit-check"><IconCheck /></span>
+              Quản lý cơ hội, lịch hẹn và công việc tập trung
+            </li>
+            <li>
+              <span className="login-benefit-check"><IconCheck /></span>
+              Nắm bắt hiệu quả chăm sóc và phân bổ của đội ngũ
+            </li>
+          </ul>
 
+          <div className="crm-preview" aria-hidden="true">
+            <div className="crm-preview-header">
+              <div>
+                <span className="crm-preview-eyebrow">TỔNG QUAN KHÁCH HÀNG</span>
+                <strong>Pipeline chăm sóc</strong>
+              </div>
+              <span className="crm-preview-period">Minh họa</span>
+            </div>
+            <div className="crm-preview-stats">
+              <div>
+                <span>Khách hàng mới</span>
+                <strong>128</strong>
+              </div>
+              <div>
+                <span>Cơ hội đang mở</span>
+                <strong>36</strong>
+              </div>
+            </div>
+            <div className="crm-preview-pipeline">
+              <div className="crm-pipeline-row">
+                <span className="crm-pipeline-dot intake" />
+                <span>Tiếp nhận</span>
+                <div className="crm-pipeline-track"><i style={{ width: '82%' }} /></div>
+                <strong>82%</strong>
+              </div>
+              <div className="crm-pipeline-row">
+                <span className="crm-pipeline-dot care" />
+                <span>Đang chăm sóc</span>
+                <div className="crm-pipeline-track"><i style={{ width: '58%' }} /></div>
+                <strong>58%</strong>
+              </div>
+              <div className="crm-pipeline-row">
+                <span className="crm-pipeline-dot converted" />
+                <span>Đã chuyển đổi</span>
+                <div className="crm-pipeline-track"><i style={{ width: '34%' }} /></div>
+                <strong>34%</strong>
+              </div>
+            </div>
+          </div>
+        </section>
 
-        {/* Form */}
-        <form className="login-form" onSubmit={handleSubmit} noValidate>
+        <section className="login-card" aria-labelledby="login-heading">
+          <div className="login-header">
+            <h1 id="login-heading">Đăng nhập</h1>
+            <p className="login-subtitle">Vui lòng đăng nhập để tiếp tục sử dụng hệ thống</p>
+          </div>
+
+          {/* General error banner - chỉ hiển thị khi có lỗi thực sự */}
+          {errors.general && (
+            <div className="login-error-banner" role="alert" id="login-error-banner">
+              <IconAlertCircle />
+              <span>{errors.general}</span>
+            </div>
+          )}
+
+          <form className="login-form" onSubmit={handleSubmit} noValidate>
           {/* Email / Username */}
           <div className="input-group">
             <label className="input-label" htmlFor="login-email">
@@ -381,7 +436,14 @@ function LoginPage() {
               'Đăng nhập'
             )}
           </button>
-        </form>
+          </form>
+
+          <footer className="login-footer">
+            <span>© 2026</span>
+            <span>Phiên bản nội bộ</span>
+            <span title="Liên hệ quản trị viên hệ thống">Hỗ trợ hệ thống</span>
+          </footer>
+        </section>
       </div>
     </div>
   )

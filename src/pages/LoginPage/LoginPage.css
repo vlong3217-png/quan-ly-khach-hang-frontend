@@ -1,87 +1,173 @@
-/* ============================================
-   LoginPage Styles
-   Landscape background + blue theme login
-   ============================================ */
-
-/* ---------- Layout: Background image ---------- */
+/* ---------- Layout ---------- */
 .login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  position: relative;
-  background: url('/1.jpg') center / cover no-repeat fixed;
+  padding: 32px;
+  background-color: #edf3f6;
+  background-image:
+    linear-gradient(rgba(22, 65, 78, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 65, 78, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
-/* Blur layer over the background image */
-.login-page::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  background: rgba(15, 50, 100, 0.18);
-  z-index: 0;
+.login-shell {
+  width: min(100%, 1160px);
+  min-height: 680px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.16fr) minmax(390px, 0.84fr);
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #d8e3e8;
+  border-radius: 16px;
+  box-shadow: 0 18px 48px rgba(25, 55, 68, 0.13);
+  animation: cardAppear 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* ---------- Card ---------- */
 .login-card {
-  position: relative;
-  z-index: 1;
   width: 100%;
-  max-width: 420px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 18px;
-  padding: 40px 36px;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.06);
-  animation: cardAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-  transform: translateY(14px);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 52px 46px 28px;
+  background: #ffffff;
 }
 
 @keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* ---------- Header ---------- */
-.login-header {
-  text-align: center;
-  margin-bottom: 28px;
+.login-brand-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 38px 44px;
+  color: #f1f8f7;
+  background:
+    linear-gradient(135deg, rgba(11, 38, 55, 0.91) 0%, rgba(15, 67, 75, 0.78) 56%, rgba(18, 82, 75, 0.75) 100%),
+    url('/login-city.jpg') center / cover no-repeat;
 }
 
-.login-logo {
-  width: 46px;
-  height: 46px;
-  margin: 0 auto 12px;
-  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-  border-radius: 13px;
+.login-brand-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.14;
+  background-image:
+    linear-gradient(rgba(225, 247, 241, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(225, 247, 241, 0.16) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(to bottom right, #000 5%, transparent 82%);
+}
+
+.login-brand {
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  gap: 11px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
 }
 
-.login-logo svg {
-  width: 22px;
-  height: 22px;
-  color: #fff;
+.login-brand img {
+  width: 42px;
+  height: 42px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 11px;
+}
+
+.login-brand-panel .login-header {
+  text-align: left;
+  margin: 0;
+}
+
+.login-product-kicker {
+  color: #a9e5d2;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.login-brand-panel .login-header h2 {
+  max-width: 520px;
+  margin: 12px 0 10px;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+.login-brand-panel .login-header p {
+  max-width: 480px;
+  margin: 0;
+  color: #d2e5e4;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.login-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: -8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.login-benefits li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #edf7f5;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.login-benefit-check {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 20px;
+  color: #a9e5d2;
+  background: rgba(169, 229, 210, 0.12);
+  border: 1px solid rgba(169, 229, 210, 0.28);
+  border-radius: 50%;
+}
+
+.login-benefit-check svg {
+  width: 12px;
+  height: 12px;
 }
 
 .login-header h1 {
   font-size: 22px;
   font-weight: 700;
   margin: 0 0 4px;
-  letter-spacing: -0.3px;
+  letter-spacing: 0;
   color: var(--text-h);
+}
+
+.login-card .login-header {
+  text-align: left;
+  margin: 0 0 28px;
 }
 
 .login-subtitle {
@@ -89,6 +175,181 @@
   color: var(--text);
   margin: 0;
   line-height: 1.5;
+}
+
+.crm-preview {
+  padding: 16px 18px;
+  color: #e9f4f2;
+  background: rgba(8, 34, 45, 0.55);
+  border: 1px solid rgba(221, 244, 238, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 16px 32px rgba(4, 25, 34, 0.16);
+  backdrop-filter: blur(8px);
+}
+
+.crm-preview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(221, 244, 238, 0.14);
+}
+
+.crm-preview-header > div,
+.crm-preview-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.crm-preview-eyebrow {
+  color: #9ec6c6;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.crm-preview-header strong {
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.crm-preview-period {
+  padding: 5px 8px;
+  color: #c4e1dc;
+  background: rgba(220, 245, 238, 0.1);
+  border-radius: 5px;
+  font-size: 10px;
+}
+
+.crm-preview-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(221, 244, 238, 0.14);
+}
+
+.crm-preview-stats span {
+  color: #a9c5c5;
+  font-size: 11px;
+}
+
+.crm-preview-stats strong {
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.crm-preview-pipeline {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 16px;
+}
+
+.crm-pipeline-row {
+  display: grid;
+  grid-template-columns: 8px minmax(94px, 1fr) minmax(48px, 1.2fr) 32px;
+  align-items: center;
+  gap: 9px;
+  color: #d7e8e6;
+  font-size: 10px;
+}
+
+.crm-pipeline-row strong {
+  color: #f1f8f7;
+  font-size: 10px;
+  text-align: right;
+}
+
+.crm-pipeline-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.crm-pipeline-dot.intake { background: #5bb4ed; }
+.crm-pipeline-dot.care { background: #69d2b0; }
+.crm-pipeline-dot.converted { background: #f0c275; }
+
+.crm-pipeline-track {
+  height: 5px;
+  overflow: hidden;
+  background: rgba(227, 243, 239, 0.14);
+  border-radius: 99px;
+}
+
+.crm-pipeline-track i {
+  display: block;
+  height: 100%;
+  background: #70d2b2;
+  border-radius: inherit;
+}
+
+.crm-pipeline-row:nth-child(2) .crm-pipeline-track i { background: #62b9df; }
+.crm-pipeline-row:nth-child(3) .crm-pipeline-track i { background: #e6bd72; }
+
+.login-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: auto;
+  padding-top: 28px;
+  color: #84939b;
+  font-size: 11px;
+}
+
+.login-footer > span + span::before {
+  content: '·';
+  margin-right: 12px;
+  color: #b0bbc1;
+}
+
+@media (min-width: 901px) and (max-height: 760px) {
+  .login-page {
+    padding: 18px;
+  }
+
+  .login-shell {
+    min-height: 620px;
+  }
+
+  .login-brand-panel {
+    gap: 16px;
+    padding: 28px 36px;
+  }
+
+  .login-brand-panel .login-header h2 {
+    font-size: 28px;
+  }
+
+  .login-benefits {
+    gap: 7px;
+  }
+
+  .crm-preview {
+    padding: 11px 14px;
+  }
+
+  .crm-preview-header {
+    padding-bottom: 10px;
+  }
+
+  .crm-preview-stats {
+    padding: 11px 0;
+  }
+
+  .crm-preview-pipeline {
+    gap: 9px;
+    padding-top: 11px;
+  }
+
+  .login-card {
+    padding: 38px 38px 20px;
+  }
 }
 
 /* ---------- Form ---------- */
@@ -303,6 +564,10 @@
   color: #334155;
 }
 
+.login-page .checkbox-label {
+  color: #2563eb;
+}
+
 /* Forgot password link */
 .forgot-password {
   font-size: 13.5px;
@@ -447,33 +712,90 @@
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 480px) {
+@media (max-width: 900px) {
   .login-page {
-    padding: 16px;
-    align-items: flex-start;
-    padding-top: 48px;
-    background-attachment: scroll;
+    padding: 20px;
+  }
+
+  .login-shell {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    max-width: 560px;
+  }
+
+  .login-brand-panel {
+    gap: 18px;
+    padding: 30px 34px;
   }
 
   .login-card {
-    padding: 28px 20px;
-    border-radius: 14px;
-    max-width: 100%;
+    padding: 34px 38px 24px;
+  }
+
+  .login-brand-panel .login-header h2 {
+    max-width: none;
+    font-size: 27px;
+  }
+
+  .login-benefits {
+    gap: 8px;
+  }
+
+  .crm-preview {
+    max-width: 440px;
   }
 
   .login-header h1 {
     font-size: 20px;
   }
+}
 
-  .login-logo {
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
+@media (max-width: 480px) {
+  .login-page {
+    padding: 14px;
   }
 
-  .login-logo svg {
-    width: 20px;
-    height: 20px;
+  .login-brand-panel {
+    padding: 24px 22px;
+  }
+
+  .login-card {
+    padding: 28px 22px 20px;
+  }
+
+  .login-brand-panel .login-header h2 {
+    font-size: 24px;
+  }
+
+  .login-brand-panel .login-header p {
+    font-size: 13px;
+  }
+
+  .login-benefits li {
+    align-items: flex-start;
+    font-size: 12px;
+  }
+
+  .crm-preview {
+    padding: 13px;
+  }
+
+  .crm-preview-stats {
+    gap: 8px;
+  }
+
+  .crm-pipeline-row {
+    grid-template-columns: 8px minmax(84px, 1fr) minmax(36px, 1fr) 30px;
+    gap: 7px;
+    font-size: 9px;
+  }
+
+  .login-footer {
+    padding-top: 20px;
+  }
+
+  .crm-preview {
+    display: none;
   }
 
   .form-options {
@@ -483,12 +805,3 @@
   }
 }
 
-@media (min-width: 481px) and (max-width: 768px) {
-  .login-card {
-    padding: 36px 28px;
-  }
-
-  .login-page {
-    background-attachment: scroll;
-  }
-}
