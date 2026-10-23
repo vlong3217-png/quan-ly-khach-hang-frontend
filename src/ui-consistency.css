@@ -61,24 +61,67 @@
   box-shadow: var(--shadow-focus, 0 0 0 3px rgba(37, 99, 235, 0.15));
 }
 
-/* Normalize repeated generic toast classes without letting one page's stylesheet win. */
+/* ── Unified Toast & Action Notification Theme across all pages ── */
+.toast-success,
+.camp-toast:not(.error),
+.cust-toast:not(.error),
+.lead-toast:not(.error),
+.opp-toast-notice,
+.stalled-toast,
+.cat-toast.toast-success,
+.cf-toast.toast-success,
+.pipe-toast.toast-success,
+.wl-toast.toast-success,
+.products-toast.toast-success,
+.opp-page-toast.toast-success,
+.org-toast.toast-success,
+.user-mgmt-toast.toast-success,
+.import-toast.toast-success,
+.action-notice-toast,
 .products-page-container .toast-success,
 .campaigns-page-container .toast-success,
 .opportunities-page-container .toast-success,
 .org-page-container .toast-success,
 .customer-page .toast-success {
-  background: var(--success-50, #ecfdf5);
-  color: var(--success-700, #047857);
-  border-color: var(--success-100, #d1fae5);
+  background: var(--success-50, #ecfdf5) !important;
+  color: var(--success-700, #047857) !important;
+  border: 1px solid var(--success-100, #a7f3d0) !important;
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
 }
+
+.action-notice-toast svg,
+.user-mgmt-toast.toast-success svg,
+.import-toast.toast-success svg {
+  color: var(--success-700, #047857) !important;
+}
+
+.toast-error,
+.camp-toast.error,
+.cust-toast.error,
+.lead-toast.error,
+.cat-toast.toast-error,
+.cf-toast.toast-error,
+.pipe-toast.toast-error,
+.wl-toast.toast-error,
+.products-toast.toast-error,
+.opp-page-toast.toast-error,
+.org-toast.toast-error,
+.user-mgmt-toast.toast-error,
+.import-toast.toast-error,
 .products-page-container .toast-error,
 .campaigns-page-container .toast-error,
 .opportunities-page-container .toast-error,
 .org-page-container .toast-error,
 .customer-page .toast-error {
-  background: var(--danger-50, #fef2f2);
-  color: var(--danger-700, #b91c1c);
-  border-color: var(--danger-100, #fee2e2);
+  background: var(--danger-50, #fef2f2) !important;
+  color: var(--danger-700, #b91c1c) !important;
+  border: 1px solid var(--danger-100, #fecaca) !important;
+  box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.user-mgmt-toast.toast-error svg,
+.import-toast.toast-error svg {
+  color: var(--danger-700, #b91c1c) !important;
 }
 
 /* Responsive content gutters stay comfortable on narrow screens. */
