@@ -43,26 +43,26 @@ export default function ExecutiveDashboard() {
             className={`role-pill-btn ${roleView === 'REP' ? 'active' : ''}`}
             onClick={() => setRoleView('REP')}
           >
-            Nhân viên kinh doanh (Sales Rep)
+            Nhân viên kinh doanh
           </button>
           <button
             type="button"
             className={`role-pill-btn ${roleView === 'MANAGER' ? 'active' : ''}`}
             onClick={() => setRoleView('MANAGER')}
           >
-            Trưởng nhóm (Sales Manager)
+            Trưởng nhóm
           </button>
           <button
             type="button"
             className={`role-pill-btn ${roleView === 'DIRECTOR' ? 'active' : ''}`}
             onClick={() => setRoleView('DIRECTOR')}
           >
-            Giám đốc kinh doanh (Sales Director)
+            Giám đốc kinh doanh
           </button>
         </div>
 
         <div className="load-time-badge" title="Đạt tiêu chí chấp nhận: Toàn bộ dữ liệu tải xong dưới 2 giây">
-          <span>Tải xong: {loadTimeMs}ms (&lt; 2s)</span>
+          <span>Tải xong: {loadTimeMs}ms</span>
         </div>
       </div>
 
@@ -82,7 +82,7 @@ export default function ExecutiveDashboard() {
             </div>
 
             <div className="kpi-card green">
-              <span className="kpi-label">Cơ hội đang mở (Open Deals)</span>
+              <span className="kpi-label">Cơ hội đang mở</span>
               <span className="kpi-value">0 cơ hội</span>
               <span className="kpi-subtext">
                 Tổng giá trị dự kiến: <strong>0 ₫</strong>
@@ -110,7 +110,7 @@ export default function ExecutiveDashboard() {
             <div className="dashboard-panel">
               <div className="dashboard-panel-header">
                 <h3 className="panel-title">
-                  <span>Công việc hôm nay của tôi (Today's Tasks)</span>
+                  <span>Công việc hôm nay của tôi</span>
                 </h3>
                 <button
                   type="button"
@@ -139,7 +139,7 @@ export default function ExecutiveDashboard() {
             <div className="dashboard-panel">
               <div className="dashboard-panel-header">
                 <h3 className="panel-title">
-                  <span>Lead mới chưa liên hệ (SLA Compliance)</span>
+                  <span>Lead mới chưa liên hệ</span>
                 </h3>
                 <button
                   type="button"
@@ -211,7 +211,7 @@ export default function ExecutiveDashboard() {
             <div className="dashboard-panel">
               <div className="dashboard-panel-header">
                 <h3 className="panel-title">
-                  <span>Xếp hạng thành viên trong nhóm (Team Leaderboard)</span>
+                  <span>Xếp hạng thành viên trong nhóm</span>
                 </h3>
                 <button
                   type="button"
@@ -258,7 +258,7 @@ export default function ExecutiveDashboard() {
             </div>
 
             <div className="kpi-card green">
-              <span className="kpi-label">Doanh số đã chốt thực tế (Won)</span>
+              <span className="kpi-label">Doanh số đã chốt thực tế</span>
               <span className="kpi-value" style={{ color: '#15803d' }}>
                 0 ₫
               </span>
@@ -268,7 +268,7 @@ export default function ExecutiveDashboard() {
             </div>
 
             <div className="kpi-card amber">
-              <span className="kpi-label">Dự báo theo trọng số (Forecast)</span>
+              <span className="kpi-label">Dự báo theo trọng số</span>
               <span className="kpi-value" style={{ color: '#d97706' }}>
                 0 ₫
               </span>
@@ -288,7 +288,7 @@ export default function ExecutiveDashboard() {
             <div className="dashboard-panel">
               <div className="dashboard-panel-header">
                 <h3 className="panel-title">
-                  <span>Giá trị Pipeline theo giai đoạn (Pipeline by Stage)</span>
+                  <span>Giá trị Pipeline theo giai đoạn</span>
                 </h3>
                 <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Tổng: 0 ₫</span>
               </div>
@@ -310,7 +310,7 @@ export default function ExecutiveDashboard() {
             <div className="dashboard-panel">
               <div className="dashboard-panel-header">
                 <h3 className="panel-title">
-                  <span>Doanh số đã chốt theo tháng (Monthly Trend)</span>
+                  <span>Doanh số đã chốt theo tháng</span>
                 </h3>
               </div>
 

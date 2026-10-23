@@ -21,7 +21,6 @@ import {
 } from '../../types/customer.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import Customer360Timeline from '../../components/Customer360Timeline/Customer360Timeline.tsx'
-import Pagination from '../../components/ui/Pagination.tsx'
 import './CustomerManagementPage.css'
 
 /* ──────────── Icons ──────────── */
@@ -1522,21 +1521,67 @@ export default function CustomerManagementPage() {
               </table>
             </div>
 
-            {/* Phân trang đồng bộ giống như phân trang email */}
+            {/* Phân trang */}
             {scopedCustomers.length > 0 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={scopedCustomers.length}
-                pageSize={pageSize}
-                onPageChange={setCurrentPage}
-                onPageSizeChange={(sz: number) => {
-                  setPageSize(sz)
-                  setCurrentPage(1)
-                }}
-                pageSizeOptions={[5, 10, 20, 50]}
-                itemName="khách hàng"
-              />
+              <div className="customer-pagination" style={{ margin: '16px 20px 20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+                <div className="customer-pagination-info">
+                  <span>
+                    Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, scopedCustomers.length)}</strong> -{' '}
+                    <strong>{Math.min(currentPage * pageSize, scopedCustomers.length)}</strong> trên tổng số{' '}
+                    <strong>{scopedCustomers.length}</strong> khách hàng
+                  </span>
+                  <div className="customer-pagination-size">
+                    <label htmlFor="customer-page-size-select">Hiển thị:</label>
+                    <select
+                      id="customer-page-size-select"
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value))
+                        setCurrentPage(1)
+                      }}
+                      className="customer-pagination-select"
+                    >
+                      <option value={5}>5 khách hàng / trang</option>
+                      <option value={10}>10 khách hàng / trang</option>
+                      <option value={20}>20 khách hàng / trang</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="customer-pagination-controls">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+                    className="customer-page-btn nav-btn"
+                  >
+                    Trước
+                  </button>
+
+                  <div className="customer-page-numbers">
+                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => setCurrentPage(page)}
+                        className={`customer-page-btn page-num ${currentPage === page ? 'active' : ''}`}
+                        aria-current={currentPage === page ? 'page' : undefined}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((page) => Math.min(page + 1, totalPages))}
+                    className="customer-page-btn nav-btn"
+                  >
+                    Sau
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </>
