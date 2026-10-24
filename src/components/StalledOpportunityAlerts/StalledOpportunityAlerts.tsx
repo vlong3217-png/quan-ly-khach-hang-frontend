@@ -135,58 +135,51 @@ export default function StalledOpportunityAlerts({
     <div className="stalled-alerts-container" id="stalled-alerts-section">
       {toastMessage && <div className="stalled-toast">{toastMessage}</div>}
 
-      {/* ── Banner Header Cảnh báo Đình Trệ ── */}
+      {/* ── Banner tóm tắt cảnh báo ── */}
       <div className="stalled-banner-card">
         <div className="stalled-banner-main">
-          <div className="stalled-icon-pulse">
-            <span role="img" aria-label="warning">
-              ⚠️
-            </span>
-          </div>
           <div className="stalled-banner-text">
             <div className="stalled-banner-title-row">
-              <h3>Hệ Thống Cảnh Báo Cơ Hội Đình Trệ (Stalled Deals Alert)</h3>
-              <span className="stalled-badge-role">Dành cho Trưởng nhóm / Quản lý</span>
+              <h3>Cảnh báo cơ hội đình trệ</h3>
+              <span className="stalled-badge-role">Quản lý & Đội nhóm</span>
             </div>
             <p className="stalled-desc">
-              Tự động phát hiện các thương vụ có dấu hiệu đứng yên, quá hạn giai đoạn hoặc không có tương tác,
-              giúp Trưởng nhóm <strong>can thiệp sớm</strong> trước khi cơ hội bị nguội lạnh hoặc mất vào tay đối thủ.
+              Phát hiện các thương vụ có dấu hiệu đứng yên hoặc quá hạn chốt để can thiệp kịp thời.
             </p>
           </div>
-        </div>
 
-        <div className="stalled-metrics-grid">
-          <div className="stalled-metric-pill critical">
-            <span className="metric-count">{criticalCount}</span>
-            <span className="metric-label">Cực kỳ nguy cấp</span>
+          <div className="stalled-metrics-grid">
+            <div className="stalled-metric-pill critical">
+              <span className="metric-count">{criticalCount}</span>
+              <span className="metric-label">Cực kỳ nguy cấp</span>
+            </div>
+            <div className="stalled-metric-pill warning">
+              <span className="metric-count">{warningCount}</span>
+              <span className="metric-label">Cần can thiệp</span>
+            </div>
+            <div className="stalled-metric-pill revenue">
+              <span className="metric-count">{formatCurrency(totalStalledRevenue)}</span>
+              <span className="metric-label">Doanh thu đọng</span>
+            </div>
+            {isManagerOrAdmin && (
+              <button
+                type="button"
+                className="btn-stalled-config"
+                onClick={() => setIsConfigModalOpen(true)}
+                title="Cấu hình ngưỡng ngày đình trệ"
+              >
+                Cấu hình ({config.max_days_in_stage}d / {config.max_days_inactive}d)
+              </button>
+            )}
           </div>
-          <div className="stalled-metric-pill warning">
-            <span className="metric-count">{warningCount}</span>
-            <span className="metric-label">Cảnh báo can thiệp</span>
-          </div>
-          <div className="stalled-metric-pill revenue">
-            <span className="metric-count">{formatCurrency(totalStalledRevenue)}</span>
-            <span className="metric-label">Doanh thu bị đọng</span>
-          </div>
-          {isManagerOrAdmin && (
-            <button
-              type="button"
-              className="btn-stalled-config"
-              onClick={() => setIsConfigModalOpen(true)}
-              title="Cấu hình ngưỡng ngày đình trệ"
-            >
-              ⚙️ Cấu hình ngưỡng ({config.max_days_in_stage}d / {config.max_days_inactive}d)
-            </button>
-          )}
         </div>
       </div>
 
       {/* ── Danh sách các Cơ hội bị đình trệ ── */}
       {stalledAlerts.length === 0 ? (
         <div className="stalled-empty-state">
-          <div className="empty-icon">✅</div>
-          <h4>Tuyệt vời! Không có cơ hội nào bị đình trệ trong nhóm</h4>
-          <p>Tất cả các thương vụ đều đang được tương tác đều đặn và tiến triển đúng tiến độ cam kết.</p>
+          <h4>Không có cơ hội nào bị đình trệ</h4>
+          <p>Tất cả các thương vụ đều đang được tương tác đều đặn và tiến triển đúng tiến độ.</p>
         </div>
       ) : (
         <div className="stalled-cards-list">
@@ -198,7 +191,7 @@ export default function StalledOpportunityAlerts({
               <div className="stalled-card-header">
                 <div className="header-left">
                   <span className={`severity-tag tag-${severity?.toLowerCase() || 'warning'}`}>
-                    {severity === 'CRITICAL' ? '🔴 NGUY CẤP' : '🟡 CẢNH BÁO'}
+                    {severity === 'CRITICAL' ? 'Nguy cấp' : 'Cảnh báo'}
                   </span>
                   <span className="opp-code-badge">{opp.code}</span>
                   <span className="opp-title-text" onClick={() => onOpenOpportunityDetail?.(opp)}>
@@ -208,10 +201,10 @@ export default function StalledOpportunityAlerts({
                 <div className="header-right">
                   <span className="stalled-type-pill">
                     {stalledType === 'CLOSE_DATE_PASSED'
-                      ? '⏱️ Quá hạn chốt'
+                      ? 'Quá hạn chốt'
                       : stalledType === 'INACTIVE_LONG'
-                      ? '💤 Bỏ quên tương tác'
-                      : '🛑 Kẹt giai đoạn'}
+                      ? 'Thiếu tương tác'
+                      : 'Kẹt giai đoạn'}
                   </span>
                   <span className="days-stalled-count">Đình trệ {daysStalled} ngày</span>
                 </div>
@@ -221,7 +214,7 @@ export default function StalledOpportunityAlerts({
                 <div className="stalled-meta-row">
                   <div className="meta-item">
                     <span className="meta-lbl">Khách hàng:</span>
-                    <span className="meta-val font-semibold">🏢 {opp.customer_name}</span>
+                    <span className="meta-val font-semibold">{opp.customer_name}</span>
                   </div>
                   <div className="meta-item">
                     <span className="meta-lbl">Giai đoạn:</span>
@@ -230,14 +223,14 @@ export default function StalledOpportunityAlerts({
                     </span>
                   </div>
                   <div className="meta-item">
-                    <span className="meta-lbl">Giá trị thương vụ:</span>
+                    <span className="meta-lbl">Giá trị:</span>
                     <span className="meta-val font-bold text-success">
                       {formatCurrency(opp.expected_revenue)}
                     </span>
                   </div>
                   <div className="meta-item">
-                    <span className="meta-lbl">Người phụ trách:</span>
-                    <span className="meta-val owner-name">👤 {opp.owner_name}</span>
+                    <span className="meta-lbl">Phụ trách:</span>
+                    <span className="meta-val owner-name">{opp.owner_name}</span>
                   </div>
                 </div>
 
@@ -246,7 +239,7 @@ export default function StalledOpportunityAlerts({
                     <strong>Tình trạng:</strong> {message}
                   </div>
                   <div className="action-suggestion">
-                    <strong>Gợi ý Trưởng nhóm:</strong> {suggestedAction}
+                    <strong>Gợi ý:</strong> {suggestedAction}
                   </div>
                 </div>
               </div>
@@ -257,7 +250,7 @@ export default function StalledOpportunityAlerts({
                   className="btn-action-view"
                   onClick={() => onOpenOpportunityDetail?.(opp)}
                 >
-                  👁️ Xem chi tiết & Lịch sử
+                  Xem chi tiết & Lịch sử
                 </button>
                 {isManagerOrAdmin && (
                   <>
@@ -266,16 +259,16 @@ export default function StalledOpportunityAlerts({
                       className="btn-action-intervene"
                       onClick={() => handleOpenIntervene(opp, suggestedAction)}
                     >
-                      📢 Can thiệp sớm / Đôn đốc
+                      Đôn đốc xử lý
                     </button>
                     {onReassignOpportunity && (
                       <button
                         type="button"
                         className="btn-action-reassign"
                         onClick={() => onReassignOpportunity(opp)}
-                        title="Phân bổ lại cơ hội cho NVKD khác (S5-08)"
+                        title="Phân bổ lại cơ hội cho NVKD khác"
                       >
-                        🔄 Phân bổ lại (S5-08)
+                        Phân bổ lại
                       </button>
                     )}
                   </>

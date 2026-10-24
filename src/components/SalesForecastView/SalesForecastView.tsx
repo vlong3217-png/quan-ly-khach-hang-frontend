@@ -252,10 +252,9 @@ export default function SalesForecastView({
       {/* ── Header & Bộ lọc Kỳ / Nhóm ── */}
       <div className="forecast-header-section">
         <div className="forecast-header-title">
-          <div className="forecast-badge-pill">Báo cáo & Phân tích</div>
-          <h2>Dự Báo Doanh Số Bán Hàng Theo Trọng Số Xác Suất</h2>
+          <h2>Dự báo doanh số theo trọng số</h2>
           <p className="forecast-subtitle">
-            Dự báo = Tổng (Giá trị cơ hội × Xác suất thắng từng giai đoạn). Tự động so sánh với chỉ tiêu giao và số tiền đã ký chốt thực tế.
+            Tự động so sánh doanh số dự báo với chỉ tiêu kế hoạch và số tiền đã ký chốt thực tế.
           </p>
         </div>
 
@@ -322,8 +321,7 @@ export default function SalesForecastView({
       <div className="forecast-kpi-banner">
         <div className="kpi-banner-item highlight-forecast">
           <div className="kpi-banner-header">
-            <span className="kpi-title">DOANH SỐ DỰ BÁO (WEIGHTED)</span>
-            <span className="kpi-badge-prob">Σ (Giá trị × % Thắng)</span>
+            <span className="kpi-title">Doanh số dự báo (Theo trọng số)</span>
           </div>
           <div className="kpi-amount text-primary">{formatCurrency(summaryStats.totalForecastRevenue)}</div>
           <div className="kpi-progress-bar-container">
@@ -333,14 +331,13 @@ export default function SalesForecastView({
             />
           </div>
           <div className="kpi-meta-desc">
-            Đạt <strong>{summaryStats.forecastVsTargetPercent}%</strong> chỉ tiêu kế hoạch ({getPeriodLabel()})
+            Đạt <strong>{summaryStats.forecastVsTargetPercent}%</strong> chỉ tiêu ({getPeriodLabel()})
           </div>
         </div>
 
         <div className="kpi-banner-item highlight-actual">
           <div className="kpi-banner-header">
-            <span className="kpi-title">ĐÃ CHỐT THỰC TẾ (ACTUAL WON)</span>
-            <span className="kpi-badge-won">Hợp đồng đã ký</span>
+            <span className="kpi-title">Đã chốt thực tế</span>
           </div>
           <div className="kpi-amount text-success">{formatCurrency(summaryStats.totalActualClosedRevenue)}</div>
           <div className="kpi-progress-bar-container">
@@ -350,25 +347,24 @@ export default function SalesForecastView({
             />
           </div>
           <div className="kpi-meta-desc">
-            Đã hoàn thành <strong>{summaryStats.actualVsTargetPercent}%</strong> chỉ tiêu giao ({summaryStats.wonDealsCount} deal thắng)
+            Hoàn thành <strong>{summaryStats.actualVsTargetPercent}%</strong> ({summaryStats.wonDealsCount} hợp đồng)
           </div>
         </div>
 
         <div className="kpi-banner-item highlight-target">
           <div className="kpi-banner-header">
-            <span className="kpi-title">CHỈ TIÊU KẾ HOẠCH (TARGET QUOTA)</span>
-            <span className="kpi-badge-quota">Mục tiêu kỳ</span>
+            <span className="kpi-title">Chỉ tiêu kế hoạch</span>
           </div>
           <div className="kpi-amount text-slate">{formatCurrency(summaryStats.totalTargetQuota)}</div>
           <div className="kpi-meta-sub">
-            Chênh lệch dự báo: {summaryStats.totalForecastRevenue >= summaryStats.totalTargetQuota ? (
+            Chênh lệch: {summaryStats.totalForecastRevenue >= summaryStats.totalTargetQuota ? (
               <span className="text-success font-bold">+ {formatCurrency(summaryStats.totalForecastRevenue - summaryStats.totalTargetQuota)} (Vượt)</span>
             ) : (
               <span className="text-danger font-bold">- {formatCurrency(summaryStats.totalTargetQuota - summaryStats.totalForecastRevenue)} (Thiếu)</span>
             )}
           </div>
           <div className="kpi-meta-desc">
-            Tổng giá trị cơ hội đang mở: {formatCurrency(summaryStats.totalPipelineRevenue)} ({summaryStats.openDealsCount} cơ hội)
+            Tổng cơ hội đang mở: {formatCurrency(summaryStats.totalPipelineRevenue)} ({summaryStats.openDealsCount} cơ hội)
           </div>
         </div>
       </div>
