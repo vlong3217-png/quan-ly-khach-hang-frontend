@@ -106,18 +106,87 @@ async function parseErrorResponse(response: Response, defaultMessage: string): P
   return defaultMessage
 }
 
+const INITIAL_OPPORTUNITIES: Opportunity[] = [
+  {
+    id: '1',
+    code: 'OPP-001',
+    title: 'Triển khai CRM Cloud 50 Users - FPT Smart',
+    customer_id: '1',
+    customer_name: 'Công ty Cổ phần Công nghệ & Giải pháp FPT Smart',
+    contact_name: 'Hoàng Đức Nam',
+    stage_id: 'stage-4',
+    stage_name: 'Gửi báo giá chính thức',
+    win_probability: 70,
+    expected_revenue: 90000000,
+    expected_close_date: '2026-11-30',
+    source: 'Website',
+    status: 'WON',
+    owner_id: 1,
+    owner_name: 'Nguyễn Văn Long (Admin)',
+    team_id: 1,
+    team_name: 'Đội Kinh Doanh 1',
+    description: 'Gói 50 users Cloud năm kèm đào tạo tận nơi (Đã ký hợp đồng HD-2026-001).',
+    created_at: '2026-02-01T08:00:00Z',
+    updated_at: '2026-02-01T08:00:00Z',
+  },
+  {
+    id: '2',
+    code: 'OPP-002',
+    title: 'Cung cấp Bản quyền Vĩnh viễn - Hòa Bình Group',
+    customer_id: '2',
+    customer_name: 'Tập đoàn Xây dựng & Phát triển Đô thị Hòa Bình Group',
+    contact_name: 'Trần Thị Lan Anh',
+    stage_id: 'stage-5',
+    stage_name: 'Đàm phán hợp đồng',
+    win_probability: 85,
+    expected_revenue: 25000000,
+    expected_close_date: '2026-12-15',
+    source: 'Giới thiệu (Referral)',
+    status: 'OPEN',
+    owner_id: 1,
+    owner_name: 'Nguyễn Văn Long (Admin)',
+    team_id: 1,
+    team_name: 'Đội Kinh Doanh 1',
+    description: 'Gói CRM Pro On-Premise đã thống nhất giá trị hợp đồng.',
+    created_at: '2026-02-15T09:00:00Z',
+    updated_at: '2026-02-15T09:00:00Z',
+  },
+  {
+    id: '3',
+    code: 'OPP-003',
+    title: 'Nâng cấp Hệ thống CRM Enterprise - Vinaconex JSC',
+    customer_id: '3',
+    customer_name: 'Công ty Cổ phần Xuất nhập khẩu & Đầu tư Vinaconex JSC',
+    contact_name: 'Phạm Thu Hương',
+    stage_id: 'stage-3',
+    stage_name: 'Đề xuất giải pháp & Demo',
+    win_probability: 50,
+    expected_revenue: 150000000,
+    expected_close_date: '2026-12-30',
+    source: 'Hội thảo / Sự kiện',
+    status: 'OPEN',
+    owner_id: 1,
+    owner_name: 'Nguyễn Văn Long (Admin)',
+    team_id: 1,
+    team_name: 'Đội Kinh Doanh 1',
+    description: 'Giải pháp tích hợp quản lý bán hàng xuất nhập khẩu đa chi nhánh.',
+    created_at: '2026-03-01T10:00:00Z',
+    updated_at: '2026-03-01T10:00:00Z',
+  },
+]
+
 export function getStoredOpportunities(): Opportunity[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_OPPORTUNITIES)
     if (raw) {
       const list = JSON.parse(raw)
-      if (Array.isArray(list)) {
-        // Lọc bỏ 4 cơ hội mẫu cũ nếu còn sót lại, chỉ giữ cơ hội mới do người dùng tạo
-        return list.filter((o: any) => o && o.id !== 'opp-001' && o.id !== 'opp-002' && o.id !== 'opp-003' && o.id !== 'opp-004')
+      if (Array.isArray(list) && list.length > 0) {
+        return list
       }
     }
   } catch {}
-  return []
+  localStorage.setItem(STORAGE_KEY_OPPORTUNITIES, JSON.stringify(INITIAL_OPPORTUNITIES))
+  return INITIAL_OPPORTUNITIES
 }
 
 function saveStoredOpportunities(opps: Opportunity[]): void {

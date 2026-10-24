@@ -92,12 +92,51 @@ function mapBackendToContract(b: any): Contract {
   }
 }
 
+const INITIAL_CONTRACTS: Contract[] = [
+  {
+    id: '1',
+    contract_number: 'HD-2026-001',
+    quote_id: '1',
+    quote_number: 'BG-20261021-001',
+    opportunity_id: '1',
+    opportunity_title: 'Triển khai CRM Cloud 50 Users - FPT Smart',
+    customer_id: '1',
+    customer_name: 'Công ty Cổ phần Công nghệ & Giải pháp FPT Smart',
+    sign_date: '2026-02-01',
+    effective_date: '2026-02-01',
+    expiration_date: '2027-02-01',
+    payment_terms: 'Thanh toán 50% sau khi ký hợp đồng, 50% sau khi nghiệm thu.',
+    total_value: 90000000,
+    status: 'ACTIVE',
+    items: [
+      {
+        id: 'item-1',
+        product_name: 'Gói giải pháp CRM Cloud Enterprise 50 Users',
+        quantity: 1,
+        unit: 'Gói',
+        unit_price: 90000000,
+        discount_type: 'PERCENT',
+        discount_value: 0,
+        line_discount_amount: 0,
+        vat_rate: 0,
+        line_total: 90000000,
+      },
+    ],
+    created_at: '2026-02-01T08:00:00Z',
+    updated_at: '2026-02-01T08:00:00Z',
+  },
+]
+
 function getStoredContracts(): Contract[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    }
   } catch {}
-  return []
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_CONTRACTS))
+  return INITIAL_CONTRACTS
 }
 
 function saveStoredContracts(contracts: Contract[]): void {

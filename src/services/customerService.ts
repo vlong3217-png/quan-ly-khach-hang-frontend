@@ -67,7 +67,65 @@ function extractErrorMessage(errData: any, status: number): string {
 
 const STORAGE_KEY = 'crm_enterprise_customers_data'
 
-const INITIAL_CUSTOMERS: CustomerEnterprise[] = []
+const INITIAL_CUSTOMERS: CustomerEnterprise[] = [
+  {
+    id: '1',
+    code: 'KH-001',
+    name: 'Công ty Cổ phần Công nghệ & Giải pháp FPT Smart',
+    tax_code: '0101234567',
+    industry: 'Công nghệ thông tin & Viễn thông',
+    company_size: '50-100 nhân viên',
+    status: 'ACTIVE_CUSTOMER',
+    address: 'Tầng 8, Tòa nhà FPT Tower, Số 10 Phạm Văn Bạch, Cầu Giấy, Hà Nội',
+    website: 'https://fptsmart.example.com',
+    email: 'contact@fptsmart.example.com',
+    phone: '02473008888',
+    owner_id: 1,
+    owner_name: 'Nguyễn Văn Long',
+    team_id: 1,
+    team_name: 'Đội Kinh Doanh 1',
+    created_at: '2026-01-15T08:30:00Z',
+    updated_at: '2026-02-01T10:00:00Z',
+  },
+  {
+    id: '2',
+    code: 'KH-002',
+    name: 'Tập đoàn Xây dựng & Địa ốc Hòa Bình',
+    tax_code: '0301987654',
+    industry: 'Xây dựng & Bất động sản',
+    company_size: '200-500 nhân viên',
+    status: 'IN_TRANSACTION',
+    address: 'Tòa nhà Pax Sky, 123 Nguyễn Đình Chiểu, Quận 3, TP. Hồ Chí Minh',
+    website: 'https://hoabinhcorp.example.com',
+    email: 'info@hoabinhcorp.example.com',
+    phone: '02839308888',
+    owner_id: 2,
+    owner_name: 'Trần Thị Mai',
+    team_id: 1,
+    team_name: 'Đội Kinh Doanh 1',
+    created_at: '2026-01-20T09:00:00Z',
+    updated_at: '2026-02-10T11:15:00Z',
+  },
+  {
+    id: '3',
+    code: 'KH-003',
+    name: 'Tổng Công ty Cổ phần Xuất nhập khẩu và Xây dựng Việt Nam (Vinaconex)',
+    tax_code: '0100105616',
+    industry: 'Xây dựng & Đầu tư',
+    company_size: '500+ nhân viên',
+    status: 'POTENTIAL',
+    address: 'Tòa nhà Vinaconex, 34 Láng Hạ, Đống Đa, Hà Nội',
+    website: 'https://vinaconex.example.com',
+    email: 'vanphong@vinaconex.example.com',
+    phone: '02462849999',
+    owner_id: 1,
+    owner_name: 'Nguyễn Văn Long',
+    team_id: 1,
+    team_name: 'Đội Kinh Doanh 1',
+    created_at: '2026-02-01T14:20:00Z',
+    updated_at: '2026-02-15T16:00:00Z',
+  },
+]
 
 function getAuthToken(): string | null {
   return (
@@ -224,7 +282,18 @@ function saveStoredContacts(contacts: CustomerContact[]): void {
 }
 
 const STORAGE_DEALS_KEY = 'crm_enterprise_deals_data'
-const INITIAL_DEALS: CustomerDeal[] = []
+const INITIAL_DEALS: CustomerDeal[] = [
+  {
+    id: 'deal-001',
+    customer_id: '1',
+    title: 'Triển khai CRM Cloud 50 Users - FPT Smart',
+    value: 90000000,
+    stage: 'WON',
+    status: 'CLOSED_WON',
+    expected_close_date: '2026-02-01',
+    created_at: '2026-01-15T08:30:00Z',
+  },
+]
 
 function getStoredDeals(): CustomerDeal[] {
   try {

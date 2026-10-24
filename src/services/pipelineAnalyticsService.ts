@@ -19,14 +19,15 @@ class PipelineAnalyticsService {
     const rawStages = pipelineService.getStages()
     const allOpps = getStoredOpportunities()
     const users = getMockUsers()
-    const allTeams = organizationService.getAllTeams()
+    const deptTree = organizationService.getDepartmentTree()
+    const allTeams = organizationService.flattenDepartments(deptTree)
 
     // Map user to teamId
     const teamNameToId = new Map<string, number>()
-    allTeams.forEach((t) => teamNameToId.set(t.name.trim().toLowerCase(), t.id))
+    allTeams.forEach((t: any, idx: number) => teamNameToId.set((t.name || '').trim().toLowerCase(), Number(t.id) || idx + 1))
 
     const userTeamMap = new Map<number, number>()
-    users.forEach((u) => {
+    users.forEach((u: any) => {
       const tName = (u.team || 'Đội Kinh Doanh 1').trim().toLowerCase()
       userTeamMap.set(Number(u.id), teamNameToId.get(tName) || 1)
     })

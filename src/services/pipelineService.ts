@@ -12,7 +12,7 @@ const INITIAL_STAGES: PipelineStage[] = [
     required_conditions: ['Đã xác thực thông tin người liên hệ', 'Đã thực hiện ít nhất 1 cuộc gọi thành công'],
     color: '#64748b',
     description: 'Tìm hiểu sơ bộ và xác định đối tượng tiềm năng',
-    active_opportunities_count: 8,
+    active_opportunities_count: 0,
   },
   {
     id: 'stage-2',
@@ -23,7 +23,7 @@ const INITIAL_STAGES: PipelineStage[] = [
     required_conditions: ['Đã khảo sát nhu cầu cụ thể', 'Đã xác định ngân sách dự kiến'],
     color: '#0284c7',
     description: 'Xác định bài toán và ngân sách đầu tư',
-    active_opportunities_count: 6,
+    active_opportunities_count: 0,
   },
   {
     id: 'stage-3',
@@ -34,7 +34,7 @@ const INITIAL_STAGES: PipelineStage[] = [
     required_conditions: ['Phải có ít nhất một cuộc gặp trực tiếp hoặc Demo Online', 'Đã gửi tài liệu giải pháp'],
     color: '#2563eb',
     description: 'Thuyết trình sản phẩm và demo tính năng',
-    active_opportunities_count: 5,
+    active_opportunities_count: 0,
   },
   {
     id: 'stage-4',
@@ -45,7 +45,7 @@ const INITIAL_STAGES: PipelineStage[] = [
     required_conditions: ['Đã xuất báo giá từ bảng giá niêm yết', 'Giá bán không dưới giá sàn (hoặc đã được GĐKD duyệt)'],
     color: '#7c3aed',
     description: 'Gửi bảng chào giá và điều khoản thương mại',
-    active_opportunities_count: 4,
+    active_opportunities_count: 0,
   },
   {
     id: 'stage-5',
@@ -56,7 +56,7 @@ const INITIAL_STAGES: PipelineStage[] = [
     required_conditions: ['Đã thống nhất dự thảo hợp đồng', 'Đã chốt tiến độ thanh toán và bàn giao'],
     color: '#d97706',
     description: 'Thương lượng điều khoản pháp lý và bảo lãnh',
-    active_opportunities_count: 3,
+    active_opportunities_count: 0,
   },
   {
     id: 'stage-6',
@@ -68,7 +68,7 @@ const INITIAL_STAGES: PipelineStage[] = [
     is_closed_stage: true,
     color: '#16a34a',
     description: 'Chuyển sang bước bàn giao và triển khai',
-    active_opportunities_count: 15,
+    active_opportunities_count: 0,
   },
 ]
 
@@ -88,6 +88,32 @@ function saveStored(items: PipelineStage[]): void {
 export const pipelineService = {
   getStages(): PipelineStage[] {
     const list = getStored()
+    try {
+      // Đồng bộ số lượng deals theo dữ liệu thực tế từ cơ hội bán hàng
+      const rawOpps = localStorage.getItem('crm_opportunities_master_data')
+      if (rawOpps) {
+        const opps = JSON.parse(rawOpps)
+        if (Array.isArray(opps)) {
+          return list
+            .map((stage) => {
+              const count = opps.filter((o: any) => {
+                const sId = String(stage.id || '').toLowerCase()
+                const sCode = String(stage.code || '').toLowerCase()
+                const sName = String(stage.name || '').toLowerCase()
+                const oppStageId = String(o.stage_id || o.stage || '').toLowerCase()
+                const oppStageName = String(o.stage_name || o.stage || '').toLowerCase()
+                return (
+                  oppStageId === sId ||
+                  (sCode && (oppStageId === sCode || oppStageName === sCode)) ||
+                  (sName && (oppStageName === sName || sName.includes(oppStageName) || oppStageName.includes(sName)))
+                )
+              }).length
+              return { ...stage, active_opportunities_count: count }
+            })
+            .sort((a, b) => a.order - b.order)
+        }
+      }
+    } catch {}
     return list.sort((a, b) => a.order - b.order)
   },
 
