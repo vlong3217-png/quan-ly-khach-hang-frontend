@@ -1391,5 +1391,119 @@ export const customerService = {
     // Sắp xếp theo giá trị hợp đồng giảm dần
     return results.sort((a, b) => b.contract_value - a.contract_value)
   },
+
+  /* ──────────── User Story S3-06: Nhập khách hàng từ Excel ──────────── */
+  /**
+   * Tải file Excel mẫu
+   */
+  async downloadImportTemplate(): Promise<Blob> {
+    const token = getAuthToken()
+    const headers: Record<string, string> = {}
+    if (token) headers['Authorization'] = `Bearer ${token.trim()}`
+    const res = await fetch(`${API_BASE_URL}/customers/import/template`, {
+      method: 'GET',
+      headers,
+    })
+    if (!res.ok) {
+      throw new Error(`Không thể tải file mẫu (${res.status})`)
+    }
+    return await res.blob()
+  },
+
+  /**
+   * Xem trước dữ liệu Excel từ backend với tìm kiếm và phân trang
+   */
+  async previewImportExcel(
+    file: File,
+    params?: { search?: string; page?: number; limit?: number }
+  ): Promise<{
+    filename: string
+    total_rows: number
+    valid_rows: number
+    duplicate_rows: number
+    page?: number
+    limit?: number
+    total_pages?: number
+    rows: Array<{
+      row_number: number
+      name: string
+      tax_code?: string
+      industry?: string
+      company_size?: string
+      is_duplicate: boolean
+      duplicate_reason?: string
+    }>
+  }> {
+    const token = getAuthToken()
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const searchParams = new URLSearchParams()
+    if (params?.search) searchParams.append('search', params.search)
+    if (params?.page) searchParams.append('page', String(params.page))
+    if (params?.limit) searchParams.append('limit', String(params.limit))
+
+    const url = `${API_BASE_URL}/customers/import/preview${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+
+    const headers: Record<string, string> = {}
+    if (token) headers['Authorization'] = `Bearer ${token.trim()}`
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    })
+
+    if (!res.ok) {
+      let errData: any = {}
+      try {
+        errData = await res.json()
+      } catch {}
+      throw new Error(extractErrorMessage(errData, res.status))
+    }
+
+    return await res.json()
+  },
+
+  /**
+   * Xác nhận import các dòng khách hàng vào hệ thống
+   */
+  async commitImportExcel(payload: {
+    rows: Array<{
+      name: string
+      tax_code?: string
+      industry?: string
+      company_size?: string
+      email?: string
+      phone?: string
+      address?: string
+      website?: string
+    }>
+    duplicate_handling?: 'SKIP' | 'UPDATE'
+  }): Promise<{
+    success_count: number
+    skipped_count: number
+    total_processed: number
+    errors: string[]
+  }> {
+    const res = await fetch(`${API_BASE_URL}/customers/import/commit`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        rows: payload.rows,
+        duplicate_handling: payload.duplicate_handling || 'SKIP',
+      }),
+    })
+
+    if (!res.ok) {
+      let errData: any = {}
+      try {
+        errData = await res.json()
+      } catch {}
+      throw new Error(extractErrorMessage(errData, res.status))
+    }
+
+    return await res.json()
+  },
 }
 
