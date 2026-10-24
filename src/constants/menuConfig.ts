@@ -2,7 +2,7 @@ import type { MenuGroup } from '../types/menu.ts'
 import { ROLES, PERMISSIONS } from './permissions.ts'
 
 /**
- * Cấu hình toàn bộ cấu trúc Menu điều hướng của Hệ thống N5 CRM.
+ * Cấu hình toàn bộ cấu trúc Menu điều hướng của Hệ thống NHÓM 5 CRM.
  * Được nhóm theo chuẩn khuyến nghị của Mentor:
  * 1. BÁN HÀNG: Khách hàng, Leads (Khách hàng tiềm năng), Cơ hội bán hàng, Hợp đồng & Gia hạn, Lịch làm việc
  * 2. MARKETING: Chiến dịch Marketing, Email & Mẫu tiếp thị, Báo cáo ROI

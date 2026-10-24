@@ -320,13 +320,13 @@ export function Sidebar({
       id="main-sidebar"
       aria-label="Menu điều hướng hệ thống theo quyền"
     >
-      {/* ── 1. Sidebar Header với LOGO MỚI & THƯƠNG HIỆU N5 CRM ── */}
+      {/* ── 1. Sidebar Header với LOGO MỚI & THƯƠNG HIỆU NHÓM 5 CRM ── */}
       <div className="sidebar-header">
-        <div className="sidebar-brand" title="N5 CRM - Hệ thống Quản trị Khách hàng">
+        <div className="sidebar-brand" title="NHÓM 5 CRM - Hệ thống Quản trị Khách hàng">
           <div className="sidebar-brand-icon-wrapper" aria-hidden="true">
             <img
               src="/logo.png"
-              alt="N5 CRM Logo"
+              alt="NHÓM 5 CRM Logo"
               className="sidebar-brand-logo-img"
               onError={(e) => {
                 // Fallback nếu ảnh không nạp được
@@ -337,7 +337,7 @@ export function Sidebar({
           </div>
           <div className="sidebar-brand-info">
             <div className="sidebar-brand-name-row">
-              <span className="sidebar-brand-name">N5 CRM</span>
+              <span className="sidebar-brand-name">NHÓM 5 CRM</span>
               <span className="sidebar-brand-badge">2026</span>
             </div>
             <span className="sidebar-brand-sub">Quản trị khách hàng</span>
