@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import type { MarketingRoiFilter } from '../../types/marketingRoiReport.ts'
 import { marketingRoiService } from '../../services/marketingRoiService.ts'
+import StandardPagination from '../../components/StandardPagination/StandardPagination.tsx'
 import './MarketingRoiReportPage.css'
 import PageHeader from '../../components/ui/PageHeader.tsx'
 import Card from '../../components/ui/Card.tsx'
@@ -13,13 +14,26 @@ export default function MarketingRoiReportPage() {
   const [activeTab, setActiveTab] = useState<'sources' | 'campaigns'>('sources')
   const [exportNotice, setExportNotice] = useState<string | null>(null)
 
+  const [sourcesPage, setSourcesPage] = useState(1)
+  const [sourcesPageSize, setSourcesPageSize] = useState(10)
+  const [campaignsPage, setCampaignsPage] = useState(1)
+  const [campaignsPageSize, setCampaignsPageSize] = useState(10)
+
   const sources = useMemo(() => {
     return marketingRoiService.getSources(filter)
   }, [filter])
 
+  const paginatedSources = useMemo(() => {
+    return sources.slice((sourcesPage - 1) * sourcesPageSize, sourcesPage * sourcesPageSize)
+  }, [sources, sourcesPage, sourcesPageSize])
+
   const campaigns = useMemo(() => {
     return marketingRoiService.getCampaigns(filter)
   }, [filter])
+
+  const paginatedCampaigns = useMemo(() => {
+    return campaigns.slice((campaignsPage - 1) * campaignsPageSize, campaignsPage * campaignsPageSize)
+  }, [campaigns, campaignsPage, campaignsPageSize])
 
   const summary = useMemo(() => {
     return marketingRoiService.calculateSummary(sources, campaigns)
@@ -208,7 +222,7 @@ export default function MarketingRoiReportPage() {
                   </td>
                 </tr>
               ) : (
-                sources.map((s) => (
+                paginatedSources.map((s) => (
                   <tr key={s.source_id}>
                     <td>
                       <strong style={{ color: '#0f172a' }}>{s.source_name}</strong>
@@ -243,6 +257,18 @@ export default function MarketingRoiReportPage() {
               )}
             </tbody>
           </table>
+
+          <StandardPagination
+            page={sourcesPage}
+            pageSize={sourcesPageSize}
+            total={sources.length}
+            label="nguồn lead"
+            onPageChange={setSourcesPage}
+            onPageSizeChange={(newSize) => {
+              setSourcesPageSize(newSize)
+              setSourcesPage(1)
+            }}
+          />
         </Card>
       )}
 
@@ -270,7 +296,7 @@ export default function MarketingRoiReportPage() {
                   </td>
                 </tr>
               ) : (
-                campaigns.map((c) => (
+                paginatedCampaigns.map((c) => (
                   <tr key={c.campaign_id}>
                     <td>
                       <strong style={{ color: '#0f172a' }}>{c.campaign_name}</strong>
@@ -299,6 +325,18 @@ export default function MarketingRoiReportPage() {
               )}
             </tbody>
           </table>
+
+          <StandardPagination
+            page={campaignsPage}
+            pageSize={campaignsPageSize}
+            total={campaigns.length}
+            label="chiến dịch"
+            onPageChange={setCampaignsPage}
+            onPageSizeChange={(newSize) => {
+              setCampaignsPageSize(newSize)
+              setCampaignsPage(1)
+            }}
+          />
         </Card>
       )}
     </div>

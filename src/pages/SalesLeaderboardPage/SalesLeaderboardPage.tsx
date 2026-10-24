@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import { ROLES } from '../../constants/permissions.ts'
 import { salesLeaderboardService } from '../../services/salesLeaderboardService.ts'
+import StandardPagination from '../../components/StandardPagination/StandardPagination.tsx'
 import './SalesLeaderboardPage.css'
 import PageHeader from '../../components/ui/PageHeader.tsx'
 import Card from '../../components/ui/Card.tsx'
@@ -18,6 +19,9 @@ export default function SalesLeaderboardPage() {
   const [config, setConfig] = useState(() => salesLeaderboardService.getConfig())
   const [notice, setNotice] = useState<string | null>(null)
 
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
   const { is_enabled, entries, is_restricted_to_team } = useMemo(() => {
     return salesLeaderboardService.getLeaderboard(
       userRole,
@@ -25,6 +29,10 @@ export default function SalesLeaderboardPage() {
       isUser ? defaultUserTeamId : selectedTeamId
     )
   }, [userRole, selectedTeamId, config.is_enabled, isUser])
+
+  const paginatedEntries = useMemo(() => {
+    return entries.slice((page - 1) * pageSize, page * pageSize)
+  }, [entries, page, pageSize])
 
   const handleToggleConfig = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!isAdmin) return
@@ -199,7 +207,7 @@ export default function SalesLeaderboardPage() {
                   </td>
                 </tr>
               ) : (
-                entries.map((entry) => {
+                paginatedEntries.map((entry) => {
                   const isCompleted = entry.achievement_rate >= 100
                   const progressWidth = Math.min(entry.achievement_rate, 100)
 
@@ -261,6 +269,18 @@ export default function SalesLeaderboardPage() {
               )}
             </tbody>
           </table>
+
+          <StandardPagination
+            page={page}
+            pageSize={pageSize}
+            total={entries.length}
+            label="thành viên"
+            onPageChange={setPage}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize)
+              setPage(1)
+            }}
+          />
         </Card>
       )}
     </div>

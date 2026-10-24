@@ -4,6 +4,7 @@ import type {
   RepActivityType,
 } from '../../types/repActivityAudit.ts'
 import { repActivityAuditService } from '../../services/repActivityAuditService.ts'
+import StandardPagination from '../../components/StandardPagination/StandardPagination.tsx'
 import './RepActivityAuditPage.css'
 import PageHeader from '../../components/ui/PageHeader.tsx'
 import Card from '../../components/ui/Card.tsx'
@@ -18,9 +19,16 @@ export default function RepActivityAuditPage() {
   })
   const [exportNotice, setExportNotice] = useState<string | null>(null)
 
+  const [activitiesPage, setActivitiesPage] = useState(1)
+  const [activitiesPageSize, setActivitiesPageSize] = useState(10)
+
   const activities = useMemo(() => {
     return repActivityAuditService.getActivities(filter)
   }, [filter])
+
+  const paginatedActivities = useMemo(() => {
+    return activities.slice((activitiesPage - 1) * activitiesPageSize, activitiesPage * activitiesPageSize)
+  }, [activities, activitiesPage, activitiesPageSize])
 
   const workloads = useMemo(() => {
     return repActivityAuditService.getRepWorkloadSummaries(filter)
@@ -224,7 +232,7 @@ export default function RepActivityAuditPage() {
                   </td>
                 </tr>
               ) : (
-                activities.map((act) => (
+                paginatedActivities.map((act) => (
                   <tr key={act.id}>
                     <td>
                       <div style={{ fontWeight: 600, color: '#0f172a' }}>
@@ -272,6 +280,18 @@ export default function RepActivityAuditPage() {
               )}
             </tbody>
           </table>
+
+          <StandardPagination
+            page={activitiesPage}
+            pageSize={activitiesPageSize}
+            total={activities.length}
+            label="hoạt động"
+            onPageChange={setActivitiesPage}
+            onPageSizeChange={(newSize) => {
+              setActivitiesPageSize(newSize)
+              setActivitiesPage(1)
+            }}
+          />
         </Card>
       </div>
     </div>
