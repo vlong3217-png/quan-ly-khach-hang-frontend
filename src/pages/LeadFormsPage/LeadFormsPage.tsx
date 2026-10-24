@@ -310,6 +310,84 @@ const LEAD_ASSIGNMENT_LABELS: Record<LeadAssignmentStatus, { label: string; bg: 
 
 const MOCK_USERS_FOR_ASSIGN: { id: number; name: string; team: string }[] = []
 
+function getLeadPageItems<T>(items: T[], page: number, pageSize: number): T[] {
+  const start = (page - 1) * pageSize
+  return items.slice(start, start + pageSize)
+}
+
+function LeadListPagination({
+  page,
+  pageSize,
+  total,
+  label,
+  onPageChange,
+  onPageSizeChange,
+}: {
+  page: number
+  pageSize: number
+  total: number
+  label: string
+  onPageChange: (page: number) => void
+  onPageSizeChange: (pageSize: number) => void
+}) {
+  if (!total) return null
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const pages: Array<number | '...'> = []
+  if (totalPages <= 7) {
+    for (let current = 1; current <= totalPages; current++) pages.push(current)
+  } else {
+    pages.push(1)
+    if (page > 3) pages.push('...')
+    for (let current = Math.max(2, page - 1); current <= Math.min(totalPages - 1, page + 1); current++) pages.push(current)
+    if (page < totalPages - 2) pages.push('...')
+    pages.push(totalPages)
+  }
+
+  return (
+    <div className="customer-pagination lead-pagination">
+      <div className="customer-pagination-info">
+        <span>
+          Hiển thị <strong>{Math.min((page - 1) * pageSize + 1, total)}</strong> -{' '}
+          <strong>{Math.min(page * pageSize, total)}</strong> trên tổng số <strong>{total}</strong> {label}
+        </span>
+        <div className="customer-pagination-size">
+          <label>Số dòng:</label>
+          <select
+            className="customer-pagination-select"
+            value={pageSize}
+            onChange={(event) => onPageSizeChange(Number(event.target.value))}
+          >
+            {[10, 20, 50].map((size) => <option key={size} value={size}>{size} / trang</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="customer-pagination-controls">
+        <button type="button" className="customer-page-btn nav-btn" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
+          Trước
+        </button>
+        <div className="customer-page-numbers">
+          {pages.map((pageNumber, index) => pageNumber === '...'
+            ? <span key={`ellipsis-${index}`} className="lead-pagination-ellipsis">…</span>
+            : (
+              <button
+                key={pageNumber}
+                type="button"
+                className={`customer-page-btn page-num ${pageNumber === page ? 'active' : ''}`}
+                aria-current={pageNumber === page ? 'page' : undefined}
+                onClick={() => onPageChange(pageNumber)}
+              >
+                {pageNumber}
+              </button>
+            ))}
+        </div>
+        <button type="button" className="customer-page-btn nav-btn" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}>
+          Sau
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function LeadFormsPage() {
   const { user } = useAuth()
   const canManageScoring = user?.role === 'ADMIN' || user?.role === 'MANAGER'
@@ -340,6 +418,27 @@ export default function LeadFormsPage() {
   // ── Phân trang danh sách Lead ──
   const [leadCurrentPage, setLeadCurrentPage] = useState(1)
   const [leadPageSize, setLeadPageSize] = useState(10)
+  const [listPageSize, setListPageSize] = useState(10)
+  const [slaPage, setSlaPage] = useState(1)
+  const [scorePage, setScorePage] = useState(1)
+  const [conversionPage, setConversionPage] = useState(1)
+  const [convertedHistoryPage, setConvertedHistoryPage] = useState(1)
+  const [timelinePage, setTimelinePage] = useState(1)
+  const [formsPage, setFormsPage] = useState(1)
+  const [submissionsPage, setSubmissionsPage] = useState(1)
+  const [excelPreviewPage, setExcelPreviewPage] = useState(1)
+
+  const changeListPageSize = (pageSize: number) => {
+    setListPageSize(pageSize)
+    setSlaPage(1)
+    setScorePage(1)
+    setConversionPage(1)
+    setConvertedHistoryPage(1)
+    setTimelinePage(1)
+    setFormsPage(1)
+    setSubmissionsPage(1)
+    setExcelPreviewPage(1)
+  }
 
   // Danh sách các bộ lọc lưu sẵn
   const [savedFiltersList, setSavedFiltersList] = useState<SavedLeadFilter[]>(() =>
@@ -733,6 +832,10 @@ export default function LeadFormsPage() {
       return l.status !== 'CONVERTED' && l.status !== 'JUNK'
     })
   }, [leads])
+  const paginatedSlaLeads = useMemo(
+    () => getLeadPageItems(slaDistributionLeads, slaPage, listPageSize),
+    [slaDistributionLeads, slaPage, listPageSize]
+  )
 
   // ── S4-09: Handlers cho Bộ lọc lưu sẵn & Lọc thông minh ──
   const handleApplyPresetFilter = (preset: SavedLeadFilter) => {
@@ -822,6 +925,20 @@ export default function LeadFormsPage() {
       return matchSearch && matchTier && matchSegment
     })
   }, [leads, scoreSearchQuery, scoreTierFilter, scoreSegmentFilter])
+  const paginatedScoredLeads = useMemo(
+    () => getLeadPageItems(filteredScoredLeads, scorePage, listPageSize),
+    [filteredScoredLeads, scorePage, listPageSize]
+  )
+  const conversionLeads = useMemo(() => leads.filter((lead) => lead.status !== 'CONVERTED'), [leads])
+  const paginatedConversionLeads = useMemo(
+    () => getLeadPageItems(conversionLeads, conversionPage, listPageSize),
+    [conversionLeads, conversionPage, listPageSize]
+  )
+  const convertedLeads = useMemo(() => leads.filter((lead) => lead.status === 'CONVERTED'), [leads])
+  const paginatedConvertedLeads = useMemo(
+    () => getLeadPageItems(convertedLeads, convertedHistoryPage, listPageSize),
+    [convertedLeads, convertedHistoryPage, listPageSize]
+  )
 
   // Mở modal xem chi tiết điểm số Lead (S4-04)
   const handleOpenScoreModal = (lead: Lead) => {
@@ -1138,6 +1255,10 @@ export default function LeadFormsPage() {
       return matchFilter && matchSearch
     })
   }, [allRecentInteractions, interactionFilter, timelineSearchQuery])
+  const paginatedTimelineInteractions = useMemo(
+    () => getLeadPageItems(filteredTimelineInteractions, timelinePage, listPageSize),
+    [filteredTimelineInteractions, timelinePage, listPageSize]
+  )
 
   // Lọc danh sách Form (S4-01)
   const filteredForms = useMemo(() => {
@@ -1155,6 +1276,10 @@ export default function LeadFormsPage() {
       return matchSearch && matchStatus
     })
   }, [forms, searchQuery, filterActive])
+  const paginatedForms = useMemo(
+    () => getLeadPageItems(filteredForms, formsPage, listPageSize),
+    [filteredForms, formsPage, listPageSize]
+  )
 
   // Lọc danh sách Submissions (S4-01)
   const filteredSubmissions = useMemo(() => {
@@ -1170,6 +1295,10 @@ export default function LeadFormsPage() {
       return matchSearch && matchForm && matchStatus
     })
   }, [submissions, subSearchQuery, subFormFilter, subStatusFilter])
+  const paginatedSubmissions = useMemo(
+    () => getLeadPageItems(filteredSubmissions, submissionsPage, listPageSize),
+    [filteredSubmissions, submissionsPage, listPageSize]
+  )
 
   // ── S4-02: Xử lý Tạo Lead thủ công ──
   const validateCreateLead = (): boolean => {
@@ -1435,6 +1564,10 @@ export default function LeadFormsPage() {
     }
     return result
   }, [excelRows, previewFilter, previewSearchQuery])
+  const paginatedExcelRows = useMemo(
+    () => getLeadPageItems(filteredExcelRows, excelPreviewPage, listPageSize),
+    [filteredExcelRows, excelPreviewPage, listPageSize]
+  )
 
   // Tiến hành Import Excel vào hệ thống
   const handleCommitExcelImport = async () => {
@@ -2646,7 +2779,7 @@ export default function LeadFormsPage() {
                 </tr>
               </thead>
               <tbody>
-                {slaDistributionLeads.map((l, index) => {
+                {paginatedSlaLeads.map((l, index) => {
                   const isOverdue = l.sla_status === 'OVERDUE'
                   const isWarning = l.sla_status === 'WARNING'
                   const isAccepted = l.assignment_status === 'ACCEPTED'
@@ -2659,7 +2792,7 @@ export default function LeadFormsPage() {
                     >
 
                       <td style={{ textAlign: 'center' }}>
-                        <span className="lead-stt-badge">{index + 1}</span>
+                        <span className="lead-stt-badge">{(slaPage - 1) * listPageSize + index + 1}</span>
                       </td>
 
                       <td>
@@ -2815,6 +2948,14 @@ export default function LeadFormsPage() {
               </tbody>
             </table>
           </div>
+          <LeadListPagination
+            page={slaPage}
+            pageSize={listPageSize}
+            total={slaDistributionLeads.length}
+            label="Lead"
+            onPageChange={setSlaPage}
+            onPageSizeChange={changeListPageSize}
+          />
         </div>
       )}
 
@@ -2964,7 +3105,7 @@ export default function LeadFormsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredScoredLeads.map((l, index) => {
+                  {paginatedScoredLeads.map((l, index) => {
                     const tier = l.score_tier || 'WARM'
                     const tierCfg = LEAD_TIER_CONFIG[tier]
                     const seg = l.segment || 'HIGH_POTENTIAL'
@@ -2973,7 +3114,7 @@ export default function LeadFormsPage() {
                     return (
                       <tr key={l.id} id={`score-row-${l.id}`}>
                         <td style={{ textAlign: 'center' }}>
-                          <span className="lead-stt-badge">{index + 1}</span>
+                          <span className="lead-stt-badge">{(scorePage - 1) * listPageSize + index + 1}</span>
                         </td>
                         <td>
                           <div className="lead-contact-info">
@@ -3102,6 +3243,14 @@ export default function LeadFormsPage() {
               </table>
             </div>
           )}
+          <LeadListPagination
+            page={scorePage}
+            pageSize={listPageSize}
+            total={filteredScoredLeads.length}
+            label="Lead"
+            onPageChange={setScorePage}
+            onPageSizeChange={changeListPageSize}
+          />
         </div>
       )}
 
@@ -3166,19 +3315,19 @@ export default function LeadFormsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {leads.filter((l) => l.status !== 'CONVERTED').length === 0 ? (
+                    {conversionLeads.length === 0 ? (
                       <tr>
                         <td colSpan={6} style={{ textAlign: 'center', padding: '40px 16px', color: '#64748b' }}>
                           Hiện không có khách hàng tiềm năng nào đang chờ chuyển đổi.
                         </td>
                       </tr>
                     ) : (
-                      leads.filter((l) => l.status !== 'CONVERTED').map((l, index) => {
+                      paginatedConversionLeads.map((l, index) => {
                         const statusCfg = LEAD_STATUS_CONFIG[l.status]
                         return (
                           <tr key={l.id}>
                             <td style={{ textAlign: 'center' }}>
-                              <span className="lead-stt-badge">{index + 1}</span>
+                              <span className="lead-stt-badge">{(conversionPage - 1) * listPageSize + index + 1}</span>
                             </td>
                             <td>
                               <div className="lead-contact-info">
@@ -3229,13 +3378,21 @@ export default function LeadFormsPage() {
                 </table>
               </div>
             </div>
+            <LeadListPagination
+              page={conversionPage}
+              pageSize={listPageSize}
+              total={conversionLeads.length}
+              label="Lead chờ chuyển đổi"
+              onPageChange={setConversionPage}
+              onPageSizeChange={changeListPageSize}
+            />
 
             {/* Danh sách Lead đã chuyển đổi thành công */}
-            {leads.filter((l) => l.status === 'CONVERTED').length > 0 && (
+            {convertedLeads.length > 0 && (
               <div className="lead-conversion-history">
                 <div style={{ marginBottom: '12px' }}>
                   <h4 style={{ margin: 0, fontSize: '14.5px', fontWeight: 700, color: '#047857' }}>
-                    Lịch sử Lead đã chuyển đổi thành công ({leads.filter((l) => l.status === 'CONVERTED').length})
+                    Lịch sử Lead đã chuyển đổi thành công ({convertedLeads.length})
                   </h4>
                   <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748b' }}>
                     Danh sách các khách hàng tiềm năng đã được chuyển đổi thành công sang danh bạ Khách hàng và cơ hội bán hàng.
@@ -3255,10 +3412,10 @@ export default function LeadFormsPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {leads.filter((l) => l.status === 'CONVERTED').map((l, index) => (
+                        {paginatedConvertedLeads.map((l, index) => (
                           <tr key={l.id}>
                             <td style={{ textAlign: 'center' }}>
-                              <span className="lead-stt-badge">{index + 1}</span>
+                              <span className="lead-stt-badge">{(convertedHistoryPage - 1) * listPageSize + index + 1}</span>
                             </td>
                             <td><strong style={{ color: '#0f172a' }}>{l.full_name}</strong></td>
                             <td>
@@ -3304,6 +3461,14 @@ export default function LeadFormsPage() {
                     </table>
                   </div>
                 </div>
+                <LeadListPagination
+                  page={convertedHistoryPage}
+                  pageSize={listPageSize}
+                  total={convertedLeads.length}
+                  label="Lead đã chuyển đổi"
+                  onPageChange={setConvertedHistoryPage}
+                  onPageSizeChange={changeListPageSize}
+                />
               </div>
             )}
           </div>
@@ -3378,102 +3543,112 @@ export default function LeadFormsPage() {
               <p>Chưa có ghi nhận cuộc gọi, email hoặc cập nhật trạng thái nào theo điều kiện tìm kiếm.</p>
             </div>
           ) : (
-            <div className="interaction-timeline">
-              {filteredTimelineInteractions.map((act) => {
-                const leadFound = leads.find((l) => l.id === act.lead_id)
-                const getIconAndClass = () => {
-                  switch (act.type) {
-                    case 'CALL':
-                      return { icon: '', cls: 'call' }
-                    case 'EMAIL':
-                      return { icon: '', cls: 'email' }
-                    case 'MEETING':
-                      return { icon: '', cls: 'meeting' }
-                    case 'NOTE':
-                      return { icon: '', cls: 'note' }
-                    case 'STATUS_CHANGE':
-                      return { icon: '', cls: 'status_change' }
-                    case 'SCORE_UPDATE':
-                      return { icon: '', cls: 'score_update' }
-                    default:
-                      return { icon: '', cls: 'system' }
+            <>
+              <div className="interaction-timeline">
+                {paginatedTimelineInteractions.map((act) => {
+                  const leadFound = leads.find((l) => l.id === act.lead_id)
+                  const getIconAndClass = () => {
+                    switch (act.type) {
+                      case 'CALL':
+                        return { icon: '', cls: 'call' }
+                      case 'EMAIL':
+                        return { icon: '', cls: 'email' }
+                      case 'MEETING':
+                        return { icon: '', cls: 'meeting' }
+                      case 'NOTE':
+                        return { icon: '', cls: 'note' }
+                      case 'STATUS_CHANGE':
+                        return { icon: '', cls: 'status_change' }
+                      case 'SCORE_UPDATE':
+                        return { icon: '', cls: 'score_update' }
+                      default:
+                        return { icon: '', cls: 'system' }
+                    }
                   }
-                }
-                const { icon, cls } = getIconAndClass()
+                  const { icon, cls } = getIconAndClass()
 
-                return (
-                  <div key={act.id} className="interaction-timeline-item" id={`timeline-act-${act.id}`}>
-                    <div className={`interaction-icon-badge ${cls}`}>{icon}</div>
+                  return (
+                    <div key={act.id} className="interaction-timeline-item" id={`timeline-act-${act.id}`}>
+                      <div className={`interaction-icon-badge ${cls}`}>{icon}</div>
 
-                    <div className="interaction-card">
-                      <div className="interaction-card-header">
-                        <div className="interaction-card-title-group">
-                          <span className="interaction-card-title">{act.title.replace(/^[⚠️🚨\s]+/, '')}</span>
-                          <div className="interaction-card-meta">
-                            <span>{act.performed_by_name}</span>
-                            <span>•</span>
-                            <span>
-                              {new Date(act.performed_at).toLocaleString('vi-VN', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </span>
-                            {leadFound && (
-                              <>
-                                <span>•</span>
-                                <span
-                                  style={{ color: '#2563eb', cursor: 'pointer', fontWeight: 600 }}
-                                  onClick={() => handleOpenInteractionModal(leadFound)}
-                                  title="Xem toàn bộ tương tác của Lead này"
-                                >
-                                  {leadFound.full_name} ({leadFound.code})
-                                </span>
-                              </>
+                      <div className="interaction-card">
+                        <div className="interaction-card-header">
+                          <div className="interaction-card-title-group">
+                            <span className="interaction-card-title">{act.title.replace(/^[⚠️🚨\s]+/, '')}</span>
+                            <div className="interaction-card-meta">
+                              <span>{act.performed_by_name}</span>
+                              <span>•</span>
+                              <span>
+                                {new Date(act.performed_at).toLocaleString('vi-VN', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                              {leadFound && (
+                                <>
+                                  <span>•</span>
+                                  <span
+                                    style={{ color: '#2563eb', cursor: 'pointer', fontWeight: 600 }}
+                                    onClick={() => handleOpenInteractionModal(leadFound)}
+                                    title="Xem toàn bộ tương tác của Lead này"
+                                  >
+                                    {leadFound.full_name} ({leadFound.code})
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {act.outcome && (
+                              <span className={`interaction-outcome-tag ${act.outcome.includes('Thành công') ? 'success' : ''}`}>
+                                {act.outcome}
+                              </span>
                             )}
+                            <button
+                              type="button"
+                              className="interaction-delete-btn"
+                              onClick={() => handleDeleteInteraction(act.id)}
+                              title="Xóa hoạt động này"
+                            >
+                              <IconTrash />
+                            </button>
                           </div>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          {act.outcome && (
-                            <span className={`interaction-outcome-tag ${act.outcome.includes('Thành công') ? 'success' : ''}`}>
-                              {act.outcome}
+                        {act.content && (
+                          <div className="interaction-card-body">{act.content}</div>
+                        )}
+
+                        {act.next_action && (
+                          <div className="interaction-next-action">
+                            <span className="interaction-next-action-text">
+                              <span>Việc tiếp theo:</span> {act.next_action}
                             </span>
-                          )}
-                          <button
-                            type="button"
-                            className="interaction-delete-btn"
-                            onClick={() => handleDeleteInteraction(act.id)}
-                            title="Xóa hoạt động này"
-                          >
-                            <IconTrash />
-                          </button>
-                        </div>
+                            {act.next_action_due && (
+                              <span className="interaction-next-action-due">
+                                Hạn: {new Date(act.next_action_due).toLocaleDateString('vi-VN')}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
-
-                      {act.content && (
-                        <div className="interaction-card-body">{act.content}</div>
-                      )}
-
-                      {act.next_action && (
-                        <div className="interaction-next-action">
-                          <span className="interaction-next-action-text">
-                            <span>Việc tiếp theo:</span> {act.next_action}
-                          </span>
-                          {act.next_action_due && (
-                            <span className="interaction-next-action-due">
-                              Hạn: {new Date(act.next_action_due).toLocaleDateString('vi-VN')}
-                            </span>
-                          )}
-                        </div>
-                      )}
                     </div>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+              <LeadListPagination
+                page={timelinePage}
+                pageSize={listPageSize}
+                total={filteredTimelineInteractions.length}
+                label="Hoạt động tương tác"
+                onPageChange={setTimelinePage}
+                onPageSizeChange={changeListPageSize}
+              />
+            </>
           )}
         </div>
       )}
@@ -3709,7 +3884,7 @@ export default function LeadFormsPage() {
                         </td>
                       </tr>
                     ) : (
-                      filteredExcelRows.map((row) => (
+                      paginatedExcelRows.map((row) => (
                       <tr
                         key={row.row_index}
                         className={
@@ -3769,6 +3944,15 @@ export default function LeadFormsPage() {
                   </tbody>
                 </table>
               </div>
+
+              <LeadListPagination
+                page={excelPreviewPage}
+                pageSize={listPageSize}
+                total={filteredExcelRows.length}
+                label="Dòng xem trước"
+                onPageChange={setExcelPreviewPage}
+                onPageSizeChange={changeListPageSize}
+              />
 
               {/* Nút hành động import */}
               <div className="preview-commit-footer">
@@ -3871,7 +4055,7 @@ export default function LeadFormsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredForms.map((f) => (
+                  {paginatedForms.map((f) => (
                     <tr key={f.id} id={`lead-form-row-${f.id}`}>
                       <td>
                         <span className="lead-code-tag">{f.code}</span>
@@ -3976,6 +4160,15 @@ export default function LeadFormsPage() {
               </table>
             </div>
           )}
+
+          <LeadListPagination
+            page={formsPage}
+            pageSize={listPageSize}
+            total={filteredForms.length}
+            label="Biểu mẫu"
+            onPageChange={setFormsPage}
+            onPageSizeChange={changeListPageSize}
+          />
         </div>
       )}
 
@@ -4043,7 +4236,7 @@ export default function LeadFormsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredSubmissions.map((sub) => {
+                  {paginatedSubmissions.map((sub) => {
                     const statusCfg = LEAD_STATUS_CONFIG[sub.status as LeadStatus] || LEAD_STATUS_CONFIG.NEW
                     return (
                       <tr key={sub.id} id={`submission-row-${sub.id}`}>
@@ -4108,6 +4301,15 @@ export default function LeadFormsPage() {
               </table>
             </div>
           )}
+
+          <LeadListPagination
+            page={submissionsPage}
+            pageSize={listPageSize}
+            total={filteredSubmissions.length}
+            label="Lượt gửi từ Website"
+            onPageChange={setSubmissionsPage}
+            onPageSizeChange={changeListPageSize}
+          />
         </div>
       )}
 
