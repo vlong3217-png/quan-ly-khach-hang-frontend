@@ -1602,7 +1602,7 @@ export default function CustomerManagementPage() {
                 <thead>
                   <tr>
                     <th>Mã KH</th>
-                    <th>Tên Doanh Nghiệp</th>
+                    <th>Tên doanh nghiệp</th>
                     <th>Ngành nghề & Quy mô</th>
                     <th>Liên hệ</th>
                     <th>Người sở hữu</th>

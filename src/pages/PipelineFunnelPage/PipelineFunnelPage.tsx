@@ -253,7 +253,7 @@ export default function PipelineFunnelPage() {
                       Chuyển sang giai đoạn sau: {st.conversion_rate_to_next}%
                     </span>
                     <span className="drop-rate-pill">
-                      Rơi rụng / Thua: {st.drop_off_rate}% ({st.drop_off_count} deals)
+                      Rơi rụng / Thua: {st.drop_off_rate}% ({st.drop_off_count} cơ hội)
                     </span>
                   </div>
                 )}

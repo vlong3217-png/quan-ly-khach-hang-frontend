@@ -2010,12 +2010,12 @@ export default function LeadFormsPage() {
           </div>
         </div>
 
-        <div className="lead-stat-card">
+        <div className="lead-stat-card" title="Tiêu chuẩn BANT: Ngân sách (Budget), Thẩm quyền (Authority), Nhu cầu (Need), Thời gian (Timeline)">
           <div className="lead-stat-content">
             <span className="lead-stat-value" style={{ color: '#047857' }}>
               {stats.qualifiedLeads}
             </span>
-            <span className="lead-stat-label">Đủ tiêu chuẩn (Qualified BANT)</span>
+            <span className="lead-stat-label">Đủ tiêu chuẩn (BANT) ℹ️</span>
           </div>
         </div>
 

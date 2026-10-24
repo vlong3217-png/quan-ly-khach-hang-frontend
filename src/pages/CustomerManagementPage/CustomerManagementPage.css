@@ -114,13 +114,15 @@
 /* ── 2. Stat summary cards ── */
 .customer-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 12px;
+  width: 100%;
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1280px) {
+  /* Tự động co giãn đều toàn hàng, không bị hở bên phải dù có 5 hay 6 thẻ */
   .customer-stats-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
 }
 
@@ -270,11 +272,11 @@
 
 .enterprise-customer-table th {
   background: #f8fafc;
-  color: #475569;
+  color: #334155;
   font-weight: 600;
-  font-size: 11.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: normal;
   padding: 12px 14px;
   border-bottom: 1px solid #e2e8f0;
   white-space: nowrap;
@@ -296,7 +298,21 @@
 .enterprise-customer-table.cust-main-table th:nth-child(6),
 .enterprise-customer-table.cust-main-table td:nth-child(6) { min-width: 140px; }
 .enterprise-customer-table.cust-main-table th:nth-child(7),
-.enterprise-customer-table.cust-main-table td:nth-child(7) { width: 140px; text-align: right; }
+.enterprise-customer-table.cust-main-table td:nth-child(7) {
+  width: 155px;
+  min-width: 150px;
+  text-align: right;
+  position: sticky;
+  right: 0;
+  background: #ffffff;
+  z-index: 2;
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.04);
+}
+
+.enterprise-customer-table.cust-main-table th:nth-child(7) {
+  background: #f8fafc;
+  z-index: 3;
+}
 
 /* 2. Periodic Care Table (Khách hàng cần chăm sóc định kỳ) */
 .enterprise-customer-table.cust-periodic-table th:nth-child(1),

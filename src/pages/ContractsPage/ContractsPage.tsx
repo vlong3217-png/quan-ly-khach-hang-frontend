@@ -5,6 +5,7 @@ import {
   calculateRemainingDays,
 } from '../../services/contractService.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
+import { formatDateVN } from '../../utils/formatDateTime.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import PdfExportModal from '../../components/PdfExportModal/PdfExportModal.tsx'
 import './ContractsPage.css'
@@ -334,9 +335,9 @@ export default function ContractsPage() {
                   <td style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>
                     {formatCurrencyVND(c.total_value)}
                   </td>
-                  <td>{c.effective_date}</td>
+                  <td>{formatDateVN(c.effective_date)}</td>
                   <td>
-                    <strong>{c.expiration_date}</strong>
+                    <strong>{formatDateVN(c.expiration_date)}</strong>
                   </td>
                   <td style={{ textAlign: 'center' }}>
                     {renderCountdownPill(c)}
@@ -500,9 +501,9 @@ export default function ContractsPage() {
                 <div>Cơ hội liên kết: <strong>{detailContract.opportunity_title}</strong></div>
                 <div>Căn cứ báo giá: <strong>{detailContract.quote_number}</strong></div>
                 <div>Tổng giá trị: <strong style={{ color: '#0284c7' }}>{formatCurrencyVND(detailContract.total_value)}</strong></div>
-                <div>Ngày ký: {detailContract.sign_date}</div>
-                <div>Ngày hiệu lực: {detailContract.effective_date}</div>
-                <div>Ngày hết hạn: <strong>{detailContract.expiration_date}</strong></div>
+                <div>Ngày ký: {formatDateVN(detailContract.sign_date)}</div>
+                <div>Ngày hiệu lực: {formatDateVN(detailContract.effective_date)}</div>
+                <div>Ngày hết hạn: <strong>{formatDateVN(detailContract.expiration_date)}</strong></div>
                 <div>Trạng thái: {renderStatusBadge(detailContract.status)}</div>
               </div>
 

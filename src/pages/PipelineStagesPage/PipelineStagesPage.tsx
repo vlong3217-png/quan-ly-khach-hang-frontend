@@ -325,8 +325,8 @@ export default function PipelineStagesPage() {
                       </button>
                     </td>
                     <td>
-                      <span className="active-deals-badge">
-                        {stage.active_opportunities_count || 0} deals
+                      <span className="active-deals-badge" title="Số cơ hội (deals) kinh doanh đang xúc tiến">
+                        {stage.active_opportunities_count || 0} cơ hội
                       </span>
                     </td>
                     <td className="actions-cell">

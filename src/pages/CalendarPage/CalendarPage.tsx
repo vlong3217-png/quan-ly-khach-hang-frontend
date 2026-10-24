@@ -433,7 +433,7 @@ export default function CalendarPage() {
                   <div key={dateKey} className={`week-day-column ${isToday ? 'is-today' : ''}`}>
                     <div className="week-day-header">
                       <span className="day-name">{dayOfWeekNames[index]}</span>
-                      <span className="day-date">{d.getDate()}/{d.getMonth() + 1}</span>
+                      <span className="day-date">{String(d.getDate()).padStart(2, '0')}/{String(d.getMonth() + 1).padStart(2, '0')}/{d.getFullYear()}</span>
                       {dayEvents.length > 0 && (
                         <span className="day-event-count">{dayEvents.length}</span>
                       )}
@@ -474,7 +474,7 @@ export default function CalendarPage() {
             <div className="calendar-day-view">
               <div className="day-view-header">
                 <h3>
-                  Lịch trình ngày {selectedDate.getDate()}/{selectedDate.getMonth() + 1}/{selectedDate.getFullYear()}
+                  Lịch trình ngày {String(selectedDate.getDate()).padStart(2, '0')}/{String(selectedDate.getMonth() + 1).padStart(2, '0')}/{selectedDate.getFullYear()}
                 </h3>
               </div>
               <div className="day-hourly-schedule">

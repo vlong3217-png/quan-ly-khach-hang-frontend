@@ -312,7 +312,7 @@ export default function RevenueForecastPage() {
                   <div className="competitor-name-row">
                     <strong style={{ fontSize: '0.95rem', color: '#1e293b' }}>{c.competitor_name}</strong>
                     <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#dc2626' }}>
-                      Thua {c.deals_lost} deals ({c.total_lost_value.toLocaleString('vi-VN')} ₫)
+                      Thua {c.deals_lost} cơ hội ({c.total_lost_value.toLocaleString('vi-VN')} ₫)
                     </span>
                   </div>
                   <div style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.4 }}>

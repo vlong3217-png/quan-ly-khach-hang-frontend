@@ -4,6 +4,7 @@ import { userService } from '../../services/userService.ts'
 import type { User } from '../../types/auth.ts'
 import type { OpportunityTask } from '../../types/opportunity.ts'
 import { useAuth } from '../../contexts/AuthContext.tsx'
+import { formatDateVN } from '../../utils/formatDateTime.ts'
 import './TaskSlaAlerts.css'
 
 interface TaskSlaAlertsProps {
@@ -281,9 +282,9 @@ export default function TaskSlaAlerts({
                   <div className="overdue-info">
                     <h4 className="task-title-txt">{t.title}</h4>
                     <div className="task-meta-txt">
-                      <span>Hạn chót: <strong>{t.due_date} {t.due_time || ''}</strong></span>
+                      <span>Hạn chót: <strong>{formatDateVN(t.due_date)} {t.due_time || ''}</strong></span>
                       {t.customer_name && <span>Khách: <strong>{t.customer_name}</strong></span>}
-                      {t.opportunity_title && <span>Deal: <strong>{t.opportunity_title}</strong></span>}
+                      {t.opportunity_title && <span>Cơ hội: <strong>{t.opportunity_title}</strong></span>}
                     </div>
                   </div>
                 </div>
@@ -326,7 +327,7 @@ export default function TaskSlaAlerts({
               <div key={t.id} className="upcoming-task-chip">
                 <div className="chip-content">
                   <strong>{t.title}</strong>
-                  <span className="due-info">Hạn: {t.due_date} {t.due_time || ''}</span>
+                  <span className="due-info">Hạn: {formatDateVN(t.due_date)} {t.due_time || ''}</span>
                   {t.customer_name && <span className="cust-info">{t.customer_name}</span>}
                 </div>
                 <button

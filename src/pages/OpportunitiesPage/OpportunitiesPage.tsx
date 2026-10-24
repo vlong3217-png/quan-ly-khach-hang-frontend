@@ -823,17 +823,23 @@ export default function OpportunitiesPage() {
               <span className="kpi-hint">{wonCount} cơ hội đã chốt thành công</span>
             </div>
             <div className="opp-kpi-card">
-              <span className="kpi-title">Tổng giá trị Pipeline</span>
+              <span className="kpi-title" title="Pipeline (Phễu bán hàng): Tập hợp toàn bộ các cơ hội kinh doanh đang diễn ra qua các giai đoạn">
+                Tổng giá trị Pipeline (Phễu) ℹ️
+              </span>
               <span className="kpi-number text-primary">{formatCurrency(totalRevenue)}</span>
-              <span className="kpi-hint">Tổng giá trị danh nghĩa</span>
+              <span className="kpi-hint">Tổng giá trị danh nghĩa toàn bộ cơ hội</span>
             </div>
             <div className="opp-kpi-card">
-              <span className="kpi-title">Doanh số dự báo (Weighted)</span>
+              <span className="kpi-title" title="Doanh số trọng số: Giá trị doanh thu dự kiến nhân với xác suất thắng của từng giai đoạn">
+                Doanh số dự báo (Theo trọng số) ℹ️
+              </span>
               <span className="kpi-number text-success">{formatCurrency(weightedRevenue)}</span>
               <span className="kpi-hint">Tính theo xác suất thắng từng giai đoạn</span>
             </div>
             <div className="opp-kpi-card">
-              <span className="kpi-title">Tỷ lệ chốt đơn (Win rate)</span>
+              <span className="kpi-title" title="Win rate: Tỷ lệ phần trăm số cơ hội chốt thành công trên tổng số cơ hội">
+                Tỷ lệ thắng (Win rate) ℹ️
+              </span>
               <span className="kpi-number text-info">
                 {totalCount > 0 ? `${Math.round((wonCount / totalCount) * 100)}%` : '0%'}
               </span>
