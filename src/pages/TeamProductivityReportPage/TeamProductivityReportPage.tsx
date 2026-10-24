@@ -243,21 +243,22 @@ export default function TeamProductivityReportPage() {
           className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
           onClick={() => setActiveTab('overview')}
         >
-          Năng Suất & Tuân Thủ SLA
+          <span>Năng Suất & Tuân Thủ SLA</span>
         </button>
         <button
           type="button"
           className={`tab-btn ${activeTab === 'weekly' ? 'active' : ''}`}
           onClick={() => setActiveTab('weekly')}
         >
-          Phân Tích Hoạt Động Theo Tuần
+          <span>Phân Tích Hoạt Động Theo Tuần</span>
         </button>
         <button
           type="button"
           className={`tab-btn ${activeTab === 'leads' ? 'active' : ''}`}
           onClick={() => setActiveTab('leads')}
         >
-          Nhật Ký Phản Hồi Lead ({leadSlas.length})
+          <span>Nhật Ký Phản Hồi Lead</span>
+          <span className="tab-badge">{leadSlas.length}</span>
         </button>
       </div>
 

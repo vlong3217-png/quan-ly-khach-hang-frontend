@@ -187,14 +187,16 @@ export default function MarketingRoiReportPage() {
           className={`roi-tab-btn ${activeTab === 'sources' ? 'active' : ''}`}
           onClick={() => setActiveTab('sources')}
         >
-          Hiệu Quả Theo Nguồn Lead ({sources.length})
+          <span>Hiệu Quả Theo Nguồn Lead</span>
+          <span className="tab-badge">{sources.length}</span>
         </button>
         <button
           type="button"
           className={`roi-tab-btn ${activeTab === 'campaigns' ? 'active' : ''}`}
           onClick={() => setActiveTab('campaigns')}
         >
-          Hiệu Quả Theo Chiến Dịch ROI ({campaigns.length})
+          <span>Hiệu Quả Theo Chiến Dịch ROI</span>
+          <span className="tab-badge">{campaigns.length}</span>
         </button>
       </div>
 

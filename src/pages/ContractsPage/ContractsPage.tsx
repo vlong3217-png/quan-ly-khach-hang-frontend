@@ -253,35 +253,40 @@ export default function ContractsPage() {
             className={`tab-btn ${activeTab === 'ALL' ? 'active' : ''}`}
             onClick={() => setActiveTab('ALL')}
           >
-            Tất cả ({stats.total})
+            <span>Tất cả</span>
+            <span className="tab-badge">{stats.total}</span>
           </button>
           <button
             type="button"
             className={`tab-btn ${activeTab === 'EXPIRING_SOON' ? 'active' : ''}`}
             onClick={() => setActiveTab('EXPIRING_SOON')}
           >
-            Sắp hết hạn ({stats.expiring})
+            <span>Sắp hết hạn</span>
+            <span className={`tab-badge ${stats.expiring > 0 ? 'warning' : ''}`}>{stats.expiring}</span>
           </button>
           <button
             type="button"
             className={`tab-btn ${activeTab === 'EXPIRED' ? 'active' : ''}`}
             onClick={() => setActiveTab('EXPIRED')}
           >
-            Đã hết hạn ({stats.expired})
+            <span>Đã hết hạn</span>
+            <span className="tab-badge">{stats.expired}</span>
           </button>
           <button
             type="button"
             className={`tab-btn ${activeTab === 'ACTIVE' ? 'active' : ''}`}
             onClick={() => setActiveTab('ACTIVE')}
           >
-            Đang hiệu lực ({stats.active})
+            <span>Đang hiệu lực</span>
+            <span className="tab-badge">{stats.active}</span>
           </button>
           <button
             type="button"
             className={`tab-btn ${activeTab === 'RENEWED' ? 'active' : ''}`}
             onClick={() => setActiveTab('RENEWED')}
           >
-            Đã gia hạn ({stats.renewed})
+            <span>Đã gia hạn</span>
+            <span className="tab-badge">{stats.renewed}</span>
           </button>
         </div>
 

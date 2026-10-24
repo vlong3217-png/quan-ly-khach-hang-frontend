@@ -111,44 +111,57 @@
   color: #94a3b8;
 }
 
-/* Tabs */
+/* Tabs - Pill style identical to customer-nav-tabs */
 .marketing-roi-tabs {
   display: flex;
-  gap: 0.5rem;
-  border-bottom: 2px solid #e2e8f0;
-  padding-bottom: 0.25rem;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 12px;
+  overflow-x: auto;
+  width: fit-content;
+  border-bottom: none;
 }
 
 .roi-tab-btn {
-  padding: 0.5rem 1rem;
+  padding: 8px 16px;
+  border-radius: 8px;
   border: none;
   background: transparent;
-  font-size: 0.9375rem;
-  font-weight: 600;
   color: #64748b;
+  font-size: 13.5px;
+  font-weight: 600;
   cursor: pointer;
-  border-radius: 6px 6px 0 0;
-  transition: all 0.2s;
-  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .roi-tab-btn:hover {
-  color: #2563eb;
+  color: #0f172a;
 }
 
 .roi-tab-btn.active {
+  background: #ffffff;
   color: #2563eb;
-  background: rgba(37, 99, 235, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-.roi-tab-btn.active::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #2563eb;
+.marketing-roi-tabs .tab-badge {
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.roi-tab-btn.active .tab-badge {
+  background: #eff6ff;
+  color: #2563eb;
 }
 
 /* Table Card */
