@@ -194,16 +194,6 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   padding: 32px;
   margin-bottom: 24px;
-  animation: importCardAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-@keyframes importCardAppear {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .import-upload-zone {
@@ -430,9 +420,6 @@
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   margin-bottom: 24px;
-  animation: importCardAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-  transform: translateY(10px);
   overflow: hidden;
 }
 
@@ -755,9 +742,6 @@
   padding: 48px 32px;
   text-align: center;
   margin-bottom: 24px;
-  animation: importCardAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-  transform: translateY(10px);
 }
 
 .import-progress-spinner {
@@ -790,9 +774,6 @@
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   margin-bottom: 24px;
-  animation: importCardAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-  transform: translateY(10px);
   overflow: hidden;
 }
 
@@ -1029,9 +1010,6 @@
   padding: 32px;
   text-align: center;
   margin-bottom: 24px;
-  animation: importCardAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-  transform: translateY(10px);
 }
 
 .api-error-icon {
