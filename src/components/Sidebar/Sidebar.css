@@ -298,6 +298,18 @@
   gap: 4px;
 }
 
+.menu-group--standalone {
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 4px;
+}
+
+.app-sidebar.collapsed .menu-group--standalone {
+  padding-bottom: 10px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
 .app-sidebar.collapsed .menu-group {
   width: 100%;
   align-items: center;

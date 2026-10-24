@@ -349,6 +349,51 @@ export function Sidebar({
       <nav className="sidebar-nav" role="navigation">
         {menuGroups.map((group) => {
           const isGroupCollapsed = !!collapsedGroups[group.id]
+          const isStandaloneGroup = !group.title
+
+          if (isStandaloneGroup) {
+            return (
+              <div
+                key={group.id}
+                className="menu-group menu-group--standalone"
+                id={`menu-group-${group.id}`}
+              >
+                <ul className="menu-list">
+                  {group.items.map((item) => {
+                    const isActive = activeMenuId === item.id
+
+                    return (
+                      <li
+                        key={item.id}
+                        className={`menu-item-wrapper ${isActive ? 'active' : ''}`}
+                        id={`menu-item-wrapper-${item.id}`}
+                      >
+                        <button
+                          type="button"
+                          className={`menu-item-btn ${isActive ? 'is-active' : ''}`}
+                          id={item.id}
+                          onClick={() => onSelectMenu(item)}
+                          aria-current={isActive ? 'page' : undefined}
+                          title={item.description ?? item.title}
+                        >
+                          <span className="menu-item-icon">{getMenuIcon(item.id)}</span>
+                          <span className="menu-item-text">{item.title}</span>
+
+                          {item.badge && (
+                            <span
+                              className={`menu-item-badge badge-${item.badgeVariant ?? 'primary'}`}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            )
+          }
 
           return (
             <div

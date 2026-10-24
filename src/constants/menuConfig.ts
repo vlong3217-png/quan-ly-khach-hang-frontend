@@ -11,6 +11,20 @@ import { ROLES, PERMISSIONS } from './permissions.ts'
  */
 export const APP_MENU_GROUPS: MenuGroup[] = [
   {
+    id: 'group-overview',
+    title: '',
+    description: 'Trang chủ tổng quan chỉ số và điều hành',
+    items: [
+      {
+        id: 'menu-dashboard',
+        title: 'Bảng điều khiển (Tổng quan)',
+        path: '/dashboard',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Tổng quan chỉ số hoạt động, chào mừng và thông tin tài khoản',
+      },
+    ],
+  },
+  {
     id: 'group-sales',
     title: 'BÁN HÀNG',
     description: 'Quản lý khách hàng, phễu lead, cơ hội kinh doanh và hợp đồng',
@@ -116,13 +130,6 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
     title: 'BÁO CÁO & PHÂN TÍCH',
     description: 'Chỉ số đo lường hiệu quả bán hàng, dự báo doanh thu và hoạt động nhân sự',
     items: [
-      {
-        id: 'menu-dashboard',
-        title: 'Bảng điều khiển (Tổng quan)',
-        path: '/dashboard',
-        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
-        description: 'Tổng quan chỉ số hoạt động, chào mừng và thông tin tài khoản',
-      },
       {
         id: 'menu-quotas',
         title: 'Chỉ tiêu doanh số',
