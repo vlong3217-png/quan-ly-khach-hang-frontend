@@ -865,19 +865,7 @@ function DashboardPage() {
         }}
       />
 
-      {/* ── FAB GHI NHANH CUỘC GỌI GỌN GÀNG (S6-10) ── */}
-      <button
-        type="button"
-        className="fab-quick-call fab-quick-call--circular"
-        id="fab-quick-call-mobile"
-        onClick={() => setIsQuickCallModalOpen(true)}
-        title="Ghi nhanh cuộc gọi khách hàng (S6-10)"
-        aria-label="Ghi nhanh cuộc gọi"
-      >
-        <IconPhoneCall />
-      </button>
-
-      {/* ── MODAL GHI NHANH CUỘC GỌI MOBILE (S6-10) ── */}
+      {/* ── MODAL GHI NHANH CUỘC GỌI (S6-10) ── */}
       <QuickCallMobileModal
         isOpen={isQuickCallModalOpen}
         onClose={() => setIsQuickCallModalOpen(false)}
