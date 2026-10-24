@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react'
 import type { ProductivityFilter } from '../../types/teamProductivity.ts'
 import { teamProductivityService } from '../../services/teamProductivityService.ts'
+import { organizationService } from '../../services/organizationService.ts'
+import { getMockUsers } from '../../services/userService.ts'
 import StandardPagination from '../../components/StandardPagination/StandardPagination.tsx'
 import './TeamProductivityReportPage.css'
 import PageHeader from '../../components/ui/PageHeader.tsx'
@@ -13,6 +15,17 @@ export default function TeamProductivityReportPage() {
     week: 'ALL',
     search_keyword: '',
   })
+
+  const availableTeams = useMemo(() => organizationService.getAllTeams(), [])
+  const allUsers = useMemo(() => getMockUsers(), [])
+
+  // Lọc danh sách nhân viên tương ứng với đội nhóm được chọn
+  const filteredUsers = useMemo(() => {
+    if (filter.team_id === 'ALL') return allUsers
+    const selectedTeam = availableTeams.find((t) => t.id === filter.team_id)
+    if (!selectedTeam) return allUsers
+    return allUsers.filter((u) => (u.team || 'Đội Kinh Doanh 1').trim().toLowerCase() === selectedTeam.name.trim().toLowerCase())
+  }, [allUsers, availableTeams, filter.team_id])
 
   const [activeTab, setActiveTab] = useState<'overview' | 'weekly' | 'leads'>('overview')
   const [exportNotice, setExportNotice] = useState<string | null>(null)
@@ -110,9 +123,14 @@ export default function TeamProductivityReportPage() {
           <label>Đội nhóm</label>
           <select
             value={filter.team_id}
-            onChange={(e) => setFilter({ ...filter, team_id: e.target.value === 'ALL' ? 'ALL' : Number(e.target.value) })}
+            onChange={(e) => setFilter({ ...filter, team_id: e.target.value === 'ALL' ? 'ALL' : Number(e.target.value), user_id: 'ALL' })}
           >
             <option value="ALL">Tất cả đội nhóm</option>
+            {availableTeams.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -123,6 +141,11 @@ export default function TeamProductivityReportPage() {
             onChange={(e) => setFilter({ ...filter, user_id: e.target.value === 'ALL' ? 'ALL' : Number(e.target.value) })}
           >
             <option value="ALL">Tất cả nhân viên</option>
+            {filteredUsers.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.full_name || u.email} {u.team ? `(${u.team})` : ''}
+              </option>
+            ))}
           </select>
         </div>
 

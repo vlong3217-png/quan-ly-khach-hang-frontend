@@ -2,6 +2,7 @@ import type { LeaderboardEntry, LeaderboardConfig } from '../types/salesLeaderbo
 import { getStoredOpportunities } from './opportunityService.ts'
 import { getMockUsers } from './userService.ts'
 import { salesQuotaService } from './salesQuotaService.ts'
+import { organizationService } from './organizationService.ts'
 
 const STORAGE_KEY_CONFIG = 'crm_leaderboard_config_v1'
 
@@ -78,19 +79,19 @@ export const salesLeaderboardService = {
     }
 
     // 4. Tạo danh sách entry từ users
+    const allTeams = organizationService.getAllTeams()
+    const teamNameToIdMap = new Map<string, number>()
+    allTeams.forEach((t) => {
+      teamNameToIdMap.set(t.name.trim().toLowerCase(), t.id)
+    })
+
     const generatedEntries: LeaderboardEntry[] = users.map((u, idx) => {
       const uId = Number(u.id)
       const wonData = wonMapByUser.get(uId) || { revenue: 0, count: 0 }
       const quota = quotaMapByUser.get(uId) || 50000000 // Mặc định 50M nếu chưa giao chỉ tiêu
 
-      // Team mapping logic
-      let teamId = 1
-      let teamName = u.team || 'Đội Kinh Doanh 1'
-      if (teamName.includes('2') || teamName.toLowerCase().includes('miền nam')) {
-        teamId = 2
-      } else if (teamName.includes('3') || teamName.toLowerCase().includes('miền trung')) {
-        teamId = 3
-      }
+      const teamName = (u.team || 'Đội Kinh Doanh 1').trim()
+      const teamId = teamNameToIdMap.get(teamName.toLowerCase()) || 1
 
       const achievementRate = quota > 0 ? Number(((wonData.revenue / quota) * 100).toFixed(1)) : 0
 

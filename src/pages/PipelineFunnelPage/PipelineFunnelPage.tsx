@@ -4,6 +4,9 @@ import type {
   FunnelFilterParams,
 } from '../../types/pipelineAnalytics.ts'
 import { pipelineAnalyticsService } from '../../services/pipelineAnalyticsService.ts'
+import { organizationService } from '../../services/organizationService.ts'
+import { getMockUsers } from '../../services/userService.ts'
+import { productService } from '../../services/productService.ts'
 import './PipelineFunnelPage.css'
 
 export default function PipelineFunnelPage() {
@@ -11,6 +14,18 @@ export default function PipelineFunnelPage() {
   const [userId, setUserId] = useState<number | 'ALL'>('ALL')
   const [productId, setProductId] = useState<string | 'ALL'>('ALL')
   const [dateRange, setDateRange] = useState<FunnelDateRange>('THIS_MONTH')
+
+  const availableTeams = useMemo(() => organizationService.getAllTeams(), [])
+  const allUsers = useMemo(() => getMockUsers(), [])
+  const allProducts = useMemo(() => productService.getProducts(), [])
+
+  // Lọc danh sách nhân viên tương ứng với đội nhóm được chọn
+  const filteredUsers = useMemo(() => {
+    if (teamId === 'ALL') return allUsers
+    const selectedTeam = availableTeams.find((t) => t.id === teamId)
+    if (!selectedTeam) return allUsers
+    return allUsers.filter((u) => (u.team || 'Đội Kinh Doanh 1').trim().toLowerCase() === selectedTeam.name.trim().toLowerCase())
+  }, [allUsers, availableTeams, teamId])
 
   const filterParams: FunnelFilterParams = useMemo(
     () => ({
@@ -45,9 +60,17 @@ export default function PipelineFunnelPage() {
           <select
             className="filter-select"
             value={teamId}
-            onChange={(e) => setTeamId(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
+            onChange={(e) => {
+              setTeamId(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))
+              setUserId('ALL')
+            }}
           >
             <option value="ALL">Tất cả đội nhóm (Toàn khối)</option>
+            {availableTeams.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -59,6 +82,11 @@ export default function PipelineFunnelPage() {
             onChange={(e) => setUserId(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
           >
             <option value="ALL">Tất cả nhân viên</option>
+            {filteredUsers.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.full_name || u.email} {u.team ? `(${u.team})` : ''}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -70,6 +98,11 @@ export default function PipelineFunnelPage() {
             onChange={(e) => setProductId(e.target.value)}
           >
             <option value="ALL">Tất cả sản phẩm & dịch vụ</option>
+            {allProducts.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
           </select>
         </div>
 

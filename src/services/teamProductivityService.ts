@@ -9,6 +9,7 @@ import { getMockUsers } from './userService.ts'
 import { getStoredLeads } from './leadService.ts'
 import { getStoredOpportunities } from './opportunityService.ts'
 import { quoteService } from './quoteService.ts'
+import { organizationService } from './organizationService.ts'
 
 export const teamProductivityService = {
   /**
@@ -44,19 +45,18 @@ export const teamProductivityService = {
       oppsByUser.set(uId, (oppsByUser.get(uId) || 0) + 1)
     }
 
+    const allTeams = organizationService.getAllTeams()
+    const teamNameToId = new Map<string, number>()
+    allTeams.forEach((t) => teamNameToId.set(t.name.trim().toLowerCase(), t.id))
+
     const members: MemberProductivity[] = users.map((u) => {
       const uId = Number(u.id)
       const userLeads = leadsByUser.get(uId) || []
       const quotesCount = quotesByUser.get(uId) || 0
       const oppsCount = oppsByUser.get(uId) || 0
 
-      let teamId = 1
-      let teamName = u.team || 'Đội Kinh Doanh 1'
-      if (teamName.includes('2') || teamName.toLowerCase().includes('miền nam')) {
-        teamId = 2
-      } else if (teamName.includes('3') || teamName.toLowerCase().includes('miền trung')) {
-        teamId = 3
-      }
+      const teamName = (u.team || 'Đội Kinh Doanh 1').trim()
+      const teamId = teamNameToId.get(teamName.toLowerCase()) || 1
 
       // Thống kê SLA Leads của nhân viên
       const leadsAssigned = userLeads.length

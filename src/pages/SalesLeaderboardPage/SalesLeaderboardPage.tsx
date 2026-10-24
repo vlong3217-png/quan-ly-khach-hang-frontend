@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import { ROLES } from '../../constants/permissions.ts'
 import { salesLeaderboardService } from '../../services/salesLeaderboardService.ts'
+import { organizationService } from '../../services/organizationService.ts'
 import StandardPagination from '../../components/StandardPagination/StandardPagination.tsx'
 import './SalesLeaderboardPage.css'
 import PageHeader from '../../components/ui/PageHeader.tsx'
@@ -13,8 +14,14 @@ export default function SalesLeaderboardPage() {
   const isAdmin = userRole === ROLES.ADMIN
   const isUser = userRole === ROLES.USER
 
-  // Default team for sales rep is 1 (Đội Kinh Doanh 1)
-  const defaultUserTeamId = 1
+  const availableTeams = useMemo(() => organizationService.getAllTeams(), [])
+  // Default team for sales rep
+  const defaultUserTeamId = useMemo(() => {
+    const userTeam = (user?.team_name || (user as any)?.team || '').trim().toLowerCase()
+    const found = availableTeams.find((t) => t.name.toLowerCase() === userTeam)
+    return found ? found.id : 1
+  }, [user, availableTeams])
+
   const [selectedTeamId, setSelectedTeamId] = useState<number | 'ALL'>(isUser ? defaultUserTeamId : 'ALL')
   const [config, setConfig] = useState(() => salesLeaderboardService.getConfig())
   const [notice, setNotice] = useState<string | null>(null)
@@ -120,6 +127,11 @@ export default function SalesLeaderboardPage() {
             style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.875rem' }}
           >
             <option value="ALL">Toàn công ty (Tất cả đội nhóm)</option>
+            {availableTeams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
           </select>
         </div>
       )}

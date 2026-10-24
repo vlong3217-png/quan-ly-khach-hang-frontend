@@ -1,11 +1,14 @@
 import type { Region, DepartmentNode } from '../types/organization.ts'
+import { getMockUsers } from './userService.ts'
 
 const STORAGE_REGIONS_KEY = 'crm_regions_data_v2'
 const STORAGE_DEPT_KEY = 'crm_organization_tree_data_v2'
 
-const INITIAL_REGIONS: Region[] = []
-
-const INITIAL_DEPARTMENTS: DepartmentNode[] = []
+const INITIAL_REGIONS: Region[] = [
+  { id: 'reg-north', name: 'Miền Bắc', code: 'KV-MB', description: 'Trụ sở chính Hà Nội và các tỉnh phía Bắc' },
+  { id: 'reg-south', name: 'Miền Nam', code: 'KV-MN', description: 'Chi nhánh TP. Hồ Chí Minh và miền Đông/Tây Nam Bộ' },
+  { id: 'reg-central', name: 'Miền Trung', code: 'KV-MT', description: 'Chi nhánh Đà Nẵng và các tỉnh miền Trung' },
+]
 
 export const organizationService = {
   getRegions(): Region[] {
@@ -14,7 +17,10 @@ export const organizationService = {
     } catch {}
     try {
       const raw = localStorage.getItem(STORAGE_REGIONS_KEY)
-      if (raw) return JSON.parse(raw)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
     } catch {}
     localStorage.setItem(STORAGE_REGIONS_KEY, JSON.stringify(INITIAL_REGIONS))
     return INITIAL_REGIONS
@@ -28,20 +34,39 @@ export const organizationService = {
     return newReg
   },
 
+  /**
+   * Lấy cây sơ đồ tổ chức phòng ban.
+   * Nếu chưa có cây, tự động tạo cấu trúc từ các đội nhóm của người dùng hệ thống.
+   */
   getDepartmentTree(): DepartmentNode[] {
     try {
       localStorage.removeItem('crm_organization_tree_data')
     } catch {}
     try {
       const raw = localStorage.getItem(STORAGE_DEPT_KEY)
-      if (raw) return JSON.parse(raw)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Luôn cập nhật và liên kết thành viên thực tế theo user.team
+          const users = getMockUsers()
+          this.syncMembersFromUsers(parsed, users)
+          return parsed
+        }
+      }
     } catch {}
-    localStorage.setItem(STORAGE_DEPT_KEY, JSON.stringify(INITIAL_DEPARTMENTS))
-    return INITIAL_DEPARTMENTS
+
+    // Khởi tạo cây ban đầu theo các đội nhóm thực tế từ danh sách người dùng
+    const users = getMockUsers()
+    const tree = this.generateInitialTreeFromUsers(users)
+    this.saveDepartmentTree(tree)
+    return tree
   },
 
   saveDepartmentTree(tree: DepartmentNode[]): void {
     localStorage.setItem(STORAGE_DEPT_KEY, JSON.stringify(tree))
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('crm-org-updated'))
+    }
   },
 
   flattenDepartments(nodes: DepartmentNode[]): DepartmentNode[] {
@@ -56,6 +81,130 @@ export const organizationService = {
     }
     traverse(nodes)
     return res
+  },
+
+  /**
+   * Sinh cây phòng ban mặc định liên kết với người dùng
+   */
+  generateInitialTreeFromUsers(users: ReturnType<typeof getMockUsers>): DepartmentNode[] {
+    const rootLeader = users.find((u) => u.role === 'ADMIN' || u.role === 'MANAGER') || users[0]
+    
+    // Nhóm người dùng theo team
+    const teamGroups = new Map<string, typeof users>()
+    for (const u of users) {
+      const tName = (u.team || 'Đội Kinh Doanh 1').trim()
+      const arr = teamGroups.get(tName) || []
+      arr.push(u)
+      teamGroups.set(tName, arr)
+    }
+
+    if (!teamGroups.has('Đội Kinh Doanh 1')) {
+      teamGroups.set('Đội Kinh Doanh 1', [])
+    }
+    if (!teamGroups.has('Đội Kinh Doanh 2')) {
+      teamGroups.set('Đội Kinh Doanh 2', [])
+    }
+
+    const subDepartments: DepartmentNode[] = []
+    let deptIdx = 1
+    for (const [tName, memberList] of teamGroups.entries()) {
+      const leader = memberList.find((m) => m.role === 'MANAGER') || memberList[0] || rootLeader
+      subDepartments.push({
+        id: `dept-${deptIdx}`,
+        name: tName,
+        code: `KD-0${deptIdx}`,
+        parent_id: 'dept-root',
+        leader_id: leader ? Number(leader.id) : 1,
+        leader_name: leader ? leader.full_name : 'Trưởng nhóm',
+        region_id: tName.includes('2') || tName.toLowerCase().includes('nam') ? 'reg-south' : 'reg-north',
+        region_name: tName.includes('2') || tName.toLowerCase().includes('nam') ? 'Miền Nam' : 'Miền Bắc',
+        description: `Đội ngũ kinh doanh phụ trách ${tName}`,
+        children: [],
+        members: memberList.map((m) => ({
+          id: Number(m.id),
+          name: m.full_name,
+          email: m.email,
+          role: m.role || 'STAFF',
+        })),
+      })
+      deptIdx++
+    }
+
+    const rootNode: DepartmentNode = {
+      id: 'dept-root',
+      name: 'Khối Kinh Doanh & Tiếp Thị Toàn Quốc',
+      code: 'KDO-HQ',
+      parent_id: null,
+      leader_id: rootLeader ? Number(rootLeader.id) : 1,
+      leader_name: rootLeader ? rootLeader.full_name : 'Giám Đốc Kinh Doanh',
+      region_id: 'reg-north',
+      region_name: 'Miền Bắc',
+      description: 'Khối điều hành toàn bộ hoạt động kinh doanh, chăm sóc khách hàng và tiếp thị.',
+      children: subDepartments,
+      members: rootLeader ? [{ id: Number(rootLeader.id), name: rootLeader.full_name, email: rootLeader.email, role: 'ADMIN' }] : [],
+    }
+
+    return [rootNode]
+  },
+
+  /**
+   * Đồng bộ danh sách thành viên trong từng node với danh sách tài khoản người dùng
+   */
+  syncMembersFromUsers(nodes: DepartmentNode[], users: ReturnType<typeof getMockUsers>): void {
+    const traverse = (list: DepartmentNode[]) => {
+      for (const node of list) {
+        // Lấy các user có team khớp với tên node này
+        const matchingUsers = users.filter((u) => (u.team || 'Đội Kinh Doanh 1').trim().toLowerCase() === node.name.trim().toLowerCase())
+        if (matchingUsers.length > 0) {
+          node.members = matchingUsers.map((m) => ({
+            id: Number(m.id),
+            name: m.full_name,
+            email: m.email,
+            role: m.role || 'STAFF',
+          }))
+        }
+        if (node.children && node.children.length > 0) {
+          traverse(node.children)
+        }
+      }
+    }
+    traverse(nodes)
+  },
+
+  /**
+   * Lấy danh sách phẳng tất cả các đội nhóm thực tế (kèm ID và Tên) để nạp vào Select dropdown các tab
+   */
+  getAllTeams(): Array<{ id: number; name: string }> {
+    const tree = this.getDepartmentTree()
+    const flat = this.flattenDepartments(tree)
+    const teamsMap = new Map<string, { id: number; name: string }>()
+
+    flat.forEach((dept, idx) => {
+      // Bỏ qua node khối gốc nếu có node con
+      const cleanName = dept.name.trim()
+      if (!teamsMap.has(cleanName)) {
+        teamsMap.set(cleanName, {
+          id: idx + 1,
+          name: cleanName,
+        })
+      }
+    })
+
+    // Lấy thêm từ danh sách người dùng để đảm bảo không bị sót đội nào
+    const users = getMockUsers()
+    users.forEach((u) => {
+      if (u.team && u.team.trim()) {
+        const cleanName = u.team.trim()
+        if (!teamsMap.has(cleanName)) {
+          teamsMap.set(cleanName, {
+            id: teamsMap.size + 1,
+            name: cleanName,
+          })
+        }
+      }
+    })
+
+    return Array.from(teamsMap.values())
   },
 
   addDepartment(parentId: string | null, data: Omit<DepartmentNode, 'id' | 'children' | 'members'>): DepartmentNode {
