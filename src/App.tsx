@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage/LoginPage.tsx'
-import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage.tsx'
 import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage.tsx'
 import ChangePasswordPage from './pages/ChangePasswordPage/ChangePasswordPage.tsx'
 import DashboardPage from './pages/DashboardPage/DashboardPage.tsx'
@@ -25,7 +24,7 @@ function App() {
       <Route path="/quote-view/:quoteId/:token" element={<PublicQuoteViewPage />} />
 
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/forgot-password" element={<Navigate to="/login?mode=forgot" replace />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route
         path="/change-password"

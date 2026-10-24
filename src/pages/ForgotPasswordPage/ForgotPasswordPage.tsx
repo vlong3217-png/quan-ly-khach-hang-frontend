@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { forgotPassword } from '../../services/authService.ts'
+import LoginBrandPanel from '../LoginPage/LoginBrandPanel.tsx'
 import '../LoginPage/LoginPage.css'
 import './ForgotPasswordPage.css'
 
@@ -105,14 +106,16 @@ function ForgotPasswordPage() {
   }
 
   return (
-    <div className="forgot-password-page">
-      <div className="forgot-password-card">
+    <div className="login-page forgot-password-page">
+      <div className="login-shell">
+        <LoginBrandPanel />
+        <section className="login-card forgot-password-card" aria-labelledby="forgot-password-heading">
         {/* Header */}
         <div className="forgot-password-header">
           <div className="forgot-password-logo" aria-hidden="true">
             <IconKey />
           </div>
-          <h1>Quên mật khẩu</h1>
+          <h1 id="forgot-password-heading">Quên mật khẩu</h1>
           <p className="forgot-password-subtitle">
             {isSent
               ? 'Kiểm tra hộp thư email của bạn để lấy mã xác nhận'
@@ -246,6 +249,12 @@ function ForgotPasswordPage() {
             </div>
           </form>
         )}
+          <footer className="login-footer">
+            <span>© 2026</span>
+            <span>Phiên bản nội bộ</span>
+            <span title="Liên hệ quản trị viên hệ thống">Hỗ trợ hệ thống</span>
+          </footer>
+        </section>
       </div>
     </div>
   )
