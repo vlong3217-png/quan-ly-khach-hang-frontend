@@ -8,8 +8,8 @@ export default function LoginBrandPanel() {
   return (
     <section className="login-brand-panel" aria-label="Giới thiệu hệ thống quản lý khách hàng">
       <div className="login-brand">
-        <img src="/favicon.svg" alt="" />
-        <span>Quản lý khách hàng</span>
+        <img src="/logo.png" alt="NHÓM 5 CRM" className="login-brand-logo-img" />
+        <span>NHÓM 5 CRM</span>
       </div>
       <div className="login-header">
         <span className="login-product-kicker">NỀN TẢNG CRM</span>
