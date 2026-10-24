@@ -324,9 +324,22 @@
 .enterprise-customer-table.cust-periodic-table th:nth-child(4),
 .enterprise-customer-table.cust-periodic-table td:nth-child(4) { min-width: 160px; width: 17%; }
 .enterprise-customer-table.cust-periodic-table th:nth-child(5),
-.enterprise-customer-table.cust-periodic-table td:nth-child(5) { min-width: 170px; width: 15%; text-align: right; }
+.enterprise-customer-table.cust-periodic-table td:nth-child(5) {
+  min-width: 170px;
+  width: 15%;
+  text-align: right;
+  position: sticky;
+  right: 0;
+  background: #ffffff;
+  z-index: 2;
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.04);
+}
+.enterprise-customer-table.cust-periodic-table th:nth-child(5) {
+  background: #f8fafc;
+  z-index: 3;
+}
 
-/* 3. Contacts Table */
+/* 3. Contacts Table (Người liên hệ & Quyết định mua) */
 .enterprise-customer-table.cust-contacts-table th:nth-child(1),
 .enterprise-customer-table.cust-contacts-table td:nth-child(1) { min-width: 180px; width: 18%; }
 .enterprise-customer-table.cust-contacts-table th:nth-child(2),
@@ -340,9 +353,22 @@
 .enterprise-customer-table.cust-contacts-table th:nth-child(6),
 .enterprise-customer-table.cust-contacts-table td:nth-child(6) { min-width: 160px; width: 14%; }
 .enterprise-customer-table.cust-contacts-table th:nth-child(7),
-.enterprise-customer-table.cust-contacts-table td:nth-child(7) { min-width: 100px; width: 8%; text-align: right; }
+.enterprise-customer-table.cust-contacts-table td:nth-child(7) {
+  min-width: 140px;
+  width: 140px;
+  text-align: right;
+  position: sticky;
+  right: 0;
+  background: #ffffff;
+  z-index: 2;
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.04);
+}
+.enterprise-customer-table.cust-contacts-table th:nth-child(7) {
+  background: #f8fafc;
+  z-index: 3;
+}
 
-/* 4. Support Tickets Table */
+/* 4. Support Tickets Table (Cảnh báo rủi ro & CSKH) */
 .enterprise-customer-table.cust-tickets-table th:nth-child(1),
 .enterprise-customer-table.cust-tickets-table td:nth-child(1) { min-width: 190px; width: 20%; }
 .enterprise-customer-table.cust-tickets-table th:nth-child(2),
@@ -356,7 +382,20 @@
 .enterprise-customer-table.cust-tickets-table th:nth-child(6),
 .enterprise-customer-table.cust-tickets-table td:nth-child(6) { min-width: 120px; width: 11%; }
 .enterprise-customer-table.cust-tickets-table th:nth-child(7),
-.enterprise-customer-table.cust-tickets-table td:nth-child(7) { min-width: 90px; width: 5%; text-align: right; }
+.enterprise-customer-table.cust-tickets-table td:nth-child(7) {
+  min-width: 100px;
+  width: 100px;
+  text-align: right;
+  position: sticky;
+  right: 0;
+  background: #ffffff;
+  z-index: 2;
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.04);
+}
+.enterprise-customer-table.cust-tickets-table th:nth-child(7) {
+  background: #f8fafc;
+  z-index: 3;
+}
 
 /* 5. Import Preview Table */
 .enterprise-customer-table.cust-import-table th:nth-child(1),
@@ -471,6 +510,10 @@
 }
 
 .enterprise-customer-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.enterprise-customer-table tbody tr:hover td:last-child {
   background-color: #f8fafc;
 }
 
