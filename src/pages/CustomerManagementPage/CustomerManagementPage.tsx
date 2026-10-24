@@ -22,6 +22,7 @@ import {
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import Customer360Timeline from '../../components/Customer360Timeline/Customer360Timeline.tsx'
 import StandardPagination from '../../components/StandardPagination/StandardPagination.tsx'
+import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
 import './CustomerManagementPage.css'
 
 /* ──────────── Icons ──────────── */
@@ -207,9 +208,9 @@ export default function CustomerManagementPage() {
   const [transferTargetCustId, setTransferTargetCustId] = useState('')
   const [transferReason, setTransferReason] = useState('')
 
-  // S3-03 360 View state
+  // S3-03 360 View state - Mặc định mở tab Dòng thời gian hoạt động để nắm bắt tương tác ngay
   const [selected360Customer, setSelected360Customer] = useState<CustomerEnterprise | null>(null)
-  const [c360ActiveTab, setC360ActiveTab] = useState<'OVERVIEW' | 'CONTACTS' | 'DEALS' | 'ACTIVITIES' | 'ATTACHMENTS' | 'GROUP'>('OVERVIEW')
+  const [c360ActiveTab, setC360ActiveTab] = useState<'ACTIVITIES' | 'OVERVIEW' | 'CONTACTS' | 'DEALS' | 'ATTACHMENTS' | 'GROUP'>('ACTIVITIES')
 
   // S3-04 Duplicates state
   const [duplicateGroups, setDuplicateGroups] = useState<DuplicateCustomerGroup[]>([])
@@ -259,6 +260,9 @@ export default function CustomerManagementPage() {
   })
   const [customerListsRefresh, setCustomerListsRefresh] = useState(0)
 
+  // Quick call mobile modal state
+  const [quickCallCustomer, setQuickCallCustomer] = useState<CustomerEnterprise | null>(null)
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -269,10 +273,16 @@ export default function CustomerManagementPage() {
     address: '',
     phone: '',
     email: '',
+    avatar_url: '',
     owner_id: user?.id ?? 1,
     status: 'POTENTIAL' as CustomerStatus,
     description: '',
     parent_id: '',
+    // Thêm người liên hệ chính ngay trong form
+    primary_contact_name: '',
+    primary_contact_phone: '',
+    primary_contact_email: '',
+    primary_contact_title: '',
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
@@ -450,10 +460,15 @@ export default function CustomerManagementPage() {
       address: '',
       phone: '',
       email: '',
+      avatar_url: '',
       owner_id: user?.id ?? 1,
       status: 'POTENTIAL',
       description: '',
       parent_id: '',
+      primary_contact_name: '',
+      primary_contact_phone: '',
+      primary_contact_email: '',
+      primary_contact_title: 'Giám đốc',
     })
     setFormErrors({})
     setIsModalOpen(true)
@@ -463,6 +478,7 @@ export default function CustomerManagementPage() {
   const handleOpenEditModal = (cust: CustomerEnterprise) => {
     setEditingCustomer(cust)
     const pRel = customerService.getParentRelation(cust.id)
+    const primaryContact = customerService.getContacts(cust.id).find((c) => c.is_primary) || customerService.getContacts(cust.id)[0]
     setFormData({
       name: cust.name,
       tax_code: cust.tax_code || '',
@@ -472,10 +488,15 @@ export default function CustomerManagementPage() {
       address: cust.address || '',
       phone: cust.phone || '',
       email: cust.email || '',
+      avatar_url: cust.avatar_url || '',
       owner_id: cust.owner_id,
       status: cust.status,
       description: cust.description || '',
       parent_id: pRel ? pRel.parent_id : '',
+      primary_contact_name: primaryContact ? primaryContact.full_name : cust.primary_contact_name || '',
+      primary_contact_phone: primaryContact ? primaryContact.phone : cust.primary_contact_phone || '',
+      primary_contact_email: primaryContact ? primaryContact.email : cust.primary_contact_email || '',
+      primary_contact_title: primaryContact ? primaryContact.title : cust.primary_contact_title || '',
     })
     setFormErrors({})
     setIsModalOpen(true)
@@ -513,8 +534,9 @@ export default function CustomerManagementPage() {
     const teamId = typeof user?.team_id === 'number' ? user.team_id : Number(user?.team_id) || 1
 
     try {
+      let savedCust: CustomerEnterprise
       if (editingCustomer) {
-        await customerService.updateCustomer(editingCustomer.id, {
+        savedCust = await customerService.updateCustomer(editingCustomer.id, {
           name: formData.name.trim(),
           tax_code: formData.tax_code.trim() || undefined,
           industry: formData.industry,
@@ -523,6 +545,7 @@ export default function CustomerManagementPage() {
           address: formData.address.trim() || undefined,
           phone: formData.phone.trim() || undefined,
           email: formData.email.trim() || undefined,
+          avatar_url: formData.avatar_url.trim() || undefined,
           owner_id: Number(formData.owner_id),
           owner_name: ownerName,
           team_id: teamId,
@@ -530,10 +553,41 @@ export default function CustomerManagementPage() {
           status: formData.status,
           description: formData.description.trim() || undefined,
           parent_id: formData.parent_id,
+          primary_contact_name: formData.primary_contact_name.trim() || undefined,
+          primary_contact_phone: formData.primary_contact_phone.trim() || undefined,
+          primary_contact_email: formData.primary_contact_email.trim() || undefined,
+          primary_contact_title: formData.primary_contact_title.trim() || undefined,
         })
+
+        // Cập nhật hoặc tạo mới contact chính nếu có điền tên
+        if (formData.primary_contact_name.trim()) {
+          const existingContacts = customerService.getContacts(editingCustomer.id)
+          const primaryCt = existingContacts.find((c) => c.is_primary) || existingContacts[0]
+          if (primaryCt) {
+            await customerService.updateContact(primaryCt.id, {
+              full_name: formData.primary_contact_name.trim(),
+              phone: formData.primary_contact_phone.trim(),
+              email: formData.primary_contact_email.trim(),
+              title: formData.primary_contact_title.trim() || 'Người liên hệ chính',
+              is_primary: true,
+            })
+          } else {
+            await customerService.createContact({
+              customer_id: editingCustomer.id,
+              customer_name: formData.name.trim(),
+              full_name: formData.primary_contact_name.trim(),
+              phone: formData.primary_contact_phone.trim(),
+              email: formData.primary_contact_email.trim(),
+              title: formData.primary_contact_title.trim() || 'Người liên hệ chính',
+              buying_role: 'DECISION_MAKER',
+              is_primary: true,
+            })
+          }
+        }
+
         showToast(`Đã cập nhật hồ sơ khách hàng "${formData.name.trim()}" thành công!`)
       } else {
-        await customerService.createCustomer({
+        savedCust = await customerService.createCustomer({
           name: formData.name.trim(),
           tax_code: formData.tax_code.trim() || undefined,
           industry: formData.industry,
@@ -542,6 +596,7 @@ export default function CustomerManagementPage() {
           address: formData.address.trim() || undefined,
           phone: formData.phone.trim() || undefined,
           email: formData.email.trim() || undefined,
+          avatar_url: formData.avatar_url.trim() || undefined,
           owner_id: Number(formData.owner_id),
           owner_name: ownerName,
           team_id: teamId,
@@ -549,7 +604,26 @@ export default function CustomerManagementPage() {
           status: formData.status,
           description: formData.description.trim() || undefined,
           parent_id: formData.parent_id || undefined,
+          primary_contact_name: formData.primary_contact_name.trim() || undefined,
+          primary_contact_phone: formData.primary_contact_phone.trim() || undefined,
+          primary_contact_email: formData.primary_contact_email.trim() || undefined,
+          primary_contact_title: formData.primary_contact_title.trim() || undefined,
         })
+
+        // Tự động tạo người liên hệ chính nếu người dùng nhập trong form
+        if (formData.primary_contact_name.trim()) {
+          await customerService.createContact({
+            customer_id: savedCust.id,
+            customer_name: savedCust.name,
+            full_name: formData.primary_contact_name.trim(),
+            phone: formData.primary_contact_phone.trim(),
+            email: formData.primary_contact_email.trim(),
+            title: formData.primary_contact_title.trim() || 'Người liên hệ chính',
+            buying_role: 'DECISION_MAKER',
+            is_primary: true,
+          })
+        }
+
         showToast(`Đã thêm thành công khách hàng "${formData.name.trim()}"!`)
       }
       setIsModalOpen(false)
@@ -1048,6 +1122,13 @@ export default function CustomerManagementPage() {
           <div className="c360-tabs">
             <button
               type="button"
+              className={`c360-tab-link ${c360ActiveTab === 'ACTIVITIES' ? 'active' : ''}`}
+              onClick={() => setC360ActiveTab('ACTIVITIES')}
+            >
+              Dòng thời gian hoạt động ({customerService.getActivities(selected360Customer.id).length})
+            </button>
+            <button
+              type="button"
               className={`c360-tab-link ${c360ActiveTab === 'OVERVIEW' ? 'active' : ''}`}
               onClick={() => setC360ActiveTab('OVERVIEW')}
             >
@@ -1070,13 +1151,6 @@ export default function CustomerManagementPage() {
               onClick={() => setC360ActiveTab('CONTACTS')}
             >
               Người liên hệ ({customerService.getContacts(selected360Customer.id).length})
-            </button>
-            <button
-              type="button"
-              className={`c360-tab-link ${c360ActiveTab === 'ACTIVITIES' ? 'active' : ''}`}
-              onClick={() => setC360ActiveTab('ACTIVITIES')}
-            >
-              Dòng thời gian hoạt động ({customerService.getActivities(selected360Customer.id).length})
             </button>
             <button
               type="button"
@@ -1631,49 +1705,129 @@ export default function CustomerManagementPage() {
                       const groupSummary = customerService.getGroupContractTotal(cust.id)
                       const parentRel = customerService.getParentRelation(cust.id)
 
+                      // Lấy 2 ký tự viết tắt tên doanh nghiệp để làm avatar đẹp
+                      const getCompanyInitials = (name: string) => {
+                        const words = name.replace(/[^\p{L}\p{N}\s]/gu, '').trim().split(/\s+/)
+                        if (words.length >= 2) {
+                          return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase()
+                        }
+                        return name.substring(0, 2).toUpperCase()
+                      }
+                      // Tạo gradient background dựa trên ID công ty
+                      const getAvatarGradient = (id: string) => {
+                        const gradients = [
+                          'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                          'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+                          'linear-gradient(135deg, #f59e0b 0%, #b45309 100%)',
+                          'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+                          'linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)',
+                          'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
+                        ]
+                        let sum = 0
+                        for (let i = 0; i < id.length; i++) sum += id.charCodeAt(i)
+                        return gradients[sum % gradients.length]
+                      }
+
                       return (
                         <tr key={cust.id} id={`customer-row-${cust.id}`}>
                           <td>
                             <span className="cust-code-tag">{cust.code}</span>
                           </td>
                           <td>
-                            <strong
-                              className="cust-company-name"
-                              style={{ cursor: 'pointer', color: '#1d4ed8' }}
-                              onClick={() => setSelected360Customer(cust)}
-                              title="Xem Trang 360 độ khách hàng"
-                            >
-                              {cust.name}
-                            </strong>
-                            {cust.tax_code && (
-                              <div className="cust-tax-code">
-                                Mã số thuế: <span>{cust.tax_code}</span>
+                            <div className="cust-company-cell">
+                              <div
+                                className="cust-company-avatar"
+                                style={{ background: cust.avatar_url ? 'transparent' : getAvatarGradient(cust.id) }}
+                                title={cust.name}
+                              >
+                                {cust.avatar_url ? (
+                                  <img
+                                    src={cust.avatar_url}
+                                    alt={cust.name}
+                                    className="cust-company-avatar-img"
+                                    onError={(e) => {
+                                      // Fallback về ký tự viết tắt nếu ảnh lỗi
+                                      (e.currentTarget as HTMLElement).style.display = 'none'
+                                    }}
+                                  />
+                                ) : (
+                                  getCompanyInitials(cust.name)
+                                )}
                               </div>
-                            )}
-                            {/* AC S3-05: Hiển thị tổng giá trị hợp đồng nếu là công ty mẹ */}
-                            {groupSummary.childrenCount > 0 && (
-                              <div className="cust-group-parent-tag">
-                                Tập đoàn ({groupSummary.childrenCount} cty con): {formatCurrencyVND(groupSummary.totalValue)}
+                              <div className="cust-company-info-wrap">
+                                <strong
+                                  className="cust-company-name"
+                                  style={{ cursor: 'pointer', color: '#1d4ed8' }}
+                                  onClick={() => setSelected360Customer(cust)}
+                                  title="Xem Trang 360 độ khách hàng"
+                                >
+                                  {cust.name}
+                                </strong>
+                                {cust.tax_code && (
+                                  <div className="cust-tax-code">
+                                    Mã số thuế: <span>{cust.tax_code}</span>
+                                  </div>
+                                )}
+                                {/* AC S3-05: Hiển thị tổng giá trị hợp đồng nếu là công ty mẹ */}
+                                {groupSummary.childrenCount > 0 && (
+                                  <div className="cust-group-parent-tag">
+                                    Tập đoàn ({groupSummary.childrenCount} cty con): {formatCurrencyVND(groupSummary.totalValue)}
+                                  </div>
+                                )}
+                                {/* AC S3-05: Hiển thị nếu là công ty con trực thuộc */}
+                                {parentRel && (
+                                  <div className="cust-group-child-tag">
+                                    Thuộc tập đoàn: <strong>{parentRel.parent_name}</strong>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                            {/* AC S3-05: Hiển thị nếu là công ty con trực thuộc */}
-                            {parentRel && (
-                              <div className="cust-group-child-tag">
-                                Thuộc tập đoàn: <strong>{parentRel.parent_name}</strong>
-                              </div>
-                            )}
+                            </div>
                           </td>
                           <td>
                             <div className="cust-industry-text">{cust.industry}</div>
                             <div className="cust-size-text">{cust.company_size}</div>
                           </td>
                           <td>
-                            {cust.phone ? (
-                              <div className="cust-contact-phone">{cust.phone}</div>
-                            ) : (
-                              <div className="cust-contact-empty">—</div>
-                            )}
-                            {cust.email && <div className="cust-contact-email">{cust.email}</div>}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                              <div>
+                                {cust.phone ? (
+                                  <div className="cust-contact-phone">{cust.phone}</div>
+                                ) : (
+                                  <div className="cust-contact-empty">—</div>
+                                )}
+                                {cust.email && <div className="cust-contact-email">{cust.email}</div>}
+                              </div>
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <button
+                                  type="button"
+                                  className="cust-quick-action-btn btn-call"
+                                  onClick={() => setQuickCallCustomer(cust)}
+                                  title={`Gọi nhanh cho ${cust.name} (${cust.phone || 'Chưa có SĐT'})`}
+                                  aria-label="Gọi nhanh"
+                                >
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                  </svg>
+                                </button>
+                                <a
+                                  href={cust.email ? `mailto:${cust.email}?subject=[CRM] Trao đổi công việc cùng ${encodeURIComponent(cust.name)}` : undefined}
+                                  className={`cust-quick-action-btn btn-mail ${!cust.email ? 'disabled' : ''}`}
+                                  onClick={(e) => {
+                                    if (!cust.email) {
+                                      e.preventDefault()
+                                      showToast('Khách hàng này chưa có địa chỉ email!')
+                                    }
+                                  }}
+                                  title={cust.email ? `Gửi email nhanh cho ${cust.email}` : 'Chưa có email'}
+                                  aria-label="Gửi mail nhanh"
+                                >
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                    <polyline points="22,6 12,13 2,6" />
+                                  </svg>
+                                </a>
+                              </div>
+                            </div>
                           </td>
                           <td>
                             <div className={`cust-owner-badge ${isMine ? 'is-mine' : ''}`}>
@@ -2632,142 +2786,253 @@ export default function CustomerManagementPage() {
             </div>
 
             <form onSubmit={handleSubmitForm}>
-              <div className="cust-modal-body">
-                <div className="cust-form-row">
-                  <div className="cust-form-group">
-                    <label>Tên công ty / Doanh nghiệp <span className="required">*</span></label>
-                    <input
-                      type="text"
-                      className={`cust-form-input ${formErrors.name ? 'has-error' : ''}`}
-                      placeholder="VD: Công ty Cổ phần Công Nghệ Alpha"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      autoFocus
-                    />
-                    {formErrors.name && <span className="cust-form-error">{formErrors.name}</span>}
+              <div className="cust-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '72vh', overflowY: 'auto' }}>
+                {/* ── Nhóm 1: THÔNG TIN DOANH NGHIỆP ── */}
+                <div className="cust-form-section-card">
+                  <div className="cust-form-section-header">
+                    <span className="cust-form-section-icon">🏢</span>
+                    <h4 className="cust-form-section-title">1. Thông tin doanh nghiệp</h4>
+                    <span className="cust-form-section-desc">Pháp lý, nhận diện & thông tin liên hệ cty</span>
                   </div>
 
-                  <div className="cust-form-group">
-                    <label>Mã số thuế</label>
-                    <input
-                      type="text"
-                      className={`cust-form-input ${formErrors.tax_code ? 'has-error' : ''}`}
-                      placeholder="VD: 0102345678 (Duy nhất)"
-                      value={formData.tax_code}
-                      onChange={(e) => setFormData({ ...formData, tax_code: e.target.value })}
-                    />
-                    {formErrors.tax_code ? (
-                      <span className="cust-form-error">{formErrors.tax_code}</span>
-                    ) : (
-                      <span className="cust-form-hint">Mã số thuế nếu có thì phải là duy nhất trên hệ thống</span>
-                    )}
-                  </div>
-                </div>
+                  <div className="cust-form-row">
+                    <div className="cust-form-group">
+                      <label>Tên công ty / Doanh nghiệp <span className="required">*</span></label>
+                      <input
+                        type="text"
+                        className={`cust-form-input ${formErrors.name ? 'has-error' : ''}`}
+                        placeholder="VD: Công ty Cổ phần Công Nghệ Alpha"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        autoFocus
+                      />
+                      {formErrors.name && <span className="cust-form-error">{formErrors.name}</span>}
+                    </div>
 
-                <div className="cust-form-row">
-                  <div className="cust-form-group">
-                    <label>Ngành nghề</label>
-                    <select
-                      className="cust-form-select"
-                      value={formData.industry}
-                      onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                    >
-                      {industries.map((ind) => (
-                        <option key={ind} value={ind}>{ind}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="cust-form-group">
-                    <label>Quy mô</label>
-                    <select
-                      className="cust-form-select"
-                      value={formData.company_size}
-                      onChange={(e) => setFormData({ ...formData, company_size: e.target.value })}
-                    >
-                      {companySizes.map((sz) => (
-                        <option key={sz} value={sz}>{sz}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="cust-form-row">
-                  <div className="cust-form-group">
-                    <label>Website</label>
-                    <input
-                      type="text"
-                      className="cust-form-input"
-                      placeholder="https://company.com"
-                      value={formData.website}
-                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="cust-form-group">
-                    <label>Số điện thoại</label>
-                    <input
-                      type="text"
-                      className="cust-form-input"
-                      placeholder="024 3768 9999"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="cust-form-row">
-                  <div className="cust-form-group">
-                    <label>Trạng thái</label>
-                    <select
-                      className="cust-form-select"
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as CustomerStatus })}
-                    >
-                      <option value="POTENTIAL">Tiềm năng</option>
-                      <option value="IN_TRANSACTION">Đang giao dịch</option>
-                      <option value="ACTIVE_CUSTOMER">Khách hàng</option>
-                      <option value="STOPPED">Ngừng hợp tác</option>
-                    </select>
-                  </div>
-
-                  <div className="cust-form-group">
-                    <label>Người sở hữu</label>
-                    <select
-                      className="cust-form-select"
-                      value={formData.owner_id}
-                      onChange={(e) => setFormData({ ...formData, owner_id: Number(e.target.value) })}
-                      disabled={user?.role === 'STAFF' || user?.role === 'USER'}
-                    >
-                      {teamMembers.length > 0 ? (
-                        teamMembers.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.name} ({m.team_name})
-                          </option>
-                        ))
+                    <div className="cust-form-group">
+                      <label>Mã số thuế</label>
+                      <input
+                        type="text"
+                        className={`cust-form-input ${formErrors.tax_code ? 'has-error' : ''}`}
+                        placeholder="VD: 0102345678 (Duy nhất)"
+                        value={formData.tax_code}
+                        onChange={(e) => setFormData({ ...formData, tax_code: e.target.value })}
+                      />
+                      {formErrors.tax_code ? (
+                        <span className="cust-form-error">{formErrors.tax_code}</span>
                       ) : (
-                        <option value={user?.id ?? 1}>{user?.full_name ?? 'Tôi'}</option>
+                        <span className="cust-form-hint">Mã số thuế nếu có thì phải là duy nhất trên hệ thống</span>
                       )}
-                    </select>
+                    </div>
+                  </div>
+
+                  <div className="cust-form-row">
+                    <div className="cust-form-group">
+                      <label>Ngành nghề</label>
+                      <select
+                        className="cust-form-select"
+                        value={formData.industry}
+                        onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                      >
+                        {industries.map((ind) => (
+                          <option key={ind} value={ind}>{ind}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="cust-form-group">
+                      <label>Quy mô nhân sự</label>
+                      <select
+                        className="cust-form-select"
+                        value={formData.company_size}
+                        onChange={(e) => setFormData({ ...formData, company_size: e.target.value })}
+                      >
+                        {companySizes.map((sz) => (
+                          <option key={sz} value={sz}>{sz}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="cust-form-row">
+                    <div className="cust-form-group">
+                      <label>Website công ty</label>
+                      <input
+                        type="text"
+                        className="cust-form-input"
+                        placeholder="https://company.com"
+                        value={formData.website}
+                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="cust-form-group">
+                      <label>Link Logo / Avatar doanh nghiệp</label>
+                      <input
+                        type="text"
+                        className="cust-form-input"
+                        placeholder="https://example.com/logo.png"
+                        value={formData.avatar_url}
+                        onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="cust-form-row">
+                    <div className="cust-form-group">
+                      <label>Số điện thoại tổng đài</label>
+                      <input
+                        type="text"
+                        className="cust-form-input"
+                        placeholder="024 3768 9999"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="cust-form-group">
+                      <label>Email liên hệ công ty</label>
+                      <input
+                        type="email"
+                        className={`cust-form-input ${formErrors.email ? 'has-error' : ''}`}
+                        placeholder="contact@company.com"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      />
+                      {formErrors.email && <span className="cust-form-error">{formErrors.email}</span>}
+                    </div>
+                  </div>
+
+                  <div className="cust-form-group">
+                    <label>Địa chỉ trụ sở</label>
+                    <input
+                      type="text"
+                      className="cust-form-input"
+                      placeholder="Số nhà, đường, quận/huyện, tỉnh/thành phố..."
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    />
                   </div>
                 </div>
 
-                <div className="cust-form-row">
-                  <div className="cust-form-group" style={{ gridColumn: 'span 2' }}>
-                    <label>Thuộc công ty mẹ / Tập đoàn (nếu là cty con)</label>
-                    <select
-                      className="cust-form-select"
-                      value={formData.parent_id || ''}
-                      onChange={(e) => setFormData({ ...formData, parent_id: e.target.value })}
-                    >
-                      <option value="">-- Doanh nghiệp độc lập (Không có công ty mẹ) --</option>
-                      {customerService.getAvailableParentCompanies(editingCustomer?.id).map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name} ({c.code} - {c.industry})
-                        </option>
-                      ))}
-                    </select>
-                    <span className="cust-form-hint">Khai báo quan hệ công ty mẹ để gộp doanh số vào tập đoàn (S3-05)</span>
+                {/* ── Nhóm 2: NGƯỜI LIÊN HỆ CHÍNH (KEY PERSON) ── */}
+                <div className="cust-form-section-card" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
+                  <div className="cust-form-section-header" style={{ borderColor: '#dcfce7' }}>
+                    <span className="cust-form-section-icon" style={{ background: '#dcfce7', color: '#16a34a' }}>👤</span>
+                    <h4 className="cust-form-section-title" style={{ color: '#14532d' }}>2. Người liên hệ chính</h4>
+                    <span className="cust-form-section-desc" style={{ color: '#15803d' }}>Đầu mối trao đổi & ra quyết định mua hàng</span>
+                  </div>
+
+                  <div className="cust-form-row">
+                    <div className="cust-form-group">
+                      <label>Họ và tên người liên hệ</label>
+                      <input
+                        type="text"
+                        className="cust-form-input"
+                        placeholder="VD: Nguyễn Văn An"
+                        value={formData.primary_contact_name}
+                        onChange={(e) => setFormData({ ...formData, primary_contact_name: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="cust-form-group">
+                      <label>Chức vụ / Vị trí</label>
+                      <input
+                        type="text"
+                        className="cust-form-input"
+                        placeholder="VD: Giám đốc Kinh doanh / Trưởng phòng Mua"
+                        value={formData.primary_contact_title}
+                        onChange={(e) => setFormData({ ...formData, primary_contact_title: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="cust-form-row">
+                    <div className="cust-form-group">
+                      <label>Số điện thoại trực tiếp</label>
+                      <input
+                        type="text"
+                        className="cust-form-input"
+                        placeholder="VD: 0912 345 678"
+                        value={formData.primary_contact_phone}
+                        onChange={(e) => setFormData({ ...formData, primary_contact_phone: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="cust-form-group">
+                      <label>Email cá nhân / công việc</label>
+                      <input
+                        type="email"
+                        className="cust-form-input"
+                        placeholder="VD: an.nguyen@company.com"
+                        value={formData.primary_contact_email}
+                        onChange={(e) => setFormData({ ...formData, primary_contact_email: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Nhóm 3: PHÂN CÔNG & VÒNG ĐỜI CRM ── */}
+                <div className="cust-form-section-card">
+                  <div className="cust-form-section-header">
+                    <span className="cust-form-section-icon" style={{ background: '#fef3c7', color: '#d97706' }}>⚙️</span>
+                    <h4 className="cust-form-section-title">3. Phân công & Trạng thái quan hệ</h4>
+                    <span className="cust-form-section-desc">Quản lý vòng đời và người phụ trách</span>
+                  </div>
+
+                  <div className="cust-form-row">
+                    <div className="cust-form-group">
+                      <label>Trạng thái vòng đời</label>
+                      <select
+                        className="cust-form-select"
+                        value={formData.status}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value as CustomerStatus })}
+                      >
+                        <option value="POTENTIAL">Tiềm năng (Prospect)</option>
+                        <option value="IN_TRANSACTION">Đang giao dịch (Negotiating)</option>
+                        <option value="ACTIVE_CUSTOMER">Chính thức (Active Customer)</option>
+                        <option value="STOPPED">Ngừng hợp tác (Discontinued)</option>
+                      </select>
+                    </div>
+
+                    <div className="cust-form-group">
+                      <label>Nhân viên phụ trách (Owner)</label>
+                      <select
+                        className="cust-form-select"
+                        value={formData.owner_id}
+                        onChange={(e) => setFormData({ ...formData, owner_id: Number(e.target.value) })}
+                        disabled={user?.role === 'STAFF' || user?.role === 'USER'}
+                      >
+                        {teamMembers.length > 0 ? (
+                          teamMembers.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.name} ({m.team_name})
+                            </option>
+                          ))
+                        ) : (
+                          <option value={user?.id ?? 1}>{user?.full_name ?? 'Tôi'}</option>
+                        )}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="cust-form-row">
+                    <div className="cust-form-group" style={{ gridColumn: 'span 2' }}>
+                      <label>Thuộc công ty mẹ / Tập đoàn (nếu là cty con)</label>
+                      <select
+                        className="cust-form-select"
+                        value={formData.parent_id || ''}
+                        onChange={(e) => setFormData({ ...formData, parent_id: e.target.value })}
+                      >
+                        <option value="">-- Doanh nghiệp độc lập (Không có công ty mẹ) --</option>
+                        {customerService.getAvailableParentCompanies(editingCustomer?.id).map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name} ({c.code} - {c.industry})
+                          </option>
+                        ))}
+                      </select>
+                      <span className="cust-form-hint">Khai báo quan hệ công ty mẹ để gộp doanh số vào tập đoàn (S3-05)</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -3185,6 +3450,20 @@ export default function CustomerManagementPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Quick Call Modal */}
+      {quickCallCustomer && (
+        <QuickCallMobileModal
+          isOpen={!!quickCallCustomer}
+          onClose={() => setQuickCallCustomer(null)}
+          onSuccess={() => {
+            showToast(`Đã lưu nhật ký cuộc gọi với ${quickCallCustomer.name}`)
+            loadCustomers()
+          }}
+          preselectedCustomerId={quickCallCustomer.id}
+          preselectedCustomerName={quickCallCustomer.name}
+        />
       )}
 
       {/* Toast thông báo */}

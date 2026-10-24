@@ -14,20 +14,20 @@ export const CUSTOMER_STATUS_LABELS: Record<string, string> = {
   POTENTIAL: 'Tiềm năng',
   PROSPECT: 'Tiềm năng',
   IN_TRANSACTION: 'Đang giao dịch',
-  ACTIVE_CUSTOMER: 'Khách hàng',
-  CUSTOMER: 'Khách hàng',
+  ACTIVE_CUSTOMER: 'Chính thức',
+  CUSTOMER: 'Chính thức',
   STOPPED: 'Ngừng hợp tác',
   DISCONTINUED: 'Ngừng hợp tác',
 }
 
 export const CUSTOMER_STATUS_COLORS: Record<string, { bg: string; color: string; border: string }> = {
-  POTENTIAL: { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
+  POTENTIAL: { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' }, // Xanh dương
   PROSPECT: { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
-  IN_TRANSACTION: { bg: '#fffbeb', color: '#d97706', border: '#fde68a' },
-  ACTIVE_CUSTOMER: { bg: '#ecfdf5', color: '#059669', border: '#a7f3d0' },
+  IN_TRANSACTION: { bg: '#fffbeb', color: '#d97706', border: '#fde68a' }, // Vàng hổ phách
+  ACTIVE_CUSTOMER: { bg: '#ecfdf5', color: '#059669', border: '#a7f3d0' }, // Xanh lá
   CUSTOMER: { bg: '#ecfdf5', color: '#059669', border: '#a7f3d0' },
-  STOPPED: { bg: '#f1f5f9', color: '#64748b', border: '#cbd5e1' },
-  DISCONTINUED: { bg: '#f1f5f9', color: '#64748b', border: '#cbd5e1' },
+  STOPPED: { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' }, // Đỏ nhạt
+  DISCONTINUED: { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
 }
 
 export interface CustomerEnterprise {
@@ -41,6 +41,13 @@ export interface CustomerEnterprise {
   address?: string // Địa chỉ văn phòng / trụ sở
   phone?: string // Số điện thoại tổng đài / hotline
   email?: string // Email liên hệ chính
+  avatar_url?: string // Logo / Avatar của công ty
+
+  // Người liên hệ chính (Primary Contact) gắn liền
+  primary_contact_name?: string
+  primary_contact_phone?: string
+  primary_contact_email?: string
+  primary_contact_title?: string
 
   // Phân quyền dữ liệu sở hữu (Data Scope & Ownership)
   owner_id: number // ID nhân viên kinh doanh phụ trách
