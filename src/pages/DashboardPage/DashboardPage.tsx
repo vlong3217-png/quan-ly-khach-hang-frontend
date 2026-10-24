@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import { usePermission } from '../../hooks/usePermission.ts'
@@ -32,6 +32,7 @@ import TaskSlaAlerts from '../../components/TaskSlaAlerts/TaskSlaAlerts.tsx'
 import ExecutiveDashboard from '../../components/ExecutiveDashboard/ExecutiveDashboard.tsx'
 import QuickCallMobileModal from '../../components/QuickCallMobile/QuickCallMobileModal.tsx'
 import NotificationBell from '../../components/NotificationBell/NotificationBell.tsx'
+import GlobalSearch from '../../components/GlobalSearch/GlobalSearch.tsx'
 import {
   ROLES,
   PERMISSIONS,
@@ -41,6 +42,18 @@ import type { MenuItem } from '../../types/menu.ts'
 import './DashboardPage.css'
 
 /* ──────────── Inline SVG Icons ──────────── */
+const IconPhoneCall = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+  </svg>
+)
+
+const IconChevronDown = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+)
+
 const IconLogout = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -167,6 +180,21 @@ function DashboardPage() {
   const [actionNotice, setActionNotice] = useState<string | null>(null)
   const [isChangePwdModalOpen, setIsChangePwdModalOpen] = useState(false)
   const [isQuickCallModalOpen, setIsQuickCallModalOpen] = useState(false)
+  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false)
+  const avatarDropdownRef = useRef<HTMLDivElement>(null)
+
+  // Đóng dropdown avatar khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (avatarDropdownRef.current && !avatarDropdownRef.current.contains(e.target as Node)) {
+        setIsAvatarMenuOpen(false)
+      }
+    }
+    if (isAvatarMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isAvatarMenuOpen])
 
   const handleLogout = () => {
     logout()
@@ -298,51 +326,115 @@ function DashboardPage() {
               >
                 <IconMenu />
               </button>
+
+              {/* Ô TÌM KIẾM TOÀN CỤC (GLOBAL SEARCH) */}
+              <GlobalSearch />
             </div>
 
             <div className="dashboard-user-area">
+              {/* Nút Ghi cuộc gọi nhanh trực tiếp trên Header */}
+              <button
+                type="button"
+                className="dashboard-quick-call-btn"
+                onClick={() => setIsQuickCallModalOpen(true)}
+                title="Ghi nhanh cuộc gọi khách hàng"
+                id="btn-header-quick-call"
+              >
+                <IconPhoneCall />
+                <span className="quick-call-btn-text">Ghi cuộc gọi</span>
+              </button>
+
+              {/* Chuông thông báo có số đếm */}
               <NotificationBell />
-              <div
-                className="dashboard-user-info"
-                onClick={() => navigate('/profile')}
-                style={{ cursor: 'pointer' }}
-                title="Xem hồ sơ cá nhân"
-              >
-                <div className="dashboard-user-avatar" style={{ overflow: 'hidden' }}>
-                  {user?.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt={user.full_name}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
-                    />
-                  ) : (
-                    <IconUser />
-                  )}
-                </div>
-                <div className="dashboard-user-details">
-                  <span className="dashboard-user-name">Hồ sơ</span>
-                </div>
+
+              {/* AVATAR DROPDOWN MENU GOM HỒ SƠ / ĐỔI MẬT KHẨU / ĐĂNG XUẤT */}
+              <div className="dashboard-avatar-menu-wrapper" ref={avatarDropdownRef}>
+                <button
+                  type="button"
+                  className="dashboard-avatar-btn"
+                  id="dashboard-user-avatar-trigger"
+                  onClick={() => setIsAvatarMenuOpen(!isAvatarMenuOpen)}
+                  aria-expanded={isAvatarMenuOpen}
+                  aria-haspopup="true"
+                  title="Tài khoản cá nhân"
+                >
+                  <div className="dashboard-user-avatar">
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.full_name}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                      />
+                    ) : (
+                      <IconUser />
+                    )}
+                  </div>
+                  <span className="dashboard-user-name-text">{user?.full_name?.split(' ').pop() || 'Tài khoản'}</span>
+                  <span className={`dashboard-avatar-chevron ${isAvatarMenuOpen ? 'is-open' : ''}`}>
+                    <IconChevronDown />
+                  </span>
+                </button>
+
+                {/* Popover Dropdown Menu */}
+                {isAvatarMenuOpen && (
+                  <div className="dashboard-avatar-dropdown" role="menu" aria-orientation="vertical">
+                    <div className="avatar-dropdown-header">
+                      <span className="dropdown-user-fullname">{user?.full_name || 'Người dùng'}</span>
+                      <span className="dropdown-user-email">{user?.email || '—'}</span>
+                      <div className="dropdown-role-badge" data-role={user?.role}>
+                        {user?.role || 'USER'}
+                      </div>
+                    </div>
+
+                    <div className="avatar-dropdown-divider" />
+
+                    <div className="avatar-dropdown-items">
+                      <button
+                        type="button"
+                        className="avatar-dropdown-item"
+                        onClick={() => {
+                          setIsAvatarMenuOpen(false)
+                          navigate('/profile')
+                        }}
+                        role="menuitem"
+                      >
+                        <IconUser />
+                        <span>Hồ sơ cá nhân</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        className="avatar-dropdown-item"
+                        onClick={() => {
+                          setIsAvatarMenuOpen(false)
+                          setIsChangePwdModalOpen(true)
+                        }}
+                        id="avatar-menu-change-pwd-btn"
+                        role="menuitem"
+                      >
+                        <IconKey />
+                        <span>Đổi mật khẩu</span>
+                      </button>
+                    </div>
+
+                    <div className="avatar-dropdown-divider" />
+
+                    <button
+                      type="button"
+                      className="avatar-dropdown-item item-danger"
+                      onClick={() => {
+                        setIsAvatarMenuOpen(false)
+                        handleLogout()
+                      }}
+                      id="avatar-menu-logout-btn"
+                      role="menuitem"
+                    >
+                      <IconLogout />
+                      <span>Đăng xuất</span>
+                    </button>
+                  </div>
+                )}
               </div>
-              <button
-                type="button"
-                className="dashboard-change-pwd-btn"
-                onClick={() => setIsChangePwdModalOpen(true)}
-                id="dashboard-change-pwd-btn"
-                title="Đổi mật khẩu"
-              >
-                <IconKey />
-                <span>Đổi mật khẩu</span>
-              </button>
-              <button
-                type="button"
-                className="dashboard-logout-btn"
-                onClick={handleLogout}
-                id="logout-btn"
-                title="Đăng xuất"
-              >
-                <IconLogout />
-                <span>Đăng xuất</span>
-              </button>
             </div>
           </div>
         </header>
@@ -773,15 +865,16 @@ function DashboardPage() {
         }}
       />
 
-      {/* ── FAB GHI NHANH CUỘC GỌI MOBILE 3 CHẠM (S6-10) ── */}
+      {/* ── FAB GHI NHANH CUỘC GỌI GỌN GÀNG (S6-10) ── */}
       <button
         type="button"
-        className="fab-quick-call"
+        className="fab-quick-call fab-quick-call--circular"
         id="fab-quick-call-mobile"
         onClick={() => setIsQuickCallModalOpen(true)}
-        title="Ghi nhanh cuộc gọi 3 chạm trên điện thoại (S6-10)"
+        title="Ghi nhanh cuộc gọi khách hàng (S6-10)"
+        aria-label="Ghi nhanh cuộc gọi"
       >
-        <span>Ghi nhanh cuộc gọi</span>
+        <IconPhoneCall />
       </button>
 
       {/* ── MODAL GHI NHANH CUỘC GỌI MOBILE (S6-10) ── */}

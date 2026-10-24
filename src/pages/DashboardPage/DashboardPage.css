@@ -178,8 +178,8 @@
   line-height: 1;
 }
 
-/* Change password button */
-.dashboard-change-pwd-btn {
+/* Nút Ghi cuộc gọi nhanh trên Header */
+.dashboard-quick-call-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -187,71 +187,228 @@
   height: 38px;
   padding: 0 14px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   font-family: inherit;
-  color: #2563eb;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 8px;
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 9px;
   cursor: pointer;
   box-sizing: border-box;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
 }
 
-.dashboard-change-pwd-btn svg {
-  width: 16px;
-  height: 16px;
+.dashboard-quick-call-btn svg {
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+.dashboard-quick-call-btn:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #15803d;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.15);
+}
+
+.dashboard-quick-call-btn:active {
+  transform: scale(0.97);
+}
+
+@media (max-width: 640px) {
+  .quick-call-btn-text {
+    display: none;
+  }
+  .dashboard-quick-call-btn {
+    padding: 0 10px;
+  }
+}
+
+/* ──────────── Avatar Dropdown Menu Styles ──────────── */
+.dashboard-avatar-menu-wrapper {
+  position: relative;
+}
+
+.dashboard-avatar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px 0 6px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.dashboard-avatar-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.dashboard-user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #eff6ff;
   color: #2563eb;
   flex-shrink: 0;
 }
 
-.dashboard-change-pwd-btn:hover {
-  background: #dbeafe;
-  border-color: #93c5fd;
-  color: #1d4ed8;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
-}
-
-.dashboard-change-pwd-btn:active {
-  transform: scale(0.97);
-}
-
-/* Logout button */
-.dashboard-logout-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  height: 38px;
-  padding: 0 14px;
+.dashboard-user-name-text {
   font-size: 13px;
-  font-weight: 500;
-  font-family: inherit;
-  color: #64748b;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  cursor: pointer;
-  box-sizing: border-box;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  color: #1e293b;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.dashboard-logout-btn svg {
+.dashboard-avatar-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+}
+
+.dashboard-avatar-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu Popover */
+.dashboard-avatar-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  padding: 6px;
+  animation: fadeInDown 0.15s ease-out;
+}
+
+.avatar-dropdown-header {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dropdown-user-fullname {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-user-email {
+  font-size: 11.5px;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  width: fit-content;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.dropdown-role-badge[data-role="ADMIN"] {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.dropdown-role-badge[data-role="MANAGER"] {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.dropdown-role-badge[data-role="USER"] {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.avatar-dropdown-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 4px 0;
+}
+
+.avatar-dropdown-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.avatar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #334155;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.avatar-dropdown-item svg {
   width: 16px;
   height: 16px;
+  color: #64748b;
   flex-shrink: 0;
 }
 
-.dashboard-logout-btn:hover {
-  color: #dc2626;
-  border-color: rgba(220, 38, 38, 0.3);
-  background: rgba(220, 38, 38, 0.04);
+.avatar-dropdown-item:hover {
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
-.dashboard-logout-btn:active {
-  transform: scale(0.97);
+.avatar-dropdown-item:hover svg {
+  color: #2563eb;
+}
+
+.avatar-dropdown-item.item-danger {
+  color: #dc2626;
+}
+
+.avatar-dropdown-item.item-danger svg {
+  color: #dc2626;
+}
+
+.avatar-dropdown-item.item-danger:hover {
+  background: #fef2f2;
 }
 
 /* ---------- Main Content Area ---------- */

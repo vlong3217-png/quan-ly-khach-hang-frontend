@@ -2,30 +2,22 @@ import type { MenuGroup } from '../types/menu.ts'
 import { ROLES, PERMISSIONS } from './permissions.ts'
 
 /**
- * Cấu hình toàn bộ cấu trúc Menu điều hướng của Hệ thống Quản lý Khách hàng.
- *
- * Mỗi menu item được gắn kèm các ràng buộc `roles` hoặc `permissions`:
- * - Nếu không có quyền phù hợp, menu sẽ bị ẩn hoàn toàn (không render trong DOM).
- * - ADMIN: Toàn quyền truy cập tất cả các menu.
- * - MANAGER: Xem Tổng quan, Quản lý khách hàng (kèm xuất dữ liệu), Báo cáo & thống kê, Đội nhóm. Ẩn menu Cấu hình hệ thống.
- * - USER: Xem Tổng quan, Quản lý khách hàng (xem/thêm mới). Ẩn menu Báo cáo, Đội nhóm, Cấu hình hệ thống, và ẩn chức năng Xuất dữ liệu.
+ * Cấu hình toàn bộ cấu trúc Menu điều hướng của Hệ thống N5 CRM.
+ * Được nhóm theo chuẩn khuyến nghị của Mentor:
+ * 1. BÁN HÀNG: Khách hàng, Leads (Khách hàng tiềm năng), Cơ hội bán hàng, Hợp đồng & Gia hạn, Lịch làm việc
+ * 2. MARKETING: Chiến dịch Marketing, Email & Mẫu tiếp thị, Báo cáo ROI
+ * 3. BÁO CÁO: Bảng điều khiển (Tổng quan), Chỉ tiêu doanh số, Phễu bán hàng, Dự báo doanh thu, Bảng xếp hạng doanh số, Năng suất & Hoạt động, Nhật ký công việc
+ * 4. CẤU HÌNH & QUẢN TRỊ: Giai đoạn Pipeline, Trường tuỳ chỉnh, Danh mục bán hàng, Sản phẩm & Bảng giá, Tự động hoá quy trình, Quản lý tài khoản, Quản lý Đội nhóm, Nhật ký hệ thống
  */
 export const APP_MENU_GROUPS: MenuGroup[] = [
   {
-    id: 'group-core',
-    title: 'TỔNG QUAN & LÀM VIỆC',
-    description: 'Bảng điều khiển và danh mục khách hàng trọng tâm',
+    id: 'group-sales',
+    title: 'BÁN HÀNG',
+    description: 'Quản lý khách hàng, phễu lead, cơ hội kinh doanh và hợp đồng',
     items: [
       {
-        id: 'menu-dashboard',
-        title: 'Bảng điều khiển',
-        path: '/dashboard',
-        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
-        description: 'Tổng quan chỉ số hoạt động, chào mừng và thông tin tài khoản',
-      },
-      {
         id: 'menu-customers',
-        title: 'Quản lý khách hàng',
+        title: 'Khách hàng',
         path: '/dashboard/customers',
         roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
         permissions: [PERMISSIONS.CUSTOMER_VIEW],
@@ -63,11 +55,39 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
       },
       {
         id: 'menu-lead-forms',
-        title: 'Khách hàng tiềm năng',
+        title: 'Khách hàng tiềm năng (Leads)',
         path: '/dashboard/lead-forms',
         roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
         description: 'Quản lý khách hàng tiềm năng, chấm điểm, chuyển đổi và biểu mẫu thu thập',
       },
+      {
+        id: 'menu-opportunities',
+        title: 'Cơ hội bán hàng',
+        path: '/dashboard/opportunities',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Quản lý cơ hội bán hàng, dòng thời gian hoạt động và công việc',
+      },
+      {
+        id: 'menu-contracts',
+        title: 'Hợp đồng & Gia hạn',
+        path: '/dashboard/contracts',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Theo dõi hiệu lực, cảnh báo hết hạn và tạo cơ hội gia hạn (S7-07)',
+      },
+      {
+        id: 'menu-calendar',
+        title: 'Lịch làm việc',
+        path: '/dashboard/calendar',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Xem lịch cuộc gặp, công việc và phát hiện trùng lịch (S6-07)',
+      },
+    ],
+  },
+  {
+    id: 'group-marketing',
+    title: 'MARKETING',
+    description: 'Chiến dịch tiếp thị, email marketing và phân tích hiệu quả lead',
+    items: [
       {
         id: 'menu-campaigns',
         title: 'Chiến dịch Marketing',
@@ -83,69 +103,26 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Soạn mẫu email chèn biến, gửi bất đồng bộ và ghi dòng thời gian khách hàng (S8-01)',
       },
       {
-        id: 'menu-opportunities',
-        title: 'Cơ hội bán hàng',
-        path: '/dashboard/opportunities',
-        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
-        description: 'Quản lý cơ hội bán hàng, dòng thời gian hoạt động và công việc',
-      },
-      {
-        id: 'menu-calendar',
-        title: 'Lịch làm việc',
-        path: '/dashboard/calendar',
-        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
-        description: 'Xem lịch cuộc gặp, công việc và phát hiện trùng lịch (S6-07)',
-      },
-      {
-        id: 'menu-contracts',
-        title: 'Hợp đồng & Gia hạn',
-        path: '/dashboard/contracts',
-        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
-        description: 'Theo dõi hiệu lực, cảnh báo hết hạn và tạo cơ hội gia hạn (S7-07)',
-      },
-      {
-        id: 'menu-products',
-        title: 'Sản phẩm & Bảng giá',
-        path: '/dashboard/products',
-        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
-        description: 'Quản lý danh mục sản phẩm, dịch vụ và bảng giá niêm yết',
-      },
-      {
-        id: 'menu-pipeline',
-        title: 'Giai đoạn Pipeline',
-        path: '/dashboard/pipeline',
+        id: 'menu-marketing-roi',
+        title: 'Báo cáo ROI Marketing',
+        path: '/dashboard/marketing-roi',
         roles: [ROLES.ADMIN, ROLES.MANAGER],
-        description: 'Cấu hình các giai đoạn pipeline và xác suất thắng',
-      },
-      {
-        id: 'menu-automation',
-        title: 'Tự động hoá quy trình',
-        path: '/dashboard/automation',
-        roles: [ROLES.ADMIN, ROLES.MANAGER],
-        description: 'Thiết lập quy tắc tự động khi-thì, tạo việc và phân bổ phụ trách (S7-09)',
-      },
-      {
-        id: 'menu-categories',
-        title: 'Danh mục bán hàng',
-        path: '/dashboard/categories',
-        roles: [ROLES.ADMIN, ROLES.MANAGER],
-        description: 'Khai báo ngành nghề, quy mô, nguồn lead và loại hoạt động',
-      },
-      {
-        id: 'menu-custom-fields',
-        title: 'Trường tuỳ chỉnh',
-        path: '/dashboard/custom-fields',
-        roles: [ROLES.ADMIN],
-        permissions: [PERMISSIONS.SYSTEM_SETTINGS],
-        description: 'Khai báo trường tuỳ chỉnh cho khách hàng và cơ hội',
+        description: 'Phân tích số lead, tỷ lệ tiếp nhận, chuyển đổi thành cơ hội theo nguồn và chiến dịch (S8-09)',
       },
     ],
   },
   {
-    id: 'group-management',
-    title: 'NGHIỆP VỤ & QUẢN LÝ',
-    description: 'Báo cáo thống kê số liệu và quản lý tổ chức',
+    id: 'group-reports',
+    title: 'BÁO CÁO & PHÂN TÍCH',
+    description: 'Chỉ số đo lường hiệu quả bán hàng, dự báo doanh thu và hoạt động nhân sự',
     items: [
+      {
+        id: 'menu-dashboard',
+        title: 'Bảng điều khiển (Tổng quan)',
+        path: '/dashboard',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Tổng quan chỉ số hoạt động, chào mừng và thông tin tài khoản',
+      },
       {
         id: 'menu-quotas',
         title: 'Chỉ tiêu doanh số',
@@ -168,13 +145,6 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Dự báo doanh thu so với chỉ tiêu (3 con số), phân tích thắng/thua và xuất báo cáo Excel (S8-06)',
       },
       {
-        id: 'menu-team-productivity',
-        title: 'Năng suất & Hoạt động',
-        path: '/dashboard/team-productivity',
-        roles: [ROLES.ADMIN, ROLES.MANAGER],
-        description: 'Báo cáo số cuộc gọi, cuộc gặp, báo giá gửi đi theo thành viên/tuần và tỷ lệ phản hồi lead trong SLA (S8-07)',
-      },
-      {
         id: 'menu-sales-leaderboard',
         title: 'Bảng xếp hạng Doanh số',
         path: '/dashboard/leaderboard',
@@ -182,11 +152,11 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         description: 'Xếp hạng doanh số đã chốt trong kỳ, tiến độ so với chỉ tiêu cá nhân và bảo mật nội bộ nhóm (S8-08)',
       },
       {
-        id: 'menu-marketing-roi',
-        title: 'Báo cáo ROI',
-        path: '/dashboard/marketing-roi',
+        id: 'menu-team-productivity',
+        title: 'Năng suất & Hoạt động',
+        path: '/dashboard/team-productivity',
         roles: [ROLES.ADMIN, ROLES.MANAGER],
-        description: 'Phân tích số lead, tỷ lệ tiếp nhận, chuyển đổi thành cơ hội theo nguồn và chiến dịch (S8-09)',
+        description: 'Báo cáo số cuộc gọi, cuộc gặp, báo giá gửi đi theo thành viên/tuần và tỷ lệ phản hồi lead trong SLA (S8-07)',
       },
       {
         id: 'menu-rep-activity-audit',
@@ -194,6 +164,57 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
         path: '/dashboard/rep-activity-audit',
         roles: [ROLES.ADMIN, ROLES.MANAGER],
         description: 'Lọc theo thời gian, loại hoạt động, thành viên và thống kê tổng số hoạt động theo từng nhân sự (S8-11)',
+      },
+    ],
+  },
+  {
+    id: 'group-config',
+    title: 'CẤU HÌNH & QUẢN TRỊ',
+    description: 'Thiết lập quy trình pipeline, danh mục sản phẩm, biểu mẫu và tài khoản',
+    items: [
+      {
+        id: 'menu-pipeline',
+        title: 'Giai đoạn Pipeline',
+        path: '/dashboard/pipeline',
+        roles: [ROLES.ADMIN, ROLES.MANAGER],
+        description: 'Cấu hình các giai đoạn pipeline và xác suất thắng',
+      },
+      {
+        id: 'menu-custom-fields',
+        title: 'Trường tuỳ chỉnh',
+        path: '/dashboard/custom-fields',
+        roles: [ROLES.ADMIN],
+        permissions: [PERMISSIONS.SYSTEM_SETTINGS],
+        description: 'Khai báo trường tuỳ chỉnh cho khách hàng và cơ hội',
+      },
+      {
+        id: 'menu-categories',
+        title: 'Danh mục bán hàng',
+        path: '/dashboard/categories',
+        roles: [ROLES.ADMIN, ROLES.MANAGER],
+        description: 'Khai báo ngành nghề, quy mô, nguồn lead và loại hoạt động',
+      },
+      {
+        id: 'menu-products',
+        title: 'Sản phẩm & Bảng giá',
+        path: '/dashboard/products',
+        roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+        description: 'Quản lý danh mục sản phẩm, dịch vụ và bảng giá niêm yết',
+      },
+      {
+        id: 'menu-automation',
+        title: 'Tự động hoá quy trình',
+        path: '/dashboard/automation',
+        roles: [ROLES.ADMIN, ROLES.MANAGER],
+        description: 'Thiết lập quy tắc tự động khi-thì, tạo việc và phân bổ phụ trách (S7-09)',
+      },
+      {
+        id: 'menu-users',
+        title: 'Quản lý tài khoản',
+        path: '/dashboard/users',
+        roles: [ROLES.ADMIN],
+        permissions: [PERMISSIONS.SYSTEM_SETTINGS],
+        description: 'Tạo, phân quyền vai trò, nhóm và khóa tài khoản người dùng',
       },
       {
         id: 'menu-teams',
@@ -215,21 +236,6 @@ export const APP_MENU_GROUPS: MenuGroup[] = [
             roles: [ROLES.ADMIN, ROLES.MANAGER],
           },
         ],
-      },
-    ],
-  },
-  {
-    id: 'group-admin',
-    title: 'HỆ THỐNG & CẤU HÌNH',
-    description: 'Chỉ dành cho Quản trị viên (ADMIN)',
-    items: [
-      {
-        id: 'menu-users',
-        title: 'Quản lý tài khoản',
-        path: '/dashboard/users',
-        roles: [ROLES.ADMIN],
-        permissions: [PERMISSIONS.SYSTEM_SETTINGS],
-        description: 'Tạo, phân quyền vai trò, nhóm và khóa tài khoản người dùng',
       },
       {
         id: 'menu-settings',
