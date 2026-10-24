@@ -3,6 +3,7 @@ import type { Opportunity } from '../../types/opportunity.ts'
 import { opportunityService } from '../../services/opportunityService.ts'
 import { opportunityActivityService } from '../../services/opportunityActivityService.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
+import StandardPagination from '../StandardPagination/StandardPagination.tsx'
 import './StalledOpportunityAlerts.css'
 
 interface StalledOpportunityAlertsProps {
@@ -35,6 +36,8 @@ export default function StalledOpportunityAlerts({
   const [isInterventionModalOpen, setIsInterventionModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   const showToast = (msg: string) => {
     setToastMessage(msg)
@@ -55,6 +58,11 @@ export default function StalledOpportunityAlerts({
   const criticalCount = stalledAlerts.filter((a) => a.severity === 'CRITICAL').length
   const warningCount = stalledAlerts.filter((a) => a.severity === 'WARNING').length
   const totalStalledRevenue = stalledAlerts.reduce((acc, a) => acc + (a.opp.expected_revenue || 0), 0)
+
+  const paginatedStalledAlerts = stalledAlerts.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
 
   // Format tiền tệ VNĐ có dấu phẩy phân cách hàng nghìn
   const formatCurrency = (val: number) => {
@@ -182,7 +190,7 @@ export default function StalledOpportunityAlerts({
         </div>
       ) : (
         <div className="stalled-cards-list">
-          {stalledAlerts.map(({ opp, stalledType, severity, daysStalled, message, suggestedAction }) => (
+          {paginatedStalledAlerts.map(({ opp, stalledType, severity, daysStalled, message, suggestedAction }) => (
             <div
               key={opp.id}
               className={`stalled-deal-card severity-${severity?.toLowerCase() || 'warning'}`}
@@ -275,6 +283,19 @@ export default function StalledOpportunityAlerts({
               </div>
             </div>
           ))}
+
+          <StandardPagination
+            page={currentPage}
+            pageSize={pageSize}
+            total={stalledAlerts.length}
+            label="cơ hội đình trệ"
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize)
+              setCurrentPage(1)
+            }}
+            style={{ margin: '20px 0 0', background: '#fff', borderRadius: '8px', padding: '12px 16px' }}
+          />
         </div>
       )}
 

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import type { Opportunity } from '../../types/opportunity.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
+import StandardPagination from '../StandardPagination/StandardPagination.tsx'
 import './SalesForecastView.css'
 
 interface SalesForecastViewProps {
@@ -23,6 +24,12 @@ export default function SalesForecastView({
   const [period, setPeriod] = useState<PeriodFilter>('THIS_MONTH')
   const [groupBy, setGroupBy] = useState<GroupByFilter>('OWNER')
   const [selectedGroupKey, setSelectedGroupKey] = useState<string>('ALL')
+
+  // Pagination states
+  const [groupPage, setGroupPage] = useState(1)
+  const [groupPageSize, setGroupPageSize] = useState(10)
+  const [dealsPage, setDealsPage] = useState(1)
+  const [dealsPageSize, setDealsPageSize] = useState(10)
 
   // Xác định khoảng thời gian hiện tại
   const now = new Date()
@@ -200,6 +207,11 @@ export default function SalesForecastView({
     return Object.values(groups).sort((a, b) => b.forecastRevenue - a.forecastRevenue)
   }, [filteredOpps, groupBy, period])
 
+  // Phân trang danh sách tổng hợp theo nhóm / nhân viên
+  const paginatedGroupedData = useMemo(() => {
+    return groupedData.slice((groupPage - 1) * groupPageSize, groupPage * groupPageSize)
+  }, [groupedData, groupPage, groupPageSize])
+
   // Lọc danh sách deal chi tiết theo group được chọn
   const displayDeals = useMemo(() => {
     if (selectedGroupKey === 'ALL') return filteredOpps
@@ -208,6 +220,11 @@ export default function SalesForecastView({
     }
     return filteredOpps.filter((o) => (o.team_name || '') === selectedGroupKey)
   }, [filteredOpps, selectedGroupKey, groupBy])
+
+  // Phân trang danh sách deal chi tiết
+  const paginatedDisplayDeals = useMemo(() => {
+    return displayDeals.slice((dealsPage - 1) * dealsPageSize, dealsPage * dealsPageSize)
+  }, [displayDeals, dealsPage, dealsPageSize])
 
   const formatCurrency = (val: number) => {
     return formatCurrencyVND(val)
@@ -395,7 +412,7 @@ export default function SalesForecastView({
                 </tr>
               </thead>
               <tbody>
-                {groupedData.map((item) => {
+                {paginatedGroupedData.map((item) => {
                   const forecastPercent = item.targetQuota > 0 ? Math.round((item.forecastRevenue / item.targetQuota) * 100) : 0
                   const actualPercent = item.targetQuota > 0 ? Math.round((item.actualClosedRevenue / item.targetQuota) * 100) : 0
                   const isSelected = selectedGroupKey === item.key
@@ -476,6 +493,17 @@ export default function SalesForecastView({
                 })}
               </tbody>
             </table>
+            <StandardPagination
+              page={groupPage}
+              pageSize={groupPageSize}
+              total={groupedData.length}
+              label={groupBy === 'OWNER' ? 'nhân viên' : 'đội nhóm'}
+              onPageChange={setGroupPage}
+              onPageSizeChange={(newSize) => {
+                setGroupPageSize(newSize)
+                setGroupPage(1)
+              }}
+            />
           </div>
         )}
       </div>
@@ -516,7 +544,7 @@ export default function SalesForecastView({
                 </tr>
               </thead>
               <tbody>
-                {displayDeals.map((opp) => {
+                {paginatedDisplayDeals.map((opp) => {
                   const weightedVal = opp.status === 'WON'
                     ? (opp.actual_revenue || opp.expected_revenue)
                     : (opp.expected_revenue * (opp.win_probability || 0)) / 100
@@ -580,6 +608,17 @@ export default function SalesForecastView({
                 })}
               </tbody>
             </table>
+            <StandardPagination
+              page={dealsPage}
+              pageSize={dealsPageSize}
+              total={displayDeals.length}
+              label="cơ hội đóng góp"
+              onPageChange={setDealsPage}
+              onPageSizeChange={(newSize) => {
+                setDealsPageSize(newSize)
+                setDealsPage(1)
+              }}
+            />
           </div>
         )}
       </div>

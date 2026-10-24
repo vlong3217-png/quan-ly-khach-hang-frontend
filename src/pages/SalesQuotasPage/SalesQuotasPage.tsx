@@ -10,6 +10,7 @@ import type {
 import { salesQuotaService } from '../../services/salesQuotaService.ts'
 import { getAvailableTeams, getUsers } from '../../services/userService.ts'
 import type { UserAccount } from '../../types/user.ts'
+import StandardPagination from '../../components/StandardPagination/StandardPagination.tsx'
 import './SalesQuotasPage.css'
 
 export default function SalesQuotasPage() {
@@ -23,6 +24,8 @@ export default function SalesQuotasPage() {
   // Modals
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false)
+  const [memberPages, setMemberPages] = useState<Record<string, number>>({})
+  const [memberPageSizes, setMemberPageSizes] = useState<Record<string, number>>({})
 
   // Edit Modal Form State
   const [editingQuotaId, setEditingQuotaId] = useState<string | null>(null)
@@ -442,45 +445,64 @@ export default function SalesQuotasPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {t.members.map((m) => {
-                        const mPct = m.target_amount > 0 ? Math.min(Math.round((m.achieved_amount / m.target_amount) * 100), 100) : 0
-                        return (
-                          <tr key={m.user_id}>
-                            <td>
-                              <strong style={{ color: '#1e293b' }}>{m.user_name}</strong>
-                            </td>
-                            <td>
-                              <span style={{ fontSize: '0.75rem', background: '#f1f5f9', padding: '2px 8px', borderRadius: 4 }}>
-                                {m.role}
-                              </span>
-                            </td>
-                            <td style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>
-                              {m.target_amount.toLocaleString('vi-VN')} ₫
-                            </td>
-                            <td style={{ textAlign: 'right', color: '#16a34a', fontWeight: 600 }}>
-                              {m.achieved_amount.toLocaleString('vi-VN')} ₫
-                            </td>
-                            <td style={{ textAlign: 'right' }}>
-                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                <span style={{ fontWeight: 700, color: mPct >= 80 ? '#15803d' : '#2563eb' }}>
-                                  {mPct}%
+                      {(() => {
+                        const mPage = memberPages[t.id] || 1
+                        const mSize = memberPageSizes[t.id] || 10
+                        const pagedMembers = t.members.slice((mPage - 1) * mSize, mPage * mSize)
+
+                        return pagedMembers.map((m) => {
+                          const mPct = m.target_amount > 0 ? Math.min(Math.round((m.achieved_amount / m.target_amount) * 100), 100) : 0
+                          return (
+                            <tr key={m.user_id}>
+                              <td>
+                                <strong style={{ color: '#1e293b' }}>{m.user_name}</strong>
+                              </td>
+                              <td>
+                                <span style={{ fontSize: '0.75rem', background: '#f1f5f9', padding: '2px 8px', borderRadius: 4 }}>
+                                  {m.role}
                                 </span>
-                                <div className="progress-mini-bar">
-                                  <div
-                                    className="progress-mini-fill"
-                                    style={{
-                                      width: `${mPct}%`,
-                                      background: mPct >= 80 ? '#10b981' : '#3b82f6',
-                                    }}
-                                  ></div>
+                              </td>
+                              <td style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>
+                                {m.target_amount.toLocaleString('vi-VN')} ₫
+                              </td>
+                              <td style={{ textAlign: 'right', color: '#16a34a', fontWeight: 600 }}>
+                                {m.achieved_amount.toLocaleString('vi-VN')} ₫
+                              </td>
+                              <td style={{ textAlign: 'right' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                  <span style={{ fontWeight: 700, color: mPct >= 80 ? '#15803d' : '#2563eb' }}>
+                                    {mPct}%
+                                  </span>
+                                  <div className="progress-mini-bar">
+                                    <div
+                                      className="progress-mini-fill"
+                                      style={{
+                                        width: `${mPct}%`,
+                                        background: mPct >= 80 ? '#10b981' : '#3b82f6',
+                                      }}
+                                    ></div>
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )
-                      })}
+                              </td>
+                            </tr>
+                          )
+                        })
+                      })()}
                     </tbody>
                   </table>
+
+                  <StandardPagination
+                    page={memberPages[t.id] || 1}
+                    pageSize={memberPageSizes[t.id] || 10}
+                    total={t.members.length}
+                    label="thành viên"
+                    onPageChange={(p) => setMemberPages((prev) => ({ ...prev, [t.id]: p }))}
+                    onPageSizeChange={(s) => {
+                      setMemberPageSizes((prev) => ({ ...prev, [t.id]: s }))
+                      setMemberPages((prev) => ({ ...prev, [t.id]: 1 }))
+                    }}
+                    style={{ margin: '12px 0 0', padding: '12px 16px', background: '#f8fafc', borderRadius: 8 }}
+                  />
                 </div>
               )
             })

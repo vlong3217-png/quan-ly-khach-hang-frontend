@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import type { ProductivityFilter } from '../../types/teamProductivity.ts'
 import { teamProductivityService } from '../../services/teamProductivityService.ts'
+import StandardPagination from '../../components/StandardPagination/StandardPagination.tsx'
 import './TeamProductivityReportPage.css'
 import PageHeader from '../../components/ui/PageHeader.tsx'
 
@@ -16,13 +17,33 @@ export default function TeamProductivityReportPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'weekly' | 'leads'>('overview')
   const [exportNotice, setExportNotice] = useState<string | null>(null)
 
+  // Pagination states
+  const [overviewPage, setOverviewPage] = useState(1)
+  const [overviewPageSize, setOverviewPageSize] = useState(10)
+  const [weeklyPage, setWeeklyPage] = useState(1)
+  const [weeklyPageSize, setWeeklyPageSize] = useState(10)
+  const [leadsPage, setLeadsPage] = useState(1)
+  const [leadsPageSize, setLeadsPageSize] = useState(10)
+
   const members = useMemo(() => {
     return teamProductivityService.getMembersProductivity(filter)
   }, [filter])
 
+  const paginatedOverviewMembers = useMemo(() => {
+    return members.slice((overviewPage - 1) * overviewPageSize, overviewPage * overviewPageSize)
+  }, [members, overviewPage, overviewPageSize])
+
+  const paginatedWeeklyMembers = useMemo(() => {
+    return members.slice((weeklyPage - 1) * weeklyPageSize, weeklyPage * weeklyPageSize)
+  }, [members, weeklyPage, weeklyPageSize])
+
   const leadSlas = useMemo(() => {
     return teamProductivityService.getLeadSlaDetails(filter)
   }, [filter])
+
+  const paginatedLeadSlas = useMemo(() => {
+    return leadSlas.slice((leadsPage - 1) * leadsPageSize, leadsPage * leadsPageSize)
+  }, [leadSlas, leadsPage, leadsPageSize])
 
   const summary = useMemo(() => {
     return teamProductivityService.calculateSummary(members)
@@ -243,7 +264,7 @@ export default function TeamProductivityReportPage() {
                   </td>
                 </tr>
               ) : (
-                members.map((m) => (
+                paginatedOverviewMembers.map((m) => (
                   <tr key={m.user_id}>
                     <td>
                       <div className="user-cell">
@@ -276,6 +297,18 @@ export default function TeamProductivityReportPage() {
               )}
             </tbody>
           </table>
+
+          <StandardPagination
+            page={overviewPage}
+            pageSize={overviewPageSize}
+            total={members.length}
+            label="thành viên"
+            onPageChange={setOverviewPage}
+            onPageSizeChange={(newSize) => {
+              setOverviewPageSize(newSize)
+              setOverviewPage(1)
+            }}
+          />
         </div>
       )}
 
@@ -301,7 +334,7 @@ export default function TeamProductivityReportPage() {
                   </td>
                 </tr>
               ) : (
-                members.map((m) => (
+                paginatedWeeklyMembers.map((m) => (
                   <tr key={m.user_id}>
                     <td>
                       <div className="user-cell">
@@ -336,6 +369,18 @@ export default function TeamProductivityReportPage() {
               )}
             </tbody>
           </table>
+
+          <StandardPagination
+            page={weeklyPage}
+            pageSize={weeklyPageSize}
+            total={members.length}
+            label="thành viên"
+            onPageChange={setWeeklyPage}
+            onPageSizeChange={(newSize) => {
+              setWeeklyPageSize(newSize)
+              setWeeklyPage(1)
+            }}
+          />
         </div>
       )}
 
@@ -363,7 +408,7 @@ export default function TeamProductivityReportPage() {
                   </td>
                 </tr>
               ) : (
-                leadSlas.map((lead) => (
+                paginatedLeadSlas.map((lead) => (
                   <tr key={lead.id}>
                     <td><strong>{lead.lead_name}</strong></td>
                     <td>{lead.company}</td>
@@ -392,6 +437,18 @@ export default function TeamProductivityReportPage() {
               )}
             </tbody>
           </table>
+
+          <StandardPagination
+            page={leadsPage}
+            pageSize={leadsPageSize}
+            total={leadSlas.length}
+            label="nhật ký lead"
+            onPageChange={setLeadsPage}
+            onPageSizeChange={(newSize) => {
+              setLeadsPageSize(newSize)
+              setLeadsPage(1)
+            }}
+          />
         </div>
       )}
     </div>

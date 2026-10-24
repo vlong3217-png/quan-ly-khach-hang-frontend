@@ -4,6 +4,7 @@ import type {
   ForecastViewLevel,
 } from '../../types/revenueForecast.ts'
 import { revenueForecastService } from '../../services/revenueForecastService.ts'
+import StandardPagination from '../../components/StandardPagination/StandardPagination.tsx'
 import './RevenueForecastPage.css'
 
 export default function RevenueForecastPage() {
@@ -11,6 +12,9 @@ export default function RevenueForecastPage() {
   const [level, setLevel] = useState<ForecastViewLevel>('COMPANY')
   const [teamId, setTeamId] = useState<number | undefined>(undefined)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   const showToast = (msg: string) => {
     setToastMessage(msg)
@@ -20,6 +24,10 @@ export default function RevenueForecastPage() {
   const reportData = useMemo(() => {
     return revenueForecastService.getForecastReport(period, level, teamId)
   }, [period, level, teamId])
+
+  const paginatedItems = useMemo(() => {
+    return reportData.items.slice((page - 1) * pageSize, page * pageSize)
+  }, [reportData.items, page, pageSize])
 
   const handleExportExcel = () => {
     try {
@@ -210,7 +218,7 @@ export default function RevenueForecastPage() {
                 </td>
               </tr>
             ) : (
-              reportData.items.map((row) => (
+              paginatedItems.map((row) => (
                 <tr key={row.id}>
                   <td>
                     <strong style={{ color: '#0f172a' }}>{row.name}</strong>
@@ -241,6 +249,18 @@ export default function RevenueForecastPage() {
             )}
           </tbody>
         </table>
+
+        <StandardPagination
+          page={page}
+          pageSize={pageSize}
+          total={reportData.items.length}
+          label="đối tượng so sánh"
+          onPageChange={setPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize)
+            setPage(1)
+          }}
+        />
       </div>
 
       {/* S8-06 AC: Phân tích lý do thua theo danh mục & theo đối thủ */}
