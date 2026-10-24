@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
 import './ExecutiveDashboard.css'
@@ -17,17 +17,6 @@ export default function ExecutiveDashboard() {
   }
 
   const [roleView, setRoleView] = useState<DashboardRoleView>(getInitialRoleView)
-  const [loadTimeMs, setLoadTimeMs] = useState<number>(45)
-
-  // Measure load performance (< 2s AC requirement)
-  useEffect(() => {
-    const start = performance.now()
-    const timer = setTimeout(() => {
-      const elapsed = Math.round(performance.now() - start)
-      setLoadTimeMs(Math.max(35, elapsed))
-    }, 30)
-    return () => clearTimeout(timer)
-  }, [roleView])
 
   return (
     <div className="executive-dashboard" id="executive-dashboard">
@@ -59,10 +48,6 @@ export default function ExecutiveDashboard() {
           >
             Giám đốc kinh doanh
           </button>
-        </div>
-
-        <div className="load-time-badge" title="Đạt tiêu chí chấp nhận: Toàn bộ dữ liệu tải xong dưới 2 giây">
-          <span>Tải xong: {loadTimeMs}ms</span>
         </div>
       </div>
 
@@ -293,16 +278,45 @@ export default function ExecutiveDashboard() {
                 <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Tổng: 0 ₫</span>
               </div>
 
-              <div style={{ textAlign: 'center', padding: '40px 16px', color: '#64748b' }}>
-                <p style={{ margin: 0, fontSize: '0.875rem' }}>Chưa có cơ hội bán hàng nào trong chu kỳ Pipeline.</p>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  style={{ marginTop: 12, fontSize: '0.8rem', padding: '6px 12px' }}
-                  onClick={() => navigate('/dashboard/opportunities')}
-                >
-                  + Thêm cơ hội mới
-                </button>
+              <div className="empty-chart-mock-wrapper">
+                {/* Visual illustrated chart frame with axes & ghost bars */}
+                <div className="empty-chart-svg-container">
+                  <svg viewBox="0 0 420 180" className="empty-chart-svg" preserveAspectRatio="none">
+                    {/* Grid horizontal lines */}
+                    <line x1="30" y1="30" x2="400" y2="30" stroke="#e2e8f0" strokeDasharray="3 3" />
+                    <line x1="30" y1="70" x2="400" y2="70" stroke="#e2e8f0" strokeDasharray="3 3" />
+                    <line x1="30" y1="110" x2="400" y2="110" stroke="#e2e8f0" strokeDasharray="3 3" />
+                    <line x1="30" y1="150" x2="400" y2="150" stroke="#cbd5e1" strokeWidth="1.5" />
+                    {/* Y-axis line */}
+                    <line x1="30" y1="20" x2="30" y2="150" stroke="#cbd5e1" strokeWidth="1.5" />
+                    {/* Y labels */}
+                    <text x="24" y="34" textAnchor="end" fontSize="10" fill="#94a3b8">100M</text>
+                    <text x="24" y="74" textAnchor="end" fontSize="10" fill="#94a3b8">50M</text>
+                    <text x="24" y="114" textAnchor="end" fontSize="10" fill="#94a3b8">20M</text>
+                    <text x="24" y="154" textAnchor="end" fontSize="10" fill="#94a3b8">0</text>
+                    {/* Ghost funnel / stage bars */}
+                    <rect x="55" y="65" width="45" height="85" rx="4" fill="#3b82f6" opacity="0.14" />
+                    <text x="77" y="166" textAnchor="middle" fontSize="10" fill="#94a3b8">Tiếp cận</text>
+                    <rect x="125" y="85" width="45" height="65" rx="4" fill="#6366f1" opacity="0.14" />
+                    <text x="147" y="166" textAnchor="middle" fontSize="10" fill="#94a3b8">Đánh giá</text>
+                    <rect x="195" y="105" width="45" height="45" rx="4" fill="#8b5cf6" opacity="0.14" />
+                    <text x="217" y="166" textAnchor="middle" fontSize="10" fill="#94a3b8">Đề xuất</text>
+                    <rect x="265" y="120" width="45" height="30" rx="4" fill="#ec4899" opacity="0.14" />
+                    <text x="287" y="166" textAnchor="middle" fontSize="10" fill="#94a3b8">Đàm phán</text>
+                    <rect x="335" y="135" width="45" height="15" rx="4" fill="#10b981" opacity="0.14" />
+                    <text x="357" y="166" textAnchor="middle" fontSize="10" fill="#94a3b8">Chốt đơn</text>
+                  </svg>
+                  <div className="empty-chart-overlay">
+                    <p className="empty-chart-text">Chưa có cơ hội bán hàng trong chu kỳ Pipeline</p>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => navigate('/dashboard/opportunities')}
+                    >
+                      + Thêm cơ hội mới
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -312,10 +326,45 @@ export default function ExecutiveDashboard() {
                 <h3 className="panel-title">
                   <span>Doanh số đã chốt theo tháng</span>
                 </h3>
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Năm {new Date().getFullYear()}</span>
               </div>
 
-              <div style={{ textAlign: 'center', padding: '40px 16px', color: '#64748b' }}>
-                <p style={{ margin: 0, fontSize: '0.875rem' }}>Hệ thống sẵn sàng ghi nhận doanh thu mới khi các hợp đồng được ký duyệt.</p>
+              <div className="empty-chart-mock-wrapper">
+                <div className="empty-chart-svg-container">
+                  <svg viewBox="0 0 420 180" className="empty-chart-svg" preserveAspectRatio="none">
+                    {/* Grid horizontal lines */}
+                    <line x1="30" y1="30" x2="400" y2="30" stroke="#e2e8f0" strokeDasharray="3 3" />
+                    <line x1="30" y1="70" x2="400" y2="70" stroke="#e2e8f0" strokeDasharray="3 3" />
+                    <line x1="30" y1="110" x2="400" y2="110" stroke="#e2e8f0" strokeDasharray="3 3" />
+                    <line x1="30" y1="150" x2="400" y2="150" stroke="#cbd5e1" strokeWidth="1.5" />
+                    {/* Y-axis */}
+                    <line x1="30" y1="20" x2="30" y2="150" stroke="#cbd5e1" strokeWidth="1.5" />
+                    {/* Y labels */}
+                    <text x="24" y="34" textAnchor="end" fontSize="10" fill="#94a3b8">150M</text>
+                    <text x="24" y="74" textAnchor="end" fontSize="10" fill="#94a3b8">100M</text>
+                    <text x="24" y="114" textAnchor="end" fontSize="10" fill="#94a3b8">50M</text>
+                    <text x="24" y="154" textAnchor="end" fontSize="10" fill="#94a3b8">0</text>
+                    {/* Ghost trend line & dots */}
+                    <path
+                      d="M 50 140 Q 110 135, 170 125 T 290 115 T 390 100"
+                      fill="none"
+                      stroke="#10b981"
+                      strokeWidth="2"
+                      strokeDasharray="4 4"
+                      opacity="0.25"
+                    />
+                    {/* Months along bottom */}
+                    {['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'].map((m, idx) => (
+                      <g key={m}>
+                        <rect x={40 + idx * 30} y="138" width="16" height="12" rx="2" fill="#10b981" opacity="0.1" />
+                        <text x={48 + idx * 30} y="166" textAnchor="middle" fontSize="9" fill="#94a3b8">{m}</text>
+                      </g>
+                    ))}
+                  </svg>
+                  <div className="empty-chart-overlay">
+                    <p className="empty-chart-text">Hệ thống sẵn sàng ghi nhận doanh thu khi các hợp đồng được ký duyệt</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

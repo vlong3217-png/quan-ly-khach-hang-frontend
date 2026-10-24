@@ -679,35 +679,93 @@
 /* ---------- Welcome Card ---------- */
 .dashboard-welcome-card {
   background: #ffffff;
-  border-radius: 14px;
-  padding: 26px 30px;
+  border-radius: 12px;
+  padding: 16px 22px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.dashboard-welcome-card h1 {
-  font-size: 22px;
+.dashboard-welcome-card.compact-welcome {
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  margin-bottom: 8px;
+}
+
+.welcome-line-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.welcome-text-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.welcome-wave-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.welcome-title {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #1e293b;
+  margin: 0;
+}
+
+.welcome-title strong {
   font-weight: 700;
-  margin: 0 0 6px;
   color: #0f172a;
 }
 
-.dashboard-welcome-card > p {
-  font-size: 14px;
+.welcome-date-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 500;
   color: #64748b;
-  margin: 0 0 20px;
+  background: #edf2f7;
+  padding: 3px 10px;
+  border-radius: 20px;
 }
 
-.dashboard-info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+.welcome-meta-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.dashboard-info-item {
-  background: #f8fafc;
-  border-radius: 10px;
-  padding: 14px 16px;
+.welcome-role-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.welcome-role-tag[data-role="ADMIN"] {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.welcome-role-tag[data-role="MANAGER"] {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.welcome-team-tag {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 3px 9px;
+  border-radius: 6px;
   border: 1px solid #e2e8f0;
 }
 

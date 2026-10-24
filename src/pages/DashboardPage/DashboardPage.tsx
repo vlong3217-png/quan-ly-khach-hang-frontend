@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext.tsx'
-import { usePermission } from '../../hooks/usePermission.ts'
 import { PermissionGate } from '../../components/PermissionGate.tsx'
 import Sidebar from '../../components/Sidebar/Sidebar.tsx'
 import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal.tsx'
@@ -36,7 +35,6 @@ import GlobalSearch from '../../components/GlobalSearch/GlobalSearch.tsx'
 import {
   ROLES,
   PERMISSIONS,
-  SCOPE_LABELS,
 } from '../../constants/permissions.ts'
 import type { MenuItem } from '../../types/menu.ts'
 import './DashboardPage.css'
@@ -101,7 +99,6 @@ const IconLock = () => (
 /* ──────────── Component ──────────── */
 function DashboardPage() {
   const { user, logout } = useAuth()
-  const { scope } = usePermission()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -454,42 +451,45 @@ function DashboardPage() {
               ───────────────────────────────────────────────────────────── */}
           {isDashboardView && (
             <>
-              {/* Welcome Card */}
-              <div className="dashboard-welcome-card">
-                <h1>Chào mừng, {user?.full_name ?? 'Người dùng'}!</h1>
-                <p>Bạn đã đăng nhập thành công vào hệ thống quản lý khách hàng.</p>
-                <div className="dashboard-info-grid">
-                  <div className="dashboard-info-item">
-                    <span className="dashboard-info-label">Email</span>
-                    <span className="dashboard-info-value">{user?.email ?? '—'}</span>
-                  </div>
-                  <div className="dashboard-info-item">
-                    <span className="dashboard-info-label">Vai trò hiện tại</span>
-                    <span className="dashboard-info-value role-badge" data-role={user?.role}>
-                      {user?.role ?? '—'}
+              {/* Welcome Card - Clean 1-line greeting + date */}
+              <div className="dashboard-welcome-card compact-welcome">
+                <div className="welcome-line-content">
+                  <div className="welcome-text-group">
+                    <span className="welcome-wave-icon">👋</span>
+                    <h1 className="welcome-title">
+                      Chào mừng, <strong>{user?.full_name ?? 'Người dùng'}</strong>!
+                    </h1>
+                    <span className="welcome-date-badge">
+                      {new Date().toLocaleDateString('vi-VN', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      }).replace(/^./, (c) => c.toUpperCase())}
                     </span>
                   </div>
-                  <div className="dashboard-info-item">
-                    <span className="dashboard-info-label">Phạm vi dữ liệu</span>
-                    <span className="dashboard-info-value scope-badge" data-scope={scope}>
-                      {SCOPE_LABELS[scope]?.split('(')[0]?.trim() || 'Toàn hệ thống'}
+                  <div className="welcome-meta-pill">
+                    <span className="welcome-role-tag" data-role={user?.role}>
+                      {user?.role === 'ADMIN' ? 'Quản trị viên' : user?.role === 'MANAGER' ? 'Trưởng nhóm' : 'Nhân viên kinh doanh'}
                     </span>
-                  </div>
-                  <div className="dashboard-info-item">
-                    <span className="dashboard-info-label">Đội nhóm</span>
-                    <span className="dashboard-info-value">{user?.team_name ?? 'Chưa phân nhóm'}</span>
+                    {user?.team_name && (
+                      <span className="welcome-team-tag">
+                        👥 {user.team_name}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Task SLA & Overdue Alerts (S6-09) */}
+              {/* Bố cục: KPI & Biểu đồ (ExecutiveDashboard) -> Việc cần làm & Bảng theo dõi nhân viên (TaskSlaAlerts) */}
+              {/* 1. KPIs & Biểu đồ hiệu suất */}
+              <ExecutiveDashboard />
+
+              {/* 2. Việc cần làm hôm nay & Bảng theo dõi nhân viên */}
               <TaskSlaAlerts
                 onNavigateToCalendar={() => navigate('/dashboard/calendar')}
                 onNavigateToOpportunities={() => navigate('/dashboard/opportunities')}
               />
-
-              {/* Role-based Executive Dashboard (S8-04) */}
-              <ExecutiveDashboard />
             </>
           )}
 

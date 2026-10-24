@@ -213,8 +213,18 @@ export default function TaskSlaAlerts({
 
   if (loading) {
     return (
-      <div className="task-sla-alerts-container" style={{ padding: '12px 16px', color: '#64748b' }}>
-        <span>Đang kiểm tra tiến độ và hạn chót công việc...</span>
+      <div className="task-sla-alerts-container" id="task-sla-alerts-loading">
+        <div className="sla-skeleton-container">
+          <div className="sla-skeleton-card">
+            <div className="sla-skeleton-line short"></div>
+            <div className="sla-skeleton-line medium"></div>
+            <div className="sla-skeleton-line full"></div>
+          </div>
+          <div className="sla-skeleton-card">
+            <div className="sla-skeleton-line short"></div>
+            <div className="sla-skeleton-line medium"></div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -339,16 +349,24 @@ export default function TaskSlaAlerts({
           <div className="manager-sla-header">
             <div className="title-left">
               <div>
-                <h3>Theo dõi việc quá hạn thành viên nhóm (Dành cho Trưởng nhóm)</h3>
+                <h3>
+                  {user?.role === 'ADMIN'
+                    ? 'Bảng theo dõi tiến độ nhân viên (Toàn hệ thống)'
+                    : 'Theo dõi việc quá hạn thành viên nhóm'}
+                </h3>
                 <span className="sub-text">
-                  Tổng hợp tiến độ xử lý và công việc trễ hạn theo từng nhân viên kinh doanh
+                  {user?.role === 'ADMIN'
+                    ? 'Tổng hợp tiến độ xử lý và công việc trễ hạn theo từng nhân viên trong toàn hệ thống'
+                    : 'Tổng hợp tiến độ xử lý và công việc trễ hạn theo từng nhân viên kinh doanh'}
                 </span>
               </div>
             </div>
 
             <div className="total-sla-stat">
               <span className="num-overdue-total">{totalTeamOverdueCount}</span>
-              <span className="txt-overdue">Việc quá hạn toàn nhóm</span>
+              <span className="txt-overdue">
+                {user?.role === 'ADMIN' ? 'Việc quá hạn toàn hệ thống' : 'Việc quá hạn toàn nhóm'}
+              </span>
             </div>
           </div>
 
