@@ -3,61 +3,12 @@ import type { WinLossReason, WinLossType, Competitor } from '../types/winLossCom
 const STORAGE_REASONS_KEY = 'crm_win_loss_reasons_data'
 const STORAGE_COMPETITORS_KEY = 'crm_competitors_data'
 
-const INITIAL_REASONS: WinLossReason[] = [
-  // 1. Lý do Thắng (WIN_REASON)
-  { id: 'rs-win-1', type: 'WIN_REASON', code: 'WIN-PRICE', name: 'Giá cả cạnh tranh & Chính sách chiết khấu tốt', is_active: true, sort_order: 1 },
-  { id: 'rs-win-2', type: 'WIN_REASON', code: 'WIN-FEATURE', name: 'Tính năng phù hợp và đáp ứng đúng bài toán nghiệp vụ', is_active: true, sort_order: 2 },
-  { id: 'rs-win-3', type: 'WIN_REASON', code: 'WIN-SUPPORT', name: 'Đội ngũ tư vấn nhiệt tình, chăm sóc hỗ trợ nhanh', is_active: true, sort_order: 3 },
-  { id: 'rs-win-4', type: 'WIN_REASON', code: 'WIN-RELATION', name: 'Mối quan hệ tin cậy sẵn có với ban lãnh đạo', is_active: true, sort_order: 4 },
-
-  // 2. Lý do Thua (LOSS_REASON)
-  { id: 'rs-loss-1', type: 'LOSS_REASON', code: 'LOSS-PRICE', name: 'Giá cao hơn ngân sách dự kiến của khách', is_active: true, sort_order: 1 },
-  { id: 'rs-loss-2', type: 'LOSS_REASON', code: 'LOSS-COMPETITOR', name: 'Thua đối thủ cạnh tranh có thương hiệu mạnh hơn', is_active: true, sort_order: 2 },
-  { id: 'rs-loss-3', type: 'LOSS_REASON', code: 'LOSS-TIMING', name: 'Khách hàng hoãn kế hoạch / Chưa có nhu cầu cấp bách', is_active: true, sort_order: 3 },
-  { id: 'rs-loss-4', type: 'LOSS_REASON', code: 'LOSS-FEATURE', name: 'Thiếu tính năng chuyên biệt mà khách yêu cầu', is_active: true, sort_order: 4 },
-  { id: 'rs-loss-5', type: 'LOSS_REASON', code: 'LOSS-LEADERSHIP', name: 'Khách hàng thay đổi nhân sự / Ban lãnh đạo mới hủy dự án', is_active: true, sort_order: 5 },
-]
-
-const INITIAL_COMPETITORS: Competitor[] = [
-  {
-    id: 'comp-1',
-    code: 'CP-SALESFORCE',
-    name: 'Salesforce CRM',
-    website: 'https://salesforce.com',
-    strengths: 'Hệ sinh thái toàn cầu, tính năng tùy biến mạnh mẽ, bảo mật cấp doanh nghiệp lớn',
-    weaknesses: 'Chi phí cực cao, khó triển khai cho SME, giao diện phức tạp bằng tiếng Anh',
-    price_segment: 'HIGH',
-    is_active: true,
-  },
-  {
-    id: 'comp-2',
-    code: 'CP-MISA',
-    name: 'MISA AMIS CRM',
-    website: 'https://amis.misa.vn',
-    strengths: 'Tích hợp sâu hóa đơn điện tử & kế toán MISA, thương hiệu nội địa phổ biến',
-    weaknesses: 'Tính năng báo cáo nâng cao và automation chưa thực sự linh hoạt',
-    price_segment: 'MEDIUM',
-    is_active: true,
-  },
-  {
-    id: 'comp-3',
-    code: 'CP-GETFLY',
-    name: 'GetFly CRM',
-    website: 'https://getfly.vn',
-    strengths: 'Chi phí hợp lý, tập trung tốt vào SME và marketing automation cơ bản',
-    weaknesses: 'Khó mở rộng quy mô cho tập đoàn, khả năng phân quyền đa cấp hạn chế',
-    price_segment: 'LOW',
-    is_active: true,
-  },
-]
-
 function getStoredReasons(): WinLossReason[] {
   try {
     const raw = localStorage.getItem(STORAGE_REASONS_KEY)
     if (raw) return JSON.parse(raw)
   } catch {}
-  localStorage.setItem(STORAGE_REASONS_KEY, JSON.stringify(INITIAL_REASONS))
-  return INITIAL_REASONS
+  return []
 }
 
 function getStoredCompetitors(): Competitor[] {
@@ -65,11 +16,15 @@ function getStoredCompetitors(): Competitor[] {
     const raw = localStorage.getItem(STORAGE_COMPETITORS_KEY)
     if (raw) return JSON.parse(raw)
   } catch {}
-  localStorage.setItem(STORAGE_COMPETITORS_KEY, JSON.stringify(INITIAL_COMPETITORS))
-  return INITIAL_COMPETITORS
+  return []
 }
 
 export const winLossService = {
+  clearAllData(): void {
+    localStorage.removeItem(STORAGE_REASONS_KEY)
+    localStorage.removeItem(STORAGE_COMPETITORS_KEY)
+  },
+
   getReasons(type?: WinLossType): WinLossReason[] {
     const list = getStoredReasons()
     const filtered = type ? list.filter((r) => r.type === type) : list

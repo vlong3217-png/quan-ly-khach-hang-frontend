@@ -10,7 +10,6 @@ import OrganizationPage from '../OrganizationPage/OrganizationPage.tsx'
 import CategoriesPage from '../CategoriesPage/CategoriesPage.tsx'
 import CustomFieldsPage from '../CustomFieldsPage/CustomFieldsPage.tsx'
 import PipelineStagesPage from '../PipelineStagesPage/PipelineStagesPage.tsx'
-import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
 import CustomerManagementPage from '../CustomerManagementPage/CustomerManagementPage.tsx'
 import LeadFormsPage from '../LeadFormsPage/LeadFormsPage.tsx'
 import CampaignsPage from '../CampaignsPage/CampaignsPage.tsx'
@@ -249,9 +248,6 @@ function DashboardPage() {
   const isCategoryView =
     activeMenuId === 'menu-categories' ||
     activeMenuId.startsWith('menu-categories-')
-  const isWinLossView =
-    activeMenuId === 'menu-win-loss' ||
-    activeMenuId.startsWith('menu-win-loss-')
   const isCustomFieldView =
     activeMenuId === 'menu-custom-fields' ||
     activeMenuId.startsWith('menu-custom-fields-')
@@ -722,15 +718,6 @@ function DashboardPage() {
           {isCategoryView && (
             <section className="dashboard-section categories-section">
               <CategoriesPage />
-            </section>
-          )}
-
-          {/* ─────────────────────────────────────────────────────────────
-              VIEW: LÝ DO THẮNG / THUA & ĐỐI THỦ (S2-10)
-              ───────────────────────────────────────────────────────────── */}
-          {isWinLossView && (
-            <section className="dashboard-section win-loss-section">
-              <WinLossCompetitorsPage />
             </section>
           )}
 

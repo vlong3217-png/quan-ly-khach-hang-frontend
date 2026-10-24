@@ -12,7 +12,6 @@ import { pipelineService } from '../../services/pipelineService.ts'
 import { productService } from '../../services/productService.ts'
 import { formatCurrencyVND } from '../../utils/formatCurrency.ts'
 import OpportunityDetailModal from '../../components/OpportunityDetailModal/OpportunityDetailModal.tsx'
-import WinLossCompetitorsPage from '../WinLossCompetitorsPage/WinLossCompetitorsPage.tsx'
 import SalesForecastView from '../../components/SalesForecastView/SalesForecastView.tsx'
 import StalledOpportunityAlerts from '../../components/StalledOpportunityAlerts/StalledOpportunityAlerts.tsx'
 import ReassignOpportunityModal from '../../components/ReassignOpportunityModal/ReassignOpportunityModal.tsx'
@@ -68,8 +67,8 @@ export default function OpportunitiesPage() {
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(5)
 
-  // Main Nav Tab (Danh sách Cơ hội vs Dự báo doanh số S5-06 vs Cảnh báo đình trệ S5-07 vs Lý do Thắng/Thua S5-05)
-  const [mainNavTab, setMainNavTab] = useState<'PIPELINE' | 'FORECAST' | 'STALLED' | 'WIN_LOSS'>('PIPELINE')
+  // Main Nav Tab (Danh sách Cơ hội vs Dự báo doanh số S5-06 vs Cảnh báo đình trệ S5-07)
+  const [mainNavTab, setMainNavTab] = useState<'PIPELINE' | 'FORECAST' | 'STALLED'>('PIPELINE')
 
   // Modal Chi tiết Cơ hội
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null)
@@ -738,7 +737,7 @@ export default function OpportunitiesPage() {
         )}
       </div>
 
-      {/* ── Main Sub-tabs: Cơ hội bán hàng vs Dự báo doanh số (S5-06) vs Cảnh báo đình trệ (S5-07) vs Lý do Thắng / Thua (S5-05) ── */}
+      {/* ── Main Sub-tabs: Cơ hội bán hàng vs Dự báo doanh số (S5-06) vs Cảnh báo đình trệ (S5-07) ── */}
       <div className="opp-main-tabs" id="opp-main-tabs">
         <button
           type="button"
@@ -764,15 +763,6 @@ export default function OpportunitiesPage() {
         >
           <span className="tab-title">Dự báo Doanh số</span>
         </button>
-        <button
-          type="button"
-          className={`opp-main-tab-btn ${mainNavTab === 'WIN_LOSS' ? 'active' : ''}`}
-          id="tab-btn-opp-winloss"
-          onClick={() => setMainNavTab('WIN_LOSS')}
-        >
-          <span className="tab-title">Lý do Thắng/Thua</span>
-
-        </button>
       </div>
 
       {mainNavTab === 'STALLED' ? (
@@ -796,10 +786,6 @@ export default function OpportunitiesPage() {
             opportunities={opportunities}
             onOpenOpportunityDetail={(opp) => handleOpenDetail(opp, 'DETAILS')}
           />
-        </div>
-      ) : mainNavTab === 'WIN_LOSS' ? (
-        <div className="opp-winloss-container">
-          <WinLossCompetitorsPage />
         </div>
       ) : selectedOpp && isDetailModalOpen ? (
         <OpportunityDetailModal
